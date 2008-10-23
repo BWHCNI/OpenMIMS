@@ -2,33 +2,42 @@
  * NRIMS.java
  *
  * Created on May 1, 2006, 12:34 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * 
+ * @author Douglas Benson
+ * @author <a href="mailto:rob.gonzalez@gmail.com">Rob Gonzalez</a>
  */
+
+import ij.plugin.PlugIn;
+
+import com.nrims.UI;
 
 /**
- *
- * @author Douglas Benson
+ * NRIMS Analysis Module
  */
-
-import ij.plugin.PlugIn ;
-
 public class NRIMS implements PlugIn {
-    
-    /** Creates a new instance of NRIMS Analysis Module */
-    
-    public NRIMS() {
-        if(ui == null) ui = new com.nrims.UI(null);
+
+    /** Singleton instance of the NRIMS UI. */
+    private static com.nrims.UI ui = new com.nrims.UI(null);
+
+    /**
+     * @return the singleton instance of the NRIMS UI.
+     */
+    public static UI getUI() {
+        return ui;
     }
 
-    public static com.nrims.UI getUI(){ return ui ; } 
-    
-    public void run(String arg) {      
-        String options = ij.Macro.getOptions();            
-        ui.run(arg + options);
-        if(ui.isVisible() == false) ui.setVisible(true);
+    /**
+     * Private to prevent instantiation beyond the singleton class object.
+     * @see #getUI() 
+     */
+    private NRIMS() {
     }
-    
-    private static com.nrims.UI ui = null ;
- }
+
+    public void run(String arg) {
+        String options = ij.Macro.getOptions();
+        ui.run(arg + options);
+        if (!ui.isVisible()) {
+            ui.setVisible(true);
+        }
+    }
+}
