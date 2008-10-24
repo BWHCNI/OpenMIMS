@@ -5,18 +5,25 @@
  */
 package com.nrims;
 
+import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
 
 /**
- *
  * @author  Douglas Benson
+ * @author <a href="mailto:rob.gonzalez@gmail.com">Rob Gonzalez</a>
  */
-public class HSIView extends javax.swing.JPanel {
+public class HSIView extends JPanel {
 
     public static final long serialVersionUID = 1;
+    private boolean bUpdating = false;
+    private UI ui = null;
+    private HSIProps props = new com.nrims.HSIProps();
+   //  private HSIProps ratioprops = new com.nrims.HSIProps();
 
-    /** Creates new form HSIView */
-    public HSIView(com.nrims.UI ui) {
+    /**
+     * @param ui UI into which the HSIView will be created.
+     */
+    public HSIView(UI ui) {
         initComponents();
         jSpinner1.setModel(new SpinnerNumberModel(1.0, 0.001, 65535.0, 0.001));
         jSpinner2.setModel(new SpinnerNumberModel(0.0, 0.0, 65535.0, 0.001));
@@ -615,11 +622,7 @@ private synchronized void update(boolean bUpdateUI) {
         return this.ratioContrastRadioButton.isSelected();
     }
     
-    
-    private boolean bUpdating = false ;
-    private com.nrims.UI ui = null ;
-    private com.nrims.HSIProps props = new com.nrims.HSIProps();
-    private HSIProps ratioprops = new com.nrims.HSIProps();
+
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
