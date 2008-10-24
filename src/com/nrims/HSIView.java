@@ -3,39 +3,41 @@
  *
  * Created on May 4, 2006, 10:02 AM
  */
-
 package com.nrims;
-import javax.swing.SpinnerNumberModel ;
-import ij.IJ;
+
+import javax.swing.SpinnerNumberModel;
 
 /**
  *
  * @author  Douglas Benson
  */
 public class HSIView extends javax.swing.JPanel {
-    
+
+    public static final long serialVersionUID = 1;
+
     /** Creates new form HSIView */
     public HSIView(com.nrims.UI ui) {
         initComponents();
-        jSpinner1.setModel(new SpinnerNumberModel(1.0, 0.001, 65535.0, 0.001)) ;
-        jSpinner2.setModel(new SpinnerNumberModel(0.0, 0.0, 65535.0, 0.001)) ;
-        jSpinner3.setModel(new SpinnerNumberModel(3,1,65535,1));
-        jSpinner4.setModel(new SpinnerNumberModel(3,1,65535,1));
+        jSpinner1.setModel(new SpinnerNumberModel(1.0, 0.001, 65535.0, 0.001));
+        jSpinner2.setModel(new SpinnerNumberModel(0.0, 0.0, 65535.0, 0.001));
+        jSpinner3.setModel(new SpinnerNumberModel(3, 1, 65535, 1));
+        jSpinner4.setModel(new SpinnerNumberModel(3, 1, 65535, 1));
         jSlider1.setMaximum(511);
         jSlider1.setMinimum(0);
         jSlider1.setValue(256);
-        
+
         ratioMinSpinner.setModel(new SpinnerNumberModel(0.0, 0.0, 65535.0, 0.001));
         ratioMaxSpinner.setModel(new SpinnerNumberModel(1.0, 0.0, 65535.0, 0.001));
-        
+
         this.ui = ui;
         updateImage();
-        // update();
+    // update();
     }
-    
+
     public int whichRatio() {
         return ratioContrastComboBox.getSelectedIndex();
     }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -357,104 +359,124 @@ public class HSIView extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jSlider1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider1StateChanged
-        if(bUpdating) return ;
-        props.setMaxRGB(512-jSlider1.getValue());
+        if (bUpdating) {
+            return;
+        }
+        props.setMaxRGB(512 - jSlider1.getValue());
         update(false);
     }//GEN-LAST:event_jSlider1StateChanged
 
     private void jSpinner4StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner4StateChanged
-        if(bUpdating) return ;
+        if (bUpdating) {
+            return;
+        }
         props.setMinDen(new Integer(jSpinner4.getValue().toString()));
         update(false);
     }//GEN-LAST:event_jSpinner4StateChanged
 
     private void jSpinner3StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner3StateChanged
-        if(bUpdating) return ;
+        if (bUpdating) {
+            return;
+        }
         props.setMinNum(new Integer(jSpinner3.getValue().toString()));
         update(false);
     }//GEN-LAST:event_jSpinner3StateChanged
 
     private void jSpinner2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner2StateChanged
-      if(bUpdating) return ;
-      props.setMinRatio(new Double(jSpinner2.getValue().toString()));
-      update(false);
+        if (bUpdating) {
+            return;
+        }
+        props.setMinRatio(new Double(jSpinner2.getValue().toString()));
+        update(false);
     }//GEN-LAST:event_jSpinner2StateChanged
 
     private void jSpinner1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner1StateChanged
-      if(bUpdating) return ;
-      props.setMaxRatio(new Double(jSpinner1.getValue().toString()));
-      update(false);
+        if (bUpdating) {
+            return;
+        }
+        props.setMaxRatio(new Double(jSpinner1.getValue().toString()));
+        update(false);
     }//GEN-LAST:event_jSpinner1StateChanged
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-       displayHSI();
+        displayHSI();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         computeRatio();
-        String rationame = ( (String) jComboBox1.getSelectedItem()) + "/" + ((String) jComboBox2.getSelectedItem());
+        String rationame = ((String) jComboBox1.getSelectedItem()) + "/" + ((String) jComboBox2.getSelectedItem());
         ratioContrastComboBox.insertItemAt(rationame, 0);
         ratioContrastComboBox.setSelectedIndex(0);
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jComboBox4ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox4ItemStateChanged
-        if(bUpdating) return ;
+        if (bUpdating) {
+            return;
+        }
         props.setLabelMethod(jComboBox4.getSelectedIndex());
         update(false);
     }//GEN-LAST:event_jComboBox4ItemStateChanged
 
     private void jComboBox3ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox3ItemStateChanged
-        if(bUpdating) return ;
+        if (bUpdating) {
+            return;
+        }
         props.setTransparency(jComboBox3.getSelectedIndex());
         update(false);
     }//GEN-LAST:event_jComboBox3ItemStateChanged
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        if( getRatioRange() ) update(true);
+        if (getRatioRange()) {
+            update(true);
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jComboBox2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox2ItemStateChanged
-        if(bUpdating) return ;
+        if (bUpdating) {
+            return;
+        }
         props.setDenMass(jComboBox2.getSelectedIndex());
         update(false);
     }//GEN-LAST:event_jComboBox2ItemStateChanged
 
     private void jComboBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox1ItemStateChanged
-        if(bUpdating) return ;
+        if (bUpdating) {
+            return;
+        }
         props.setNumMass(jComboBox1.getSelectedIndex());
         update(false);
     }//GEN-LAST:event_jComboBox1ItemStateChanged
 
 private void ratioContrastRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioContrastRadioButtonActionPerformed
 // TODO add your handling code here:
-        
-    if(ratioContrastRadioButton.isSelected()) {
-        props.setMinRatio(new Double(ratioMinSpinner.getValue().toString()) );
-        props.setMaxRatio(new Double(ratioMaxSpinner.getValue().toString()) );
-        
+
+    if (ratioContrastRadioButton.isSelected()) {
+        props.setMinRatio(new Double(ratioMinSpinner.getValue().toString()));
+        props.setMaxRatio(new Double(ratioMaxSpinner.getValue().toString()));
+
         ui.computeRatio(props);
-        
+
     } else {
         ui.computeRatio(props);
         resetRatioSpinners(props);
     }
-    
+
 }//GEN-LAST:event_ratioContrastRadioButtonActionPerformed
 
 private void ratioMinSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ratioMinSpinnerStateChanged
 // TODO add your handling code here:
-    props.setMinRatio(new Double(ratioMinSpinner.getValue().toString()) );
-    props.setMaxRatio(new Double(ratioMaxSpinner.getValue().toString()) );
-    
+    props.setMinRatio(new Double(ratioMinSpinner.getValue().toString()));
+    props.setMaxRatio(new Double(ratioMaxSpinner.getValue().toString()));
+
     ui.computeRatio(props);
     resetRatioSpinners(props);
 }//GEN-LAST:event_ratioMinSpinnerStateChanged
 
 private void ratioMaxSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ratioMaxSpinnerStateChanged
 // TODO add your handling code here:
-    props.setMinRatio(new Double(ratioMinSpinner.getValue().toString()) );
-    props.setMaxRatio(new Double(ratioMaxSpinner.getValue().toString()) );
-    
+    props.setMinRatio(new Double(ratioMinSpinner.getValue().toString()));
+    props.setMaxRatio(new Double(ratioMaxSpinner.getValue().toString()));
+
     ui.computeRatio(props);
     resetRatioSpinners(props);
 }//GEN-LAST:event_ratioMaxSpinnerStateChanged
@@ -478,8 +500,11 @@ public double getRatioMaxVal() {
 }
 
 private synchronized void update(boolean bUpdateUI) {
-        if(ui == null) return ;
-        if(bUpdating) return ;
+        if(ui == null) {
+            return;
+        } else if(bUpdating) {
+            return;
+        }
         bUpdating = true ;
         if(bUpdateUI) {
             jComboBox1.setSelectedIndex(props.getNumMass());
@@ -496,16 +521,21 @@ private synchronized void update(boolean bUpdateUI) {
         jButton1.setEnabled(props.getNumMass() != props.getDenMass());
         jButton3.setEnabled(props.getNumMass() != props.getDenMass());
 
-        if(ui.getHSIImageIndex(props) != -1) 
+        if(ui.getHSIImageIndex(props) != -1) {
             displayHSI();
+        }
         
         bUpdating = false ;
     }
     
     public void updateImage() {
-        if(ui == null) return ;
+        if(ui == null) {
+            return;
+        }
         com.nrims.Opener image = ui.getMimsImage() ;
-        if(image == null) return ;
+        if(image == null) {
+            return;
+        }
         bUpdating = true ;
         jComboBox1.removeAllItems() ;
         jComboBox2.removeAllItems() ;
@@ -523,14 +553,18 @@ private synchronized void update(boolean bUpdateUI) {
     
     public boolean getRatioRange() {
         MimsPlus[] ml = ui.getMassImages() ;
-        if(props.getNumMass() > ml.length ) return false ;
-        if(props.getDenMass() > ml.length ) return false ;
+        if(props.getNumMass() > ml.length ) {
+            return false;
+        } else if(props.getDenMass() > ml.length ) {
+            return false;
+        }
         MimsPlus num = ml[props.getNumMass()];
         MimsPlus den = ml[props.getDenMass()];
-        if(num == null) return false ;
-        if(den == null) return false ;
-        if(num.getBitDepth() != 16) return false ;
-        if(den.getBitDepth() != 16) return false ;
+        if(num == null || den == null) {
+            return false;
+        } else if(num.getBitDepth() != 16 || den.getBitDepth() != 16) {
+            return false;
+        }
 
         short [] numPixels = (short[])num.getProcessor().getPixels() ;
         short [] denPixels = (short[])den.getProcessor().getPixels() ;
@@ -540,12 +574,18 @@ private synchronized void update(boolean bUpdateUI) {
         int nt = props.getMinNum() ;
         int dt = props.getMinDen() ;
         
-        if(numPixels.length != denPixels.length) return  false;
+        if(numPixels.length != denPixels.length) {
+            return false;
+        }
         for(int i = 0 ; i < numPixels.length ; i++ ) {
             if(numPixels[i] > nt && denPixels[i] > dt) {
                 double r = (double)numPixels[i]/(double)denPixels[i];
-                if(r > rmax) rmax = r ;
-                else if( r < rmin ) rmin = r ;
+                if(r > rmax) {
+                    rmax = r;
+                }
+                else if( r < rmin ) {
+                    rmin = r;
+                }
             }
         }
         props.setMaxRatio(rmax);
