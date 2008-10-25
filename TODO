@@ -1,4 +1,16 @@
-To-Do list:
+------------------------------------------------------------
+OpenMIMS Todo List
+------------------------------------------------------------
+
+* Update TODO list ;-)
+* Remove need for deploy.bat by creating an ant target in build.xml
+
+
+
+
+------------------------------------------------------------
+Old List that needs updating.
+------------------------------------------------------------
 
 Features:
     - Make "actions" (defining image state) savable/openable
