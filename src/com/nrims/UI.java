@@ -5,7 +5,6 @@
  */
 package com.nrims;
 
-import com.nrims.PlugInJFrame;
 import ij.IJ;
 import ij.gui.Roi;
 import java.awt.EventQueue;
@@ -881,7 +880,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
-        jTextField1 = new javax.swing.JTextField();
+        mainTextField = new javax.swing.JTextField();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openNewMenuItem = new javax.swing.JMenuItem();
@@ -919,9 +918,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         jTabbedPane1.addTab("Images", jPanel1);
 
-        jTextField1.setEditable(false);
-        jTextField1.setText("Ready");
-        jTextField1.setToolTipText("Status");
+        mainTextField.setEditable(false);
+        mainTextField.setText("Ready");
+        mainTextField.setToolTipText("Status");
 
         fileMenu.setText("File");
 
@@ -929,14 +928,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         openNewMenuItem.setMnemonic('o');
         openNewMenuItem.setText("Open MIMS Image");
         openNewMenuItem.setToolTipText("Open a MIMS image from an existing .im file.");
-        openNewMenuItem.setActionCommand("Open MIMS Image");
         openNewMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openMIMSImageMenuItemActionPerformed(evt);
             }
         });
         fileMenu.add(openNewMenuItem);
-        openNewMenuItem.getAccessibleContext().setAccessibleName("Open MIMS Image");
         openNewMenuItem.getAccessibleContext().setAccessibleDescription("Open a MIMS Image");
 
         jMenuItem5.setText("Open Action File");
@@ -1006,7 +1003,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, mainTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -1015,7 +1012,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 .addContainerGap()
                 .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
                 .add(18, 18, 18)
-                .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(mainTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(28, 28, 28))
         );
 
@@ -1349,7 +1346,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             return; // Don't run from other threads...
         } // Don't run from other threads...
         if(!currentlyOpeningImages) {
-            jTextField1.setText(msg);
+            mainTextField.setText(msg);
         }
         else {
             IJ.showStatus(msg);
@@ -1430,7 +1427,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField mainTextField;
     private javax.swing.JMenuItem openNewMenuItem;
     private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables

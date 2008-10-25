@@ -17,10 +17,8 @@
                 <Property name="mnemonic" type="int" value="111"/>
                 <Property name="text" type="java.lang.String" value="Open MIMS Image"/>
                 <Property name="toolTipText" type="java.lang.String" value="Open a MIMS image from an existing .im file."/>
-                <Property name="actionCommand" type="java.lang.String" value="Open MIMS Image"/>
               </Properties>
               <AccessibilityProperties>
-                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Open MIMS Image"/>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Open a MIMS Image"/>
               </AccessibilityProperties>
               <Events>
@@ -113,6 +111,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -128,7 +127,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="jTabbedPane1" alignment="0" pref="642" max="32767" attributes="0"/>
-                  <Component id="jTextField1" alignment="0" pref="642" max="32767" attributes="0"/>
+                  <Component id="mainTextField" alignment="0" pref="642" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -140,7 +139,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jTabbedPane1" pref="374" max="32767" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="jTextField1" min="-2" pref="27" max="-2" attributes="0"/>
+              <Component id="mainTextField" min="-2" pref="27" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -181,7 +180,7 @@
         </Container>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JTextField" name="jTextField1">
+    <Component class="javax.swing.JTextField" name="mainTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="text" type="java.lang.String" value="Ready"/>

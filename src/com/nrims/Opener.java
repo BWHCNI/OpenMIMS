@@ -1,11 +1,3 @@
-/*
- * Opener.java
- *
- * Created on May 1, 2006, 12:09 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package com.nrims;
 
 import java.io.*;
@@ -19,11 +11,20 @@ import java.text.DecimalFormat;
  */
 public class Opener {
 
-    /** Creates a new instance of Opener */
-    public Opener() {
+    /**
+     * The number of bits per image pixel.  This is currently always 16.
+     */
+    public static final int BITS_PER_PIXEL = 16;
+
+    /**
+     * Creates a new instance of Opener
+     */
+    private Opener() {
     }
-    private String fullpath;
-    private File file;
+    /**
+     * Full path to the file that this Opener is responsible for.
+     */
+    private File file = null;
     private RandomAccessFile in;
     private int verbose = 0;
     private int width,  height,  nMasses,  nImages;
@@ -33,10 +34,29 @@ public class Opener {
     private MaskImage maskIm;
     private int currentMass = 0;
     private int currentIndex = 0;
-    private com.nrims.UI ui = null;
+    /**
+     * Application UI for which this Opener opens files.
+     * TODO remove any reference to the UI.  The UI should subscribe to notice events, not be a member of this class.
+     */
+    private UI ui = null;
     private MassImage[] massImages;
     public static final int MIN_FILE_SIZE = 150828;
     public static final int IHDR_SIZE = 84;
+
+    /**
+     * @return the UI to which this Opener is associated.
+     */
+    // TODO make this method obsolete.
+    public UI getUI() {
+        return this.ui;
+    }
+
+    /**
+     * @return the image file which which this Opener is interfacing.
+     */
+    public final File getImageFile() {
+        return this.file;
+    }
 
     final String getChar(int n) throws IOException {
         String rstr = new String();
@@ -48,16 +68,36 @@ public class Opener {
         return rstr;
     }
 
-    protected void resetPixels() {
+    /**
+     * Sets all the mass image pixels to null.
+     */
+    private void resetPixels() {
         for (int i = 0; i < nMasses; i++) {
             massImages[i].setPixels(null);
         }
     }
 
     /**
-     * Reads the pixel data 
+     * Ensures that the given index is valid (e.g. if it's >= 0 and <= nMasses).
+     * @param index image mass index.
+     * @throws IndexOutOfBoundsException if the given image mass index is invalid.
      */
-    public void readPixels(int index) throws Exception {
+    private void checkIndex(int index) {
+        if (nMasses <= 0) {
+            throw new IndexOutOfBoundsException("No images loaded, so index <" + index + "> is invalid.");
+        } else if (index < 0 || index >= nMasses) {
+            throw new IndexOutOfBoundsException("Given index <" + index + "> is out of range of the total number of masses <" + nMasses + ">.");
+        }
+    }
+
+    /**
+     * Reads the pixel data from the given mass image index.
+     * @param index image mass index.
+     * @throws IndexOutOfBoundsException if the given image mass index is invalid.
+     * @throws IOException If there is an error reading in the pixel data.
+     */
+    public void readPixels(int index) throws IndexOutOfBoundsException, IOException {
+        checkIndex(index);
 
         int i, j;
         int pixelsPerImage = width * height;
@@ -111,7 +151,7 @@ public class Opener {
         byte[] bArray = new byte[bytesPerMass];
         in.read(bArray);
 
-        for (i = 0        ,j=0; i < pixelsPerImage; i++, j += 2) {
+        for (i = 0                          ,j=0; i < pixelsPerImage; i++, j += 2) {
             int b1 = bArray[j] & 0xff;
             int b2 = bArray[j + 1] & 0xff;
             gl = (b2 + (b1 << 8));
@@ -138,11 +178,14 @@ public class Opener {
 
     /**
      * Reads the DefAnalysis structure from the SIMS file header.
+     * @throws NullPointerException if the given DefAnalysis is null.
+     * @throws IOException if there's an error reading in the DefAnalysis.
      */
-    private void readDefAnalysis(DefAnalysis dhdr) throws Exception {
+    private void readDefAnalysis(DefAnalysis dhdr) throws NullPointerException, IOException {
         if (dhdr == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("DefAnalysis cannot be null in readDefAnalyais.");
         }
+        
         dhdr.release = in.readInt();
         dhdr.analysis_type = in.readInt();
         dhdr.header_size = in.readInt();
@@ -221,10 +264,11 @@ public class Opener {
     /**
      * Reads and returns a Mask_im structure from the SIMS file header.
      */
-    private void readMaskIm(MaskImage mask) throws Exception {
+    private void readMaskIm(MaskImage mask) throws NullPointerException, IOException {
         if (mask == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("MaskImage cannot be null in readMaskIm.");
         }
+
         mask.filename = getChar(16);
         mask.analysis_duration = in.readInt();
         mask.cycle_number = in.readInt();
@@ -273,8 +317,10 @@ public class Opener {
 
     /**
      * Reads and returns a TabMass structure from the SIMS file header.
+     * @throws NullPointerException if the given TabMass is null.
+     * @throws IOException if the TabMass cannot be read in.
      */
-    private void readTabMass(TabMass tab) throws Exception {
+    private void readTabMass(TabMass tab) throws NullPointerException, IOException {
         if (tab == null) {
             throw new NullPointerException();
         }
@@ -322,8 +368,10 @@ public class Opener {
 
     /**
      * Reads and returns the HeaderImage structure from a SIMS image file
+     * @throws NullPointerException if the given HeaderImage is null.
+     * @throws IOException if there's an error reading in the HeaderImage.
      */
-    private void readHeaderImage(HeaderImage ihdr) throws Exception {
+    private void readHeaderImage(HeaderImage ihdr) throws NullPointerException, IOException {
         if (ihdr == null) {
             throw new NullPointerException();
         }
@@ -355,16 +403,20 @@ public class Opener {
     /**
      * Reads and returns the header data from a SIMS image file
      * Creates the DefAnalysis and HeaderImage subclass's for this class.
+     * @throws NullPointerExeption rethrown from sub-readers.
+     * @throws IOException if there is an error reading in the header.
      */
-    private void readHeader() throws Exception {
+    private void readHeader() throws NullPointerException, IOException {
 
         this.dhdr = new DefAnalysis();
         readDefAnalysis(dhdr);
         this.maskIm = new MaskImage();
         readMaskIm(this.maskIm);
+
         if (this.nMasses <= 0) {
-            throw new Exception("Error reading MIMS file.");
+            throw new IOException("Error reading MIMS file.  Zero image masses read in.");
         }
+
         massImages = new MassImage[nMasses];
         for (int i = 0; i < nMasses; i++) {
             massImages[i] = new MassImage();
@@ -389,30 +441,29 @@ public class Opener {
     /**
      * Opens and reads a SIMS image from an image file.
      * @param ui MIMS UI into which the MIMS file will be loaded.
-     * @param imagename name of the image to be loaded into the MIMS UI.
+     * @param imageFileName filename of the image to be loaded.
      * @throws IOException if there is a problem reading the image file
-     * @throws NullPointerException if the imagename is null.
-     * @throws Exception if there are any other issues reading the SIMS format...
+     * @throws NullPointerException if the imagename is null or empty.
      */
-    // TODO we need a more specific exception here
-    public Opener(com.nrims.UI ui, String imagename) throws IOException, NullPointerException, Exception {
-        if (imagename == null) {
-            throw new NullPointerException();
+    public Opener(com.nrims.UI ui, String imageFileName) throws IOException, NullPointerException {
+        if (imageFileName == null || imageFileName.length() == 0) {
+            throw new NullPointerException("Can't create an Opener with no valid imagename");
         }
 
         this.ui = ui;
         this.verbose = ui.getDebug() ? 1 : 0;
+
+        this.file = new File(imageFileName);
         in = new RandomAccessFile(file, "r");
 
         readHeader();
         currentIndex = 0;
         currentMass = 0;
         readPixels(0);
-        this.fullpath = imagename;
     }
 
     /**
-     * returns the name of the SIMS image file
+     * @return the name of the SIMS image file
      */
     public String getName() {
         String name = file.getName();
@@ -420,41 +471,33 @@ public class Opener {
         return name.substring(0, extIndex);
     }
 
-    public String getDirectory() {
-        return file.getParent();
-    }
-
-    public String getFullPath() {
-        return fullpath;
-    }
-
     /**
-     * returns a string with the mean,standard deviation 
-     * min and max graylevels of a SIMS image.
+     * This function returns a string whose purpose is to be displayed in the stat line.
+     * @param index image mass index.
+     * @return a string with the mean, standard deviation min and max graylevels of a SIMS image.
+     * @throws IndexOutOfBoundsException if the given index is invalid.
+     * @throws IOException if there is an error reading in the pixel data.
      */
-    public String getStats(int index) throws Exception {
-        if (nMasses <= 0) {
-            throw new Exception("No images");
-        }
-        if (index < 0 || index >= nMasses) {
-            throw new Exception("No images");
-        }
+    public String getStats(int index) throws IndexOutOfBoundsException, IOException {
+        checkIndex(index);
+
         if (massImages[index].getPixels() == null) {
             readPixels(index);
         }
-        double n = (double) (this.width * this.height);
-        String statString = "Mean " + DecimalToStr(massImages[index].getMeanGL(), 2) + " +/-  " + DecimalToStr(massImages[index].getStdDev(), 2) + " Min: " + massImages[index].getMinGL() + " Max: " + massImages[index].getMaxGL();
-        return statString;
+
+        return "Mean " + DecimalToStr(massImages[index].getMeanGL(), 2) + " +/-  " + DecimalToStr(massImages[index].getStdDev(), 2) + " Min: " + massImages[index].getMinGL() + " Max: " + massImages[index].getMaxGL();
     }
 
-    public String getCounts(int index) throws Exception {
+    /**
+     * TODO figure out what this returns
+     * @param index image mass index.
+     * @return ??
+     * @throws IndexOutOfBoundsException if the given image mass index is invalid.
+     * @throws IOException if there's a problem reading the given image mass index pixel data.
+     */
+    public String getCounts(int index) throws IndexOutOfBoundsException, IOException {
+        checkIndex(index);
 
-        if (nMasses <= 0) {
-            throw new Exception("No images");
-        }
-        if (index < 0 || index >= nMasses) {
-            throw new Exception("No images");
-        }
         if (massImages[index].getPixels() == null) {
             readPixels(index);
         }
@@ -466,56 +509,59 @@ public class Opener {
     }
 
     /**
-     * returns the Statistics string for the currently selected index.
+     * @return the Statistics string for the currently selected index.
+     * @throws IndexOutOfBoundsException rethrown.
+     * @throws IOException rethrown.
      */
-    public String getStats() throws Exception {
+    public String getStats() throws IndexOutOfBoundsException, IOException {
         return getStats(this.currentMass);
     }
 
     /**
-     * returns the number of "masses" in this SIMS image file.
+     * @return the number of "masses" in this SIMS image file.
      */
     public int nImages() {
         return this.nImages;
     }
 
+    /**
+     * @return the total number of image masses.
+     */
     public int nMasses() {
         return this.nMasses;
     }
 
     /**
-     * returns the width of the images in pixels.
+     * @return the width of the images in pixels.
      */
     public int getWidth() {
         return this.width;
     }
 
     /**
-     * returns the height of the images in pixels.
+     * @return the height of the images in pixels.
      */
     public int getHeight() {
         return this.height;
     }
 
     /**
-     * returns the number of bits per pixel. Always 16.
-     */
-    public int getBits() {
-        return 16;
-    }
-
-    /**
-     * returns the mass in AMU for image at the given index.
+     * @param index index of image.
+     * @return the mass in AMU for image at the given index.
+     * @throws IndexOutOfBoundsException if the index is out of range of valid indices.
      */
     public double getMass(int index) {
-        if (index >= 0 && index <= nMasses) {
-            return this.tabMass[index].mass_amu;
+        if (nMasses <= 0) {
+            throw new IndexOutOfBoundsException("No images loaded, so index <" + index + "> is invalid.");
+        } else if (index < 0 || index > nMasses) {
+            throw new IndexOutOfBoundsException("Given index <" + index + "> is out of range of the total number of masses <" + nMasses + ">.");
         }
-        return -1.0;
+        return this.tabMass[index].mass_amu;
     }
 
     /**
-     * returns a String of the mass in AMU for image at the given index.
+     * @param index image mass index.
+     * @return a String of the mass in AMU for image at the given index.
      */
     public String getMassName(int index) {
         if (nMasses == 0) {
@@ -540,12 +586,14 @@ public class Opener {
     }
 
     /**
-     * returns the graylevel of the image at index and location x,y
+     * @param index image mass index.
+     * @return the graylevel of the image at index and location x,y
+     * @throws IndexOutOfBoundsException if the given image mass index is invalid.
+     * @throws IOException if the given image mass index pixels cannot be loaded.
      */
-    public short[] getPixels(int index) throws Exception {
-        if (index < 0 || index >= this.nMasses) {
-            throw new Exception("Index Error");
-        }
+    public short[] getPixels(int index) throws IndexOutOfBoundsException, IOException {
+        checkIndex(index);
+        
         if (massImages[index].getPixels() == null) {
             readPixels(index);
         }
@@ -553,37 +601,46 @@ public class Opener {
     }
 
     /**
-     * returns the graylevel of the image at index and location x,y
+     * @param index image mass index.
+     * @param x x coordinate of the desired pixel in the given image mass.
+     * @param y y coordinate of the desired pixel in the given image mass.
+     * @return the graylevel of the image at index and location x,y
+     * @throws IndexOutOfBoundsException if the given image mass index is invalid, or if the given coordinates are invalid for that image mass index.
+     * @throws IOException if the image mass information cannot be read in.
      */
-    public int getPixel(int index, int x, int y) throws Exception {
-        if (index < 0 || index >= this.nMasses) {
-            throw new Exception("Index Error");
-        }
+    public int getPixel(int index, int x, int y) throws IndexOutOfBoundsException, IOException {
+        checkIndex(index);
         if (massImages[index].getPixels() == null) {
             readPixels(index);
         }
         short[] spixels = massImages[index].getPixels();
         int offset = x + y * width;
         if (offset < 0 || offset > spixels.length - 1) {
-            throw new Exception("Out of Bounds");
+            throw new IndexOutOfBoundsException("Coordinates ("+x+","+y+") are invalid for image mass index <" + index + ">.");
         }
         return (int) spixels[offset];
     }
 
     /**
-     * returns the graylevel of the image at current index and location x,y
+     * The pixel data for the current image mass.
+     * @param x x coordinate of the desired pixel in the given image mass.
+     * @param y y coordinate of the desired pixel in the given image mass.
+     * @return the graylevel of the image at current index and location x,y
+     * @throws IndexOutOfBoundsException if the given coordinates are invalid.
+     * @throws IOException if there is an error reading in the image information.
      */
-    public int getPixel(int x, int y) throws Exception {
+    public int getPixel(int x, int y) throws IndexOutOfBoundsException, IOException {
         return this.getPixel(this.currentMass, x, y);
     }
 
     /**
-     * returns the minimum graylevel in the image at the given index
+     * @param index image mass index.
+     * @return the minimum graylevel in the image at the given index
+     * @throws IndexOutOfBoundsException if the given image mass index is invalid.
+     * @throws IOException if there is an error reading in the image information.
      */
-    public int getMin(int index) throws Exception {
-        if (index < 0 || index >= this.nMasses) {
-            throw new Exception("Index Error");
-        }
+    public int getMin(int index) throws IndexOutOfBoundsException, IOException {
+        checkIndex(index);
         if (massImages[index].getPixels() == null) {
             readPixels(index);
         }
@@ -591,13 +648,14 @@ public class Opener {
     }
 
     /**
-     * returns the maximum graylevel in the image at the given index
+     * @param index image mass index.
+     * @return the maximum graylevel in the image at the given index
      */
     public int getMax(int index) throws Exception {
         if (index < 0 || index >= this.nMasses) {
             throw new Exception("Index Error");
         }
-        ;
+        
         if (massImages[index].getPixels() == null) {
             readPixels(index);
         }
@@ -605,56 +663,53 @@ public class Opener {
     }
 
     /**
-     * returns the current index in a stack or multiple time point series
-     * indices are between at zero and nImages() - 1
+     * @return the current index in a stack or multiple time point series indices are between at zero and nImages() - 1
      */
     public int getStackIndex() {
         return this.currentIndex;
     }
 
     /**
-     * returns the current Mass.
-     * masses are between at zero and nMasses - 1
+     * @return  the current mass. Masses are between at zero and nMasses - 1
      */
     public int getMassIndex() {
         return this.currentMass;
     }
 
     /**
-     * sets the current mass index.
-     * indices are 0 for the first mass up to nMasses()-1.
+     * Sets the current mass index.
+     * @param index image mass index.
      */
-    public void setMassIndex(int nMass) throws Exception {
-        if (nMass < 0 || nMass >= this.nMasses) {
-            throw new Exception();
-        }
-        if (this.currentMass == nMass) {
+    public void setMassIndex(int index) {
+        checkIndex(index);
+        
+        if (this.currentMass == index) {
             return;
         }
-        this.currentMass = nMass;
+        this.currentMass = index;
         if (ui != null) {
-            ui.updateStatus("Current Mass:" + (nMass + 1));
+            ui.updateStatus("Current Mass:" + (index + 1));
         }
     }
 
     /**
      * sets the current image index.
-     * indices are 0 for the first image up to nImages()-1.
-     * each image is composed of up to nMasses() sub images
+     * @param index image mass index.
+     * @throws IndexOutOfBoundsException if the given index is invalid.
      */
-    public void setStackIndex(int index) throws Exception {
-        if (index < 0 || index >= this.nImages) {
-            throw new Exception();
-        }
+    public void setStackIndex(int index) throws IndexOutOfBoundsException {
+        checkIndex(index);
+
         if (this.currentIndex == index) {
             return;
         }
+        // TODO why are we resetting the pixels here?
         resetPixels();
         this.currentIndex = index;
     }
 
     /**
-     * returns the sple_pos_x,sple_pos_y entries from the SIMS image header
+     * @return the sple_pos_x,sple_pos_y entries from the SIMS image header
      */
     public String getPosition() {
         if (this.dhdr == null) {
@@ -665,7 +720,7 @@ public class Opener {
     }
 
     /**
-     * returns the date entry from the SIMS image header
+     * @return the date entry from the SIMS image header
      */
     public String getSampleDate() {
         if (this.dhdr == null) {
@@ -678,7 +733,7 @@ public class Opener {
     }
 
     /**
-     * returns the hour entry from the SIMS image header
+     * @return the hour entry from the SIMS image header
      */
     public String getSampleHour() {
         if (this.dhdr == null) {
@@ -691,7 +746,7 @@ public class Opener {
     }
 
     /**
-     * returns the username entry from the SIMS image header
+     * @return the username entry from the SIMS image header
      */
     public String getUserName() {
         if (this.dhdr == null) {
@@ -704,7 +759,7 @@ public class Opener {
     }
 
     /**
-     * returns the samplename entry from the SIMS image header
+     * @return the samplename entry from the SIMS image header
      */
     public String getSampleName() {
         if (this.dhdr == null) {
@@ -717,7 +772,7 @@ public class Opener {
     }
 
     /**
-     * returns the raster entry from the SIMS image header
+     * @return the raster entry from the SIMS image header
      */
     public int getRaster() {
         if (this.ihdr == null) {
@@ -727,7 +782,7 @@ public class Opener {
     }
 
     /**
-     * returns the dwelltime per pixel in milliseconds
+     * @return the dwelltime per pixel in milliseconds
      */
     public String getDwellTime() {
         if (this.maskIm == null || this.ihdr == null) {
@@ -744,7 +799,7 @@ public class Opener {
     }
 
     /**
-     * returns the nickname from the SIMS header
+     * @return the nickname from the SIMS header
      */
     public String getNickName() {
         if (this.ihdr == null) {
@@ -754,7 +809,7 @@ public class Opener {
     }
 
     /**
-     * returns the analysis_duration from the SIMS header
+     * @return the analysis_duration from the SIMS header
      */
     public String getDuration() {
         if (this.maskIm == null) {
@@ -766,7 +821,7 @@ public class Opener {
     }
 
     /**
-     * returns the pixel Width from the SIMS header
+     * @return the pixel Width from the SIMS header
      */
     public float getPixelWidth() {
         float pw = 1.0f;
@@ -777,7 +832,7 @@ public class Opener {
     }
 
     /**
-     * returns the pixel Height from the SIMS header
+     * @return the pixel Height from the SIMS header
      */
     public float getPixelHeight() {
         float ph = 1.0f;
@@ -787,17 +842,13 @@ public class Opener {
         return ph;
     }
 
-    public com.nrims.UI getUI() {
-        return ui;
-    }
-
     public String getInfo() {
         String info = "";
         try {
             if (massImages[currentMass].getPixels() == null) {
                 readPixels(currentMass);
             }
-            info += "MIMSFile=" + fullpath + "\n";
+            info += "MIMSFile=" + this.file.getCanonicalPath() + "\n";
             info += "Mass" + massImages[currentMass].getName() + "\n";
             info += "MinCounts=" + massImages[currentMass].getMinGL() + "\n";
             info += "MaxCounts=" + massImages[currentMass].getMaxGL() + "\n";
@@ -829,11 +880,9 @@ public class Opener {
     }
 
     /**
-     * returns the hour and date entries from the SIMS image header
-     */
-    /**
-     * prints to the standard output the name, mass and statistics for
-     * a series of SIMS images given as arguments
+     * Prints to the standard output the name, mass, and statistics for a series of SIMS images given as arguments.
+     *
+     * @param args command line arguments given to the opener.
      */
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -847,8 +896,10 @@ public class Opener {
                         System.out.println("Image(" + n + " of " + image.nMasses() + ") Mass: " + image.getMassName(n) + " [" + image.getMass(n) + "]");
                         System.out.println("  Stats:" + image.getStats(n));
                     }
-                } catch (Exception x) {
-                    System.out.println("Can't open " + args[argc]);
+                } catch (Exception e) {
+                    System.err.println("Can't open " + args[argc] + ":\n" + e.getStackTrace());
+                    // Exit with exception code 1.
+                    System.exit(1);
                 }
             }
         }
@@ -874,6 +925,7 @@ public class Opener {
         }
         // public void setHistogram (long [] hist) { histogram = hist ; }
         // public long[]  getHistogram() { return histogram ; }
+
         public void setTabMass(TabMass tm) {
             tabMass = tm;
         }

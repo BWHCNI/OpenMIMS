@@ -260,7 +260,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
     
     public static String getImageHeader(com.nrims.Opener im) {
         String str = "\nHeader: \n";
-        str += "Path: "+im.getDirectory()+"/"+im.getName()+"\n";
+        str += "Path: "+im.getImageFile().getAbsolutePath()+"/"+im.getName()+"\n";
         
         str += "Masses: ";
         for(int i=0; i<im.nMasses(); i++)
@@ -964,7 +964,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 }//GEN-LAST:event_untrackButtonActionPerformed
 
 private void saveActionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveActionButtonActionPerformed
-    String defaultPath = image.getDirectory() + System.getProperty("file.separator") + "action.txt";    
+    String defaultPath = image.getImageFile().getParent().toString() + System.getProperty("file.separator") + "action.txt";
     JFileChooser fc = new JFileChooser(defaultPath);       
     fc.setSelectedFile(new File(defaultPath));
     while(true){

@@ -196,7 +196,7 @@ public class MimsData extends javax.swing.JPanel {
             jCheckBox1.setEnabled(false);        
         }
         else {
-            jLabel9.setText(image.getFullPath());
+            jLabel9.setText(image.getImageFile().getAbsolutePath());
             jLabel10.setText("" + image.nImages());
             jLabel11.setText(image.getPosition());
             jLabel12.setText(image.getSampleDate() + " " + image.getSampleHour());

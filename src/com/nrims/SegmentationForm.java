@@ -555,7 +555,7 @@ private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_jButton10ActionPerformed
 
 private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-    String defaultPath = mimsUi.getMimsImage().getDirectory() + System.getProperty("file.separator") + "segResult.zip";    
+    String defaultPath = mimsUi.getMimsImage().getImageFile().getParent() + System.getProperty("file.separator") + "segResult.zip";
     JFileChooser fc = new JFileChooser(defaultPath);       
     fc.setSelectedFile(new java.io.File(defaultPath));
     while(true){
@@ -575,7 +575,7 @@ private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
 // TODO add your handling code here:
-    String defaultPath = mimsUi.getMimsImage().getDirectory() + System.getProperty("file.separator") + ".";      
+    String defaultPath = mimsUi.getMimsImage().getImageFile().getParent() + System.getProperty("file.separator") + ".";
     JFileChooser fc = new JFileChooser(defaultPath);
     fc.setSelectedFile(new java.io.File(defaultPath));
     if(fc.showOpenDialog(this) != JFileChooser.CANCEL_OPTION ){
