@@ -12,6 +12,7 @@ import java.awt.geom.GeneralPath;
 
 /**
  * Extends ij.gui.ImageCanvas with utility to display all ROIs.
+ * 
  * @author Douglas Benson
  * @author <a href="mailto:rob.gonzalez@gmail.com">Rob Gonzalez</a>
  */
@@ -19,7 +20,7 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
 
     public static final long serialVersionUID = 1;
 
-    public MimsCanvas(com.nrims.MimsPlus imp, com.nrims.UI ui) {
+    public MimsCanvas(MimsPlus imp, UI ui) {
         super(imp);
         this.mImp = imp;
         this.ui = ui;
@@ -37,13 +38,7 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
     void drawOverlay(Graphics g) {
         MimsRoiManager roiManager = ui.getRoiManager();
         Hashtable rois = roiManager.getROIs();
-        if (rois == null) {
-            return;
-        }
-        if (rois.isEmpty()) {
-            return;
-        }
-        if (roiManager.getShowAll() == false) {
+        if (rois == null || rois.isEmpty() || roiManager.getShowAll() == false) {
             return;
         }
 
