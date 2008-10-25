@@ -5,6 +5,7 @@
  */
 package com.nrims;
 
+import com.nrims.data.MIMSFileFilter;
 import ij.IJ;
 import ij.gui.Roi;
 import java.awt.EventQueue;
@@ -28,6 +29,43 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public static final long serialVersionUID = 1;
 
     /**
+     * Whether we're running the UI in debug mode.
+     */
+    private boolean bDebug = false;
+    private ij.ImageJ ijapp = null;
+    private boolean bSyncStack = true;
+    private boolean bSyncROIs = true;
+    private boolean bAddROIs = true;
+    private boolean bUpdating = false;
+    /**
+     * Flag that indicates whether images are currently being opened.
+     */
+    private boolean currentlyOpeningImages = false;
+    private boolean bCloseOldWindows = true;
+    private MimsRoiManager roiManager = null;
+    private com.nrims.data.Opener image = null;
+    /**
+     * The folder from which the last image was loaded.
+     */
+    private String lastFolder = null;
+    private boolean[] bOpenMass = new boolean[6];
+    private com.nrims.MimsPlus[] massImages = new com.nrims.MimsPlus[6];
+    private com.nrims.MimsPlus[] ratioImages = new com.nrims.MimsPlus[6];
+    private com.nrims.MimsPlus[] hsiImages = new com.nrims.MimsPlus[6];
+    private com.nrims.MimsPlus[] segImages = new com.nrims.MimsPlus[6];
+    private com.nrims.MimsData mimsData = null;
+    private com.nrims.MimsLog mimsLog = null;
+    private com.nrims.MimsRoiControl roiControl = null;
+    private com.nrims.HSIView hsiControl = null;
+    private com.nrims.MimsStackEditing mimsStackEditing = null;
+    private com.nrims.MimsTomography mimsTomography = null;
+    protected com.nrims.MimsAction mimsAction = null;
+    private com.nrims.SegmentationForm segmentation = null;
+    protected ij.gui.Roi activeRoi;
+    //tesing fixed contrast
+    private boolean fixRatioContrast = true;
+
+    /**
      * Creates new form UI
      * @param fileName name of the .im image file to be opened.
      */
@@ -47,7 +85,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         ijapp = IJ.getInstance();
         if (ijapp == null || (ijapp != null && !ijapp.isShowing())) {
             ijapp = new ij.ImageJ(null);
-            bStandAlone = true;
             setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         }
 
@@ -85,44 +122,39 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     /**
+     * Causes a dialog to open that allows a user to choose an image file.
+     */
+    private synchronized void loadMIMSFile() {
+        javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
+        MIMSFileFilter filter = new MIMSFileFilter();
+        fc.setFileFilter(filter);
+        if (lastFolder != null) {
+            fc.setCurrentDirectory(new java.io.File(lastFolder));
+        }
+        if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
+            return;
+        }
+        lastFolder = fc.getSelectedFile().getParent();
+        String fileName = fc.getSelectedFile().getPath();
+        try {
+            loadMIMSFile(fileName);
+        } catch (NullPointerException e) {
+            System.err.println("A NullPointerException should not have occurred in loadMIMSFile.  This indicates that the fileName returned by the JFileChooser was null.");
+        }
+    }
+
+    /**
      * Open a MIMS image file
      * @param fileName MIMS image file to open.
+     * @throws NullPointerException if the given fileName is null.
      */
-    public synchronized void loadMIMSFile(String fileName) {
-        /*
-        //clear things
-        if(this.image!=null) {
-        for(int i=0; i<massImages.length; i++) {
-        massImages[i].close();
+    private synchronized void loadMIMSFile(String fileName) throws NullPointerException {
+        if (fileName == null) {
+            throw new NullPointerException("fileName cannot be null when attempting to loadMIMSFile.");
         }
-        for(int i=0; i<ratioImages.length; i++) {
-        ratioImages[i].close();
-        }
-        }
-        this.image = null;
-        
-        //end of clear things
-         */
-        //while(ij.WindowManager.getImageCount()>0) {
-        //    ij.WindowManager.getCurrentImage().close();
-        //}
 
         try {
             currentlyOpeningImages = true;
-
-            if (fileName == null) {
-                javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
-                MIMSFileFilter filter = new MIMSFileFilter();
-                fc.setFileFilter(filter);
-                if (lastFolder != null) {
-                    fc.setCurrentDirectory(new java.io.File(lastFolder));
-                }
-                if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
-                    return;
-                }
-                fileName = fc.getSelectedFile().getPath();
-                lastFolder = fc.getSelectedFile().getParent();
-            }
 
             for (int i = 0; i < 6; i++) {
 
@@ -166,7 +198,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
 
             try {
-                image = new com.nrims.Opener(this, fileName);
+                image = new com.nrims.data.Opener(this, fileName);
             } catch (Exception e) {
                 IJ.log("Failed to open " + fileName + ":\n" + e.getStackTrace());
             }
@@ -239,6 +271,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
 
                 if (nImages > 1) {
+                    // TODO why are we starting from 1 here?
                     for (int i = 1; i < nImages; i++) {
                         image.setStackIndex(i);
                         for (int mass = 0; mass < image.nMasses(); mass++) {
@@ -1113,7 +1146,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void openMIMSImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMIMSImageMenuItemActionPerformed
-        loadMIMSFile(null);
+        loadMIMSFile();
 }//GEN-LAST:event_openMIMSImageMenuItemActionPerformed
 
     private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
@@ -1200,179 +1233,228 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 //    private void imagesChanged(com.nrims.mimsPlusEvent e) {
 //        mimsStackEditing.resetTrueIndexLabel();
 //    }            
-            
     /**
      * @return an instance of the RoiManager
      */
     public MimsRoiManager getRoiManager() {
         roiManager = MimsRoiManager.getInstance();
-        if(roiManager == null) {
+        if (roiManager == null) {
             roiManager = new MimsRoiManager();
         }
 // RoiManager shouldn't necessarily show up, when the object is requested (S. Reckow)        
 //        else
 //            roiManager.toFront();
-        return roiManager ;
+        return roiManager;
     }
-        
+
     /** returns array of massImages indexed to the corresponding mass index
      * Note,  if a window is closed, the corresponding massImage is null
      * @return 
      */
-    public MimsPlus [] getMassImages() { return massImages; }
-   
+    public MimsPlus[] getMassImages() {
+        return massImages;
+    }
+
     public MimsPlus getMassImage(int i) {
-        if( i >= 0 && i < 6) {
+        if (i >= 0 && i < 6) {
             return massImages[i];
         }
         return null;
     }
-     
+
     public MimsPlus getRatioImage(int i) {
-        if( i >= 0 && i < 6) {
+        if (i >= 0 && i < 6) {
             return ratioImages[i];
         }
         return null;
-    }    
-    
+    }
+
     /** returns only the open mass images as an array
      * @return 
      */
-    public MimsPlus [] getOpenMassImages() {
-        int i, nOpen = 0 ;
-        for(i = 0 ; i < massImages.length ; i++ ) {
+    public MimsPlus[] getOpenMassImages() {
+        int i, nOpen = 0;
+        for (i = 0; i < massImages.length; i++) {
             if (massImages[i] != null && bOpenMass[i]) {
                 nOpen++;
             }
         }
-        MimsPlus [] mp = new MimsPlus[nOpen] ;
-        if(nOpen == 0) {
+        MimsPlus[] mp = new MimsPlus[nOpen];
+        if (nOpen == 0) {
             return mp;
         }
-        for(i = 0, nOpen = 0 ; i < massImages.length ; i++ ) {
+        for (i = 0      , nOpen = 0; i < massImages.length; i++) {
             if (massImages[i] != null && bOpenMass[i]) {
                 mp[nOpen++] = massImages[i];
             }
         }
-        return mp ;
+        return mp;
     }
-    
-    public MimsPlus [] getOpenRatioImages() {  
-        int i, nOpen = 0 ;
-        for(i = 0 ; i < 6 ; i++ ) {
+
+    public MimsPlus[] getOpenRatioImages() {
+        int i, nOpen = 0;
+        for (i = 0; i < 6; i++) {
             if (ratioImages[i] != null) {
                 nOpen++;
             }
         }
-        MimsPlus [] mp = new MimsPlus[nOpen];
-        if(nOpen == 0) {
+        MimsPlus[] mp = new MimsPlus[nOpen];
+        if (nOpen == 0) {
             return mp;
         }
-        for( i = 0, nOpen = 0 ; i < 6 ; i++ ) {
+        for (i = 0      , nOpen = 0; i < 6; i++) {
             if (ratioImages[i] != null) {
                 mp[nOpen++] = ratioImages[i];
             }
         }
-        return mp ;
+        return mp;
     }
-    
-    public MimsPlus [] getOpenHSIImages() {  
-        int i, nOpen = 0 ;
-        for(i = 0 ; i < 6 ; i++ ) {
+
+    public MimsPlus[] getOpenHSIImages() {
+        int i, nOpen = 0;
+        for (i = 0; i < 6; i++) {
             if (hsiImages[i] != null) {
                 nOpen++;
             }
         }
-        MimsPlus [] mp = new MimsPlus[nOpen];
-        if(nOpen == 0) {
+        MimsPlus[] mp = new MimsPlus[nOpen];
+        if (nOpen == 0) {
             return mp;
         }
-        for( i = 0, nOpen = 0 ; i < 6 ; i++ ) {
+        for (i = 0      , nOpen = 0; i < 6; i++) {
             if (hsiImages[i] != null) {
                 mp[nOpen++] = hsiImages[i];
             }
         }
-        return mp ;
+        return mp;
     }
-    
-    public MimsPlus [] getOpenSegImages() {  
-        int i, nOpen = 0 ;
-        for(i = 0 ; i < 6 ; i++ )  {
-            if(segImages[i] != null )  {
-                nOpen++ ;
+
+    public MimsPlus[] getOpenSegImages() {
+        int i, nOpen = 0;
+        for (i = 0; i < 6; i++) {
+            if (segImages[i] != null) {
+                nOpen++;
             }
         }
-        MimsPlus [] mp = new MimsPlus[nOpen];
-        if(nOpen == 0) {
+        MimsPlus[] mp = new MimsPlus[nOpen];
+        if (nOpen == 0) {
             return mp;
         }
-        for( i = 0, nOpen = 0 ; i < 6 ; i++ ) {
-            if(segImages[i] != null ) {
+        for (i = 0      , nOpen = 0; i < 6; i++) {
+            if (segImages[i] != null) {
                 mp[nOpen++] = segImages[i];
             }
         }
-        return mp ;
+        return mp;
     }
-    
-    public void setSyncStack(boolean bSync) { bSyncStack = bSync ; }
-    public boolean getSyncStack() { return bSyncStack ; }
-    public void setSyncROIs(boolean bSync) { bSyncROIs = bSync ;}
-    public boolean getSyncROIs() { return bSyncROIs ; }
-    public void setAddROIs(boolean bOnOff) { bAddROIs = bOnOff ;}
-    public void setmimsAction(MimsAction action) { mimsAction = action; }
-    public boolean getAddROIs() { return bAddROIs ; }
-    public HSIView getHSIView() { return hsiControl ; }
-    public MimsData getMimsData() { return mimsData ; }
-    public MimsLog getmimsLog() { return mimsLog ; }
-    public MimsRoiControl getRoiControl() { return roiControl ; }
-    public MimsStackEditing getmimsStackEditing() { return mimsStackEditing ; }
-    public MimsTomography getmimsTomography() { return mimsTomography ; }
-    public MimsAction getmimsAction() { return mimsAction ; }
-    
-    public boolean isOpening() { return currentlyOpeningImages ; }
-    public boolean isUpdating() { return bUpdating ; }
-    public com.nrims.Opener getMimsImage() { return image ; }
-    public void setActiveMimsPlus(MimsPlus mp) { 
-        activeMimsPlus = mp ;
-        for(int i = 0 ; i < 6 ; i++ ) {
-             if(mp == hsiImages[i]) {
+
+    public void setSyncStack(boolean bSync) {
+        bSyncStack = bSync;
+    }
+
+    public boolean getSyncStack() {
+        return bSyncStack;
+    }
+
+    public void setSyncROIs(boolean bSync) {
+        bSyncROIs = bSync;
+    }
+
+    public boolean getSyncROIs() {
+        return bSyncROIs;
+    }
+
+    public void setAddROIs(boolean bOnOff) {
+        bAddROIs = bOnOff;
+    }
+
+    public void setmimsAction(MimsAction action) {
+        mimsAction = action;
+    }
+
+    public boolean getAddROIs() {
+        return bAddROIs;
+    }
+
+    public HSIView getHSIView() {
+        return hsiControl;
+    }
+
+    public MimsData getMimsData() {
+        return mimsData;
+    }
+
+    public MimsLog getmimsLog() {
+        return mimsLog;
+    }
+
+    public MimsRoiControl getRoiControl() {
+        return roiControl;
+    }
+
+    public MimsStackEditing getmimsStackEditing() {
+        return mimsStackEditing;
+    }
+
+    public MimsTomography getmimsTomography() {
+        return mimsTomography;
+    }
+
+    public MimsAction getmimsAction() {
+        return mimsAction;
+    }
+
+    public boolean isOpening() {
+        return currentlyOpeningImages;
+    }
+
+    public boolean isUpdating() {
+        return bUpdating;
+    }
+
+    public com.nrims.data.Opener getMimsImage() {
+        return image;
+    }
+
+    public void setActiveMimsPlus(MimsPlus mp) {
+        for (int i = 0; i < 6; i++) {
+            if (mp == hsiImages[i]) {
                 hsiControl.setHSIProps(hsiImages[i].getHSIProps());
             }
         }
     }
-    
+
     public synchronized void updateStatus(String msg) {
-        if(bUpdating) {
+        if (bUpdating) {
             return; // Don't run from other threads...
         } // Don't run from other threads...
-        if(!currentlyOpeningImages) {
+        if (!currentlyOpeningImages) {
             mainTextField.setText(msg);
-        }
-        else {
+        } else {
             IJ.showStatus(msg);
         }
-        if(bDebug){ 
-            IJ.log(msg) ;
+        if (bDebug) {
+            IJ.log(msg);
 //            System.out.println(msg);
         }
     }
-    
+
     @Override
     public void run(String cmd) {
-        if(cmd.equalsIgnoreCase("open")) {
+        if (cmd.equalsIgnoreCase("open")) {
             super.run(cmd);
-        }
-        else {
+        } else {
             super.run("");
         }
         setVisible(true);
     }
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
         EventQueue.invokeLater(new Runnable() {
+
             @Override
             public void run() {
                 new UI(null).setVisible(true);
@@ -1380,41 +1462,10 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         });
     }
 
-    public boolean getDebug() { return bDebug ; }
-    
-    private boolean bDebug = false ;
-    private ij.ImageJ ijapp = null ;
-    private boolean bStandAlone = false ;
-    private boolean bSyncStack = true ;
-    private boolean bSyncROIs = true ;
-    private boolean bAddROIs = true ;
-    private boolean bUpdating = false ;
-    private boolean currentlyOpeningImages = false ;
-    private boolean bCloseOldWindows = true ;
-    private MimsRoiManager roiManager = null ;
-    private com.nrims.Opener image = null ;
-    private String lastFolder = "C:/nsee/nrims/images" ;
-    private boolean [] bOpenMass = new boolean[6] ;
-    private com.nrims.MimsPlus [] massImages = new com.nrims.MimsPlus[6] ;
-    private com.nrims.MimsPlus [] ratioImages = new com.nrims.MimsPlus[6];
-    private com.nrims.MimsPlus [] hsiImages = new com.nrims.MimsPlus[6] ;
-    private com.nrims.MimsPlus [] segImages = new com.nrims.MimsPlus[6];
-    private com.nrims.MimsPlus activeMimsPlus = null ;
-    private com.nrims.MimsData mimsData = null ;
-    private com.nrims.MimsLog mimsLog = null ;
-    private com.nrims.MimsRoiControl roiControl = null ;
-    private com.nrims.HSIView hsiControl = null ;
-    private com.nrims.MimsStackEditing mimsStackEditing = null ;
-    private com.nrims.MimsTomography mimsTomography = null ;
-    protected com.nrims.MimsAction mimsAction = null ;
-    private com.nrims.SegmentationForm segmentation = null;
-    protected ij.gui.Roi activeRoi;
-    
-    //tesing fixed contrast
-    private boolean fixRatioContrast = true;
-    
+    public boolean getDebug() {
+        return bDebug;
+    }
 
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
@@ -1431,5 +1482,4 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JMenuItem openNewMenuItem;
     private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
-    
 }
