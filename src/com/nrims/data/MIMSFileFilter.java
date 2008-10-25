@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package com.nrims;
+package com.nrims.data;
 
 
 import java.io.File;

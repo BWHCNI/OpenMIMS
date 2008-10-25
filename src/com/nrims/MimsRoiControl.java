@@ -42,7 +42,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
         
         jCheckBox2.setSelected(ui.getSyncROIs());
         jCheckBox3.setSelected(ui.getAddROIs());
-        jTextField1.setText(ui.getMimsImage().getName()+".txt");
+        jTextField1.setText(ui.getMimsImage().getImageFile().getName()+".txt");
         measure.setName(jTextField1.getText());
     }
     

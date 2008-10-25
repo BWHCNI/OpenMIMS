@@ -5,7 +5,7 @@
  */
 
 package com.nrims;
-import com.nrims.Opener;
+import com.nrims.data.Opener;
 /**
  *
  * @author  Douglas Benson
@@ -15,7 +15,7 @@ public class MimsData extends javax.swing.JPanel {
     /**
      * Creates new form MimsData
      */
-    public MimsData(com.nrims.UI ui, com.nrims.Opener image) {
+    public MimsData(com.nrims.UI ui, com.nrims.data.Opener image) {
         initComponents();
         this.ui = ui ;
         setMimsImage(image);
@@ -182,7 +182,7 @@ public class MimsData extends javax.swing.JPanel {
     public void setHasStack(boolean bOn) {
         jCheckBox1.setEnabled(bOn);
     }
-    public void setMimsImage( com.nrims.Opener image ) {
+    public void setMimsImage( com.nrims.data.Opener image ) {
         if(image == null) {
             jLabel9.setText("");
             jLabel10.setText("0");

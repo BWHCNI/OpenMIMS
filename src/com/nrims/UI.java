@@ -6,6 +6,7 @@
 package com.nrims;
 
 import com.nrims.data.MIMSFileFilter;
+import com.nrims.data.Opener;
 import ij.IJ;
 import ij.gui.Roi;
 import java.awt.EventQueue;
@@ -14,6 +15,7 @@ import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -27,7 +29,6 @@ import javax.swing.UIManager;
 public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListener {
 
     public static final long serialVersionUID = 1;
-
     /**
      * Whether we're running the UI in debug mode.
      */
@@ -122,6 +123,50 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     /**
+     * Closes the current image and its associated set of windows if the mode is set to close open windows.
+     */
+    private synchronized void closeCurrentImage() {
+        // TODO why is this 6?
+        for (int i = 0; i < 6; i++) {
+            if (segImages[i] != null) {
+                segImages[i].removeListener(this);
+                if (bCloseOldWindows) {
+                    if (segImages[i].getWindow() != null) {
+                        segImages[i].getWindow().close();
+                    }
+                }
+            }
+            if (massImages[i] != null) {
+                massImages[i].removeListener(this);
+                if (bCloseOldWindows) {
+                    if (massImages[i].getWindow() != null) {
+                        massImages[i].getWindow().close();
+                    }
+                }
+            }
+            bOpenMass[i] = false;
+            if (hsiImages[i] != null) {
+                hsiImages[i].removeListener(this);
+                if (bCloseOldWindows) {
+                    if (hsiImages[i].getWindow() != null) {
+                        hsiImages[i].getWindow().close();
+                    }
+                }
+            }
+            if (ratioImages[i] != null) {
+                ratioImages[i].removeListener(this);
+                if (bCloseOldWindows) {
+                    if (ratioImages[i].getWindow() != null) {
+                        ratioImages[i].getWindow().close();
+                    }
+                }
+            }
+        }
+
+        // FIXME: the current opener is not dispose anywhere, so there are likely dangling file handles.
+    }
+
+    /**
      * Causes a dialog to open that allows a user to choose an image file.
      */
     private synchronized void loadMIMSFile() {
@@ -146,70 +191,31 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     /**
      * Open a MIMS image file
      * @param fileName MIMS image file to open.
-     * @throws NullPointerException if the given fileName is null.
+     * @throws NullPointerException if the given fileName is null or empty.
      */
     private synchronized void loadMIMSFile(String fileName) throws NullPointerException {
-        if (fileName == null) {
-            throw new NullPointerException("fileName cannot be null when attempting to loadMIMSFile.");
+        if (fileName == null || fileName.length() == 0) {
+            throw new NullPointerException("fileName cannot be null or empty when attempting to loadMIMSFile.");
         }
 
         try {
             currentlyOpeningImages = true;
 
-            for (int i = 0; i < 6; i++) {
-
-                if (segImages[i] != null) {
-                    segImages[i].removeListener(this);
-
-                    if (bCloseOldWindows) {
-                        if (segImages[i].getWindow() != null) {
-                            segImages[i].getWindow().close();
-                        }
-                    }
-                }
-                if (massImages[i] != null) {
-                    massImages[i].removeListener(this);
-
-                    if (bCloseOldWindows) {
-                        if (massImages[i].getWindow() != null) {
-                            massImages[i].getWindow().close();
-                        }
-                    }
-                }
-                bOpenMass[i] = false;
-                if (hsiImages[i] != null) {
-                    hsiImages[i].removeListener(this);
-                    if (bCloseOldWindows) {
-                        if (hsiImages[i].getWindow() != null) {
-                            hsiImages[i].getWindow().close();
-                        }
-                    }
-                }
-                if (ratioImages[i] != null) {
-                    ratioImages[i].removeListener(this);
-                    if (bCloseOldWindows) {
-                        if (ratioImages[i].getWindow() != null) {
-                            ratioImages[i].getWindow().close();
-                        }
-                    }
-                }
-            }
-
-
+            closeCurrentImage();
 
             try {
-                image = new com.nrims.data.Opener(this, fileName);
-            } catch (Exception e) {
+                image = new Opener(this, fileName);
+            } catch (IOException e) {
                 IJ.log("Failed to open " + fileName + ":\n" + e.getStackTrace());
+                return;
             }
-
+            
             int nMasses = image.nMasses();
             int nImages = image.nImages();
 
             long memRequired = nMasses * image.getWidth() * image.getHeight() * 2 * nImages;
             long maxMemory = IJ.maxMemory();
-
-
+            
             for (int i = 0; i < nMasses; i++) {
                 bOpenMass[i] = true;
             }
@@ -1283,7 +1289,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if (nOpen == 0) {
             return mp;
         }
-        for (i = 0      , nOpen = 0; i < massImages.length; i++) {
+        for (i = 0        , nOpen = 0; i < massImages.length; i++) {
             if (massImages[i] != null && bOpenMass[i]) {
                 mp[nOpen++] = massImages[i];
             }
@@ -1302,7 +1308,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if (nOpen == 0) {
             return mp;
         }
-        for (i = 0      , nOpen = 0; i < 6; i++) {
+        for (i = 0        , nOpen = 0; i < 6; i++) {
             if (ratioImages[i] != null) {
                 mp[nOpen++] = ratioImages[i];
             }
@@ -1321,7 +1327,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if (nOpen == 0) {
             return mp;
         }
-        for (i = 0      , nOpen = 0; i < 6; i++) {
+        for (i = 0        , nOpen = 0; i < 6; i++) {
             if (hsiImages[i] != null) {
                 mp[nOpen++] = hsiImages[i];
             }
@@ -1340,7 +1346,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if (nOpen == 0) {
             return mp;
         }
-        for (i = 0      , nOpen = 0; i < 6; i++) {
+        for (i = 0        , nOpen = 0; i < 6; i++) {
             if (segImages[i] != null) {
                 mp[nOpen++] = segImages[i];
             }

@@ -21,7 +21,7 @@ import java.awt.*;
 public class MimsTomography extends javax.swing.JPanel {
     
     /** Creates new form mimsTomography */
-    public MimsTomography(com.nrims.UI ui, com.nrims.Opener im) {
+    public MimsTomography(com.nrims.UI ui, com.nrims.data.Opener im) {
         initComponents();
         this.ui = ui ;
         this.image = im;
@@ -489,7 +489,7 @@ public class MimsTomography extends javax.swing.JPanel {
     
         
     private com.nrims.UI ui;
-    private com.nrims.Opener image;
+    private com.nrims.data.Opener image;
     private int numberMasses;
     private MimsPlus[] images;
     private ImageStack[] imagestacks;

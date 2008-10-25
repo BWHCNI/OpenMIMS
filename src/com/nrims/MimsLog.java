@@ -13,7 +13,7 @@ package com.nrims;
 public class MimsLog extends javax.swing.JPanel {
     
     /** Creates new form mimsLog */
-    public MimsLog(com.nrims.UI ui, com.nrims.Opener im) {
+    public MimsLog(com.nrims.UI ui, com.nrims.data.Opener im) {
         initComponents();
         this.ui = ui ;
         this.image = im;
@@ -64,7 +64,7 @@ public class MimsLog extends javax.swing.JPanel {
     
     
     private com.nrims.UI ui;
-    private com.nrims.Opener image;
+    private com.nrims.data.Opener image;
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

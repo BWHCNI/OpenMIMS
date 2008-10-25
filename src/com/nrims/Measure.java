@@ -1,36 +1,34 @@
-/*
- * Measure.java
- *
- * Created on May 9, 2006, 9:17 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package com.nrims;
+
 import ij.measure.ResultsTable ;
-import com.nrims.MimsRoiManager;
 import ij.process.ImageStatistics ;
 import ij.gui.Roi ;
-import java.util.Hashtable ;
 
 /**
- * display results from selected masses for all rois in the MimsRoiManager
+ * Display results from selected masses for all rois in the MimsRoiManager
  * @author Douglas Benson
+ * @author <a href="mailto:rob.gonzalez@gmail.com">Rob Gonzalez</a>
  */
 public class Measure {
-    /** Creates a new instance of Measure */
+    /**
+     * Creates a new instance of Measure.
+     * @param ui MIMS UI for this Measure.
+     */
     public Measure(UI ui) {
         rTable = new ij.measure.ResultsTable();
         this.ui = ui ;
         reset();
         int n = ui.getMimsImage().nMasses() ;
-        for(int i = 0 ; i < n ; i++ ) bMass[i] = true ;
+        for(int i = 0 ; i < n ; i++ ) {
+            bMass[i] = true;
+        }
         bMeasure[ResultsTable.MEAN] = true ;
         bMeasure[ResultsTable.AREA] = true ;
         bMeasure[ResultsTable.STD_DEV] = true ;
         
-        for(int i = 0 ; i < bMeasurePerImage.length; i++) bMeasurePerImage[i] = false ;
+        for(int i = 0 ; i < bMeasurePerImage.length; i++) {
+            bMeasurePerImage[i] = false;
+        }
         // These are measured once per series since ROIs are the same for all images..
         bMeasurePerImage[ResultsTable.MEAN] = true ;
         bMeasurePerImage[ResultsTable.STD_DEV] = true ;
@@ -59,7 +57,9 @@ public class Measure {
     public void setName(String name) { 
         if(name != null) {
             fileName = name ;
-            if(!fileName.endsWith(".txt")) fileName += ".txt";
+            if(!fileName.endsWith(".txt")) {
+                fileName += ".txt";
+            }
         }        
     }
    
@@ -85,10 +85,12 @@ public class Measure {
   
         for( int i = 0 ; i < ui.getMimsImage().nMasses() ; i++ ) {
             MimsPlus mp = ui.getMassImage(i);
-            if(mp == null )
-                bMass[i] = false ;
-            else
-                gd.addCheckbox(ui.getMimsImage().getMassName(i), bMass[i] );
+            if(mp == null ) {
+                bMass[i] = false;
+            }
+            else {
+                gd.addCheckbox(ui.getMimsImage().getMassName(i), bMass[i]);
+            }
         }
         
         gd.addCheckbox("Open ratio images", bMeasureRatios);
@@ -99,10 +101,12 @@ public class Measure {
         }
         
         for( int i = 0 ; i < ui.getMimsImage().nMasses() ; i++ ) {
-            if( ui.getMassImage(i) != null )
-                 bMass[i] = gd.getNextBoolean();
-            else
-                bMass[i] = false ;
+            if( ui.getMassImage(i) != null ) {
+                bMass[i] = gd.getNextBoolean();
+            }
+            else {
+                bMass[i] = false;
+            }
         }
         
         bMeasureRatios = gd.getNextBoolean() ;
@@ -111,22 +115,33 @@ public class Measure {
     private MimsPlus [] getMeasureImages() {
         MimsPlus mp[] = ui.getMassImages() ;
         MimsPlus rp[] = ui.getOpenRatioImages() ;
-        if(mp.length == 0) return new MimsPlus[0] ;
+        if(mp.length == 0) {
+            return new MimsPlus[0];
+        }
         int nTotal = 0 ;
         for(int i = 0 ; i < bMass.length  && i < mp.length; i++ ) {
-            if(bMass[i] && mp[i] != null) nTotal++ ;
-            else bMass[i] = false ;
+            if(bMass[i] && mp[i] != null) {
+                nTotal++;
+            }
+            else {
+                bMass[i] = false;
+            }
         }
-        if(bMeasureRatios) nTotal += rp.length ;   
+        if(bMeasureRatios) {
+            nTotal += rp.length;
+        }
         
         MimsPlus images[] = new MimsPlus[nTotal];
         
         int nImages = 0 ;
         for(int i = 0 ; i < bMass.length  && i < mp.length; i++ ) {
-            if(bMass[i] && mp[i] != null) images[nImages++] = mp[i] ;
+            if(bMass[i] && mp[i] != null) {
+                images[nImages++] = mp[i];
+            }
         }
-        for(int i = 0 ; bMeasureRatios && i < rp.length ; i++ )
-            images[nImages++] = rp[i] ;
+        for(int i = 0 ; bMeasureRatios && i < rp.length ; i++ ) {
+            images[nImages++] = rp[i];
+        }
         
         return images ;
     }
@@ -136,72 +151,101 @@ public class Measure {
             if(bMeasure[i]) {
                 if(!bMeasurePerImage[i] && n > 0) {
                     // no results for ROI's for additional images
-                } else switch(i) {
-                    case ResultsTable.AREA:
-                        rTable.addValue(ncol++,is.area); break ;
-                    case ResultsTable.MEAN:
-                        rTable.addValue(ncol++,is.mean); break ;
-                    case ResultsTable.STD_DEV:
-                        rTable.addValue(ncol++,is.stdDev); break ;
-                    case ResultsTable.MODE:
-                        rTable.addValue(ncol++,is.mode); break ;
-                    case ResultsTable.MIN:
-                        rTable.addValue(ncol++,is.min); break ;
-                    case ResultsTable.MAX:
-                        rTable.addValue(ncol++,is.max); break ;
-                    case ResultsTable.X_CENTROID:
-                        rTable.addValue(ncol++,is.xCentroid); break ;
-                    case ResultsTable.Y_CENTROID:
-                        rTable.addValue(ncol++,is.yCentroid); break ;
-                    case ResultsTable.X_CENTER_OF_MASS:
-                        rTable.addValue(ncol++,is.xCenterOfMass); break ;
-                    case ResultsTable.Y_CENTER_OF_MASS:
-                        rTable.addValue(ncol++,is.yCenterOfMass); break ;
-                    case ResultsTable.ROI_X:
-                        rTable.addValue(ncol++,is.roiX); break ;
-                    case ResultsTable.ROI_Y:
-                        rTable.addValue(ncol++,is.roiY); break ;
-                    case ResultsTable.ROI_WIDTH:
-                        rTable.addValue(ncol++,is.roiWidth); break ;
-                    case ResultsTable.ROI_HEIGHT:
-                        rTable.addValue(ncol++,is.roiHeight); break ;
-                    case ResultsTable.MAJOR:
-                        rTable.addValue(ncol++,is.major); break ;
-                    case ResultsTable.MINOR:
-                        rTable.addValue(ncol++,is.minor); break ;
-                    case ResultsTable.ANGLE:
-                        rTable.addValue(ncol++,is.angle); break ;
-                    case ResultsTable.FERET:
-                        rTable.addValue(ncol++,roi!=null?roi.getFeretsDiameter():0.0); break ;
-                    case ResultsTable.INTEGRATED_DENSITY:
-                        rTable.addValue(ncol++,is.pixelCount * is.mean); break ;
-                    case ResultsTable.MEDIAN:
-                        rTable.addValue(ncol++,is.median); break ;
-                    case ResultsTable.SKEWNESS:
-                        rTable.addValue(ncol++,is.skewness); break ;
-                    case ResultsTable.KURTOSIS:
-                        rTable.addValue(ncol++,is.kurtosis); break ;
-                    case ResultsTable.AREA_FRACTION:
-                        rTable.addValue(ncol++,is.areaFraction); break ;
-                    case ResultsTable.SLICE:
-                        rTable.addValue(ncol++,nSlice); break ;
-                    case ResultsTable.PERIMETER:
-                    case ResultsTable.CIRCULARITY: 
-                    {
-                        double perimeter;
-			if (roi!=null)
-                            perimeter = roi.getLength();
-			else
-                            perimeter = 0.0;
-                        if(i == ResultsTable.PERIMETER)
-                            rTable.addValue(ncol++,perimeter);
-                        else {
-                	    double circularity = perimeter==0.0?0.0:4.0*Math.PI*(is.area/(perimeter*perimeter));
-			    if (circularity>1.0) circularity = -1.0;
-			    rTable.addValue(ncol++, circularity);
-			}
+                } else {
+                    switch (i) {
+                        case ResultsTable.AREA:
+                            rTable.addValue(ncol++, is.area);
+                            break;
+                        case ResultsTable.MEAN:
+                            rTable.addValue(ncol++, is.mean);
+                            break;
+                        case ResultsTable.STD_DEV:
+                            rTable.addValue(ncol++, is.stdDev);
+                            break;
+                        case ResultsTable.MODE:
+                            rTable.addValue(ncol++, is.mode);
+                            break;
+                        case ResultsTable.MIN:
+                            rTable.addValue(ncol++, is.min);
+                            break;
+                        case ResultsTable.MAX:
+                            rTable.addValue(ncol++, is.max);
+                            break;
+                        case ResultsTable.X_CENTROID:
+                            rTable.addValue(ncol++, is.xCentroid);
+                            break;
+                        case ResultsTable.Y_CENTROID:
+                            rTable.addValue(ncol++, is.yCentroid);
+                            break;
+                        case ResultsTable.X_CENTER_OF_MASS:
+                            rTable.addValue(ncol++, is.xCenterOfMass);
+                            break;
+                        case ResultsTable.Y_CENTER_OF_MASS:
+                            rTable.addValue(ncol++, is.yCenterOfMass);
+                            break;
+                        case ResultsTable.ROI_X:
+                            rTable.addValue(ncol++, is.roiX);
+                            break;
+                        case ResultsTable.ROI_Y:
+                            rTable.addValue(ncol++, is.roiY);
+                            break;
+                        case ResultsTable.ROI_WIDTH:
+                            rTable.addValue(ncol++, is.roiWidth);
+                            break;
+                        case ResultsTable.ROI_HEIGHT:
+                            rTable.addValue(ncol++, is.roiHeight);
+                            break;
+                        case ResultsTable.MAJOR:
+                            rTable.addValue(ncol++, is.major);
+                            break;
+                        case ResultsTable.MINOR:
+                            rTable.addValue(ncol++, is.minor);
+                            break;
+                        case ResultsTable.ANGLE:
+                            rTable.addValue(ncol++, is.angle);
+                            break;
+                        case ResultsTable.FERET:
+                            rTable.addValue(ncol++, roi != null ? roi.getFeretsDiameter() : 0.0);
+                            break;
+                        case ResultsTable.INTEGRATED_DENSITY:
+                            rTable.addValue(ncol++, is.pixelCount * is.mean);
+                            break;
+                        case ResultsTable.MEDIAN:
+                            rTable.addValue(ncol++, is.median);
+                            break;
+                        case ResultsTable.SKEWNESS:
+                            rTable.addValue(ncol++, is.skewness);
+                            break;
+                        case ResultsTable.KURTOSIS:
+                            rTable.addValue(ncol++, is.kurtosis);
+                            break;
+                        case ResultsTable.AREA_FRACTION:
+                            rTable.addValue(ncol++, is.areaFraction);
+                            break;
+                        case ResultsTable.SLICE:
+                            rTable.addValue(ncol++, nSlice);
+                            break;
+                        case ResultsTable.PERIMETER:
+                        case ResultsTable.CIRCULARITY:
+                            {
+                                double perimeter;
+                                if (roi != null) {
+                                    perimeter = roi.getLength();
+                                } else {
+                                    perimeter = 0.0;
+                                }
+                                if (i == ResultsTable.PERIMETER) {
+                                    rTable.addValue(ncol++, perimeter);
+                                } else {
+                                    double circularity = perimeter == 0.0 ? 0.0 : 4.0 * Math.PI * (is.area / (perimeter * perimeter));
+                                    if (circularity > 1.0) {
+                                        circularity = -1.0;
+                                    }
+                                    rTable.addValue(ncol++, circularity);
+                                }
+                            }
+                            break;
                     }
-                    break ;
                 }
             }
         }
@@ -209,10 +253,14 @@ public class Measure {
     }
     
     public void measure(boolean bStack) {
-        if(ui.getMimsImage().nImages() < 2) bStack = false ;
+        if(ui.getMimsImage().nImages() < 2) {
+            bStack = false;
+        }
         
         MimsPlus [] images = getMeasureImages() ;
-        if(images.length == 0) return ;
+        if(images.length == 0) {
+            return;
+        }
         
         MimsRoiManager rm = ui.getRoiManager();
         Roi [] rois ;
@@ -220,13 +268,18 @@ public class Measure {
         
         if(!rm.getROIs().isEmpty()) {
             rois = new Roi[rlist.getItemCount()];
-            for(int i = 0 ; i < rlist.getItemCount(); i++ ) 
-                rois[i] = (Roi)rm.getROIs().get(rlist.getItem(i));
+            for(int i = 0 ; i < rlist.getItemCount(); i++ ) {
+                rois[i] = (Roi) rm.getROIs().get(rlist.getItem(i));
+            }
         }            
-        else rois = new Roi[0] ;
+        else {
+            rois = new Roi[0];
+        }
         
         int nSlices = bStack ? images[0].getImageStackSize() : 1 ;
-        if(nSlices < 1) nSlices = 1 ;
+        if(nSlices < 1) {
+            nSlices = 1;
+        }
         
         /*
          *  Mean[mass1,roi1] StdDev[mass1,1] ... Mean[mass1,roi2] ... ... Mean[mass2,roi1] 
@@ -241,7 +294,9 @@ public class Measure {
 //            this.rTable.addColumns();
 //            columnMultiplier -=1;
 //        }
-        if(nrois == 0) nrois = 1 ;
+        if(nrois == 0) {
+            nrois = 1;
+        }
         for( int r = 1 ; r <= nrois ; r++ ) {
             for(int i = 0 ; i < images.length ; i++) {
                 for( int m = 0 ; m < bMeasure.length ; m++ ) {
@@ -251,11 +306,15 @@ public class Measure {
                         }
                         else {
                             String hd = measureNames[m]+"_";
-                            if(images[i].getMimsType() == MimsPlus.RATIO_IMAGE) 
-                                hd += "m"+(images[i].getNumMass()+1) + "/m" + (images[i].getDenMass()+1) ;
-                            else
-                                hd += "m"+(images[i].getMimsMassIndex()+1) ;
-                            if(nrois > 1) hd += "_r" + r ;
+                            if(images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
+                                hd += "m" + (images[i].getNumMass() + 1) + "/m" + (images[i].getDenMass() + 1);
+                            }
+                            else {
+                                hd += "m" + (images[i].getMimsMassIndex() + 1);
+                            }
+                            if(nrois > 1) {
+                                hd += "_r" + r;
+                            }
                             if (ncol == currentMaxColumns-2){
                             
                                 rTable.addColumns();
@@ -271,14 +330,18 @@ public class Measure {
         
         int mOptions = 0 ;
         for(int m = 0 ; m < bMeasure.length ; m++)  {
-            if(bMeasure[m]) mOptions |= (1<<m);
+            if(bMeasure[m]) {
+                mOptions |= (1 << m);
+            }
         }
                 
         for(int n = 0 ; n < nSlices ; n++ ) {
             if(bStack) {
-                for(int i = 0 ; i < images.length ; i++ )
-                    if(images[i].getMimsType() == MimsPlus.MASS_IMAGE)
-                        images[i].setSlice(n+1);
+                for(int i = 0 ; i < images.length ; i++ ) {
+                    if (images[i].getMimsType() == MimsPlus.MASS_IMAGE) {
+                        images[i].setSlice(n + 1);
+                    }
+                }
             }
             ncol = 0 ;
             rTable.incrementCounter() ;
@@ -288,7 +351,9 @@ public class Measure {
                 for(int i = 0 ; i < images.length ; i++ ) {
                     // ij.WindowManager.setCurrentWindow(images[i].getWindow());
                     // rm.runCommand("measure");
-                    if(rois.length > 0) images[i].setRoi(rois[r]);
+                    if(rois.length > 0) {
+                        images[i].setRoi(rois[r]);
+                    }
                     ImageStatistics is = 
                         ij.process.ImageStatistics.getStatistics(
                             images[i].getProcessor(),

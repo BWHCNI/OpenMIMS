@@ -539,7 +539,7 @@ private synchronized void update(boolean bUpdateUI) {
         if(ui == null) {
             return;
         }
-        com.nrims.Opener image = ui.getMimsImage() ;
+        com.nrims.data.Opener image = ui.getMimsImage() ;
         if(image == null) {
             return;
         }

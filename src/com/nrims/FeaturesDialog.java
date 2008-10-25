@@ -1,5 +1,6 @@
 package com.nrims;
 
+import com.nrims.data.Opener;
 import java.util.ArrayList;
 import javax.swing.JCheckBox;
 

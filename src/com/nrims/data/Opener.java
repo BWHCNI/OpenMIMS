@@ -1,5 +1,6 @@
-package com.nrims;
+package com.nrims.data;
 
+import com.nrims.*;
 import java.io.*;
 import java.text.DecimalFormat;
 
@@ -17,7 +18,7 @@ public class Opener {
     public static final int BITS_PER_PIXEL = 16;
 
     /**
-     * Creates a new instance of Opener
+     * Creates a new instance of Opener.  This is private to present instantiation.
      */
     private Opener() {
     }
@@ -39,8 +40,20 @@ public class Opener {
      * TODO remove any reference to the UI.  The UI should subscribe to notice events, not be a member of this class.
      */
     private UI ui = null;
+
+    /**
+     * Set of images loaded from the file.
+     */
     private MassImage[] massImages;
+
+    /**
+     * TODO why is this what it is?  is this even useful?
+     */
     public static final int MIN_FILE_SIZE = 150828;
+
+    /**
+     * TODO what does this mean?
+     */
     public static final int IHDR_SIZE = 84;
 
     /**
@@ -82,11 +95,24 @@ public class Opener {
      * @param index image mass index.
      * @throws IndexOutOfBoundsException if the given image mass index is invalid.
      */
-    private void checkIndex(int index) {
+    private void checkMassIndex(int index) {
         if (nMasses <= 0) {
-            throw new IndexOutOfBoundsException("No images loaded, so index <" + index + "> is invalid.");
+            throw new IndexOutOfBoundsException("No images loaded, so mass index <" + index + "> is invalid.");
         } else if (index < 0 || index >= nMasses) {
-            throw new IndexOutOfBoundsException("Given index <" + index + "> is out of range of the total number of masses <" + nMasses + ">.");
+            throw new IndexOutOfBoundsException("Given mass index <" + index + "> is out of range of the total number of masses <" + nMasses + ">.");
+        }
+    }
+    
+    /**
+     * Ensures that the given index is valid (e.g. if it's >= 0 and <= nImages).
+     * @param index image index.
+     * @throws IndexOutOfBoundsException if the given image index is invalid.
+     */
+    private void checkImageIndex(int index) {
+        if (nImages <= 0) {
+            throw new IndexOutOfBoundsException("No images loaded, so image index <" + index + "> is invalid.");
+        } else if (index < 0 || index >= nImages) {
+            throw new IndexOutOfBoundsException("Given image index <" + index + "> is out of range of the total number of imags <" + nImages + ">.");
         }
     }
 
@@ -97,7 +123,7 @@ public class Opener {
      * @throws IOException If there is an error reading in the pixel data.
      */
     public void readPixels(int index) throws IndexOutOfBoundsException, IOException {
-        checkIndex(index);
+        checkMassIndex(index);
 
         int i, j;
         int pixelsPerImage = width * height;
@@ -479,7 +505,7 @@ public class Opener {
      * @throws IOException if there is an error reading in the pixel data.
      */
     public String getStats(int index) throws IndexOutOfBoundsException, IOException {
-        checkIndex(index);
+        checkMassIndex(index);
 
         if (massImages[index].getPixels() == null) {
             readPixels(index);
@@ -496,7 +522,7 @@ public class Opener {
      * @throws IOException if there's a problem reading the given image mass index pixel data.
      */
     public String getCounts(int index) throws IndexOutOfBoundsException, IOException {
-        checkIndex(index);
+        checkMassIndex(index);
 
         if (massImages[index].getPixels() == null) {
             readPixels(index);
@@ -592,7 +618,7 @@ public class Opener {
      * @throws IOException if the given image mass index pixels cannot be loaded.
      */
     public short[] getPixels(int index) throws IndexOutOfBoundsException, IOException {
-        checkIndex(index);
+        checkMassIndex(index);
         
         if (massImages[index].getPixels() == null) {
             readPixels(index);
@@ -609,7 +635,7 @@ public class Opener {
      * @throws IOException if the image mass information cannot be read in.
      */
     public int getPixel(int index, int x, int y) throws IndexOutOfBoundsException, IOException {
-        checkIndex(index);
+        checkMassIndex(index);
         if (massImages[index].getPixels() == null) {
             readPixels(index);
         }
@@ -640,7 +666,7 @@ public class Opener {
      * @throws IOException if there is an error reading in the image information.
      */
     public int getMin(int index) throws IndexOutOfBoundsException, IOException {
-        checkIndex(index);
+        checkMassIndex(index);
         if (massImages[index].getPixels() == null) {
             readPixels(index);
         }
@@ -650,11 +676,11 @@ public class Opener {
     /**
      * @param index image mass index.
      * @return the maximum graylevel in the image at the given index
+     * @throws IndexOutOfBoundsException if the given image mass index is invalid.
+     * @throws IOException if there is an error reading in image data.
      */
-    public int getMax(int index) throws Exception {
-        if (index < 0 || index >= this.nMasses) {
-            throw new Exception("Index Error");
-        }
+    public int getMax(int index) throws IndexOutOfBoundsException, IOException {
+        checkMassIndex(index);
         
         if (massImages[index].getPixels() == null) {
             readPixels(index);
@@ -681,7 +707,7 @@ public class Opener {
      * @param index image mass index.
      */
     public void setMassIndex(int index) {
-        checkIndex(index);
+        checkMassIndex(index);
         
         if (this.currentMass == index) {
             return;
@@ -698,7 +724,7 @@ public class Opener {
      * @throws IndexOutOfBoundsException if the given index is invalid.
      */
     public void setStackIndex(int index) throws IndexOutOfBoundsException {
-        checkIndex(index);
+        checkImageIndex(index);
 
         if (this.currentIndex == index) {
             return;

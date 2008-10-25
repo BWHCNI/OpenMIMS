@@ -1,12 +1,3 @@
-/*
- * mimsPlus.java
- *
- * Created on May 1, 2006, 5:39 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package com.nrims;
 import ij.IJ ;
 import ij.gui.* ;
@@ -19,7 +10,9 @@ import javax.swing.event.EventListenerList;
 /**
  * extends ImagePlus with methods to synchronize display of multiple stacks
  * and drawing ROIs in each windows
+ * 
  * @author Douglas Benson
+ * @author <a href="mailto:rob.gonzalez@gmail.com">Rob Gonzalez</a>
  */
 public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListener, MouseMotionListener {
     
@@ -34,7 +27,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         fStateListeners = new EventListenerList() ;
     }
     
-    public MimsPlus(com.nrims.Opener image, int index ) {
+    public MimsPlus(com.nrims.data.Opener image, int index ) {
         super();
         srcImage = image ;
         ui = srcImage.getUI();
@@ -78,7 +71,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                fStateListeners = new EventListenerList() ;
         } catch (Exception x) { IJ.log(x.toString());}
     }   
-    public MimsPlus( com.nrims.Opener image, HSIProps props, boolean bIsHSI ) {
+    public MimsPlus( com.nrims.data.Opener image, HSIProps props, boolean bIsHSI ) {
         super();
         try {
            srcImage = image ;
@@ -94,7 +87,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
            
            if(bIsHSI) {
                int height = image.getHeight() ;
-               if( props.getLabelMethod() > 0) height += 16 ;
+               if( props.getLabelMethod() > 0) {
+                    height += 16;
+                }
                int [] rgbPixels = new int[image.getWidth()*height];
                ij.process.ImageProcessor ip = new ij.process.ColorProcessor(
                    image.getWidth(),
@@ -151,8 +146,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
     
     public void appendImage(int nImage) throws Exception {
-        if(srcImage == null) throw new Exception("No image opened?");
-        if(nImage >= srcImage.nImages()) throw new Exception("Out of Range");
+        if(srcImage == null) {
+            throw new Exception("No image opened?");
+        }
+        if(nImage >= srcImage.nImages()) {
+            throw new Exception("Out of Range");
+        }
         ij.ImageStack stack = getStack();
         srcImage.setStackIndex(nImage);
         srcImage.setMassIndex(nMass);
@@ -165,18 +164,20 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        
     }
     
-    public com.nrims.Opener getMimsImage() { return srcImage ; }
+    public com.nrims.data.Opener getMimsImage() { return srcImage ; }
     public int getMimsMassIndex() { return nMass ; }
     public int getMimsType() { return nType ; }
 
     public HSIProps getHSIProps() { 
         if(nType == HSI_IMAGE) {
-            if( getHSIProcessor() != null )
+            if( getHSIProcessor() != null ) {
                 return getHSIProcessor().getProps();
+            }
         }
         else if(nType == RATIO_IMAGE) {
-            if( getHSIProcessor() != null )
+            if( getHSIProcessor() != null ) {
                 return getHSIProcessor().getProps();
+            }
             else {
                 HSIProps props = new HSIProps() ;
                 props.setNumMass(nRatioNum);
@@ -195,15 +196,19 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         ij.gui.ImageWindow win = getWindow() ;
         super.show() ;
         if(win == null && getWindow() != null) {
-            if(!(getWindow().getCanvas() instanceof MimsCanvas ))
-                if(getStackSize()>1) 
-                    new StackWindow(this, new MimsCanvas(this,ui));
-                else
-                    new ImageWindow(this, new MimsCanvas(this,ui));
+            if(!(getWindow().getCanvas() instanceof MimsCanvas )) {
+                if (getStackSize() > 1) {
+                    new StackWindow(this, new MimsCanvas(this, ui));
+                } else {
+                    new ImageWindow(this, new MimsCanvas(this, ui));
+                }
+            }
             getWindow().addWindowListener(this);
             getWindow().getCanvas().addMouseListener(this);
             getWindow().getCanvas().addMouseMotionListener(this);
-            if(ui.getDebug()) ui.updateStatus("mimsPlus::show() addWindowListener " + getWindow().toString());
+            if(ui.getDebug()) {
+                ui.updateStatus("mimsPlus::show() addWindowListener " + getWindow().toString());
+            }
         }
     }
     
@@ -220,53 +225,84 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 //        this.
         
     }
+    @Override
     public void windowClosed(WindowEvent e) {
         // When opening a stack, we get a close event 
         // from the original ImageWindow, and ignore this event
         if(bIgnoreClose) {
-            if(ui.getDebug()) ui.updateStatus("Ignoring close..");
+            if(ui.getDebug()) {
+                ui.updateStatus("Ignoring close..");
+            }
             bIgnoreClose = false ;
-            if(ui.getDebug()) ui.updateStatus("Event window = " + e.getWindow().toString() + " mimsPlus = " + getWindow().toString()) ;
+            if(ui.getDebug()) {
+                ui.updateStatus("Event window = " + e.getWindow().toString() + " mimsPlus = " + getWindow().toString());
+            }
             return ;
         }
-        if(ui.getDebug()) ui.updateStatus("mimsPlus listener window closed");
+        if(ui.getDebug()) {
+            ui.updateStatus("mimsPlus listener window closed");
+        }
         stateChanged(0,MimsPlusEvent.ATTR_IMAGE_CLOSED);
     }
     public void windowStateChanged(WindowEvent e) {}
+    @Override
     public void windowDeactivated(WindowEvent e) {}
+    @Override
     public void windowActivated(WindowEvent e) {
         ui.setActiveMimsPlus(this);
     }
+    @Override
     public void windowDeiconified(WindowEvent e) {}
+    @Override
     public void windowIconified(WindowEvent e) {}
+    @Override
     public void windowOpened(WindowEvent e) {
-        if(ui.getDebug()) ui.updateStatus("mimsPlus window opened");
+        if(ui.getDebug()) {
+            ui.updateStatus("mimsPlus window opened");
+        }
         WindowListener [] wl = getWindow().getWindowListeners();
         boolean bFound = false ;
         int i ;
         for(i = 0 ; i < wl.length ; i++ ) {
-            if(wl[i] == this) bFound = true ;
+            if(wl[i] == this) {
+                bFound = true;
+            }
         }
-        if(!bFound) getWindow().addWindowListener(this);
+        if(!bFound) {
+            getWindow().addWindowListener(this);
+        }
         bFound = false ;
         MouseListener [] ml = getWindow().getCanvas().getMouseListeners();
         for(i=0;i<ml.length;i++) {
-            if(ml[i] == this) bFound = true ;
+            if(ml[i] == this) {
+                bFound = true;
+            }
         }
         if(!bFound) {
             getWindow().getCanvas().addMouseListener(this);
             getWindow().getCanvas().addMouseMotionListener(this);
         }
-        if(ui.getDebug()) ui.updateStatus("mimsPlus::windowOpened listener installed");
+        if(ui.getDebug()) {
+            ui.updateStatus("mimsPlus::windowOpened listener installed");
+        }
     }
+    @Override
     public void mouseExited(MouseEvent e){ ui.updateStatus(" "); }
+    @Override
     public void mouseEntered(MouseEvent e) {}
+    @Override
     public void mousePressed(MouseEvent e) {}
+    @Override
     public void mouseClicked(MouseEvent e) {}
-    /** Catch drawing ROIs to enable updating other images with the same ROI
+    /**
+     * Catch drawing ROIs to enable updating other images with the same ROI
+     * @param e MouseEvent
      */
+    @Override
     public void mouseReleased(MouseEvent e) {
-        if(bStateChanging) return ;
+        if(bStateChanging) {
+            return;
+        }
         switch( Toolbar.getToolId() ) {
             case Toolbar.RECTANGLE:
             case Toolbar.OVAL:
@@ -278,8 +314,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                     stateChanged(getRoi(),MimsPlusEvent.ATTR_MOUSE_RELEASE);
                 break ;
             case Toolbar.WAND:
-                if(getRoi() != null)
-                     stateChanged(getRoi(),MimsPlusEvent.ATTR_MOUSE_RELEASE);
+                if(getRoi() != null) {
+            stateChanged(getRoi(), MimsPlusEvent.ATTR_MOUSE_RELEASE);
+        }
                 break ;
         }
     }
@@ -290,8 +327,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         int mX = getWindow().getCanvas().offScreenX(x);
         int mY = getWindow().getCanvas().offScreenY(y);
         String msg = "" + mX + "," + mY ;
-        if(isStack()) msg += "," + getCurrentSlice() + " = " ;
-        else msg += " = " ;
+        if(isStack()) {
+            msg += "," + getCurrentSlice() + " = ";
+        }
+        else {
+            msg += " = ";
+        }
         if(this.nType == HSI_IMAGE) { 
             int n = getHSIProps().getNumMass();
             int d = getHSIProps().getDenMass();
@@ -300,7 +341,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 int [] ngl = ml[n].getPixel(mX,mY);
                 int [] dgl = ml[d].getPixel(mX,mY);
                 double ratio = 0.0 ;
-                if( dgl[0] > 0 ) ratio = (double)ngl[0] / (double)dgl[0];
+                if( dgl[0] > 0 ) {
+                    ratio = (double) ngl[0] / (double) dgl[0];
+                }
                 //ui.updateStatus(msg + ngl[0] + " / " + dgl[0] + " = " + IJ.d2s(ratio,4) ) ;
                 msg += ngl[0] + " / " + dgl[0] + " = " + IJ.d2s(ratio,4);
             }
@@ -323,7 +366,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             for(int i = 0 ; i < ml.length ; i++ ) {
                 int [] gl = ml[i].getPixel(mX,mY);
                 msg += gl[0] ;
-                if( i+1 < ml.length ) msg += ", " ;
+                if( i+1 < ml.length ) {
+                    msg += ", ";
+                }
             }
         }
             
@@ -361,6 +406,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         ui.updateStatus(msg);
     }
     
+    @Override
     public void mouseDragged(MouseEvent e) {}
     
     public void addListener( MimsUpdateListener inListener ) {
@@ -401,9 +447,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
     
     public synchronized void setSlice(int index) {
-        if(getCurrentSlice() == index) return ;
+        if(getCurrentSlice() == index) {
+            return;
+        }
         super.setSlice(index);
-        if(bStateChanging) return ;
+        if(bStateChanging) {
+            return;
+        }
         stateChanged(index,MimsPlusEvent.ATTR_UPDATE_SLICE);       
     }
     public void setAllowClose(boolean allowClose){
@@ -429,7 +479,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     private int nRatioDen = 0 ;
     private boolean bIsStack = false ;
     private HSIProcessor hsiProcessor = null ;
-    private com.nrims.Opener srcImage ;
+    private com.nrims.data.Opener srcImage ;
     private com.nrims.UI ui = null;
     private EventListenerList fStateListeners = null ;
 }
