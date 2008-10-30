@@ -9,6 +9,7 @@ import com.nrims.data.MIMSFileFilter;
 import com.nrims.data.Opener;
 import ij.IJ;
 import ij.gui.Roi;
+import ij.Prefs;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.WindowListener;
@@ -1459,6 +1460,12 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("-ijpath") && i+1 < args.length) {
+					Prefs.setHomeDir(args[i+1]);
+            }
+        }
+
         EventQueue.invokeLater(new Runnable() {
 
             @Override
