@@ -840,9 +840,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
     }//GEN-LAST:event_translateYSpinnerStateChanged
 
     private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoTrackButtonActionPerformed
-        // TODO add your handling code here:
-
         //ugly....
+        //yes, it is.
 
         ImagePlus tempImage = WindowManager.getCurrentImage();
         ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
@@ -866,8 +865,18 @@ public class MimsStackEditing extends javax.swing.JPanel {
         ImagePlus img = new ij.ImagePlus("", tempStack);
 
         //the waiting
+        if (img == null) {
+            System.err.println("The img is null; aborting.");
+        } else if (ui == null) {
+            System.err.println("The UI is null; aborting.");
+        }
         AutoTrack temptrack = new AutoTrack(ui);
         double[][] translations = temptrack.track(img);
+
+        if (translations == null) {
+            throw new NullPointerException("translations is null: AutoTrack has failed.");
+        }
+
         int xval, yval;
         int actx = 0;
         int acty = 0;
