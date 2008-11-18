@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 /**
+*
  * The main user interface of the NRIMS ImageJ plugin.
  * 
  * @author  Douglas Benson
