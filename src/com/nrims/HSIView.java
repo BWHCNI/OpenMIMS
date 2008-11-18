@@ -25,16 +25,16 @@ public class HSIView extends JPanel {
      */
     public HSIView(UI ui) {
         initComponents();
-        jSpinner1.setModel(new SpinnerNumberModel(1.0, 0.001, 65535.0, 0.001));
-        jSpinner2.setModel(new SpinnerNumberModel(0.0, 0.0, 65535.0, 0.001));
+        jSpinner1.setModel(new SpinnerNumberModel(1.0, 0.001, 65535.0, 1));
+        jSpinner2.setModel(new SpinnerNumberModel(0.0, 0.0, 65535.0, 1));
         jSpinner3.setModel(new SpinnerNumberModel(3, 1, 65535, 1));
         jSpinner4.setModel(new SpinnerNumberModel(3, 1, 65535, 1));
         jSlider1.setMaximum(511);
         jSlider1.setMinimum(0);
         jSlider1.setValue(256);
 
-        ratioMinSpinner.setModel(new SpinnerNumberModel(0.0, 0.0, 65535.0, 0.001));
-        ratioMaxSpinner.setModel(new SpinnerNumberModel(1.0, 0.0, 65535.0, 0.001));
+        ratioMinSpinner.setModel(new SpinnerNumberModel(0.0, 0.0, 65535.0, 1));
+        ratioMaxSpinner.setModel(new SpinnerNumberModel(1.0, 0.0, 65535.0, 1));
 
         this.ui = ui;
         updateImage();
@@ -586,7 +586,7 @@ private synchronized void update(boolean bUpdateUI) {
         }
         for(int i = 0 ; i < numPixels.length ; i++ ) {
             if(numPixels[i] > nt && denPixels[i] > dt) {
-                double r = (double)numPixels[i]/(double)denPixels[i];
+                double r = ui.getRatioScaleFactor()*((double)numPixels[i]/(double)denPixels[i]);
                 if(r > rmax) {
                     rmax = r;
                 }
@@ -597,6 +597,7 @@ private synchronized void update(boolean bUpdateUI) {
         }
         props.setMaxRatio(rmax);
         props.setMinRatio(rmin);
+        props.setRatioScaleFactor(ui.getRatioScaleFactor());
         
         return true ;
     }

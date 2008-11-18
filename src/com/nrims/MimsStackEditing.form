@@ -69,8 +69,8 @@
                               <Component id="jLabel3" alignment="0" max="32767" attributes="1"/>
                               <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="1"/>
                           </Group>
-                          <Component id="translateYSpinner" alignment="0" pref="83" max="32767" attributes="1"/>
-                          <Component id="translateXSpinner" alignment="0" pref="83" max="32767" attributes="1"/>
+                          <Component id="translateYSpinner" alignment="0" pref="107" max="32767" attributes="1"/>
+                          <Component id="translateXSpinner" alignment="0" pref="107" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
                   </Group>

@@ -64,6 +64,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     protected com.nrims.MimsAction mimsAction = null;
     private com.nrims.SegmentationForm segmentation = null;
     protected ij.gui.Roi activeRoi;
+    private int ratioScaleFactor = 10000;
     //tesing fixed contrast
     private boolean fixRatioContrast = true;
 
@@ -472,6 +473,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         int ratioIndex = getRatioImageIndex(numIndex, denIndex);
 
         MimsPlus num = massImages[numIndex];
+        
         if (num == null) {
             updateStatus("Error no numerator");
             return false;
@@ -547,7 +549,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         float rMin = 1000000.0f;
         for (i = 0; i < rPixels.length; i++) {
             if (nPixels[i] >= 0 && dPixels[i] > 0) {
-                rPixels[i] = (float) nPixels[i] / (float) dPixels[i];
+                rPixels[i] = ratioScaleFactor *((float) nPixels[i] / (float) dPixels[i]);
                 if (rPixels[i] > rMax) {
                     rMax = rPixels[i];
                 } else if (rPixels[i] < rMin) {
@@ -1139,12 +1141,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         ij.gui.GenericDialog gd = new ij.gui.GenericDialog("Preferences");
         gd.addCheckbox("Close existing image when opening", bCloseOldWindows);
         gd.addCheckbox("Debug", bDebug);
+        gd.addNumericField("Ratio Scale Factor", ratioScaleFactor, 0);
         gd.showDialog();
         if (gd.wasCanceled()) {
             return;
-        }
+        } 
         bCloseOldWindows = gd.getNextBoolean();
         bDebug = gd.getNextBoolean();
+        //this.setRatioScaleFactor((int)gd.getNextNumber());
+        //HSI color scale not changing/bug, fix scale factor at 10000
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
@@ -1445,7 +1450,16 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 //            System.out.println(msg);
         }
     }
-
+    
+    public int getRatioScaleFactor() {
+        return this.ratioScaleFactor;
+    }
+    
+    public int setRatioScaleFactor(int s) {
+        this.ratioScaleFactor = s;
+        return this.ratioScaleFactor;
+    }
+    
     @Override
     public void run(String cmd) {
         if (cmd.equalsIgnoreCase("open")) {
@@ -1461,7 +1475,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
      */
     public static void main(String args[]) {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].startsWith("-ijpath") && i+1 < args.length) {
+           if (args[i].startsWith("-ijpath") && i+1 < args.length) {
 					Prefs.setHomeDir(args[i+1]);
             }
         }

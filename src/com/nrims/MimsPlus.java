@@ -342,10 +342,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 int [] dgl = ml[d].getPixel(mX,mY);
                 double ratio = 0.0 ;
                 if( dgl[0] > 0 ) {
-                    ratio = (double) ngl[0] / (double) dgl[0];
+                    ratio = ui.getRatioScaleFactor()*((double) ngl[0] / (double) dgl[0]);
                 }
                 //ui.updateStatus(msg + ngl[0] + " / " + dgl[0] + " = " + IJ.d2s(ratio,4) ) ;
-                msg += ngl[0] + " / " + dgl[0] + " = " + IJ.d2s(ratio,4);
+                msg += "S (" + ngl[0] + " / " + dgl[0] + ") = " + IJ.d2s(ratio,4);
             }
         } 
         else if(this.nType == RATIO_IMAGE) {
@@ -358,7 +358,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 int [] rgl = getPixel(mX,mY);
                 float r = Float.intBitsToFloat(rgl[0]);
                 //ui.updateStatus(msg + ngl[0] + " / " + dgl[0] + " = " + IJ.d2s(r,4) ) ;
-                msg += ngl[0] + " / " + dgl[0] + " = " + IJ.d2s(r,4);
+                msg += "S (" + ngl[0] + " / " + dgl[0] + ") = " + IJ.d2s(r,4);
             }         
         }
         else {

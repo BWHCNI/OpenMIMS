@@ -27,6 +27,7 @@ public class HSIProps {
         minRGB = 0 ;
         transparency = 0 ;
         label = 0 ;
+        ratioScaleFactor = 10000;
     }
     public void setNumMass(int n) { numMass = n ; }
     public int getNumMass() { return numMass ; }
@@ -48,7 +49,9 @@ public class HSIProps {
     public int getTransparency() { return transparency ; }
     public void setLabelMethod(int n) { label = n ; }
     public int getLabelMethod() { return label ; }
-    
+    public void setRatioScaleFactor(int s) { this.ratioScaleFactor = s; }
+    public int getRatioScaleFactor() { return this.ratioScaleFactor; }
+
     /**
      * Set this class' properties from another class
      */
@@ -111,4 +114,5 @@ public class HSIProps {
     private int minRGB ;
     private int transparency ;
     private int label ;
+    private int ratioScaleFactor;
 }

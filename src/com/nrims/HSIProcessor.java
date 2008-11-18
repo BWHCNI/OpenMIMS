@@ -194,7 +194,7 @@ public class HSIProcessor implements Runnable {
                 if( numValue > numThreshold && denValue > denThreshold ){
             
                     
-                    float ratio = (float)numValue / (float)denValue ;
+                    float ratio = hsiProps.getRatioScaleFactor()*((float)numValue / (float)denValue );
                     int numOut = (int)(numGain * (float)( numValue - (int)numMin )) ;
                     int denOut = (int)(denGain * (float)( denValue - (int)denMin )) ;
 
