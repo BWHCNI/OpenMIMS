@@ -274,7 +274,7 @@
                       <Component id="displayButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="roiButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="17" max="32767" attributes="0"/>
+                  <EmptySpace pref="33" max="32767" attributes="0"/>
                   <Component id="workLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="progressBar" min="-2" max="-2" attributes="0"/>

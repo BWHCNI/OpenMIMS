@@ -43,7 +43,9 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
                                                         // consistently use forward slash as file separator    
     private static final int PREPSEG_TYPE = 0;
     private static final int CALCROI_TYPE = 1;
-    
+
+    private boolean success = false;
+
     // input members
     private UI ui;    
     private int type;    
@@ -125,23 +127,27 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         // we assume here that the mass images and their pixel data are available
         for(int massIndex : massImages){
             images[cnt++] = ui.getMassImage(massIndex);
-        }        
+        }
+        // we assume here that the ratio images and their pixel data are available
         for(int[] ratio: ratioImages){
             int num = ratio[0];
             int den = ratio[1];
             int ratioIndex = ui.getRatioImageIndex(num,den);
             if(ratioIndex > -1) images[cnt++] = ui.getRatioImage(ratioIndex);
             else{
-                // create ratio image
-                HSIProps props = new HSIProps();
-                props.setNumMass(num);
-                props.setDenMass(den);
-                ui.computeRatio(props);
-                ratioIndex = ui.getRatioImageIndex(num,den);
-                if(ratioIndex > -1) images[cnt++] = ui.getRatioImage(ratioIndex);
-                else{
-                    System.out.println("Error computing ratio image!");
-                }           
+                // this can not be done in the SwingWorker thread as it involves GUI operation !!
+
+//                // create ratio image
+//                HSIProps props = new HSIProps();
+//                props.setNumMass(num);
+//                props.setDenMass(den);
+//                ui.computeRatio(props);
+//                ratioIndex = ui.getRatioImageIndex(num,den);
+//                if(ratioIndex > -1) images[cnt++] = ui.getRatioImage(ratioIndex);
+//                else{
+
+                    System.out.println("Error: ratio image not available!");
+//                }
             }
         }        
         return images;
@@ -592,7 +598,11 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
     
     public byte[] getClassification() {
         return classification;
-    }     
+    }
+
+    public boolean getSuccess(){
+        return success;
+    }
 
     @Override
     protected Boolean doInBackground() throws Exception {
@@ -611,5 +621,14 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
             e.printStackTrace();
             return false;
         }
-    }   
+    }
+
+    @Override
+    protected void done() {
+        try{
+            success = get();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 }

@@ -132,12 +132,16 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                         progressBar.setValue(0);
                     }else if(evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE)){
                         activeTask = NONE_TASK;
-                        workLabel.setText("done");
                         progressBar.setValue(100);
-                        ArrayList<ArrayList<ArrayList<Double>>> trainData = segUtil.getTrainData();
-                        ArrayList<ArrayList<ArrayList<Double>>> predData  = segUtil.getPredData();
-                        classColors = segUtil.getClassColors();
-                        startSegmentation(trainData, predData);                        
+                        if(segUtil.getSuccess()){
+                            workLabel.setText("done");
+                            ArrayList<ArrayList<ArrayList<Double>>> trainData = segUtil.getTrainData();
+                            ArrayList<ArrayList<ArrayList<Double>>> predData  = segUtil.getPredData();
+                            classColors = segUtil.getClassColors();
+                            startSegmentation(trainData, predData);
+                        }else{ // preparation failed!
+                            workLabel.setText("Error: feature extraction failed!");
+                        }
                     }
                     break;
                 case ROI_TASK:
@@ -152,7 +156,7 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                         ClassManager cm = segUtil.getPredClasses();
                         if (cm != null && cm.getClasses().length > 0){
                             workLabel.setText("done");
-                            predClasses = activeClasses = cm;
+                            predClasses = cm;
                             predRButton.setEnabled(true);
                             predRButton.doClick();
                             fillBox();
@@ -491,6 +495,22 @@ private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         images.add(3);
         java.util.ArrayList<int[]> ratioImages = new java.util.ArrayList<int[]>();
         ratioImages.add(new int[]{3,2});
+
+        // create ratio images if they are not open, yet
+        // this can't be done in the SwingWorker thread as this involves some GUI operations !!
+        for(int[] ratio: ratioImages){
+            int num = ratio[0];
+            int den = ratio[1];
+            if(mimsUi.getRatioImageIndex(num,den) == -1){
+                // create ratio image
+                HSIProps props = new HSIProps();
+                props.setNumMass(num);
+                props.setDenMass(den);
+                mimsUi.computeRatio(props);
+                if(mimsUi.getRatioImageIndex(num,den) == -1) System.out.println("Error computing ratio image!");
+            }
+        }
+
         int colorImage = 2;
         int features = 0;
         // HARD-CODED
