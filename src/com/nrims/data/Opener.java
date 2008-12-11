@@ -7,9 +7,7 @@ import java.text.DecimalFormat;
 /**
  * Class responsible for opening MIMS files.
  * 
- * @author Douglas Benson
- * @author <a href="rob.gonzalez@gmail.com">Rob Gonzalez</a>
- */
+**/
 public class Opener {
 
     /**
@@ -177,7 +175,7 @@ public class Opener {
         byte[] bArray = new byte[bytesPerMass];
         in.read(bArray);
 
-        for (i = 0                          ,j=0; i < pixelsPerImage; i++, j += 2) {
+        for (i = 0, j=0; i < pixelsPerImage; i++, j += 2) {
             int b1 = bArray[j] & 0xff;
             int b2 = bArray[j + 1] & 0xff;
             gl = (b2 + (b1 << 8));

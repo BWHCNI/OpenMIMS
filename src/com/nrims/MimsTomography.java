@@ -22,6 +22,7 @@ public class MimsTomography extends javax.swing.JPanel {
     
     /** Creates new form mimsTomography */
     public MimsTomography(com.nrims.UI ui, com.nrims.data.Opener im) {
+        System.out.println("MimsTomography constructor");
         initComponents();
         this.ui = ui ;
         this.image = im;
@@ -34,6 +35,7 @@ public class MimsTomography extends javax.swing.JPanel {
             imagestacks[i]=this.images[i].getStack();
         }
         
+        tomographyChart = new MimsJFreeChart(ui,im);
         
         //some swing component cleanup, whee...
         lowerSlider.setMaximum(image.nImages());
@@ -49,143 +51,6 @@ public class MimsTomography extends javax.swing.JPanel {
             public Object getElementAt(int i) { return strings[i]; }
         });
         
-        plotcolors = new java.util.Vector<java.awt.Color>();
-        for(int i=0;i<20;i++)
-            plotcolors.add(randColor());
-        
-        
-    }
-    
-    public double getIndividualStat(ImageStatistics stats, String statname) {
-        double st;
-        
-        if(statname.equals("area"))
-            return stats.area;
-        if(statname.equals("mean"))
-            return stats.mean;
-        if(statname.equals("stddev"))
-            return stats.stdDev;
-        if(statname.equals("mode"))
-            return stats.mode;
-        if(statname.equals("min"))
-            return stats.min;
-        if(statname.equals("max"))
-            return stats.max;
-        if(statname.equals("xcentroid"))
-            return stats.xCentroid;
-        if(statname.equals("ycentroid"))
-            return stats.yCentroid;
-        if(statname.equals("xcentermass"))
-            return stats.xCenterOfMass;
-        if(statname.equals("ycentermass"))
-            return stats.yCenterOfMass;
-        if(statname.equals("roix"))
-            return stats.roiX;
-        if(statname.equals("roiy"))
-            return stats.roiY;
-        if(statname.equals("roiwidth"))
-            return stats.roiWidth;
-        if(statname.equals("roiheight"))
-            return stats.roiHeight;
-        if(statname.equals("major"))
-            return stats.major;
-        if(statname.equals("minor"))
-            return stats.minor;
-        if(statname.equals("angle"))
-            return stats.angle;
-        if(statname.equals("feret"))
-            return stats.FERET;
-        if(statname.equals("sum"))
-            return (stats.pixelCount*stats.mean);
-        if(statname.equals("median"))
-            return stats.median;
-        if(statname.equals("kurtosis"))
-            return stats.kurtosis;
-        if(statname.equals("areafraction"))
-            return stats.AREA_FRACTION;
-        if(statname.equals("perimeter"))
-            return stats.PERIMETER;
-        
-        return -999;
-    }
-    
-    public double[] getPlotData(ij.gui.Roi roi, String statname, int mass, int min, int max) {
-        
-        double[] statistics = new double[max-min+1];
-        ImageStatistics tempstats = null;
-        if(roi!=null)
-            if(mass<numberMasses)
-                images[mass].setRoi(roi);
-            else
-                images[0].setRoi(roi);
-        
-        
-        System.out.println("Mass #: " + mass + "ROI: " + roi.getName());
-        
-        if(mass<numberMasses) {
-            for(int i=min; i<=max; i++) {
-                images[mass].setSlice(i);
-                tempstats = ImageStatistics.getStatistics(images[mass].getProcessor(), 0, images[mass].getCalibration());
-                statistics[i-min] = getIndividualStat(tempstats, statname);
-            }
-        } else {
-            for(int i=min; i<=max; i++) {
-                images[0].setSlice(i);
-                tempstats = ImageStatistics.getStatistics(rp[mass-numberMasses].getProcessor(), 0, rp[mass-numberMasses].getCalibration() );
-                statistics[i-min] = getIndividualStat(tempstats, statname);
-            }
-        }
-        
-        return statistics;
-    }
-    
-    public ij.gui.Plot generatePlot(Roi[] rois, String title, String[] stats, int[] masses, int min, int max) {
-        
-        double[] tempdata = getPlotData(rois[0], stats[0], masses[0], min, max);
-        Vector<double[]> vect = new Vector<double[]>();
-        vect.add(tempdata);
-        Plot tempplot = new Plot(title, "plane", squishStrings(stats, "-"), getRange(min, max), tempdata);
-        
-        tempplot.setColor(plotcolors.get(0));
-        
-        for(int k=0; k<masses.length; k++) {
-            for(int i=0; i<rois.length; i++) {
-                for(int j=0; j<stats.length; j++) {
-                    tempdata = getPlotData(rois[i], stats[j], masses[k], min, max);
-                    vect.add(tempdata);
-                }
-            }
-        }
-        
-        System.out.println("vector size: "+vect.size());
-        
-        double ymin = findMin(vect);
-        double ymax = findMax(vect);
-        System.out.println("min: "+ymin+" max: "+ymax);
-        
-        tempplot.setLimits(min, max, 0.85*ymin, 1.15*ymax);
-        
-        while(plotcolors.size() < vect.size()) {
-            plotcolors.add(randColor());
-            System.out.println("coloradded*******");
-        }
-        
-        for(int i=1; i<vect.size(); i++) {
-            System.out.println("grab: "+i);
-            tempplot.setColor(plotcolors.get(i));
-            
-            tempplot.addPoints(getRange(min, max), (double[])(vect.get(i)), 2);
-        }
-        //reset color of original points...
-        tempplot.setColor(plotcolors.get(0));
-        return tempplot;
-    }
-    
-    public double[] getRange(int min, int max) {
-        double[] temp = new double[max-min+1];
-        for(int i=0; i <= (max-min); i++)
-            temp[i]=i+min;
-        return temp;
     }
     
     public String squishStrings(String[] strings, String spacer) {
@@ -193,48 +58,6 @@ public class MimsTomography extends javax.swing.JPanel {
         for(int i=0; i<strings.length; i++)
             temp = temp + strings[i] + spacer;
         return temp;
-    }
-    
-    public double findMin(Vector v) {
-        double min = Integer.MAX_VALUE;
-        int l = ((double[])v.get(0)).length;
-        
-        if(!v.isEmpty()) {
-        for(int i=0; i<v.size(); i++) {
-            double[] d = (double[])(v.get(i));
-            for(int j=0; j<l; j++) {
-                if(d[j] < min)
-                    min = d[j];
-            }
-        }
-        }
-        
-        return min;
-    }
-    
-    public double findMax(Vector v) {
-        double max = Integer.MIN_VALUE;
-        int l = ((double[])v.get(0)).length;
-        
-        if(!v.isEmpty()) {
-        for(int i=0; i<v.size(); i++) {
-            double[] d = (double[])(v.get(i));
-            for(int j=0; j<l; j++) {
-                if(d[j] > max)
-                    max = d[j];
-            }
-        }
-        }
-        
-        return max;
-    }
-    
-    public java.awt.Color randColor() {
-        java.util.Random r = new java.util.Random();
-        
-        java.awt.Color c = new java.awt.Color(25+r.nextInt(206), 25+r.nextInt(206), 25+r.nextInt(206));
-        
-        return c;
     }
     
      
@@ -383,7 +206,7 @@ public class MimsTomography extends javax.swing.JPanel {
 
     private void plotButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plotButtonActionPerformed
         // TODO add your handling code here:
-        System.out.println("Button!");
+        
         int currentPlane = images[0].getSlice();
         
         MimsRoiManager rm = ui.getRoiManager();
@@ -411,29 +234,15 @@ public class MimsTomography extends javax.swing.JPanel {
             }
             
             int[] masses = jList2.getSelectedIndices();
-        
-            plot = generatePlot(rois, image.getName(), statnames, masses, lowerSlider.getValue(), upperSlider.getValue());
-           
-            if (plotWindow==null || plotWindow.isClosed()) {
-            	plotWindow = plot.show();
-                //plotWindow.setResizable(false);
-                System.out.println("resizable?  "+plotWindow.isResizable());
-                
-            } else {
-                plotWindow.drawPlot(plot);
-                //plotWindow.setResizable(false);
-                System.out.println("resizable?  "+plotWindow.isResizable());
-            }
+
+            tomographyChart.creatNewFrame(rois, image.getName(), statnames, masses, lowerSlider.getValue(), upperSlider.getValue());
+                        
         } else {
             ij.IJ.error("Tomography Error", "You must select at least one ROI, statistic, and mass.");
         }
         
         images[0].setSlice(currentPlane);
-        
-        if(plotWindow != null) plotWindow.setResizable(false);
-        //System.out.println("resizable?  "+plotWindow.isResizable());
-        
-        System.out.println("No More Button!");
+                
     }//GEN-LAST:event_plotButtonActionPerformed
     
     public void resetBounds() {            
@@ -483,11 +292,6 @@ public class MimsTomography extends javax.swing.JPanel {
         
     }
     
-    private java.util.Vector<java.awt.Color> plotcolors;
-    private Plot plot;
-    private PlotWindow plotWindow;
-    
-        
     private com.nrims.UI ui;
     private com.nrims.data.Opener image;
     private int numberMasses;
@@ -495,6 +299,7 @@ public class MimsTomography extends javax.swing.JPanel {
     private ImageStack[] imagestacks;
     private ij.process.ImageStatistics imagestats;
     private MimsPlus[] rp;
+    private MimsJFreeChart tomographyChart;
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

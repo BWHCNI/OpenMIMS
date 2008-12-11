@@ -64,6 +64,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
         jCheckBox4 = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
+        jButton5 = new javax.swing.JButton();
 
         setToolTipText("Drawing ROIs automatically adds to RoiManager");
 
@@ -120,7 +121,6 @@ public class MimsRoiControl extends javax.swing.JPanel {
         jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jCheckBox4.setSelected(true);
         jCheckBox4.setText("Append to table");
         jCheckBox4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -131,6 +131,13 @@ public class MimsRoiControl extends javax.swing.JPanel {
         jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 jTextField1KeyPressed(evt);
+            }
+        });
+
+        jButton5.setText("Measure Sum Images");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
             }
         });
 
@@ -146,7 +153,10 @@ public class MimsRoiControl extends javax.swing.JPanel {
                         .add(jCheckBox1)
                         .add(26, 26, 26)
                         .add(jCheckBox4))
-                    .add(jButton2)
+                    .add(layout.createSequentialGroup()
+                        .add(jButton2)
+                        .add(27, 27, 27)
+                        .add(jButton5))
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -158,7 +168,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap(267, Short.MAX_VALUE))
+                .addContainerGap(225, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -182,7 +192,9 @@ public class MimsRoiControl extends javax.swing.JPanel {
                     .add(jLabel1)
                     .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(14, 14, 14)
-                .add(jButton2)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButton2)
+                    .add(jButton5))
                 .addContainerGap(69, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -204,6 +216,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
         // If not appending reset the data in the table
         if(jCheckBox4.isSelected() == false ) measure.reset();
         measure.measure(jCheckBox3.isSelected());
+        ij.WindowManager.getFrame(measure.getName()).setSize(450, 300);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -217,6 +230,15 @@ public class MimsRoiControl extends javax.swing.JPanel {
     private void jCheckBox2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox2ItemStateChanged
         ui.setSyncROIs(jCheckBox2.isSelected());
     }//GEN-LAST:event_jCheckBox2ItemStateChanged
+
+private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+// TODO add your handling code here:
+    // If not appending reset the data in the table
+    if(jCheckBox4.isSelected() == false ) measure.reset();
+    measure.measureSums(jCheckBox3.isSelected());
+    ij.WindowManager.getFrame(measure.getName()).setSize(450, 300);
+    ij.WindowManager.getFrame(measure.getName());
+}//GEN-LAST:event_jButton5ActionPerformed
    
     private com.nrims.UI ui = null ;
     private com.nrims.Measure measure = null ;
@@ -226,6 +248,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JCheckBox jCheckBox3;

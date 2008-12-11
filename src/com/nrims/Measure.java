@@ -19,6 +19,7 @@ public class Measure {
         this.ui = ui ;
         reset();
         int n = ui.getMimsImage().nMasses() ;
+        System.out.println("nMasses() -> "+n);
         for(int i = 0 ; i < n ; i++ ) {
             bMass[i] = true;
         }
@@ -49,7 +50,7 @@ public class Measure {
     public ij.measure.ResultsTable getTable() { return rTable ; }
     
     public void setMasses(boolean bUseMass[] ) {
-        for(int i = 0 ; i < 6 && i < bUseMass.length ; i++ ) {
+        for(int i = 0 ; i < ui.getMimsImage().nMasses() && i < bUseMass.length ; i++ ) {
             bMass[i] = bUseMass[i];
         }
     }
@@ -367,6 +368,108 @@ public class Measure {
         rTable.show(fileName);
         
     }
+    
+    
+    ///God damn it
+    
+    public void measureSums(boolean bStack) {
+        if(ui.getMimsImage().nImages() < 2) {
+            bStack = false;
+        }
+        
+        MimsPlus [] mSumImages = ui.getOpenSumImages();
+        
+        if(mSumImages.length == 0) {
+            return;
+        }
+        
+         MimsRoiManager rm = ui.getRoiManager();
+        Roi [] rois ;
+        java.awt.List rlist = rm.getList() ;
+        
+        if(!rm.getROIs().isEmpty()) {
+            rois = new Roi[rlist.getItemCount()];
+            for(int i = 0 ; i < rlist.getItemCount(); i++ ) {
+                rois[i] = (Roi) rm.getROIs().get(rlist.getItem(i));
+            }
+        }            
+        else {
+            rois = new Roi[0];
+        }
+        
+        int nSlices = bStack ? mSumImages[0].getImageStackSize() : 1 ;
+        if(nSlices < 1) {
+            nSlices = 1;
+        }
+        int ncol = 0 ;
+ 
+        int nrois = rois.length ;
+        int currentMaxColumns = 150;
+
+        if(nrois == 0) {
+            nrois = 1;
+        }
+        
+        //all of this just to generate column headers...
+        for( int r = 1 ; r <= nrois ; r++ ) {
+            
+                for( int m = 0 ; m < bMeasure.length ; m++ ) {
+                    
+                    if(bMeasure[m]) {
+                            String hd = measureNames[m];
+                            
+                            if(nrois > 1) {
+                                hd += "_r" + r;
+                            }
+                            if (ncol == currentMaxColumns-2){
+                            
+                                rTable.addColumns();
+                                currentMaxColumns = currentMaxColumns*2;
+                            }
+                            rTable.setHeading(ncol++, hd);
+                            
+                        
+                    }
+                }
+            
+        }
+        //end headers
+        
+        int mOptions = 0 ;
+        for(int m = 0 ; m < bMeasure.length ; m++)  {
+            if(bMeasure[m]) {
+                mOptions |= (1 << m);
+            }
+        }
+                
+        
+        ncol = 0 ;
+        rTable.incrementCounter() ;
+// ??? throws "AWT-EventQueue-0" java.lang.IllegalArgumentException: row>=counter
+//            for(int k = 0; k<images.length; k++) {
+//                rTable.setLabel(images[k].getTitle(), k);
+//            }
+        System.out.println("mSumImages.length -> "+mSumImages.length);
+        for(int i = 0 ; i < mSumImages.length ; i++ ) {
+            ncol = 0;
+            for(int r = 0 ; r < nrois ; r++ ) {
+                    if(rois.length > 0) {
+                        mSumImages[i].setRoi(rois[r]);
+                    }                   
+                    ImageStatistics is = 
+                        ij.process.ImageStatistics.getStatistics(
+                            mSumImages[i].getProcessor(),
+                            mOptions,
+                            mSumImages[i].getCalibration()) ;
+                    ncol = addResults(is, 0, rois.length > 0 ? rois[r] : null, 1, ncol);
+                }
+           rTable.incrementCounter() ;
+       }
+        for(int i = 0; i < mSumImages.length; i++) {rTable.setLabel(mSumImages[i].getTitle(), i);}
+                
+        rTable.show(fileName);
+        
+    }
 
     public String getName() { return fileName ; }
 
@@ -376,7 +479,8 @@ public class Measure {
     private boolean bStack = true ;
     private boolean bHasLabels = false ;
     private boolean bMeasureRatios = true ;
-    private boolean bMass[] = new boolean[6] ;
+    //must fix should not be 8... was 6
+    private boolean bMass[] = new boolean[8] ;
     private boolean bMeasure[] = new boolean[ij.measure.ResultsTable.SLICE+1];
     private boolean bMeasurePerImage[] = new boolean[ij.measure.ResultsTable.SLICE+1];
     private String fileName = "NRIMS.txt" ;

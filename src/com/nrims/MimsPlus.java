@@ -1,6 +1,7 @@
 package com.nrims;
 import ij.IJ ;
 import ij.gui.* ;
+//import ij.process.*;
 import java.awt.event.WindowEvent ;
 import java.awt.event.WindowListener ;
 import java.awt.event.MouseListener ;
@@ -11,8 +12,6 @@ import javax.swing.event.EventListenerList;
  * extends ImagePlus with methods to synchronize display of multiple stacks
  * and drawing ROIs in each windows
  * 
- * @author Douglas Benson
- * @author <a href="mailto:rob.gonzalez@gmail.com">Rob Gonzalez</a>
  */
 public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListener, MouseMotionListener {
     
@@ -20,6 +19,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     static final int RATIO_IMAGE = 1 ;
     static final int HSI_IMAGE  =  2 ;
     static final int SEG_IMAGE = 3 ;
+    static final int SUM_IMAGE = 4 ;
     
     /** Creates a new instance of mimsPlus */
     public MimsPlus() {
@@ -51,26 +51,40 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
     
     public MimsPlus(UI ui,int width, int height, int[] pixels, String name) {
-           super();
-           this.ui=ui;
+        super();
+        this.ui=ui;
            // srcImage = image ;
            //ui = srcImage.getUI();
           // nMass = -1;
-           nType = SEG_IMAGE ;
+        nType = SEG_IMAGE ;
            
-           try {
+        try {
            // image.setMassIndex(0);
            // image.setStackIndex(0);
-               ij.process.ImageProcessor ipp = new ij.process.ColorProcessor(
-               width,
-               height,
-               pixels);
+            ij.process.ImageProcessor ipp = new ij.process.ColorProcessor(
+                width,
+                height,
+                pixels);
+        
+            setProcessor(name, ipp);
+          //     getProcessor().setMinAndMax(0, 65535); // default display range
+            fStateListeners = new EventListenerList() ;
+        } catch (Exception x) { IJ.log(x.toString());}
+    }
+    
+    public MimsPlus(UI ui,int width, int height, double[] pixels, String name) {
+           super();
+           this.ui=ui;
+           nType = SUM_IMAGE ;
+           
+           try {
+               ij.process.FloatProcessor ipp = new ij.process.FloatProcessor(width, height, pixels);
                String title = name;
                setProcessor(title, ipp);
-          //     getProcessor().setMinAndMax(0, 65535); // default display range
                fStateListeners = new EventListenerList() ;
         } catch (Exception x) { IJ.log(x.toString());}
-    }   
+    }
+    
     public MimsPlus( com.nrims.data.Opener image, HSIProps props, boolean bIsHSI ) {
         super();
         try {
@@ -95,7 +109,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                    image.getWidth(),
                    height,
                    rgbPixels);
-               title = "HSI m" + srcImage.getMassName(numIndex)+":m"+ srcImage.getMassName(denIndex) + " " + title;
+               title = "HSI m" + srcImage.getMassName(numIndex)+":m"+ srcImage.getMassName(denIndex) + " : " + title;
                setProcessor(title, ip);
                getProcessor().setMinAndMax(0, 255); // default display range
                fStateListeners = new EventListenerList() ;
@@ -108,7 +122,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                    image.getHeight(),
                    fPixels,
                    null );
-               title = "m" + srcImage.getMassName(numIndex)+":m"+ srcImage.getMassName(denIndex) + " " + title;
+               title = "m" + srcImage.getMassName(numIndex)+"/m"+ srcImage.getMassName(denIndex) + " : " + title;
                info += "Type=Ratio";
                setProcessor(title, ip);
                getProcessor().setMinAndMax(0, 1.0); // default display range
@@ -190,6 +204,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     
     public int getNumMass() { return nRatioNum ; }
     public int getDenMass() { return nRatioDen ; }
+    
+    @Override
+    public String getShortTitle() {
+        String tempstring = this.getTitle();
+        int colonindex = tempstring.indexOf(":");
+        //System.out.println("asdf="+tempstring.substring(0, colonindex-1));
+        return tempstring.substring(0, colonindex-1);
+    }
     
     @Override
     public void show() {
@@ -321,6 +343,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
     }
     
+    //rollover pixel value code
     public void mouseMoved(MouseEvent e) {
         int x = (int) e.getPoint().getX();
         int y = (int) e.getPoint().getY();
@@ -361,6 +384,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 msg += "S (" + ngl[0] + " / " + dgl[0] + ") = " + IJ.d2s(r,4);
             }         
         }
+        else if(this.nType == SUM_IMAGE) {
+            int[] gl = this.getPixel(mX, mY);
+            float s = Float.intBitsToFloat(gl[0]);
+            msg += IJ.d2s(s,0);
+        }
         else {
             MimsPlus[] ml = ui.getOpenMassImages() ;
             for(int i = 0 ; i < ml.length ; i++ ) {
@@ -372,7 +400,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             }
         }
             
-        int displayDigits = 5;
+        int displayDigits = 2;
+        //should be in preferences
         boolean insideRoi = false;
         java.util.Hashtable rois = ui.getRoiManager().getROIs();        
         for(Object key:rois.keySet()){
@@ -380,8 +409,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             if(roi.contains(mX, mY)){
                 insideRoi = true;
                 ij.process.ImageStatistics stats = this.getStatistics();
-                msg += "\t" + roi.getName() + ": " + IJ.d2s(stats.area, 0) + ", " + IJ.d2s(stats.mean, displayDigits) + ", " + IJ.d2s(stats.stdDev*stats.stdDev, displayDigits);                
-
+                msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev*stats.stdDev, displayDigits);                
+                roi.setInstanceColor(java.awt.Color.yellow);
                 if(ui.activeRoi != roi){
 //                        //ij.process.ImageProcessor mask = ui.activeRoi==null?null:ui.activeRoi.getMask();
 //                        ip.reset();
@@ -403,6 +432,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             setRoi((Roi)null);
             //ui.mimsStateChanged(new mimsPlusEvent(this, null, mimsPlusEvent.ATTR_SET_ROI));
         }
+        
         ui.updateStatus(msg);
     }
     

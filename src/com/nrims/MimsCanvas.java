@@ -121,7 +121,10 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
             int x = screenX(r.x + r.width / 2 - g.getFontMetrics().stringWidth(name) / 2);
             int y = screenY(r.y + r.height / 2 + g.getFontMetrics().getHeight() / 2);
             g.drawString(name, x, y);
-
+            
+            //Commented out to not do red fill of ROI on mouse over
+            //maybe do something fancy later, restrict to seg image, etc.
+            /*
             if (ui.activeRoi == roi) {
                 if (roi.getType() == Roi.COMPOSITE) {
                     float[] array = ((ShapeRoi) roi).getShapeAsArray();
@@ -157,6 +160,7 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
                     }
 
                     Graphics2D g2 = (Graphics2D) g;
+                    
                     g2.fill(s);
                 } else {
                     Polygon p = roi.getPolygon();
@@ -167,9 +171,10 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
                         screenYpoints[i] = screenY(p.ypoints[i]);
                     }
                     Graphics2D g2 = (Graphics2D) g;
+                    
                     g2.fill(new Polygon(screenXpoints, screenYpoints, p.npoints));
                 }
-            }
+            }   */
         }
     }
 

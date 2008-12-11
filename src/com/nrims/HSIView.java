@@ -619,7 +619,7 @@ private synchronized void update(boolean bUpdateUI) {
     }
     
     public boolean ratioIsFixed() {
-        System.out.println("ratioIsFixed called, return: " + this.ratioContrastRadioButton.isSelected());
+        //System.out.println("ratioIsFixed called, return: " + this.ratioContrastRadioButton.isSelected());
         return this.ratioContrastRadioButton.isSelected();
     }
     

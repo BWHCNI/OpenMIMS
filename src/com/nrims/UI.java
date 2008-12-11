@@ -31,6 +31,9 @@ import javax.swing.UIManager;
 public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListener {
 
     public static final long serialVersionUID = 1;
+    //more masses
+    private int maxMasses = 8;
+    
     /**
      * Whether we're running the UI in debug mode.
      */
@@ -51,11 +54,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * The folder from which the last image was loaded.
      */
     private String lastFolder = null;
-    private boolean[] bOpenMass = new boolean[6];
-    private com.nrims.MimsPlus[] massImages = new com.nrims.MimsPlus[6];
-    private com.nrims.MimsPlus[] ratioImages = new com.nrims.MimsPlus[6];
-    private com.nrims.MimsPlus[] hsiImages = new com.nrims.MimsPlus[6];
-    private com.nrims.MimsPlus[] segImages = new com.nrims.MimsPlus[6];
+    private boolean[] bOpenMass = new boolean[maxMasses];
+    private com.nrims.MimsPlus[] massImages = new com.nrims.MimsPlus[maxMasses];
+    private com.nrims.MimsPlus[] ratioImages = new com.nrims.MimsPlus[maxMasses];
+    private com.nrims.MimsPlus[] hsiImages = new com.nrims.MimsPlus[maxMasses];
+    private com.nrims.MimsPlus[] segImages = new com.nrims.MimsPlus[maxMasses];
+    private com.nrims.MimsPlus[] sumImages = new com.nrims.MimsPlus[2*maxMasses];
     private com.nrims.MimsData mimsData = null;
     private com.nrims.MimsLog mimsLog = null;
     private com.nrims.MimsRoiControl roiControl = null;
@@ -66,6 +70,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private com.nrims.SegmentationForm segmentation = null;
     protected ij.gui.Roi activeRoi;
     private int ratioScaleFactor = 10000;
+
     //tesing fixed contrast
     private boolean fixRatioContrast = true;
 
@@ -75,7 +80,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      */
     public UI(String fileName) {
         super("NRIMS Analysis Module");
-
+        
+        System.out.println("Ui constructor");
+        
         // Set look and feel to native OS
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -93,7 +100,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
 
         if (image == null) {
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < maxMasses; i++) {
                 massImages[i] = null;
                 ratioImages[i] = null;
                 hsiImages[i] = null;
@@ -129,8 +136,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * Closes the current image and its associated set of windows if the mode is set to close open windows.
      */
     private synchronized void closeCurrentImage() {
-        // TODO why is this 6?
-        for (int i = 0; i < 6; i++) {
+        // TODO why is this 6? Changed to maxMasses
+        for (int i = 0; i < maxMasses; i++) {
             if (segImages[i] != null) {
                 segImages[i].removeListener(this);
                 if (bCloseOldWindows) {
@@ -165,7 +172,17 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
             }
         }
-
+        
+        for (int i = 0; i < maxMasses*2; i++) {
+            if (sumImages[i] != null) {
+                sumImages[i].removeListener(this);
+                if (bCloseOldWindows) {
+                    if (sumImages[i].getWindow() != null) {
+                        sumImages[i].getWindow().close();
+                    }
+                }
+            }
+        }
         // FIXME: the current opener is not dispose anywhere, so there are likely dangling file handles.
     }
 
@@ -394,7 +411,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     public int getRatioImageIndex(int numIndex, int denIndex) {
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < maxMasses; i++) {
             if (ratioImages[i] != null) {
                 if (ratioImages[i].getNumMass() == numIndex && ratioImages[i].getDenMass() == denIndex) {
                     return i;
@@ -517,7 +534,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             } else {
                 // find a slot to save it
                 boolean bFound = false;
-                for (i = 0; i < 6 && !bFound; i++) {
+                for (i = 0; i < maxMasses && !bFound; i++) {
                     if (ratioImages[i] == null) {
                         bFound = true;
                         ratioImages[i] = mp;
@@ -595,13 +612,107 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         return true;
     }
 
+    public synchronized boolean computeSum(MimsPlus mImage) {
+        boolean fail = true;
+        
+        if(mImage==null) {return false;}
+        
+        int width = mImage.getWidth();
+        int height = mImage.getHeight();
+        String sumName = "Sum : "+mImage.getShortTitle();
+        int templength = mImage.getProcessor().getPixelCount();
+        double[] sumPixels = new double[templength];
+        short[] tempPixels = new short[templength];
+                
+        int startSlice = mImage.getSlice();
+        
+        if(mImage.getMimsType()==MimsPlus.MASS_IMAGE) {
+            for(int i=1; i<=mImage.getImageStackSize(); i++) {
+                mImage.setSlice(i);
+                tempPixels = (short[]) mImage.getProcessor().getPixels();
+                for(int j=0; j<sumPixels.length; j++) { 
+                    sumPixels[j]+=tempPixels[j]; 
+                }
+            }
+            mImage.setSlice(startSlice);
+            fail = false;
+        }
+        
+        if(mImage.getMimsType()==MimsPlus.RATIO_IMAGE) {
+            int numMass = mImage.getNumMass();
+            int denMass = mImage.getDenMass();
+            MimsPlus nImage = massImages[numMass];
+            MimsPlus dImage = massImages[denMass];
+            double[] numPixels = new double[templength];
+            double[] denPixels = new double[templength];
+            
+            startSlice = nImage.getSlice();
+            
+            for(int i=1; i<=nImage.getImageStackSize(); i++) {
+                nImage.setSlice(i);
+                tempPixels = (short[]) nImage.getProcessor().getPixels();
+                for(int j=0; j<numPixels.length; j++) { 
+                    numPixels[j]+=tempPixels[j]; 
+                }
+            }
+            for(int i=1; i<=dImage.getImageStackSize(); i++) {
+                dImage.setSlice(i);
+                tempPixels = (short[]) dImage.getProcessor().getPixels();
+                for(int j=0; j<denPixels.length; j++) { 
+                    denPixels[j]+=tempPixels[j]; 
+                }
+            }
+            for(int i=0; i<sumPixels.length; i++) {
+                if(denPixels[i]!=0) {
+                    sumPixels[i] = ratioScaleFactor*(numPixels[i]/denPixels[i]);
+                }else {
+                    sumPixels[i] = 0;
+                }
+            }
+            
+            nImage.setSlice(startSlice);
+            
+            fail = false;
+        }
+        
+        if(!fail) {
+            MimsPlus mp = new MimsPlus(this, width, height, sumPixels, sumName);
+            
+            boolean bShow = (mp == null);
+            // ??????
+            // find a slot to save it
+
+            boolean bFound = false;
+            for (int i = 0; i < maxMasses*2 && !bFound; i++) {
+                if (sumImages[i] == null) {
+                    bFound = true;
+                    sumImages[i] = mp;
+                }
+            }
+            //why overwrite the last slot?
+            if (!bFound) {
+                sumImages[(maxMasses*2)-1] = mp;
+            }
+            
+            mp.addListener(this);
+            mp.show();
+            if(mImage.getMimsType()==MimsPlus.RATIO_IMAGE){this.autocontrast(mp);}
+            mp.updateAndDraw();
+            
+            bShow = true; 
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     public int getHSIImageIndex(HSIProps props) {
         if (props == null) {
             return -1;
         }
         int numIndex = props.getNumMass();
         int denIndex = props.getDenMass();
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < maxMasses; i++) {
             if (hsiImages[i] != null) {
                 if (hsiImages[i].getNumMass() == numIndex && hsiImages[i].getDenMass() == denIndex) {
                     return i;
@@ -662,7 +773,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             mp.setHSIProcessor(new HSIProcessor(mp));
             // find a slot to save it
             boolean bFound = false;
-            for (i = 0; i < 6 && !bFound; i++) {
+            for (i = 0; i < maxMasses && !bFound; i++) {
                 if (hsiImages[i] == null) {
                     bFound = true;
                     hsiImages[i] = mp;
@@ -762,7 +873,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     massImages[i].setSlice(nSlice);
                 }
             }
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < maxMasses; i++) {
                 if ((hsiImages[i] != mp) && (hsiImages[i] != null)) {
                     if (hsiImages[i].isStack()) {
                         hsiImages[i].setSlice(evt.getSlice());
@@ -848,7 +959,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     bNotFound = false;
                 }
             }
-            for (i = 0; bNotFound && i < 6; i++) {
+            for (i = 0; bNotFound && i < maxMasses; i++) {
                 if (hsiImages[i] == evt.getSource()) {
                     hsiImages[i].removeListener(this);
                     hsiImages[i] = null;
@@ -935,6 +1046,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jMenuItem4 = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
+        utilitiesMenu = new javax.swing.JMenu();
+        sumAllMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("NRIMS Analysis Module");
@@ -952,11 +1065,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 634, Short.MAX_VALUE)
+            .add(0, 637, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 337, Short.MAX_VALUE)
+            .add(0, 347, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Images", jPanel1);
@@ -1036,6 +1149,19 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         jMenuBar1.add(viewMenu);
 
+        utilitiesMenu.setText("Utilities");
+
+        sumAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
+        sumAllMenuItem.setText("Sum all Open");
+        sumAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sumAllMenuItemActionPerformed(evt);
+            }
+        });
+        utilitiesMenu.add(sumAllMenuItem);
+
+        jMenuBar1.add(utilitiesMenu);
+
         setJMenuBar(jMenuBar1);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -1073,6 +1199,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
     }
 
+    public void autocontrast(MimsPlus img) {
+        ij.process.ImageStatistics imgStats = img.getStatistics();
+        
+        img.getProcessor().setMinAndMax(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)), imgStats.mean + (2*imgStats.stdDev));
+    }
+    
     public void restoreMims() {
         for (int i = 0; i < image.nMasses(); i++) {
             if (bOpenMass[i] == false) {
@@ -1136,6 +1268,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
         //wo.run("tile");
         this.getmimsStackEditing().setConcatGUI(false);
+        this.mimsLog.Log("File restored.");
     }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
@@ -1243,6 +1376,18 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     System.exit(0);
 }//GEN-LAST:event_exitMenuItemActionPerformed
 
+private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumAllMenuItemActionPerformed
+// TODO add your handling code here:
+    MimsPlus[] openmass = this.getOpenMassImages();
+    MimsPlus[] openratio = this.getOpenRatioImages();
+    for(int i=0; i < openmass.length; i++) {
+        this.computeSum(openmass[i]);
+    }
+    for(int i=0; i < openratio.length; i++) {
+        this.computeSum(openratio[i]);
+    }
+}//GEN-LAST:event_sumAllMenuItemActionPerformed
+
 //    private void imagesChanged(com.nrims.mimsPlusEvent e) {
 //        mimsStackEditing.resetTrueIndexLabel();
 //    }            
@@ -1269,14 +1414,14 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
     public MimsPlus getMassImage(int i) {
-        if (i >= 0 && i < 6) {
+        if (i >= 0 && i < maxMasses) {
             return massImages[i];
         }
         return null;
     }
 
     public MimsPlus getRatioImage(int i) {
-        if (i >= 0 && i < 6) {
+        if (i >= 0 && i < maxMasses) {
             return ratioImages[i];
         }
         return null;
@@ -1306,7 +1451,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     public MimsPlus[] getOpenRatioImages() {
         int i, nOpen = 0;
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < maxMasses; i++) {
             if (ratioImages[i] != null) {
                 nOpen++;
             }
@@ -1315,7 +1460,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if (nOpen == 0) {
             return mp;
         }
-        for (i = 0        , nOpen = 0; i < 6; i++) {
+        for (i = 0        , nOpen = 0; i < maxMasses; i++) {
             if (ratioImages[i] != null) {
                 mp[nOpen++] = ratioImages[i];
             }
@@ -1325,7 +1470,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     public MimsPlus[] getOpenHSIImages() {
         int i, nOpen = 0;
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < maxMasses; i++) {
             if (hsiImages[i] != null) {
                 nOpen++;
             }
@@ -1334,7 +1479,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if (nOpen == 0) {
             return mp;
         }
-        for (i = 0        , nOpen = 0; i < 6; i++) {
+        for (i = 0        , nOpen = 0; i < maxMasses; i++) {
             if (hsiImages[i] != null) {
                 mp[nOpen++] = hsiImages[i];
             }
@@ -1344,7 +1489,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     public MimsPlus[] getOpenSegImages() {
         int i, nOpen = 0;
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < maxMasses; i++) {
             if (segImages[i] != null) {
                 nOpen++;
             }
@@ -1353,14 +1498,54 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if (nOpen == 0) {
             return mp;
         }
-        for (i = 0        , nOpen = 0; i < 6; i++) {
+        for (i = 0, nOpen = 0; i < maxMasses; i++) {
             if (segImages[i] != null) {
                 mp[nOpen++] = segImages[i];
             }
         }
         return mp;
     }
+    
+    public MimsPlus[] getOpenSumImages() {
+        int i, nOpen = 0;
+        for (i = 0; i < 2*maxMasses; i++) {
+            if (sumImages[i] != null) {
+                nOpen++;
+            }
+        }
+        MimsPlus[] mp = new MimsPlus[nOpen];
+        if (nOpen == 0) {
+            return mp;
+        }
+        for (i = 0, nOpen = 0; i < 2*maxMasses; i++) {
+            if (sumImages[i] != null) {
+                mp[nOpen++] = sumImages[i];
+            }
+        }
+        return mp;
+    }
 
+    public MimsPlus getImageByName(String name) {
+        MimsPlus mp =null;
+        
+        MimsPlus[] tempimages = this.getOpenMassImages();
+        
+        for(int i=0; i<tempimages.length; i++){
+            if(name == tempimages[i].getTitle()) {
+                return tempimages[i];
+            }
+        }
+        
+        tempimages = this.getOpenRatioImages();
+        
+        for(int i=0; i<tempimages.length; i++){
+            if(name == tempimages[i].getTitle()) {
+                return tempimages[i];
+            }
+        }
+        return mp;
+    }
+    
     public void setSyncStack(boolean bSync) {
         bSyncStack = bSync;
     }
@@ -1430,7 +1615,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
     public void setActiveMimsPlus(MimsPlus mp) {
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < maxMasses; i++) {
             if (mp == hsiImages[i]) {
                 hsiControl.setHSIProps(hsiImages[i].getHSIProps());
             }
@@ -1475,6 +1660,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        
         for (int i = 0; i < args.length; i++) {
            if (args[i].startsWith("-ijpath") && i+1 < args.length) {
 					Prefs.setHomeDir(args[i+1]);
@@ -1482,12 +1668,14 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
 
         EventQueue.invokeLater(new Runnable() {
-
+            
             @Override
             public void run() {
+                System.out.println("Ui.run called");
                 new UI(null).setVisible(true);
             }
-        });
+            
+        });   
     }
 
     public boolean getDebug() {
@@ -1508,6 +1696,8 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField mainTextField;
     private javax.swing.JMenuItem openNewMenuItem;
+    private javax.swing.JMenuItem sumAllMenuItem;
+    private javax.swing.JMenu utilitiesMenu;
     private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
 }

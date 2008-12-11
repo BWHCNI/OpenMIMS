@@ -16,6 +16,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
     public static final long serialVersionUID = 1;
 
     //Philipp method for demo
+    //needs to be deleted
     public void setConcatGUI(boolean status) {
         if (status) {
             this.reinsertButton.setEnabled(false);
@@ -441,6 +442,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         untrackButton = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         saveActionButton = new javax.swing.JButton();
+        sumButton = new javax.swing.JButton();
 
         concatButton.setText("Concatenate");
         concatButton.addActionListener(new java.awt.event.ActionListener() {
@@ -522,6 +524,13 @@ public class MimsStackEditing extends javax.swing.JPanel {
             }
         });
 
+        sumButton.setText("Sum");
+        sumButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sumButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -556,21 +565,22 @@ public class MimsStackEditing extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(6, 6, 6)
                                 .addComponent(jLabel4))
-                            .addComponent(concatButton))
+                            .addComponent(concatButton)
+                            .addComponent(sumButton))
                         .addGap(57, 57, 57)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel2))
-                            .addComponent(translateYSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 83, Short.MAX_VALUE)
-                            .addComponent(translateXSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 83, Short.MAX_VALUE))
+                            .addComponent(translateYSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
+                            .addComponent(translateXSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE))
                         .addGap(51, 51, 51))
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(autoTrackButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(untrackButton)
-                        .addContainerGap(119, Short.MAX_VALUE))))
+                        .addContainerGap(143, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -592,19 +602,21 @@ public class MimsStackEditing extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(reinsertListTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(reinsertButton))
+                        .addComponent(reinsertButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(translateXSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(translateXSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(sumButton))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(translateYSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(concatButton))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(rawExportButton)
                     .addGroup(layout.createSequentialGroup()
@@ -841,17 +853,15 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoTrackButtonActionPerformed
         //ugly....
-        //yes, it is.
-
+        
         ImagePlus tempImage = WindowManager.getCurrentImage();
         ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
         int startPlane = images[0].getSlice();
         ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
-
+        //not setting roi's to deselect, simply deselecting from list
+        ui.getRoiManager().select(-1);
         String massname = tempImage.getTitle();
         massname = massname.substring(massname.length() - 6, massname.length());
-
-        ui.getmimsLog().Log("Autotracked on the " + massname + " images.");
 
         for (int i = 1; i <= images[0].getStackSize(); i++) {
             images[0].setSlice(i);
@@ -909,6 +919,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         if (!this.reinsertButton.isEnabled()) {
             autoTrackButton.setEnabled(false);
         }
+        ui.getmimsLog().Log("Autotracked on the " + massname + " images.");
 }//GEN-LAST:event_autoTrackButtonActionPerformed
 
     private void untrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_untrackButtonActionPerformed
@@ -949,9 +960,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
                 ui.mimsAction.setShiftY(plane, yval);
             //System.out.println("ychanged "+ foo++);
             }
-
         }
         autoTrackButton.setEnabled(true);
+        ui.getmimsLog().Log("Untracked.");
 }//GEN-LAST:event_untrackButtonActionPerformed
 
 private void saveActionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveActionButtonActionPerformed
@@ -977,6 +988,14 @@ private void saveActionButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         break;
     }
 }//GEN-LAST:event_saveActionButtonActionPerformed
+
+private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumButtonActionPerformed
+// TODO add your handling code here:
+    
+    String name = WindowManager.getCurrentImage().getTitle();
+    
+    ui.computeSum(ui.getImageByName(name));
+}//GEN-LAST:event_sumButtonActionPerformed
 
     protected void restoreAllPlanes() {
         this.holdupdate = true;
@@ -1054,6 +1073,7 @@ private void saveActionButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JButton reinsertButton;
     private javax.swing.JTextField reinsertListTextField;
     private javax.swing.JButton saveActionButton;
+    private javax.swing.JButton sumButton;
     private javax.swing.JSpinner translateXSpinner;
     private javax.swing.JSpinner translateYSpinner;
     private javax.swing.JLabel trueIndexLabel;
