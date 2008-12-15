@@ -265,12 +265,13 @@ public class Measure {
         
         MimsRoiManager rm = ui.getRoiManager();
         Roi [] rois ;
-        java.awt.List rlist = rm.getList() ;
+        javax.swing.JList rlist = rm.getList() ;
         
         if(!rm.getROIs().isEmpty()) {
-            rois = new Roi[rlist.getItemCount()];
-            for(int i = 0 ; i < rlist.getItemCount(); i++ ) {
-                rois[i] = (Roi) rm.getROIs().get(rlist.getItem(i));
+            int length = rlist.getModel().getSize();
+            rois = new Roi[length];
+            for(int i = 0 ; i < length; i++ ) {
+                rois[i] = (Roi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
             }
         }            
         else {
@@ -385,12 +386,13 @@ public class Measure {
         
          MimsRoiManager rm = ui.getRoiManager();
         Roi [] rois ;
-        java.awt.List rlist = rm.getList() ;
+        javax.swing.JList rlist = rm.getList() ;
         
-        if(!rm.getROIs().isEmpty()) {
-            rois = new Roi[rlist.getItemCount()];
-            for(int i = 0 ; i < rlist.getItemCount(); i++ ) {
-                rois[i] = (Roi) rm.getROIs().get(rlist.getItem(i));
+        if(!rm.getROIs().isEmpty()) {            
+            int length = rlist.getModel().getSize();
+            rois = new Roi[length];
+            for(int i = 0 ; i < length; i++ ) {
+               rois[i] = (Roi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
             }
         }            
         else {
