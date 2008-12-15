@@ -6,9 +6,6 @@ import java.awt.Polygon;
 import java.util.Hashtable;
 import ij.gui.*;
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Shape;
-import java.awt.geom.GeneralPath;
 
 /**
  * Extends ij.gui.ImageCanvas with utility to display all ROIs.
@@ -44,10 +41,10 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
 
         g.setColor(Color.RED);
         Roi cRoi = mImp.getRoi();
-        java.awt.List list = roiManager.getList();
+        javax.swing.JList list = roiManager.getList();
 
-        for (int id = 0; id < list.getItemCount(); id++) {
-            Roi roi = (Roi) rois.get(list.getItem(id));
+        for (int id = 0; id < list.getModel().getSize(); id++) {
+            Roi roi = (Roi) rois.get((list.getModel().getElementAt(id).toString()));
             boolean bDraw = true;
             if (cRoi != null && cRoi.toString().equals(roi.toString())) {
                 bDraw = false;
