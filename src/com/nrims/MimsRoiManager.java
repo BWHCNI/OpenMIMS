@@ -4,10 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
-import java.awt.List;
 import java.util.zip.*;
 import ij.*;
-import ij.process.*;
 import ij.gui.*;
 import ij.io.*;
 import ij.plugin.filter.*;
@@ -15,25 +13,38 @@ import ij.util.Tools;
 import ij.macro.Interpreter;
 import ij.measure.Calibration;
 import ij.plugin.frame.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /** 
  * This plugin replaces the Analyze/Tools/ROI Manager command. 
  * Intent to enable interaction with CustomCanvas to show all rois..
  */
-public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener {
+public class MimsRoiManager extends PlugInJFrame implements ListSelectionListener, ActionListener, 
+                                                            MouseListener {
 
 	static final int BUTTONS = 10;
-	Panel panel;
+	JPanel panel;
 	static Frame instance;
-	java.awt.List list;
+        JList jlist;
+        DefaultListModel listModel;        
 	Hashtable rois = new Hashtable();
 	Roi roiCopy;
 	boolean canceled;
 	boolean macro;
 	boolean ignoreInterrupts;
-	PopupMenu pm;
-	Button moreButton;
-        Checkbox cbShowAll ;
+	JPopupMenu pm;
+	JButton moreButton;
+        JCheckBox cbShowAll ;
 
 	public MimsRoiManager() {
 		super("MIMS ROI Manager");
@@ -46,16 +57,20 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
  		addKeyListener(ij);
  		addMouseListener(this);
 		WindowManager.addWindow(this);
-		setLayout(new FlowLayout(FlowLayout.CENTER,5,5));
-		int rows = 15;
-		boolean allowMultipleSelections = true; //IJ.isMacintosh();
-		list = new List(rows, allowMultipleSelections);
-		list.add("012345678901234");
-		list.addItemListener(this);
- 		list.addKeyListener(ij);
- 		list.addMouseListener(this);
-		add(list);
-		panel = new Panel();
+		setLayout(new FlowLayout(FlowLayout.CENTER,5,5));               
+                
+                //JList stuff
+                listModel = new DefaultListModel();
+                listModel.addElement("012345678901234567");                
+                jlist = new JList(listModel);  
+                jlist.addKeyListener(ij);
+                JScrollPane scrollpane = new JScrollPane(jlist);                
+                scrollpane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+                jlist.getSelectionModel().addListSelectionListener(this);//Same as addItemListener                
+                scrollpane.setPreferredSize(new Dimension(150, 225));      
+                add(scrollpane);
+                
+		panel = new JPanel();
 		int nButtons = IJ.isJava2()?BUTTONS:BUTTONS-1;
 		panel.setLayout(new GridLayout(nButtons, 1, 5, 0));
 		addButton("Add [t]");
@@ -72,23 +87,22 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 		addPopupMenu();
                 addCheckbox("Show All", true);
 		pack();
-		list.remove(0);
+                listModel.remove(0);                
 		GUI.center(this);
                 //setVisible(true);
 		// show();
 	}
 	
         void addCheckbox(String label, boolean bEnabled ) {
-            Checkbox cb = new Checkbox(label);
+            JCheckBox cb = new JCheckBox(label);
             if(label.equals("Show All")) cbShowAll = cb ;
-            //cb = new Checkbox(label);
-            cb.setState(bEnabled);
-            cb.addItemListener(this);
+            cb.setSelected(bEnabled);
+            cb.addActionListener(this);
             panel.add(cb);
         }
         
 	void addButton(String label) {
-		Button b = new Button(label);
+                JButton b = new JButton(label);
 		b.addActionListener(this);
 		b.addKeyListener(IJ.getInstance());
  		b.addMouseListener(this);
@@ -97,8 +111,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	}
 
 	void addPopupMenu() {
-		pm=new PopupMenu();
-		//addPopupItem("Select All");
+                pm=new JPopupMenu();
 		addPopupItem("Combine");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
@@ -106,7 +119,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	}
 
 	void addPopupItem(String s) {
-		MenuItem mi=new MenuItem(s);
+                JMenuItem mi=new JMenuItem(s);
 		mi.addActionListener(this);
 		pm.add(mi);
 	}
@@ -139,48 +152,39 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 			draw();
 		else if (command.equals("Deselect"))
 			select(-1);
+                else if (command.equals("Show All"))
+                        showall();
 		else if (command.equals("More>>")) {
 			Point ploc = panel.getLocation();
 			Point bloc = moreButton.getLocation();
 			pm.show(this, ploc.x, bloc.y);
-		} else if (command.equals("Select All"))
-			selectAll();
-		else if (command.equals("Combine"))
+		} 
+                else if (command.equals("Combine"))
 			combine();
 		else if (command.equals("Split"))
 			split();
 		else if (command.equals("Add Particles"))
 			addParticles();
 	}
-
-	public void itemStateChanged(ItemEvent e) {
-		//IJ.log("itemStateChanged: "+e.getItem().toString()+"  "+e+"  "+ignoreInterrupts);
-                if(e.getItem().equals("Show All")) {
-                    cbShowAll.setState(e.getStateChange() == ItemEvent.SELECTED);
-                    if(getImage() != null)
-                        getImage().updateAndRepaintWindow();
-                    //if(cbShowAll.getState()) IJ.log("Show All Enabled");
-                    //else IJ.log("Show All Disabled");
-                    return ;
-                }
-		if (e.getStateChange()==ItemEvent.SELECTED && !ignoreInterrupts) {
-			int index = 0;
-            try {index = Integer.parseInt(e.getItem().toString());}
-            catch (NumberFormatException ex) {}
-			if (index<0) index = 0;
-			if (!IJ.shiftKeyDown() && !IJ.isMacintosh()) {
-				int[] indexes = list.getSelectedIndexes();
-				for (int i=0; i<indexes.length; i++) {
-					if (indexes[i]!=index)
-						list.deselect(indexes[i]);
-				}
-			}
-			if (WindowManager.getCurrentImage()!=null) {
-				restore(index, true);
-				if (Recorder.record) Recorder.record("mimsRoiManager", "Select", index);
-			}
-		}
-	}
+        
+        public void valueChanged(ListSelectionEvent e) { 
+           
+           // DO NOTHING!!  Wait till we are done switching         
+           if (!e.getValueIsAdjusting()) return;
+           
+           int[] indices = jlist.getSelectedIndices();
+           int index = indices[indices.length-1];
+	   if (index<0) index = 0;
+           if (WindowManager.getCurrentImage()!=null) {
+              restore(index, true);
+              if (Recorder.record) Recorder.record("mimsRoiManager", "Select", index);
+           }           
+        }                                                               
+        
+        void showall() {           
+           if(getImage() != null)
+              getImage().updateAndRepaintWindow();              
+        }
 	
 	void add(boolean shiftKeyDown, boolean altKeyDown) {
 		if (shiftKeyDown)
@@ -209,7 +213,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 		else
 			label = getUniqueName(label);
 		if (label==null) return false;
-		list.add(label);
+                listModel.addElement(label);
 		roi.setName(label);
 		roiCopy = (Roi)roi.clone();
 		Calibration cal = imp.getCalibration();
@@ -267,10 +271,10 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	}
 	
 	boolean delete(boolean replacing) {
-		int count = list.getItemCount();
+                int count = listModel.getSize();
 		if (count==0)
 			return error("The list is empty.");
-		int index[] = list.getSelectedIndexes();
+                int index[] = jlist.getSelectedIndices();
 		if (index.length==0 || (replacing&&count>1)) {
 			String msg = "Delete all items on the list?";
 			if (replacing)
@@ -291,8 +295,8 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 					delete = true;
 			}
 			if (delete) {
-				rois.remove(list.getItem(i));
-				list.remove(i);
+                                rois.remove(listModel.get(i));
+				listModel.remove(i);                                
 			}
 		}
 		if (Recorder.record) Recorder.record("mimsRoiManager", "Delete");
@@ -307,10 +311,10 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 			error("The active image does not have a selection.");
 			return false;
 		}
-		int index = list.getSelectedIndex();
+                int index = jlist.getSelectedIndex();
 		if (index<0)
-			return error("Exactly one item in the list must be selected.");
-		String name = list.getItem(index);
+			return error("Exactly one item in the list must be selected.");                
+		String name = listModel.get(index).toString();
 		rois.remove(name);
 		rois.put(name, roi);
 		if (Recorder.record) Recorder.record("mimsRoiManager", "Update");
@@ -318,18 +322,18 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	}
 
 	boolean rename(String name2) {
-		int index = list.getSelectedIndex();
+                int index = jlist.getSelectedIndex();
 		if (index<0)
 			return error("Exactly one item in the list must be selected.");
-		String name = list.getItem(index);
+                String name = listModel.get(index).toString();
 		if (name2==null) name2 = promptForName(name);
 		if (name2==null) return false;
 		Roi roi = (Roi)rois.get(name);
 		rois.remove(name);
 		roi.setName(name2);
 		rois.put(name2, roi);
-		list.replaceItem(name2, index);
-		list.select(index);
+                listModel.set(index, name2);
+		jlist.setSelectedIndex(index);
 		if (Recorder.record) Recorder.record("mimsRoiManager", "Rename", name2);
 		return true;
 	}
@@ -346,7 +350,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	}
 
 	boolean restore(int index, boolean setSlice) {
-		String label = list.getItem(index);
+                String label = listModel.get(index).toString();                                
 		Roi roi = (Roi)rois.get(label);
 		ImagePlus imp = getImage();
 		if (imp==null || roi==null)
@@ -396,7 +400,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 			if (name.endsWith(".roi"))
 				name = name.substring(0, name.length()-4);
 			name = getUniqueName(name);
-			list.add(name);
+                        listModel.addElement(name);
 			rois.put(name, roi);
 		}		
 	}
@@ -424,7 +428,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 					if (roi!=null) { 
 						name = name.substring(0, name.length()-4); 
 						name = getUniqueName(name); 
-						list.add(name); 
+                                                listModel.addElement(name); 
 						rois.put(name, roi); 
 						nRois++;
 					} 
@@ -457,14 +461,14 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	}
 	
 	boolean save(String name) {
-		if (list.getItemCount()==0)
+                if (listModel.size()==0)
 			return error("The selection list is empty.");
-		int[] indexes = list.getSelectedIndexes();
+                int[] indexes = jlist.getSelectedIndices();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		if (indexes.length>1)
 			return saveMultiple(indexes, name, true );
-		String listname = list.getItem(indexes[0]);
+                String listname = listModel.get(indexes[0]).toString();
 		if(name == null) name =  listname ;
 		else name += "_" + listname ;
 
@@ -480,7 +484,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 		String newName = name2.substring(0, name2.length()-4);
 		rois.put(newName, roi);
 		roi.setName(newName);
-		list.replaceItem(newName, indexes[0]);
+                listModel.set(indexes[0], newName);
 		RoiEncoder re = new RoiEncoder(dir+name2);
 		try {
 			re.write(roi);
@@ -509,7 +513,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(zos));
 			RoiEncoder re = new RoiEncoder(out);
 			for (int i=0; i<indexes.length; i++) {
-				String label = list.getItem(indexes[i]);
+                                String label = listModel.get(indexes[i]).toString();
 				Roi roi = (Roi)rois.get(label);
 				if (!label.endsWith(".roi")) label += ".roi";
         		zos.putNextEntry(new ZipEntry(label));
@@ -530,14 +534,14 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 		ImagePlus imp = getImage();
 		if (imp==null)
 			return false;
-		int[] indexes = list.getSelectedIndexes();
+                int[] indexes = jlist.getSelectedIndices();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
         if (indexes.length==0) return false;
 
 		int nLines = 0;
 		for (int i=0; i<indexes.length; i++) {
-			String label = list.getItem(indexes[i]);
+                        String label = listModel.get(indexes[i]).toString();
 			Roi roi = (Roi)rois.get(label);
 			if (roi.isLine()) nLines++;
 		}
@@ -547,7 +551,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 		}
 						
 		int nSlices = 1;
-		String label = list.getItem(indexes[0]);
+                String label = listModel.get(indexes[0]).toString();
 		if (getSliceNumber(label)==-1 || indexes.length==1) {
 			int setup = IJ.setupDialog(imp, 0);
 			if (setup==PlugInFilter.DONE)
@@ -572,7 +576,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	}	
 
 	boolean draw() {
-		int[] indexes = list.getSelectedIndexes();
+                int[] indexes = jlist.getSelectedIndices();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -592,7 +596,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	void combine() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
-		int[] indexes = list.getSelectedIndexes();
+                int[] indexes = jlist.getSelectedIndices();
 		if (indexes.length==1) {
 			error("More than one item must be selected, or none");
 			return;
@@ -601,7 +605,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 			indexes = getAllIndexes();
 		ShapeRoi s1=null, s2=null;
 		for (int i=0; i<indexes.length; i++) {
-			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
+                        Roi roi = (Roi)rois.get(listModel.get(indexes[i]).toString());
 			if (roi.isLine() || roi.getType()==Roi.POINT)
 				continue;
 			Calibration cal = imp.getCalibration();
@@ -650,11 +654,10 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 			imp.setRoi(rois[i]);
 			add(false);
 		}
-		//if (Recorder.record) Recorder.record("mimsRoiManager", "Split");
 	}
 
 	int[] getAllIndexes() {
-		int count = list.getItemCount();
+                int count = listModel.size();
 		int[] indexes = new int[count];
 		for (int i=0; i<count; i++)
 			indexes[i] = i;
@@ -697,8 +700,8 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	}
 
 	/** Returns the selection list. */
-	public List getList() {
-		return list;
+	public JList getList() {
+		return jlist;
 	}
 		
 	/** Returns the name of the selection with the specified index.
@@ -709,9 +712,9 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	*/
 	public static String getName(String index) {
 		int i = (int)Tools.parseDouble(index, -1);
-		MimsRoiManager instance = getInstance();
-		if (instance!=null && i>=0 && i<instance.list.getItemCount())
-       	 	return  instance.list.getItem(i);
+		MimsRoiManager instance = getInstance();                
+                if (instance!=null && i>=0 && i<instance.listModel.size())       	 	
+                   return  instance.listModel.get(i).toString();
 		else
 			return "null";
 	}
@@ -742,8 +745,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 		else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);
-		} else if (cmd.equals("reset"))
-			list.removeAll();
+		}
 		else
 			ok = false;
 		macro = false;
@@ -762,7 +764,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 		} else if (cmd.equals("save")) {
 			if (!name.endsWith(".zip"))
 				return error("Name must end with '.zip'");
-			if (list.getItemCount()==0)
+                        if (listModel.size()==0)
 				return error("The selection list is empty.");
 			int[] indexes = getAllIndexes();
 			boolean ok = saveMultiple(indexes, name, false );
@@ -777,21 +779,25 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	}
 	
 	public void select(int index) {
-		int n = list.getItemCount();
-		if (index<0) {
-			for (int i=0; i<n; i++)
-				if (list.isIndexSelected(i)) list.deselect(i);
-			return;
+                int n = listModel.size();
+		if (index<0) {                               
+                   jlist.clearSelection();
+                   return;
 		}
-		boolean mm = list.isMultipleMode();
-		if (mm) list.setMultipleMode(false);
+                
+                // Dont know why this is being done... but whatever.
+                if (jlist.getSelectionMode() != ListSelectionModel.SINGLE_SELECTION)
+                   jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                
+                
 		if (index<n) {
-			list.select(index);
+                        jlist.setSelectedIndex(index);
 			restore(index, true);	
 			if (!Interpreter.isBatchMode())
 				IJ.wait(10);
 		}
-		if (mm) list.setMultipleMode(true);
+                
+                jlist.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	}
 	
 	public void select(int index, boolean shiftKeyDown, boolean altKeyDown) {
@@ -803,7 +809,7 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 		if (previousRoi==null)
 			{select(index); return;}
 		Roi.previousRoi = (Roi)previousRoi.clone();
-		String label = list.getItem(index);
+                String label = listModel.get(index).toString();
 		Roi roi = (Roi)rois.get(label);
 		if (roi!=null) {
 			roi.setImage(imp);
@@ -813,16 +819,16 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
 	
 	void selectAll() {
 		boolean allSelected = true;
-		int count = list.getItemCount();
+                int count = listModel.size();
 		for (int i=0; i<count; i++) {
-			if (!list.isIndexSelected(i))
+                        if (!jlist.isSelectedIndex(i));
 				allSelected = false;
 		}
 		if (allSelected)
-			select(-1);
-		else {
-			for (int i=0; i<count; i++)
-				if (!list.isIndexSelected(i)) list.select(i);
+                     	select(-1);
+		else {                   
+                   for (int i=0; i<count; i++)
+                                  if (!jlist.isSelectedIndex(i)) jlist.setSelectedIndex(i);
 		}
 	}
 
@@ -846,14 +852,11 @@ public class MimsRoiManager extends PlugInFrame implements ActionListener, ItemL
     public void mouseExited (MouseEvent e) {}
 
     public void setShowAll(boolean bEnabled) {
-        cbShowAll.setState(bEnabled );
-        //IJ.log("MimsRoiManager::setShowAll state " + bEnabled) ;
+        cbShowAll.setSelected(bEnabled);
     }
 
     public boolean getShowAll() {
-        boolean bEnabled = cbShowAll.getState() ;
-        //if(bEnabled) IJ.log("MimsRoiManager::getShowAll is enabled");
-        //else IJ.log("MimsRoiManager::getShowAll is disabled");
+        boolean bEnabled = cbShowAll.isSelected();
         return bEnabled;
     }
     
