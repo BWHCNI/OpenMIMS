@@ -6,12 +6,6 @@
 
 package com.nrims;
 import ij.*;
-import ij.gui.*;
-import ij.process.*;
-import java.awt.image.ImageObserver;
-import java.text.AttributedCharacterIterator;
-import java.util.Vector;
-import java.awt.*;
 
 
 /**
@@ -212,14 +206,14 @@ public class MimsTomography extends javax.swing.JPanel {
         MimsRoiManager rm = ui.getRoiManager();
         rm.showFrame();
         ij.gui.Roi[] rois;
-        java.awt.List rlist = rm.getList() ;
+        javax.swing.JList rlist = rm.getList() ;
                 
-        int[] roiIndexes = rlist.getSelectedIndexes();
+        int[] roiIndexes = rlist.getSelectedIndices();
         
         if(!rm.getROIs().isEmpty()) {
             rois = new ij.gui.Roi[roiIndexes.length];
             for(int i = 0 ; i < roiIndexes.length; i++ ) {
-                rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getItem(roiIndexes[i]));
+               rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
             }
         }            
         else rois = new ij.gui.Roi[0];
