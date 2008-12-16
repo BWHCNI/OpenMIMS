@@ -7,6 +7,7 @@ package com.nrims;
 
 import com.nrims.data.MIMSFileFilter;
 import com.nrims.data.Opener;
+import com.nrims.data.FileDrop;
 import ij.IJ;
 import ij.gui.Roi;
 import ij.Prefs;
@@ -70,10 +71,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private com.nrims.SegmentationForm segmentation = null;
     protected ij.gui.Roi activeRoi;
     private int ratioScaleFactor = 10000;
-
+    
     //tesing fixed contrast
     private boolean fixRatioContrast = true;
-
+    
+    private com.nrims.data.FileDrop mimsDrop;
+    
     /**
      * Creates new form UI
      * @param fileName name of the .im image file to be opened.
@@ -130,6 +133,30 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             IJ.log("open UI ok...");
         }
         IJ.showProgress(1.0);
+        
+        this.mimsDrop = new FileDrop(null, this.mainTextField, /*dragBorder,*/ new FileDrop.Listener() {
+
+            public void filesDropped(java.io.File[] files) {
+                try {
+                    for (int i = 0; i < files.length; i++) {
+                        System.out.println("Dropped: " + files[i].getCanonicalPath());
+                    }   // end for: through each dropped file
+                    String lastfile = files[files.length-1].getCanonicalPath();
+                    if (lastfile.endsWith(".im")) {
+                        System.out.println("Opening last file: " + lastfile);
+                        loadMIMSFile(lastfile);
+                        //todo: mimsLog not cleared
+                    }
+                } // end try
+                catch (java.io.IOException e) {
+                }
+            }   // end filesDropped
+        }); // end FileDrop.Listener
+
+        
+        //??? todo: add if to open file chooser or not based of preference setting
+        this.loadMIMSFile();
+
     }
 
     /**
@@ -183,7 +210,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
             }
         }
-        // FIXME: the current opener is not dispose anywhere, so there are likely dangling file handles.
+        // FIXME: todo: the current opener is not dispose anywhere, so there are likely dangling file handles.
     }
 
     /**
@@ -317,7 +344,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         massImages[i].show();
                     }
                 }
-
                 ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
                 wo.run("tile");
 
@@ -344,7 +370,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 mimsTomography = new MimsTomography(this, image);
                 mimsAction = new MimsAction(this, image);
                 segmentation = new SegmentationForm(this);
-
+                
+                //mimsLog.Log("\n\nNew image: " + image.getName() + "\n" + getImageHeader(image));
+                
                 jTabbedPane1.setComponentAt(0, mimsData);
                 jTabbedPane1.setTitleAt(0, "MIMS Data");
                 jTabbedPane1.add("Process", hsiControl);
@@ -360,7 +388,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 mimsData = new com.nrims.MimsData(this, image);
                 roiControl = new MimsRoiControl(this);
                 hsiControl = new HSIView(this);
-                mimsLog = new MimsLog(this, image);
+                //Commented out so mimsLog is persistent...
+                //mimsLog = new MimsLog(this, image);
                 mimsStackEditing = new MimsStackEditing(this, image);
                 mimsTomography = new MimsTomography(this, image);
                 mimsAction = new MimsAction(this, image);
@@ -389,6 +418,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             //jTabbedPane1.addChangeListener(new java.awt.ChangeListener());
 
+            this.mimsLog.Log("\n\nNew image: " + image.getName() + "\n" + getImageHeader(image));
             this.mimsTomography.resetBounds();
             this.mimsTomography.resetImageNamesList();
             this.mimsStackEditing.resetSpinners();
@@ -396,7 +426,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         } finally {
             currentlyOpeningImages = false;
         }
-
     }
 
     /**
@@ -610,6 +639,28 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
 
         return true;
+    }
+    
+    public static String getImageHeader(Opener im) {
+        String str = "\nHeader: \n";
+        str += "Path: " + im.getImageFile().getAbsolutePath() + "/" + im.getName() + "\n";
+
+        str += "Masses: ";
+        for (int i = 0; i < im.nMasses(); i++) {
+            str += im.getMassName(i) + " ";
+        }
+        str += "\n";
+        str += "Pixels: " + im.getWidth() + "x" + im.getHeight() + "\n";
+        str += "Duration: " + im.getDuration() + "\n";
+        str += "Dwell time: " + im.getDwellTime() + "\n";
+        str += "Position: " + im.getPosition() + "\n";
+        str += "Sample name: " + im.getSampleName() + "\n";
+        str += "Sample date: " + im.getSampleDate() + "\n";
+        str += "Sample hour: " + im.getSampleHour() + "\n";
+        str += "Pixel width: " + im.getPixelWidth() + "\n";
+        str += "Pixel height: " + im.getPixelHeight() + "\n";
+        str += "End header.\n\n";
+        return str;
     }
 
     public synchronized boolean computeSum(MimsPlus mImage) {
@@ -1040,6 +1091,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         openNewMenuItem = new javax.swing.JMenuItem();
         jMenuItem5 = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
+        aboutMenuItem = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JSeparator();
         exitMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -1101,6 +1154,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         });
         fileMenu.add(jMenuItem5);
         fileMenu.add(jSeparator1);
+
+        aboutMenuItem.setText("About OpenMIMS");
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(aboutMenuItem);
+        fileMenu.add(jSeparator2);
 
         exitMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         exitMenuItem.setMnemonic('x');
@@ -1387,6 +1449,32 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
         this.computeSum(openratio[i]);
     }
 }//GEN-LAST:event_sumAllMenuItemActionPerformed
+
+private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
+// TODO add your handling code here:
+    
+    //This should be better
+    //Text is not selectable in a JOptionPane...
+    
+    String message = "OpenMIMS v0.7\n\n";
+    message += "OpenMIMS was Developed at NRIMS, the National Resource\n";
+    message += "for Imaging Mass Spectrometry.\n";
+    message += "http://www.nrims.hms.harvard.edu/\n";
+    message += "\nDeveloped by:\n Doug Benson, Collin Poczatek\n ";
+    message += "Boris Epstein, Philip Gormanns\n Stephan Reckow, ";
+    message += "Zeke Kauffman.";
+    message += "\n\nOpenMIMS uses or depends upon:\n";
+    message += " TurboReg:  http://bigwww.epfl.ch/thevenaz/turboreg/\n";
+    message += " jFreeChart:  http://www.jfree.org/jfreechart/\n";
+    message += " FileDrop:  http://iharder.sourceforge.net/current/java/filedrop/\n";
+    
+    //System.out.println(message);
+    
+    javax.swing.JOptionPane pane = new javax.swing.JOptionPane(message);
+    javax.swing.JDialog dialog = pane.createDialog(new javax.swing.JFrame(), "About OpenMIMS");
+    
+    dialog.setVisible(true);
+}//GEN-LAST:event_aboutMenuItemActionPerformed
 
 //    private void imagesChanged(com.nrims.mimsPlusEvent e) {
 //        mimsStackEditing.resetTrueIndexLabel();
@@ -1675,7 +1763,9 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 new UI(null).setVisible(true);
             }
             
-        });   
+        });
+        
+         
     }
 
     public boolean getDebug() {
@@ -1683,6 +1773,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
@@ -1693,6 +1784,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField mainTextField;
     private javax.swing.JMenuItem openNewMenuItem;

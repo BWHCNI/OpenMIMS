@@ -308,7 +308,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		if (Recorder.record) Recorder.record("mimsRoiManager", "Delete");
 		return true;
 	}
-
+       
 	boolean rename(String name2) {
                 int index = jlist.getSelectedIndex();
 		if (index<0)

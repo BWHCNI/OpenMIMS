@@ -55,7 +55,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
         resetImageStacks();
 
-        ui.getmimsLog().Log("New image: " + image.getName() + "\n" + getImageHeader(image));
     }
 
     public void resetImageStacks() {
@@ -105,22 +104,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
             images[k].updateAndDraw();
         }
         ui.mimsAction.setShiftY(plane, yval);
-    }
-
-    public void XShiftSlice(int plane, int xval, int foo) {
-        for (int k = 0; k <= (numberMasses - 1); k++) {
-            this.images[k].getProcessor().translate(xval, 0, true);
-            images[k].updateAndDraw();
-        }
-        ui.mimsAction.nudgeX(plane, xval);
-    }
-
-    public void YShiftSlice(int plane, int yval, int foo) {
-        for (int k = 0; k <= (numberMasses - 1); k++) {
-            this.images[k].getProcessor().translate(0, yval, true);
-            images[k].updateAndDraw();
-        }
-        ui.mimsAction.nudgeY(plane, yval);
     }
 
     public void restoreSlice(int plane) {
@@ -244,28 +227,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     }
 
-    public static String getImageHeader(Opener im) {
-        String str = "\nHeader: \n";
-        str += "Path: " + im.getImageFile().getAbsolutePath() + "/" + im.getName() + "\n";
-
-        str += "Masses: ";
-        for (int i = 0; i < im.nMasses(); i++) {
-            str += im.getMassName(i) + " ";
-        }
-        str += "\n";
-        str += "Pixels: " + im.getWidth() + "x" + im.getHeight() + "\n";
-        str += "Duration: " + im.getDuration() + "\n";
-        str += "Dwell time: " + im.getDwellTime() + "\n";
-        str += "Position: " + im.getPosition() + "\n";
-        str += "Sample name: " + im.getSampleName() + "\n";
-        str += "Sample date: " + im.getSampleDate() + "\n";
-        str += "Sample hour: " + im.getSampleHour() + "\n";
-        str += "Pixel width: " + im.getPixelWidth() + "\n";
-        str += "Pixel height: " + im.getPixelHeight() + "\n";
-        str += "End header.\n\n";
-        return str;
-    }
-
     public boolean sameResolution(Opener im, Opener ij) {
         return ((im.getWidth() == ij.getWidth()) && (im.getHeight() == ij.getHeight()));
     }
@@ -285,7 +246,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
             FileWriter fstream = new FileWriter(path + "header.txt");
             BufferedWriter output = new BufferedWriter(fstream);
-            output.write(getImageHeader(this.image));
+            output.write(ui.getImageHeader(this.image));
             output.close();
 
             for (int i = 0; i < numberMasses; i++) {
@@ -904,8 +865,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
             xval = (-1) * (int) java.lang.Math.round(translations[i][0]);
             yval = (-1) * (int) java.lang.Math.round(translations[i][1]);
             images[0].setSlice(plane);
-            this.XShiftSlice(i + 1, xval, 1);
-            this.YShiftSlice(i + 1, yval, 1);
+            this.XShiftSlice(i + 1, xval);
+            this.YShiftSlice(i + 1, yval);
 
         }
 
