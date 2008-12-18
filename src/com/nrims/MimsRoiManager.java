@@ -756,19 +756,12 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		}
 	}
 	
-	void selectAll() {
-		boolean allSelected = true;
-                int count = listModel.size();
-		for (int i=0; i<count; i++) {
-                        if (!jlist.isSelectedIndex(i));
-				allSelected = false;
-		}
-		if (allSelected)
-                     	select(-1);
-		else {                   
-                   for (int i=0; i<count; i++)
-                                  if (!jlist.isSelectedIndex(i)) jlist.setSelectedIndex(i);
-		}
+        // Programatically selects all items in the list 
+	void selectAll() {           
+           int len = jlist.getModel().getSize();          
+           if (len<= 0) return;
+           else
+              jlist.setSelectionInterval(0, len-1);           
 	}
 
     /** Overrides PlugInFrame.close(). */
