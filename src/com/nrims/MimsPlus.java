@@ -313,7 +313,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     public void mouseEntered(MouseEvent e) {}
     @Override
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+      if(getRoi() != null) {
+         if (getRoi().getState() == Roi.MOVING) bMoving = true;
+         else bMoving = false;
+      }
+    }
     @Override
     public void mouseClicked(MouseEvent e) {}
     /**
@@ -322,33 +327,38 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
      */
     @Override
     public void mouseReleased(MouseEvent e) {
-        if(bStateChanging) {
-            return;
-        }
-        switch( Toolbar.getToolId() ) {
-            case Toolbar.RECTANGLE:
-            case Toolbar.OVAL:
-            case Toolbar.FREELINE:
-            case Toolbar.FREEROI:
-            case Toolbar.POINT:
-            case Toolbar.POLYGON:
-            case Toolbar.POLYLINE:
-                    stateChanged(getRoi(),MimsPlusEvent.ATTR_MOUSE_RELEASE);
-                break ;
-            case Toolbar.WAND:
-                if(getRoi() != null) {
+      if (bStateChanging) {
+         return;
+      }
+      if (bMoving) {
+        stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED);
+        return;
+      }
+
+      switch (Toolbar.getToolId()) {
+         case Toolbar.RECTANGLE:
+         case Toolbar.OVAL:
+         case Toolbar.FREELINE:
+         case Toolbar.FREEROI:
+         case Toolbar.POINT:
+         case Toolbar.POLYGON:
+         case Toolbar.POLYLINE:
             stateChanged(getRoi(), MimsPlusEvent.ATTR_MOUSE_RELEASE);
-        }
-                break ;
-        }
-    }
+            break;
+         case Toolbar.WAND:
+            if (getRoi() != null) {
+               stateChanged(getRoi(), MimsPlusEvent.ATTR_MOUSE_RELEASE);
+            }
+            break;
+      }            
+   }
     
     //rollover pixel value code
     public void mouseMoved(MouseEvent e) {
         int x = (int) e.getPoint().getX();
         int y = (int) e.getPoint().getY();
         int mX = getWindow().getCanvas().offScreenX(x);
-        int mY = getWindow().getCanvas().offScreenY(y);
+        int mY = getWindow().getCanvas().offScreenY(y);        
         String msg = "" + mX + "," + mY ;
         if(isStack()) {
             msg += "," + getCurrentSlice() + " = ";
@@ -501,6 +511,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     
     private boolean allowClose =true;
     private boolean bIgnoreClose = false ;
+    boolean bMoving = false;
     static boolean bStateChanging = false ;
     private boolean bWindowListenerInstalled = false ;
     private int nMass = 0 ;

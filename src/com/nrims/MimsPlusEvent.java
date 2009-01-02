@@ -18,6 +18,7 @@ public class MimsPlusEvent extends java.util.EventObject {
     static final int ATTR_IMAGE_CLOSED = 2 ;
     static final int ATTR_SET_ROI = 3 ;
     static final int ATTR_MOUSE_RELEASE = 4 ;
+    static final int ATTR_ROI_MOVED = 5;
     
     /** Creates a new instance of mimsPlusEvent */
     public MimsPlusEvent( MimsPlus mimsImage, int slice, int attribute ) {

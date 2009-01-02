@@ -200,6 +200,22 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		else
 			add(false);
 	}
+        
+        boolean move() {                      
+		ImagePlus imp = getImage();
+		if (imp==null)
+			return false;
+		Roi roi = imp.getRoi();
+		if (roi==null) {
+			error("The active image does not have a selection.");
+			return false;
+		}
+		String name = roi.getName();		                		
+                rois.remove(name);
+		rois.put(name, roi);
+		if (Recorder.record) Recorder.record("mimsRoiManager", "Move");
+		return true;
+	}
 
 	boolean add(boolean promptForName) {
 		ImagePlus imp = getImage();
@@ -225,13 +241,13 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		Calibration cal = imp.getCalibration();
 		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
 			Rectangle r = roiCopy.getBounds();
-			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
+			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);                        
 		}
 		rois.put(label, roiCopy);
 		if (Recorder.record) Recorder.record("mimsRoiManager", "Add");
 		return true;
 	}
-	
+        
 	boolean isStandardName(String name) {
 		if (name==null) return false;
 		boolean isStandard = false;
