@@ -33,13 +33,11 @@ import javax.swing.event.ListSelectionListener;
 public class MimsRoiManager extends PlugInJFrame implements ListSelectionListener, ActionListener, 
                                                             MouseListener {
 
-	static final int BUTTONS = 10;
 	JPanel panel;
 	static Frame instance;
         JList jlist;
         DefaultListModel listModel;        
 	Hashtable rois = new Hashtable();
-	Roi roiCopy;
 	boolean canceled;
 	boolean macro;
 	boolean ignoreInterrupts;
@@ -143,9 +141,9 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 			return;
 		String command = label;
                 if (command.equals("Add [t]"))
-			add(shiftKeyDown, altKeyDown);
+			add();
 		else if (command.equals("Delete"))
-			delete(false);
+			delete();
 		else if (command.equals("Rename"))
 			rename(null);
 		else if (command.equals("Open"))
@@ -154,8 +152,6 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 			save(null);
 		else if (command.equals("Measure"))
 			measure();
-		else if (command.equals("Draw"))
-			draw();
 		else if (command.equals("Deselect"))
 			select(-1);
                 else if (command.equals("Show All"))
@@ -190,16 +186,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         void showall() {           
            if(getImage() != null)
               getImage().updateAndRepaintWindow();              
-        }
-	
-	void add(boolean shiftKeyDown, boolean altKeyDown) {
-		if (shiftKeyDown)
-			addAndDraw(altKeyDown);
-		else if (altKeyDown)
-			add(true);
-		else
-			add(false);
-	}
+        }	
         
         boolean move() {                      
 		ImagePlus imp = getImage();
@@ -217,7 +204,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		return true;
 	}
 
-	boolean add(boolean promptForName) {
+	boolean add() {
 		ImagePlus imp = getImage();
 		if (imp==null)
 			return false;
@@ -230,20 +217,16 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		if (isStandardName(name))
 			name = null;
 		String label = name!=null?name:getLabel(imp, roi);
-		if (promptForName)
-			label = promptForName(label);
-		else
-			label = getUniqueName(label);
+		label = getUniqueName(label);
 		if (label==null) return false;
                 listModel.addElement(label);
 		roi.setName(label);
-		roiCopy = (Roi)roi.clone();
 		Calibration cal = imp.getCalibration();
 		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-			Rectangle r = roiCopy.getBounds();
-			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);                        
+			Rectangle r = roi.getBounds();
+			roi.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);                        
 		}
-		rois.put(label, roiCopy);
+                rois.put(label, roi);
 		if (Recorder.record) Recorder.record("mimsRoiManager", "Add");
 		return true;
 	}
@@ -279,28 +262,14 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		}
 		return label;
 	}
-
-	void addAndDraw(boolean altKeyDown) {
-		if (altKeyDown) {
-			if (!add(true)) return;
-		} else if (!add(false))
-			return;
-		ImagePlus imp = WindowManager.getCurrentImage();
-		Undo.setup(Undo.COMPOUND_FILTER, imp);
-		IJ.run("Draw");
-		Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
-		if (Recorder.record) Recorder.record("mimsRoiManager", "Add & Draw");
-	}
 	
-	boolean delete(boolean replacing) {
+	boolean delete() {
                 int count = listModel.getSize();
 		if (count==0)
 			return error("The list is empty.");
                 int index[] = jlist.getSelectedIndices();
-		if (index.length==0 || (replacing&&count>1)) {
+		if (index.length==0) {
 			String msg = "Delete all items on the list?";
-			if (replacing)
-				msg = "Replace items on the list?";
 			canceled = false;
 			if (!IJ.macroRunning() && !macro) {
 				YesNoCancelDialog d = new YesNoCancelDialog(this, "MIMS ROI Manager", msg);
@@ -541,7 +510,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 int[] indexes = jlist.getSelectedIndices();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
-        if (indexes.length==0) return false;
+                if (indexes.length==0) return false;
 
 		int nLines = 0;
 		for (int i=0; i<indexes.length; i++) {
@@ -578,24 +547,6 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		if (Recorder.record) Recorder.record("mimsRoiManager", "Measure");
 		return true;
 	}	
-
-	boolean draw() {
-                int[] indexes = jlist.getSelectedIndices();
-		if (indexes.length==0)
-			indexes = getAllIndexes();
-		ImagePlus imp = WindowManager.getCurrentImage();
-		Undo.setup(Undo.COMPOUND_FILTER, imp);
-		for (int i=0; i<indexes.length; i++) {
-			if (restore(indexes[i], true)) {
-				IJ.run("Draw");
-				IJ.run("Select None");
-			} else
-				break;
-		}
-		Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
-		if (Recorder.record) Recorder.record("mimsRoiManager", "Draw");
-		return true;
-	}
 
 	void combine() {
 		ImagePlus imp = getImage();
@@ -650,7 +601,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		Roi[] rois = ((ShapeRoi)roi).getRois();
 		for (int i=0; i<rois.length; i++) {
 			imp.setRoi(rois[i]);
-			add(false);
+			add();
 		}
 	}
 
@@ -716,21 +667,6 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		else
 			return "null";
 	}
-
-	/** Executes the MIMS ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Deselect", "Select All", "Combine" or "Split" command. Returns false if <code>cmd</code> 
-		is not one of these strings. */
-	public boolean runCommand(String cmd) {
-		cmd = cmd.toLowerCase();
-		macro = true;
-		boolean ok = true;
-		if (cmd.equals("add"))
-			add(IJ.shiftKeyDown(), IJ.altKeyDown());
-		else
-			ok = false;
-		macro = false;
-		return ok;
-	}
 	
 	public void select(int index) {
                 int n = listModel.size();
@@ -741,34 +677,14 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 
                 // Dont know why this is being done... but whatever.
                 if (jlist.getSelectionMode() != ListSelectionModel.SINGLE_SELECTION)
-                   jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                
-                
+                    jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);                                
 		if (index<n) {
                         jlist.setSelectedIndex(index);
 			restore(index, true);	
 			if (!Interpreter.isBatchMode())
 				IJ.wait(10);
-		}
-                
+		}                
                 jlist.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-	}
-	
-	public void select(int index, boolean shiftKeyDown, boolean altKeyDown) {
-		if (!(shiftKeyDown||altKeyDown))
-			select(index);
-		ImagePlus imp = IJ.getImage();
-		if (imp==null) return;
-		Roi previousRoi = imp.getRoi();
-		if (previousRoi==null)
-			{select(index); return;}
-		Roi.previousRoi = (Roi)previousRoi.clone();
-                String label = listModel.get(index).toString();
-		Roi roi = (Roi)rois.get(label);
-		if (roi!=null) {
-			roi.setImage(imp);
-			roi.update(shiftKeyDown, altKeyDown);
-		}
 	}
 	
         // Programatically selects all items in the list 
