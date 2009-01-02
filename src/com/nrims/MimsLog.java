@@ -77,8 +77,7 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 // TODO add your handling code here:
     this.Clear();
 }//GEN-LAST:event_clearButtonActionPerformed
-    
-    
+
     private com.nrims.UI ui;
     private com.nrims.data.Opener image;
     

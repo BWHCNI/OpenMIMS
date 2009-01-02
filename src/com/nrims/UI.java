@@ -1446,7 +1446,7 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     public MimsRoiManager getRoiManager() {
         roiManager = MimsRoiManager.getInstance();
         if (roiManager == null) {
-            roiManager = new MimsRoiManager();
+            roiManager = new MimsRoiManager(this, image);
         }
 // RoiManager shouldn't necessarily show up, when the object is requested (S. Reckow)        
 //        else

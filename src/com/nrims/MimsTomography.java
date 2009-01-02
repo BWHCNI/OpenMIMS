@@ -39,7 +39,7 @@ public class MimsTomography extends javax.swing.JPanel {
         lowerSlider.setMajorTickSpacing((int)(lowerSlider.getMaximum()/8)+1);
         upperSlider.setMajorTickSpacing((int)(upperSlider.getMaximum()/8)+1);
         
-        jList2.setModel(new javax.swing.AbstractListModel() {
+        imageJList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = image.getMassNames();
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
@@ -69,9 +69,9 @@ public class MimsTomography extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
+        statJList = new javax.swing.JList();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jList2 = new javax.swing.JList();
+        imageJList = new javax.swing.JList();
         jLabel4 = new javax.swing.JLabel();
         plotButton = new javax.swing.JButton();
 
@@ -104,14 +104,14 @@ public class MimsTomography extends javax.swing.JPanel {
 
         jLabel3.setText("Statistics to plot");
 
-        jList1.setModel(new javax.swing.AbstractListModel() {
+        statJList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "sum", "mean", "stddev", "min", "max", "mode", "area", "xcentroid", "ycentroid", "xcentermass", "ycentermass", "roix", "roiy", "roiwidth", "roiheight", "major", "minor", "angle", "feret", "median", "kurtosis", "areafraction", "perimeter" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane1.setViewportView(statJList);
 
-        jScrollPane2.setViewportView(jList2);
+        jScrollPane2.setViewportView(imageJList);
 
         jLabel4.setText("Masses");
 
@@ -213,21 +213,24 @@ public class MimsTomography extends javax.swing.JPanel {
         if(!rm.getROIs().isEmpty()) {
             rois = new ij.gui.Roi[roiIndexes.length];
             for(int i = 0 ; i < roiIndexes.length; i++ ) {
-               rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
+                //rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
+                rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getModel().getElementAt(roiIndexes[i]));
             }
         }            
-        else rois = new ij.gui.Roi[0];
+        else {
+            rois = new ij.gui.Roi[0];
+        }
         
         
-        if ( !(jList1.getSelectedIndex()==-1 || jList2.getSelectedIndex()==-1 || rois.length==0) ) {
-            Object[] objs = new Object[jList1.getSelectedValues().length];
-            objs = jList1.getSelectedValues();
+        if ( !(statJList.getSelectedIndex()==-1 || imageJList.getSelectedIndex()==-1 || rois.length==0) ) {
+            Object[] objs = new Object[statJList.getSelectedValues().length];
+            objs = statJList.getSelectedValues();
             String[] statnames = new String[objs.length];
             for(int i=0; i<objs.length; i++) {
                 statnames[i]=(String)objs[i];
             }
             
-            int[] masses = jList2.getSelectedIndices();
+            int[] masses = imageJList.getSelectedIndices();
 
             tomographyChart.creatNewFrame(rois, image.getName(), statnames, masses, lowerSlider.getValue(), upperSlider.getValue());
                         
@@ -278,7 +281,7 @@ public class MimsTomography extends javax.swing.JPanel {
         for(int k=0; k<str.length; k++)
             str[k]=strings.get(k);
         
-        jList2.setModel(new javax.swing.AbstractListModel() {
+        imageJList.setModel(new javax.swing.AbstractListModel() {
             public int getSize() { return str.length; }
             public Object getElementAt(int i) { return str[i]; }
         });
@@ -297,16 +300,16 @@ public class MimsTomography extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList imageJList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JList jList1;
-    private javax.swing.JList jList2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSlider lowerSlider;
     private javax.swing.JButton plotButton;
+    private javax.swing.JList statJList;
     private javax.swing.JSlider upperSlider;
     // End of variables declaration//GEN-END:variables
     
