@@ -722,7 +722,6 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 		is not one of these strings. */
 	public boolean runCommand(String cmd) {
 		cmd = cmd.toLowerCase();
-                System.out.println(cmd);
 		macro = true;
 		boolean ok = true;
 		if (cmd.equals("add"))
