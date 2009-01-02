@@ -9,10 +9,15 @@ import com.nrims.data.MIMSFileFilter;
 import com.nrims.data.Opener;
 import com.nrims.data.FileDrop;
 import ij.IJ;
+import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.Prefs;
+import ij.WindowManager;
+import ij.gui.ImageCanvas;
+import ij.measure.Calibration;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.File;
@@ -156,7 +161,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
         //??? todo: add if to open file chooser or not based of preference setting
         this.loadMIMSFile();
-
+        
     }
 
     /**
@@ -879,201 +884,157 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         // do not call updateStatus() here - causes a race condition..
 
-        if (currentlyOpeningImages || bUpdating) {
-            return;
-        }
-        bUpdating = true; // Stop recursion 
+      if (currentlyOpeningImages || bUpdating) {
+         return;
+      }
+      bUpdating = true; // Stop recursion
 
-        /* sychronize Stack displays */
-        if (bSyncStack && evt.getAttribute() == MimsPlusEvent.ATTR_UPDATE_SLICE && image.nImages() > 1) {
-            MimsPlus mp = (MimsPlus) evt.getSource();
-            MimsPlus rp[] = this.getOpenRatioImages();
-            MimsPlus hsi[] = this.getOpenHSIImages();
+      /* sychronize Stack displays */
+      if (bSyncStack && evt.getAttribute() == MimsPlusEvent.ATTR_UPDATE_SLICE && image.nImages() > 1) {
+         MimsPlus mp = (MimsPlus) evt.getSource();
+         MimsPlus rp[] = this.getOpenRatioImages();
+         MimsPlus hsi[] = this.getOpenHSIImages();
 
+         for (int i = 0; i < rp.length; i++) {
+            rp[i].updateAndRepaintWindow();
+         }
+         for (int i = 0; i < hsi.length; i++) {
+            hsi[i].updateAndRepaintWindow();
+         }
+         mp.updateAndRepaintWindow();
 
-
-            ///
-            //Testing fixed contrast
-            ///
-            //double minThresh = 0.0;
-            //double maxThresh = 0.0;
-            //if(rp[0]!=null) {
-            //double minThresh = rp[0].getProcessor().getMinThreshold();
-            //double maxThresh = rp[0].getProcessor().getMaxThreshold();
-            //System.out.println("minThresh: "+minThresh+" maxThresh: "+maxThresh);
-            //}
-            ///
-
-            for (int i = 0; i < rp.length; i++) {
-                rp[i].updateAndRepaintWindow();
+         int nSlice = evt.getSlice();
+         for (int i = 0; i < image.nMasses(); i++) {
+            if ((massImages[i] != mp) && (massImages[i] != null) && bOpenMass[i]) {
+               massImages[i].setSlice(nSlice);
             }
-            for (int i = 0; i < hsi.length; i++) {
-                hsi[i].updateAndRepaintWindow();
+         }
+         for (int i = 0; i < maxMasses; i++) {
+            if ((hsiImages[i] != mp) && (hsiImages[i] != null)) {
+               if (hsiImages[i].isStack()) {
+                  hsiImages[i].setSlice(evt.getSlice());
+               } else {
+                  computeHSI(hsiImages[i].getHSIProps());
+               }
             }
-            mp.updateAndRepaintWindow();
+            if ((ratioImages[i] != mp) && (ratioImages[i] != null)) {
 
-            //Doesn't work right...
-            //System.out.println("repaint?");
-            //System.out.println("lengths: "+rp.length+" "+hsi.length);
+               HSIProps fixedProps = ratioImages[i].getHSIProps();
+               double minThresh = 0.0;
+               double maxThresh = 0.0;
 
+               fixRatioContrast = this.hsiControl.ratioIsFixed();
 
+               ij.process.ImageStatistics imgStats = null;
 
-            int nSlice = evt.getSlice();
-            for (int i = 0; i < image.nMasses(); i++) {
-                if ((massImages[i] != mp) && (massImages[i] != null) && bOpenMass[i]) {
-                    massImages[i].setSlice(nSlice);
-                }
+               if (ratioImages[i].isStack()) {
+                  ratioImages[i].setSlice(evt.getSlice());
+               } else //System.out.println("fixRatioContrast: "+fixRatioContrast);
+               if (!fixRatioContrast && i == hsiControl.whichRatio()) {
+
+                  imgStats = ratioImages[i].getStatistics();
+                  HSIProps props = ratioImages[i].getHSIProps();
+
+                  props.setMinRatio(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)));
+                  props.setMaxRatio(imgStats.mean + (imgStats.stdDev));
+
+                  computeRatio(props);
+                  rp[i].getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
+
+                  this.hsiControl.resetRatioSpinners(props);
+
+               }
+               if (fixRatioContrast || i != hsiControl.whichRatio()) {
+                  fixedProps.setMinRatio(this.hsiControl.getRatioMinVal());
+                  fixedProps.setMaxRatio(this.hsiControl.getRatioMaxVal());
+
+                  computeRatio(fixedProps);
+                  rp[i].getProcessor().setMinAndMax(fixedProps.getMinRatio(), fixedProps.getMaxRatio());
+               }
             }
-            for (int i = 0; i < maxMasses; i++) {
-                if ((hsiImages[i] != mp) && (hsiImages[i] != null)) {
-                    if (hsiImages[i].isStack()) {
-                        hsiImages[i].setSlice(evt.getSlice());
-                    } else {
-                        computeHSI(hsiImages[i].getHSIProps());
-                    }
-                }
-                if ((ratioImages[i] != mp) && (ratioImages[i] != null)) {
+         }
 
-                    HSIProps fixedProps = ratioImages[i].getHSIProps();
-                    double minThresh = 0.0;
-                    double maxThresh = 0.0;
-                    //fixedProps.setMinRatio(0.01);
-                    //fixedProps.setMaxRatio(0.1);
-
-                    fixRatioContrast = this.hsiControl.ratioIsFixed();
-
-                    ij.process.ImageStatistics imgStats = null;
-
-                    if (ratioImages[i].isStack()) {
-                        ratioImages[i].setSlice(evt.getSlice());
-                    } else //System.out.println("fixRatioContrast: "+fixRatioContrast);
-                    if (!fixRatioContrast && i == hsiControl.whichRatio()) {
-
-                        imgStats = ratioImages[i].getStatistics();
-                        HSIProps props = ratioImages[i].getHSIProps();
-
-                        //System.out.println("min: " + imgStats.min + " max: " + imgStats.max + " mean: " + imgStats.mean + " sd: " + imgStats.stdDev);
-
-                        props.setMinRatio(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)));
-                        props.setMaxRatio(imgStats.mean + (imgStats.stdDev));
-
-                        computeRatio(props);
-                        rp[i].getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
-
-                        //System.out.println("minratio: "+fixedProps.getMinRatio()+" maxratio: "+fixedProps.getMaxRatio());
-                        this.hsiControl.resetRatioSpinners(props);
-
-                    }
-                    if (fixRatioContrast || i != hsiControl.whichRatio()) {
-                        //rp[i].getProcessor().setMinAndMax(0.0, 0.1);
-
-                        //ratioImages[i].getHSIProps().setProps(fixedProps);
-                        //System.out.println("set to fixedProps");
-                        //fixedProps.setMinRatio(0.0);
-                        //fixedProps.setMaxRatio(1.0);
-
-                        //rp[i].getProcessor().setMinAndMax((double)0.0, (double)0.06);
-
-                        //minThresh = rp[i].getProcessor().getMinThreshold();
-                        //maxThresh = rp[i].getProcessor().getMaxThreshold();
-                        //System.out.println("minThresh: "+minThresh+" maxThresh: "+maxThresh);
-
-                        //System.out.println("minratio: "+fixedProps.getMinRatio()+" maxratio: "+fixedProps.getMaxRatio());
-                        fixedProps.setMinRatio(this.hsiControl.getRatioMinVal());
-                        fixedProps.setMaxRatio(this.hsiControl.getRatioMaxVal());
-
-                        computeRatio(fixedProps);
-                        rp[i].getProcessor().setMinAndMax(fixedProps.getMinRatio(), fixedProps.getMaxRatio());
-                    //this.hsiControl.resetRatioSpinners(fixedProps);
-                    }
-                }
+      } else if (evt.getAttribute() == MimsPlusEvent.ATTR_IMAGE_CLOSED) {
+         /* If an image was closed by a window event,
+          * dispose the corresponding reference
+          */
+         boolean bNotFound = true;
+         int i;
+         for (i = 0; bNotFound && i < image.nMasses(); i++) {
+            if (massImages[i] == evt.getSource()) {
+               massImages[i].removeListener(this);
+               massImages[i] = null;
+               bNotFound = false;
             }
-
-        ///
-        //Testing fixed contrast
-        ///
-        //if(rp[0]!=null) {
-        //    rp[0].getProcessor().setMinAndMax(minThresh, maxThresh);
-
-        //}
-        ///
-        } else if (evt.getAttribute() == MimsPlusEvent.ATTR_IMAGE_CLOSED) {
-            /* If an image was closed by a window event,
-             * dispose the corresponding reference
-             */
-            boolean bNotFound = true;
+         }
+         for (i = 0; bNotFound && i < maxMasses; i++) {
+            if (hsiImages[i] == evt.getSource()) {
+               hsiImages[i].removeListener(this);
+               hsiImages[i] = null;
+               bNotFound = false;
+            } else if (ratioImages[i] == evt.getSource()) {
+               ratioImages[i].removeListener(this);
+               ratioImages[i] = null;
+               bNotFound = false;
+            }
+         }
+      } else if (evt.getAttribute() == MimsPlusEvent.ATTR_SET_ROI || evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
+         /* Update all images with a selected ROI 
+          * MOUSE_RELEASE catches drawing new ROIs
+          */
+         if (bSyncROIs) {
             int i;
-            for (i = 0; bNotFound && i < image.nMasses(); i++) {
-                if (massImages[i] == evt.getSource()) {
-                    massImages[i].removeListener(this);
-                    massImages[i] = null;
-                    bNotFound = false;
-                }
-            }
-            for (i = 0; bNotFound && i < maxMasses; i++) {
-                if (hsiImages[i] == evt.getSource()) {
-                    hsiImages[i].removeListener(this);
-                    hsiImages[i] = null;
-                    bNotFound = false;
-                } else if (ratioImages[i] == evt.getSource()) {
-                    ratioImages[i].removeListener(this);
-                    ratioImages[i] = null;
-                    bNotFound = false;
-                }
-            }
-        } else if (evt.getAttribute() == MimsPlusEvent.ATTR_SET_ROI || evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
-            /* Update all images with a selected ROI 
-             * MOUSE_RELEASE catches drawing new ROIs
-             */
-            if (bSyncROIs) {
-                int i;
-                MimsPlus mp = (MimsPlus) evt.getSource();
-                for (i = 0; i < image.nMasses(); i++) {
-                    if (massImages[i] != mp && massImages[i] != null && bOpenMass[i]) {
-                        massImages[i].setRoi(evt.getRoi());
+            MimsPlus mp = (MimsPlus) evt.getSource();
+            for (i = 0; i < image.nMasses(); i++) {
+               if (massImages[i] != mp && massImages[i] != null && bOpenMass[i]) {
+                  massImages[i].setRoi(evt.getRoi());
 //                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
-                    }
-                }
-                for (i = 0; i < hsiImages.length; i++) {
-                    if (hsiImages[i] != mp && hsiImages[i] != null) {
-                        hsiImages[i].setRoi(evt.getRoi());
-//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
-                    }
-                }
-                for (i = 0; i < ratioImages.length; i++) {
-                    if (ratioImages[i] != mp && ratioImages[i] != null) {
-                        ratioImages[i].setRoi(evt.getRoi());
-//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
-                    }
-                }
-                for (i = 0; i < segImages.length; i++) {
-                    if (segImages[i] != mp && segImages[i] != null) {
-                        segImages[i].setRoi(evt.getRoi());
-//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
-                    }
-                }
+               }
             }
-            /* Automatically appends a drawn ROI to the RoiManager
-             * to improve work flow without extra mouse actions
-             */
-            if (bAddROIs && evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
-                ij.gui.Roi roi = evt.getRoi();
-                if (roi != null && roi.getState() != Roi.CONSTRUCTING) {
-                    MimsRoiManager rm = getRoiManager();
-                    rm.runCommand("add");
-                    rm.showFrame();
-                }
+            for (i = 0; i < hsiImages.length; i++) {
+               if (hsiImages[i] != mp && hsiImages[i] != null) {
+                  hsiImages[i].setRoi(evt.getRoi());
+//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
+               }
             }
+            for (i = 0; i < ratioImages.length; i++) {
+               if (ratioImages[i] != mp && ratioImages[i] != null) {
+                  ratioImages[i].setRoi(evt.getRoi());
+//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
+               }
+            }
+            for (i = 0; i < segImages.length; i++) {
+               if (segImages[i] != mp && segImages[i] != null) {
+                  segImages[i].setRoi(evt.getRoi());
+//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
+               }
+            }
+         }
+         /* Automatically appends a drawn ROI to the RoiManager
+          * to improve work flow without extra mouse actions
+          */
+         if (bAddROIs && evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
+            ij.gui.Roi roi = evt.getRoi();
+            if (roi != null && roi.getState() != Roi.CONSTRUCTING) {
+               MimsRoiManager rm = getRoiManager();
+               rm.add();
+               rm.showFrame();
+            }
+         }
 
-        }
+      } else if (evt.getAttribute() == MimsPlusEvent.ATTR_ROI_MOVED) {
+         ij.gui.Roi roi = evt.getRoi();  
+         MimsRoiManager rm = getRoiManager();
+         rm.move();                  
+      }
 
-        bUpdating = false;
+      bUpdating = false;
 
-        //had to wait untill not changing....
-        //System.out.println("mims state changed...");
-        this.mimsStackEditing.resetTrueIndexLabel();
-        this.mimsStackEditing.resetSpinners();
-    }
+      //had to wait untill not changing....
+      //System.out.println("mims state changed...");
+      this.mimsStackEditing.resetTrueIndexLabel();
+      this.mimsStackEditing.resetSpinners();
+   }
 
     /** This method is called from within the constructor to
      * initialize the form.
