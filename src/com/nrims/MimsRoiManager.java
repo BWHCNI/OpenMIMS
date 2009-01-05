@@ -384,7 +384,9 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         } else if (command.equals("Open")) {
             open(null);
         } else if (command.equals("Save")) {
-            save(null);
+            //save(null); //opens with defaul imagej path
+            String path = ui.getImageDir();
+            save(path);
         } else if (command.equals("Measure")) {
             measure();
         } else if (command.equals("Deselect")) {
@@ -798,6 +800,9 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (indexes.length > 1) {
             return saveMultiple(indexes, name, true);
         }
+        //only called if one roi selected...
+        String path = name;
+        name = null;
         String listname = listModel.get(indexes[0]).toString();
         if (name == null) {
             name = listname;
@@ -805,7 +810,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             name += "_" + listname;
         }
         Macro.setOptions(null);
-        SaveDialog sd = new SaveDialog("Save Selection...", name, ".roi");
+        SaveDialog sd = new SaveDialog("Save Selection...", path, name, ".roi");
         String name2 = sd.getFileName();
         if (name2 == null) {
             return false;
@@ -832,8 +837,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     boolean saveMultiple(int[] indexes, String path, boolean bPrompt) {
         Macro.setOptions(null);
         if (path == null || bPrompt) {
-            SaveDialog sd = new SaveDialog("Save ROIs...",
-                    path == null ? "RoiSet" : path,
+            String defaultname = ui.getMimsImage().getName();
+            defaultname += "_rois.zip";
+            SaveDialog sd = new SaveDialog("Save ROIs...", path,
+                    defaultname,
                     ".zip");
             String name = sd.getFileName();
             if (name == null) {
@@ -869,7 +876,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
         return true;
     }
-
+    
     boolean measure() {
         ImagePlus imp = getImage();
         if (imp == null) {

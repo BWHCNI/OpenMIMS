@@ -175,6 +175,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 if (bCloseOldWindows) {
                     if (segImages[i].getWindow() != null) {
                         segImages[i].getWindow().close();
+                        segImages[i]=null;
                     }
                 }
             }
@@ -183,6 +184,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 if (bCloseOldWindows) {
                     if (massImages[i].getWindow() != null) {
                         massImages[i].getWindow().close();
+                        massImages[i]=null;
                     }
                 }
             }
@@ -192,6 +194,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 if (bCloseOldWindows) {
                     if (hsiImages[i].getWindow() != null) {
                         hsiImages[i].getWindow().close();
+                        hsiImages[i]=null;
                     }
                 }
             }
@@ -200,6 +203,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 if (bCloseOldWindows) {
                     if (ratioImages[i].getWindow() != null) {
                         ratioImages[i].getWindow().close();
+                        ratioImages[i]=null;
                     }
                 }
             }
@@ -211,6 +215,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 if (bCloseOldWindows) {
                     if (sumImages[i].getWindow() != null) {
                         sumImages[i].getWindow().close();
+                        sumImages[i]=null;
                     }
                 }
             }
@@ -391,7 +396,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
                 ///Added to solve restore MIMS problem (PG)   START
                 mimsData = new com.nrims.MimsData(this, image);
-                roiControl = new MimsRoiControl(this);
+                //roiControl = new MimsRoiControl(this);
                 hsiControl = new HSIView(this);
                 //Commented out so mimsLog is persistent...
                 //mimsLog = new MimsLog(this, image);
@@ -1062,6 +1067,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jMenuItem2 = new javax.swing.JMenuItem();
         utilitiesMenu = new javax.swing.JMenu();
         sumAllMenuItem = new javax.swing.JMenuItem();
+        ImportISEEListMenuItem = new javax.swing.JMenuItem();
+        captureImageMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("NRIMS Analysis Module");
@@ -1182,6 +1189,22 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
         });
         utilitiesMenu.add(sumAllMenuItem);
+
+        ImportISEEListMenuItem.setText("Import ISEE List");
+        ImportISEEListMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ImportISEEListMenuItemActionPerformed(evt);
+            }
+        });
+        utilitiesMenu.add(ImportISEEListMenuItem);
+
+        captureImageMenuItem.setText("Capture current Image");
+        captureImageMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                captureImageMenuItemActionPerformed(evt);
+            }
+        });
+        utilitiesMenu.add(captureImageMenuItem);
 
         jMenuBar1.add(utilitiesMenu);
 
@@ -1403,6 +1426,14 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
 // TODO add your handling code here:
     MimsPlus[] openmass = this.getOpenMassImages();
     MimsPlus[] openratio = this.getOpenRatioImages();
+    
+    //clear all sum images
+    for (int i = 0; i < maxMasses * 2; i++) {
+        if (sumImages[i] != null) {
+            sumImages[i].close();
+            sumImages[i] = null;
+        }
+    }
     for(int i=0; i < openmass.length; i++) {
         this.computeSum(openmass[i]);
     }
@@ -1437,6 +1468,26 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     dialog.setVisible(true);
 }//GEN-LAST:event_aboutMenuItemActionPerformed
 
+private void ImportISEEListMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ImportISEEListMenuItemActionPerformed
+// TODO add your handling code here:
+    
+    //this file is getting way too long
+    //testing reading old isee format lists...
+    com.nrims.data.LoadImageList testLoad = new com.nrims.data.LoadImageList(this);
+
+    testLoad.openList();
+    testLoad.printList();
+    testLoad.dumbImport(3);
+
+    
+}//GEN-LAST:event_ImportISEEListMenuItemActionPerformed
+
+private void captureImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_captureImageMenuItemActionPerformed
+// TODO add your handling code here:
+    
+    
+}//GEN-LAST:event_captureImageMenuItemActionPerformed
+
 //    private void imagesChanged(com.nrims.mimsPlusEvent e) {
 //        mimsStackEditing.resetTrueIndexLabel();
 //    }            
@@ -1458,6 +1509,16 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
      * Note,  if a window is closed, the corresponding massImage is null
      * @return 
      */
+    
+        
+    String getImageDir() {
+        //won't work on windows?
+        String path = image.getImageFile().getAbsolutePath();
+        path = path.substring(0, path.lastIndexOf("/")+1);
+        return path;
+    }
+    
+    
     public MimsPlus[] getMassImages() {
         return massImages;
     }
@@ -1580,7 +1641,7 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         MimsPlus[] tempimages = this.getOpenMassImages();
         
         for(int i=0; i<tempimages.length; i++){
-            if(name == tempimages[i].getTitle()) {
+            if(name.equals(tempimages[i].getTitle())) {
                 return tempimages[i];
             }
         }
@@ -1588,7 +1649,7 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         tempimages = this.getOpenRatioImages();
         
         for(int i=0; i<tempimages.length; i++){
-            if(name == tempimages[i].getTitle()) {
+            if(name.equals(tempimages[i].getTitle())) {
                 return tempimages[i];
             }
         }
@@ -1734,7 +1795,9 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem ImportISEEListMenuItem;
     private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JMenuItem captureImageMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;

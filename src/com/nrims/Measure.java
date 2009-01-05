@@ -32,6 +32,7 @@ public class Measure {
             bMeasurePerImage[i] = false;
         }
         // These are measured once per series since ROIs are the same for all images..
+        //^^^^^ what?
         bMeasurePerImage[ResultsTable.MEAN] = true;
         bMeasurePerImage[ResultsTable.STD_DEV] = true;
         bMeasurePerImage[ResultsTable.MODE] = true;
@@ -44,11 +45,12 @@ public class Measure {
         
         /*
         //Better way to do this...
+        //doesn't work?
+        //Trying to set default save path to image directory
         String p = ui.getImageDir();
-        
         ij.Prefs prefs = new ij.Prefs();
         prefs.setImagesURL(p);
-        System.out.println("images: "+prefs.getImagesURL());
+        //System.out.println("images: "+prefs.getImagesURL());
         prefs.savePreferences();
         */
     }
