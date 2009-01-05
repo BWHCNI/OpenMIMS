@@ -8,24 +8,37 @@ package com.nrims;
 import com.nrims.data.MIMSFileFilter;
 import com.nrims.data.Opener;
 import com.nrims.data.FileDrop;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.Prefs;
 import ij.WindowManager;
+import ij.gui.ImageWindow;
 import ij.gui.ImageCanvas;
 import ij.measure.Calibration;
+
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Point;
+import java.awt.Image;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowListener;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+
+
+
+
 
 /**
 *
@@ -1484,7 +1497,40 @@ private void ImportISEEListMenuItemActionPerformed(java.awt.event.ActionEvent ev
 
 private void captureImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_captureImageMenuItemActionPerformed
 // TODO add your handling code here:
+    //testing trying to grab screen pixels from image for rois and annotations
     
+
+	/** Captures the active image window and returns it as an ImagePlus. */
+
+    ImagePlus imp = ij.WindowManager.getCurrentImage();
+    if (imp == null) {
+        IJ.noImage();
+        return;
+    }
+    ImagePlus imp2 = null;
+    try {
+        ImageWindow win = imp.getWindow();
+        if (win == null) {
+            return;
+        }
+        win.toFront();
+        Point loc = win.getLocation();
+        ImageCanvas ic = win.getCanvas();
+        ic.update(ic.getGraphics());
+        
+        Rectangle bounds = ic.getBounds();
+        loc.x += bounds.x;
+        loc.y += bounds.y;
+        Rectangle r = new Rectangle(loc.x, loc.y, bounds.width, bounds.height);
+        Robot robot = new Robot();
+        Image img = robot.createScreenCapture(r);
+        if (img != null) {
+            imp2 = new ImagePlus("Grab of " + imp.getTitle(), img);
+            imp2.show();
+        }
+    } catch (Exception e) {
+        ij.IJ.log(e.getMessage());
+    }
     
 }//GEN-LAST:event_captureImageMenuItemActionPerformed
 
