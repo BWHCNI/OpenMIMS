@@ -99,10 +99,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         addCheckbox("Show All", true);
         
         //order of these calls determines position...
-        setupPosLabels();
-        setupPosSpinners();
-        setupSizeLabels();
-        setupSizeSpinners();
+        //setupPosLabels();
+        //setupPosSpinners();
+        //setupSizeLabels();
+        //setupSizeSpinners();
         
         add(panel, BorderLayout.CENTER);
         pack();
@@ -121,23 +121,18 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         yPosSpinner.setModel(new javax.swing.SpinnerNumberModel(0, -9999, 9999, 1));
 
         xPosSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                xPosSpinnerStateChanged(evt);
+                posSpinnerStateChanged(evt);
             }
         });
         yPosSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                yPosSpinnerStateChanged(evt);
+                posSpinnerStateChanged(evt);
             }
         });
 
-
-
         panel.add(xPosSpinner);
         panel.add(yPosSpinner);
-
     }
 
     void setupSizeSpinners() {
@@ -153,13 +148,13 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         widthSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
 
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                widthSpinnerStateChanged(evt);
+                hwSpinnerStateChanged(evt);
             }
         });
         heightSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
 
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                heightSpinnerStateChanged(evt);
+                hwSpinnerStateChanged(evt);
             }
         });
 
@@ -188,138 +183,61 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         panel.add(hLabel);
     }
 
-    private void xPosSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
-        //All 4 for these are not that good, but they work.
-        //Should maintain the numbering of rois
-        //and the order in the jList that was there before editing...
+    private void posSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
 
+        if (jlist.getSelectedIndices().length != 1) {
+           error("Exactly one item in the list must be selected.");
+           return;
+        }
+         
+        // Make sure we have an image
         ImagePlus imp = getImage();
-        if (imp == null) {
-            return;
-        }
-        Roi roi = imp.getRoi();
+        if (imp == null) return;
+        
+        // Make sure we have a ROI
+        Roi roi = imp.getRoi();        
+        if (roi == null) return;
 
-        if (roi != null && !holdUpdate) {
-            Roi newroi = (Roi) roi.clone();
-            newroi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
-
-            imp.setRoi(newroi);
-            this.add();
-            imp.setRoi(roi);
-            imp.killRoi();
-            this.delete();
-            imp.setRoi(newroi);
-            //System.out.println("rois.size: "+rois.size());
-            jlist.setSelectedIndex(rois.size() - 1);
-            jlist.updateUI();
-            imp.updateAndRepaintWindow();
-        }
-
-    }
-
-    private void yPosSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
-        // TODO add your handling code here:
-        ImagePlus imp = getImage();
-        if (imp == null) {
-            return;
-        }
-        Roi roi = imp.getRoi();
-        if (roi != null && !holdUpdate) {
-            Roi newroi = (Roi) roi.clone();
-            newroi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
-
-            imp.setRoi(newroi);
-            this.add();
-            imp.setRoi(roi);
-            imp.killRoi();
-            this.delete();
-            imp.setRoi(newroi);
-            jlist.setSelectedIndex(rois.size() - 1);
-            jlist.updateUI();
-            imp.updateAndRepaintWindow();
+        // Set new location        
+        if (holdUpdate) return;
+        else {
+           roi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
+           setRoi(imp, roi);          
         }
     }
 
-    private void widthSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
-        // TODO add your handling code here:
+    private void hwSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
+       
+        if (jlist.getSelectedIndices().length != 1) {
+           error("Exactly one item in the list must be selected.");
+           return;
+        }
 
+        // Make sure we have an image
         ImagePlus imp = getImage();
-        if (imp == null) {
-            return;
-
-        }
-        Roi roi = imp.getRoi();
-        if (roi != null && !holdUpdate) {
-            if (roi.getType() == ij.gui.Roi.RECTANGLE) {
-                java.awt.Rectangle rect = roi.getBoundingRect();
-                Roi newroi = new ij.gui.Roi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue(), imp);
-                imp.setRoi(newroi);
-                this.add();
-                imp.setRoi(roi);
-                imp.killRoi();
-                this.delete();
-                imp.setRoi(newroi);
-                //System.out.println("rois.size: "+rois.size());
-                jlist.setSelectedIndex(rois.size() - 1);
-                jlist.updateUI();
-                imp.updateAndRepaintWindow();
-            } else if (roi.getType() == ij.gui.Roi.OVAL) {
-                java.awt.Rectangle rect = roi.getBoundingRect();
-                Roi newroi = new ij.gui.OvalRoi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue());
-                imp.setRoi(newroi);
-                this.add();
-                imp.setRoi(roi);
-                imp.killRoi();
-                this.delete();
-                imp.setRoi(newroi);
-                //System.out.println("rois.size: "+rois.size());
-                jlist.setSelectedIndex(rois.size() - 1);
-                jlist.updateUI();
-                imp.updateAndRepaintWindow();
-            }
-        }
-    }
-
-    private void heightSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
-        // TODO add your handling code here:
-
-        ImagePlus imp = getImage();
-        if (imp == null) {
-            return;
-        }
-        Roi roi = imp.getRoi();
-
-        if (roi != null && !holdUpdate) {
-            if (roi.getType() == ij.gui.Roi.RECTANGLE) {
-                java.awt.Rectangle rect = roi.getBoundingRect();
-                Roi newroi = new ij.gui.Roi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue(), imp);
-
-                imp.setRoi(newroi);
-                this.add();
-                imp.setRoi(roi);
-                imp.killRoi();
-                this.delete();
-                imp.setRoi(newroi);
-                //System.out.println("rois.size: "+rois.size());
-                jlist.setSelectedIndex(rois.size() - 1);
-                jlist.updateUI();
-                imp.updateAndRepaintWindow();
-            } else if (roi.getType() == ij.gui.Roi.OVAL) {
-                java.awt.Rectangle rect = roi.getBoundingRect();
-                Roi newroi = new ij.gui.OvalRoi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue());
-
-                imp.setRoi(newroi);
-                this.add();
-                imp.setRoi(roi);
-                imp.killRoi();
-                this.delete();
-                imp.setRoi(newroi);
-                //System.out.println("rois.size: "+rois.size());
-                jlist.setSelectedIndex(rois.size() - 1);
-                jlist.updateUI();
-                imp.updateAndRepaintWindow();
-            }
-        }
+        if (imp == null) return;
+        
+        // Make sure we have a ROI
+        Roi oldroi = imp.getRoi();
+        if (oldroi == null) return;
+        
+        // There is no setWidth or  setHeight method for a ROI
+        // so essentially we have to create a new one, setRoi
+        // will delete the old one from the rois hashtable.
+        Roi newroi = null;
+        java.awt.Rectangle rect = oldroi.getBoundingRect();        
+        if (holdUpdate) return;
+        else {
+            if (oldroi.getType() == ij.gui.Roi.RECTANGLE) {                
+                newroi = new ij.gui.Roi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue(), imp);                                
+            } else if (oldroi.getType() == ij.gui.Roi.OVAL) {
+                newroi = new ij.gui.OvalRoi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue());
+            }        
+            //we give it the old name so that setRoi will
+            // know which original roi to delete.
+            newroi.setName(oldroi.getName());
+            setRoi(imp, newroi);
+        }                
     }
 
     void addCheckbox(String label, boolean bEnabled) {
@@ -495,46 +413,54 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             getImage().updateAndRepaintWindow();
         }
     }
+    
+   void setRoi(ImagePlus imp, Roi roi) {               
+      
+      // ROI old name - based on its old bounding rect
+      String oldName = roi.getName();           
 
-    boolean move() {
+      // ROI new name - based on its new bounding rect
+      String newName = getLabel(imp, roi);
+      newName = getUniqueName(newName);
+      if (newName != null) roi.setName(newName);
+      else return;
+      
+      // update name in the jlist
+      int i = getIndex(oldName);
+      if (i < 0) return;
+      listModel.set(i, newName);                  
+
+      // update rois hashtable with new ROI      
+      roi.setName(newName);       
+      rois.put(newName, roi);
+      
+      imp.updateAndRepaintWindow();
+   }
+
+    boolean move() {      
+       
+        // Get the image
         ImagePlus imp = getImage();
-        if (imp == null) {
-            return false;
-        }
+        if (imp == null) return false;
+        
+        // Get the roi
         Roi roi = imp.getRoi();
-        if (roi == null) {
-            error("The active image does not have a selection.");
-            return false;
-        }                
+        if (roi == null) return false;
                 
-        // ROI old name
-        String oldName = roi.getName();
+        // remove old roi from hashtable
+        rois.remove(roi.getName()); 
         
-        // ROI new name - based on new position
-        String newName = getLabel(imp, roi);
-        newName = getUniqueName(newName);
-        if (newName == null) {
-            return false;
-        }       
+        // Set roi
+        setRoi(imp, roi);
         
-        // index of old name in the jlist
-        int i = getIndex(oldName);
-        if (i < 0) return false;
-        
-        // update list with new name
-        listModel.set(i, newName);
-        
-        // update rois hashtable with new ROI
-        roi.setName(newName);
-        rois.remove(oldName);        
-        rois.put(newName, roi);
+        // Debug
         if (Recorder.record) {
-            Recorder.record("mimsRoiManager", "Move");
+           Recorder.record("mimsRoiManager", "Move");
         }
-        imp.updateAndRepaintWindow();
+        
         return true;
-    }
-
+    }    
+    
     boolean add() {
         ImagePlus imp = getImage();
         if (imp == null) {
@@ -1108,12 +1034,11 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
     public void select(int index) {
         int n = listModel.size();
-        if (index < 0) {
-            jlist.clearSelection();
-            return;
-        }
-
-        // Dont know why this is being done... but whatever.
+        if (index < 0) jlist.clearSelection();
+        else if (index > -1 && index < n) jlist.setSelectedIndex(index);        
+        
+        // Dont know why this is being done... commenting out for now. 
+        /*
         if (jlist.getSelectionMode() != ListSelectionModel.SINGLE_SELECTION) {
             jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         }
@@ -1124,8 +1049,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 IJ.wait(10);
             }
         }
-        jlist.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        jlist.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);                        
+        */
     }
+    
     // Programatically selects all items in the list 
     void selectAll() {
         int len = jlist.getModel().getSize();

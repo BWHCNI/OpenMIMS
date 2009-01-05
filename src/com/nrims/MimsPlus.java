@@ -313,14 +313,25 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     public void mouseEntered(MouseEvent e) {}
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(MouseEvent e) { 
+      // Highlight the selected ROI in the ROI list
       if(getRoi() != null) {
+         
+         // Set the moving flag so we know if 
+         // user is attempting to move a roi.
          if (getRoi().getState() == Roi.MOVING) bMoving = true;
          else bMoving = false;
+         
+         // Highlight the roi in the jlist that the user is selecting
+         if (roi.getName() != null) {
+            int i = ui.getRoiManager().getIndex(roi.getName());
+            ui.getRoiManager().select(i);
+         }
+         
       }
     }
     @Override
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {}    
     /**
      * Catch drawing ROIs to enable updating other images with the same ROI
      * @param e MouseEvent
@@ -331,7 +342,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
          return;
       }
       if (bMoving) {
+        Roi thisroi = getRoi();
         stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED);
+        bMoving = false;
         return;
       }
 
