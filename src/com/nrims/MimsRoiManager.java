@@ -505,13 +505,33 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (roi == null) {
             error("The active image does not have a selection.");
             return false;
-        }
-        String name = roi.getName();
-        rois.remove(name);
-        rois.put(name, roi);
+        }                
+                
+        // ROI old name
+        String oldName = roi.getName();
+        
+        // ROI new name - based on new position
+        String newName = getLabel(imp, roi);
+        newName = getUniqueName(newName);
+        if (newName == null) {
+            return false;
+        }       
+        
+        // index of old name in the jlist
+        int i = getIndex(oldName);
+        if (i < 0) return false;
+        
+        // update list with new name
+        listModel.set(i, newName);
+        
+        // update rois hashtable with new ROI
+        roi.setName(newName);
+        rois.remove(oldName);        
+        rois.put(newName, roi);
         if (Recorder.record) {
             Recorder.record("mimsRoiManager", "Move");
         }
+        imp.updateAndRepaintWindow();
         return true;
     }
 
@@ -1072,6 +1092,19 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             return "null";
         }
     }
+    
+    /* 
+    Call this method to find what index the specified 
+    ROI label has in the jlist.  
+    */
+   public int getIndex(String label) {      
+      int count = listModel.getSize();
+      for (int i = 0; i <= count - 1; i++) {
+         String value = listModel.get(i).toString();
+         if (value.equals(label)) return i;
+      }
+      return -1;
+   }
 
     public void select(int index) {
         int n = listModel.size();
