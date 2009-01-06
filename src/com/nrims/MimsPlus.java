@@ -355,6 +355,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if (x1 == x2 && y1 == y2 && w1 == w2 && h1 == h2) return;
         
         stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED);
+       
+        ui.getRoiManager().resetSpinners(thisroi);
+         
         bMoving = false;
         return;
       }

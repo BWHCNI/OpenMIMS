@@ -361,7 +361,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         holdUpdate = false;
     }
 
-    private void resetSpinners(Roi roi) {
+    public void resetSpinners(Roi roi) {
        
        if (roi == null) return;
         
