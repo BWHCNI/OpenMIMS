@@ -2,6 +2,7 @@ package com.nrims;
 import ij.IJ ;
 import ij.gui.* ;
 //import ij.process.*;
+import java.awt.Rectangle;
 import java.awt.event.WindowEvent ;
 import java.awt.event.WindowListener ;
 import java.awt.event.MouseListener ;
@@ -315,10 +316,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     public void mousePressed(MouseEvent e) { 
       // Highlight the selected ROI in the ROI list
-      if(getRoi() != null) {
+      if(getRoi() != null) {                  
          
-         // Set the moving flag so we know if 
-         // user is attempting to move a roi.
+         // Set the moving flag so we know if user is attempting to move a roi.
          if (getRoi().getState() == Roi.MOVING) bMoving = true;
          else bMoving = false;
          
@@ -327,6 +327,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             int i = ui.getRoiManager().getIndex(roi.getName());
             ui.getRoiManager().select(i);
          }
+         
+         // Get the location so that if the user simply declicks without 
+         // moving, a duplicate roi is not created at the same location.
+         Rectangle r = getRoi().getBounds();
+         x1 = r.x; y1 = r.y; w1 = r.width; h1 = r.height;         
          
       }
     }
@@ -342,7 +347,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
          return;
       }
       if (bMoving) {
-        Roi thisroi = getRoi();
+        Roi thisroi = getRoi();   
+        
+        // Prevent duplicate roi at same location
+        Rectangle r = thisroi.getBounds();
+        x2 = r.x; y2 = r.y; w2 = r.width; h2 = r.height;         
+        if (x1 == x2 && y1 == y2 && w1 == w2 && h1 == h2) return;
+        
         stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED);
         bMoving = false;
         return;
@@ -531,6 +542,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     private int nType = 0 ;
     private int nRatioNum = 0 ;
     private int nRatioDen = 0 ;
+    private int x1, x2, y1, y2, w1, w2, h1, h2;
     private boolean bIsStack = false ;
     private HSIProcessor hsiProcessor = null ;
     private com.nrims.data.Opener srcImage ;

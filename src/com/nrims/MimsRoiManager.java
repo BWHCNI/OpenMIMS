@@ -99,10 +99,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         addCheckbox("Show All", true);
         
         //order of these calls determines position...
-        //setupPosLabels();
-        //setupPosSpinners();
-        //setupSizeLabels();
-        //setupSizeSpinners();
+        setupPosLabels();
+        setupPosSpinners();
+        setupSizeLabels();
+        setupSizeSpinners();
         
         add(panel, BorderLayout.CENTER);
         pack();
@@ -146,13 +146,11 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         heightSpinner.setModel(new javax.swing.SpinnerNumberModel(0, -9999, 9999, 1));
 
         widthSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 hwSpinnerStateChanged(evt);
             }
         });
         heightSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 hwSpinnerStateChanged(evt);
             }
@@ -184,33 +182,41 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     }
 
     private void posSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
-
+        String label = "";
+       
+        if (holdUpdate) return;
+        
         if (jlist.getSelectedIndices().length != 1) {
            error("Exactly one item in the list must be selected.");
            return;
+        } else {
+           label = jlist.getSelectedValue().toString();
         }
-         
+
         // Make sure we have an image
         ImagePlus imp = getImage();
         if (imp == null) return;
         
         // Make sure we have a ROI
-        Roi roi = imp.getRoi();        
+        Roi roi = (Roi)rois.get(label);
         if (roi == null) return;
 
         // Set new location        
-        if (holdUpdate) return;
-        else {
-           roi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
-           setRoi(imp, roi);          
-        }
+        roi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
+        move(imp, roi);       
     }
 
     private void hwSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
+        
+        String label = "";
        
+        if (holdUpdate) return;
+        
         if (jlist.getSelectedIndices().length != 1) {
            error("Exactly one item in the list must be selected.");
            return;
+        } else {
+           label = jlist.getSelectedValue().toString();
         }
 
         // Make sure we have an image
@@ -218,7 +224,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (imp == null) return;
         
         // Make sure we have a ROI
-        Roi oldroi = imp.getRoi();
+        Roi oldroi = (Roi)rois.get(label);
         if (oldroi == null) return;
         
         // There is no setWidth or  setHeight method for a ROI
@@ -226,18 +232,21 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         // will delete the old one from the rois hashtable.
         Roi newroi = null;
         java.awt.Rectangle rect = oldroi.getBoundingRect();        
-        if (holdUpdate) return;
-        else {
-            if (oldroi.getType() == ij.gui.Roi.RECTANGLE) {                
-                newroi = new ij.gui.Roi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue(), imp);                                
-            } else if (oldroi.getType() == ij.gui.Roi.OVAL) {
-                newroi = new ij.gui.OvalRoi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue());
-            }        
-            //we give it the old name so that setRoi will
-            // know which original roi to delete.
-            newroi.setName(oldroi.getName());
-            setRoi(imp, newroi);
-        }                
+        
+        // Dont do anything if the values are changing 
+        // only because user selected a different ROI.        
+        if (oldroi.getType() == ij.gui.Roi.RECTANGLE) {                
+            newroi = new ij.gui.Roi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue(), imp);                                
+        } else if (oldroi.getType() == ij.gui.Roi.OVAL) {
+            newroi = new ij.gui.OvalRoi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue());
+        } else {
+           return;
+        }
+        
+        //we give it the old name so that setRoi will
+        // know which original roi to delete.
+        newroi.setName(oldroi.getName());
+        move(imp, newroi);             
     }
 
     void addCheckbox(String label, boolean bEnabled) {
@@ -322,90 +331,70 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
     }
 
-    public void valueChanged(ListSelectionEvent e) {
-        holdUpdate = true;
-        //System.out.println("holdupdate = true");
+    public void valueChanged(ListSelectionEvent e) {       
+        
         // DO NOTHING!!  Wait till we are done switching         
-        if (!e.getValueIsAdjusting()) {
-            holdUpdate = false;
-            return;
-        }
-        int[] indices = jlist.getSelectedIndices();
-        if (indices.length == 0) {
-            holdUpdate = false;
-            return;
-        }
+        if (!e.getValueIsAdjusting()) return;
+               
+        holdUpdate = true;
 
+        int[] indices = jlist.getSelectedIndices();
+        if (indices.length == 0) return;
+
+        // Select ROI in the window
         int index = indices[indices.length - 1];
-        if (index < 0) {
-            index = 0;
-        }
+        if (index < 0) index = 0;
         if (WindowManager.getCurrentImage() != null) {
             restore(index, true);
-            if (Recorder.record) {
-                Recorder.record("mimsRoiManager", "Select", index);
-            }
         }
-        //new roi is now selected
 
+        // Do spinner stuff
         if (indices.length == 1) {
             ImagePlus imp = getImage();
-            if (imp == null) {
-                holdUpdate = false;
-                return;
-            }
+            if (imp == null) return;
             Roi roi = imp.getRoi();
             resetSpinners(roi);
         } else {
-            //what to do if more than one selected?
-        }
+            disablespinners();
+        }      
+        
         holdUpdate = false;
-    //System.out.println("holdupdate = false");       
     }
 
     private void resetSpinners(Roi roi) {
-        if (roi != null && roi.getType() == ij.gui.Roi.FREEROI) {
-            java.awt.Rectangle rect = roi.getBoundingRect();
-
-            xPosSpinner.setValue(rect.x);
-            yPosSpinner.setValue(rect.y);
-            wLabel.setText("");
-            hLabel.setText("");
-            widthSpinner.setValue(0);
-            heightSpinner.setValue(0);
-            //depricated widthSpinner.disable();
-            return;
-        } else if (roi != null && roi.getType() == ij.gui.Roi.RECTANGLE) {
-            java.awt.Rectangle rect = roi.getBoundingRect();
-
-            xPosSpinner.setValue(rect.x);
-            yPosSpinner.setValue(rect.y);
-            wLabel.setText("Width");
-            hLabel.setText("Height");
-            widthSpinner.setValue(rect.width);
-            heightSpinner.setValue(rect.height);
-            return;
-        } else if (roi != null && roi.getType() == ij.gui.Roi.OVAL) {
-            java.awt.Rectangle rect = roi.getBoundingRect();
-
-            xPosSpinner.setValue(rect.x);
-            yPosSpinner.setValue(rect.y);
-            wLabel.setText("Width");
-            hLabel.setText("Height");
-            widthSpinner.setValue(rect.width);
-            heightSpinner.setValue(rect.height);
-            return;
-        } else if (roi != null) {
-            java.awt.Rectangle rect = roi.getBoundingRect();
-
-            xPosSpinner.setValue(rect.x);
-            yPosSpinner.setValue(rect.y);
-            wLabel.setText("");
-            hLabel.setText("");
-            widthSpinner.setValue(0);
-            heightSpinner.setValue(0);
-        }
-
+       
+       if (roi == null) return;
+        
+       // get the type of ROI we are dealing with
+       int roiType = roi.getType();
+       
+       // Not sure if all ROIs have a width-height value that can be adjusted... test
+       if (roiType == Roi.RECTANGLE || roiType == Roi.OVAL) {
+          enablespinners();
+          java.awt.Rectangle rect = roi.getBoundingRect();
+          xPosSpinner.setValue(rect.x);
+          yPosSpinner.setValue(rect.y);
+          wLabel.setText("Width");
+          hLabel.setText("Height");
+          widthSpinner.setValue(rect.width);
+          heightSpinner.setValue(rect.height);           
+       } else {
+          disablespinners();
+       }
+    }
+    
+    void enablespinners() {
+       xPosSpinner.setEnabled(true);
+       yPosSpinner.setEnabled(true);
+       widthSpinner.setEnabled(true);
+       heightSpinner.setEnabled(true);
+    }
+    
+    void disablespinners() {
+       xPosSpinner.setEnabled(false);
+       yPosSpinner.setEnabled(false);
+       widthSpinner.setEnabled(false);
+       heightSpinner.setEnabled(false);
     }
 
     void showall() {
@@ -430,35 +419,33 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
       if (i < 0) return;
       listModel.set(i, newName);                  
 
-      // update rois hashtable with new ROI      
-      roi.setName(newName);       
+      // update rois hashtable with new ROI            
+      rois.remove(oldName); 
       rois.put(newName, roi);
       
       imp.updateAndRepaintWindow();
    }
+   
+   boolean move(ImagePlus imp, Roi roi) {
+      if (imp == null) return false;               
+      if (roi == null) return false;
+      
+      setRoi(imp, roi);
+        
+      // Debug
+      if (Recorder.record) {
+         Recorder.record("mimsRoiManager", "Move");
+      }        
+      return true;      
+   }
 
-    boolean move() {      
-       
-        // Get the image
+    boolean move() {             
+        // Get the image and the roi
         ImagePlus imp = getImage();
-        if (imp == null) return false;
-        
-        // Get the roi
         Roi roi = imp.getRoi();
-        if (roi == null) return false;
-                
-        // remove old roi from hashtable
-        rois.remove(roi.getName()); 
         
-        // Set roi
-        setRoi(imp, roi);
-        
-        // Debug
-        if (Recorder.record) {
-           Recorder.record("mimsRoiManager", "Move");
-        }
-        
-        return true;
+        boolean b = move(imp, roi);        
+        return b;
     }    
     
     boolean add() {
@@ -1035,7 +1022,15 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     public void select(int index) {
         int n = listModel.size();
         if (index < 0) jlist.clearSelection();
-        else if (index > -1 && index < n) jlist.setSelectedIndex(index);        
+        else if (index > -1 && index < n) jlist.setSelectedIndex(index);    
+        
+        
+        String label = jlist.getSelectedValue().toString();
+                
+        // Make sure we have a ROI
+        Roi roi = (Roi)rois.get(label);
+        if (roi == null) return;
+        else resetSpinners(roi);
         
         // Dont know why this is being done... commenting out for now. 
         /*
