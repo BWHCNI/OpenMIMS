@@ -5,6 +5,9 @@
 
 package com.nrims.data;
 
+import com.nrims.UI;
+import com.nrims.MimsPlus;
+
 import javax.swing.JFileChooser;
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,18 +32,18 @@ public class LoadImageList {
         imageList = new ArrayList<String>();
     }
     
-    public void openList() {
+    public boolean openList() {
         JFileChooser fc = new JFileChooser();
         if (fc.showOpenDialog(ui) == JFileChooser.CANCEL_OPTION) {
-            return;
+            return false;
         }
         String listFile = fc.getSelectedFile().getPath();
         this.workingDirectory  = fc.getSelectedFile().getParent();
          
-        readList(listFile);
+        return readList(listFile);
     }
     
-    public void readList(String listFile) {
+    public boolean readList(String listFile) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(listFile));
             String line;
@@ -51,9 +54,12 @@ public class LoadImageList {
                 }
                 imageList.add(line);
             }
+            
+            return true;
         // TODO we need more refined Exception checking here
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
     
@@ -72,6 +78,44 @@ public class LoadImageList {
         return test;
     }
     
+    /* this is super simple and should be temporary
+     * extend or remove when ui can have multiple openers
+     */
+    public void simpleIMImport() {
+        try {
+        this.ui.loadMIMSFile(workingDirectory + "/" + imageList.get(0));
+        MimsPlus[] massImages = this.ui.getMassImages();
+        int nMasses = this.ui.getMimsImage().nMasses();
+        
+        
+        for (int i = 0; i < nMasses; i++) {
+            if(massImages[i]!=null) {
+                massImages[i].setIsStack(true);
+            }
+        }
+
+        for (int i = 1; i < imageList.size(); i++) {
+            System.out.println(workingDirectory + "/" + imageList.get(i));
+            UI tempUi = new UI(workingDirectory + "/" + imageList.get(i)); //loadMims here
+            //Opener tempimage = tempUi.getMimsImage();
+            this.ui.getmimsStackEditing().concatImages(false, tempUi);
+
+            for (MimsPlus image : tempUi.getMassImages()) {
+                if (image != null) {
+                    image.setAllowClose(true);
+                    image.close();
+                }
+            }
+
+            tempUi = null;
+
+        }
+        this.ui.setSyncROIs(true);
+        this.ui.setSyncStack(true);
+        } catch(Exception e) { System.out.println(e.toString()); }
+    }
+
+    //attempting to import Isee format images
     public void dumbImport(int series) {
         //ij.plugin.Raw raw = new ij.plugin.Raw();
         

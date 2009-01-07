@@ -119,6 +119,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sumAllMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="importIMListMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Import .im List"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="importIMListMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="ImportISEEListMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Import ISEE List"/>

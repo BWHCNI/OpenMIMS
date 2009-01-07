@@ -378,7 +378,14 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
           hLabel.setText("Height");
           widthSpinner.setValue(rect.width);
           heightSpinner.setValue(rect.height);           
-       } else {
+       } else if (roiType == Roi.POLYGON || roiType == Roi.FREEROI) {
+          enablePosSpinners();
+          disableSizeSpinners();
+          java.awt.Rectangle rect = roi.getBoundingRect();
+          xPosSpinner.setValue(rect.x);
+          yPosSpinner.setValue(rect.y); 
+       }
+       else {
           disablespinners();
        }
     }
@@ -396,7 +403,27 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
        widthSpinner.setEnabled(false);
        heightSpinner.setEnabled(false);
     }
+    
+    void enablePosSpinners() {
+        xPosSpinner.setEnabled(true);
+        yPosSpinner.setEnabled(true);
+    }
 
+    void disablePosSpinners() {
+        xPosSpinner.setEnabled(false);
+        yPosSpinner.setEnabled(false);
+    }
+
+    void enableSizeSpinners() {
+        widthSpinner.setEnabled(true);
+        heightSpinner.setEnabled(true);
+    }
+
+    void disableSizeSpinners() {
+        widthSpinner.setEnabled(false);
+        heightSpinner.setEnabled(false);
+    }
+    
     void showall() {
         if (getImage() != null) {
             getImage().updateAndRepaintWindow();

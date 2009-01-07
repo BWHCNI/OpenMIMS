@@ -181,27 +181,42 @@ public class MimsStackEditing extends javax.swing.JPanel {
     }
 
     public void concatImages(boolean pre, UI tempui) {
-
+        
+        ui.setUpdating(true);
+        
         MimsPlus[] tempimage = tempui.getMassImages();
         ImageStack[] tempstacks = new ImageStack[numberMasses];
+        
+        for (int i = 0; i < image.nMasses(); i++) {
+            if(images[i]!=null) {
+                images[i].setIsStack(true);
+            }
+        }
 
+        //label all slices of original image
+        for (int mass = 0; mass <= (numberMasses - 1); mass++) {
+            for (int i = 1; i <= imagestacks[mass].getSize(); i++) {
+                imagestacks[mass].setSliceLabel(images[mass].getTitle(), i);
+            }
+        }
+        //increase action size
         ui.mimsAction.addPlanes(pre, tempimage[0].getNSlices());
 
         for (int i = 0; i <= (numberMasses - 1); i++) {
             tempstacks[i] = tempimage[i].getStack();
         }
-
+        //append slices, include labels
         if (pre) {
             for (int mass = 0; mass <= (numberMasses - 1); mass++) {
                 for (int i = tempstacks[mass].getSize(); i >= 1; i--) {
-                    imagestacks[mass].addSlice("", tempstacks[mass].getProcessor(i), 0);
+                    imagestacks[mass].addSlice(tempimage[mass].getTitle(), tempstacks[mass].getProcessor(i), 0);
                 }
             }
             ui.getmimsLog().Log("Concat: " + tempui.getMimsImage().getName() + " + " + image.getName());
         } else {
             for (int mass = 0; mass <= (numberMasses - 1); mass++) {
                 for (int i = 1; i <= tempstacks[mass].getSize(); i++) {
-                    imagestacks[mass].addSlice("", tempstacks[mass].getProcessor(i));
+                    imagestacks[mass].addSlice(tempimage[mass].getTitle(), tempstacks[mass].getProcessor(i));
                 }
             }
             ui.getmimsLog().Log("Concat: " + image.getName() + " + " + tempui.getMimsImage().getName());
@@ -216,15 +231,21 @@ public class MimsStackEditing extends javax.swing.JPanel {
         ui.mimsAction.addImage(pre, tempui.getMimsImage());
 
         ui.getmimsLog().Log("New size: " + images[0].getNSlices() + " planes");
-
-        // disable all functions       
-        //for(Component comp : this.getComponents()){
-        //    comp.setEnabled(false);
-        //}
-
+        
+        resetImageStacks();
+        for(int i=0; i<tempimage.length;i++) { 
+            if(tempimage[i]!=null) {
+                tempimage[i].setAllowClose(true);
+                tempimage[i].close(); 
+                tempimage[i]=null;
+            } 
+        }
+        for(int i=0; i<tempstacks.length;i++) { tempstacks[i]=null; }
+        
         // disable certain functions
         setConcatGUI(true);
-
+        
+        ui.setUpdating(false);
     }
 
     public boolean sameResolution(Opener im, Opener ij) {
@@ -609,7 +630,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 }//GEN-LAST:event_deleteListButtonActionPerformed
 
     private void concatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_concatButtonActionPerformed
-        UI tempUi = new UI(null); //loadMims here
+        UI tempUi = new UI(ui.getImageDir()); //loadMims here
         Opener tempImage = tempUi.getMimsImage();
         if (tempImage == null) {
             return; // if the FileChooser dialog was canceled
@@ -649,8 +670,12 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
             }
         }
-
+        tempUi = null;
+        
         ui.getmimsTomography().resetBounds();
+        ui.getMimsData().setHasStack(true);
+        ui.setSyncStack(true);
+        
         ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
         //wo.run("tile");
         ui.updateStatus("");
@@ -820,6 +845,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         int startPlane = images[0].getSlice();
         ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
         //not setting roi's to deselect, simply deselecting from list
+        //doesn't work
         ui.getRoiManager().select(-1);
         String massname = tempImage.getTitle();
         massname = massname.substring(massname.length() - 6, massname.length());

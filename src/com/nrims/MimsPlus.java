@@ -48,6 +48,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             getProcessor().setMinAndMax(0, 65535); // default display range
             fStateListeners = new EventListenerList() ;
             setProperty("Info", srcImage.getInfo());
+            //added, was only set in appendImage(), only called
+            //for multi-plane images
+            bIgnoreClose = true;
+            //------
         } catch (Exception x) { IJ.log(x.toString());}
     }
     
@@ -134,7 +138,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             info += "Denominator=" + srcImage.getMassName(denIndex)+"\n";
             info += srcImage.getInfo();
             setProperty("Info", info) ;
-
+            
         }
         catch(Exception x) { IJ.log(x.toString()); }
     }
@@ -160,6 +164,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
     }
     
+    //not hit from MimsStackEditing.concatImages()
+    //only used when opening a multiplane image
     public void appendImage(int nImage) throws Exception {
         if(srcImage == null) {
             throw new Exception("No image opened?");
@@ -534,6 +540,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public HSIProcessor getHSIProcessor() { return hsiProcessor ; }
     
     public boolean isStack() { return bIsStack ; }
+    public void setIsStack(boolean isS) { bIsStack = isS; }
     public UI getUI() { return ui ; }
     
     private boolean allowClose =true;
