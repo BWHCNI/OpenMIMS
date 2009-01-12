@@ -364,7 +364,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     public void resetSpinners(Roi roi) {
        
        if (roi == null) return;
-        
+       holdUpdate = true;
+       
        // get the type of ROI we are dealing with
        int roiType = roi.getType();
        
@@ -381,16 +382,17 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
        } else if (roiType == Roi.POLYGON || roiType == Roi.FREEROI) {
           enablePosSpinners();
           disableSizeSpinners();
-          java.awt.Rectangle rect = roi.getBoundingRect();
+          java.awt.Rectangle rect = roi.getBoundingRect();   
           xPosSpinner.setValue(rect.x);
           yPosSpinner.setValue(rect.y); 
        }
        else {
           disablespinners();
-       }
+       }       
+       holdUpdate = false;
     }
     
-    void enablespinners() {
+    void enablespinners() {       
        xPosSpinner.setEnabled(true);
        yPosSpinner.setEnabled(true);
        widthSpinner.setEnabled(true);
