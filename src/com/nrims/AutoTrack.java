@@ -239,9 +239,9 @@ public class AutoTrack {
                 planesDone=planesDone+1;
                 //percent = (planesDone/planesTotal);
                 
-                System.out.println("calling ui.showprog");
-                System.out.println(planesDone + " of " + planesTotal);
-                ui.updateStatus(planesDone+" planes of "+planesTotal+" total...");
+                //System.out.println("calling ui.showprog");
+                //System.out.println(planesDone + " of " + planesTotal);
+                //ui.updateStatus(planesDone+" planes of "+planesTotal+" total...");
                 if(ui.getMassImage(0)!=null) { 
                     ui.getMassImage(0).setSlice(s);
                     //ui.getMassImage(0).updateAndDraw();

@@ -97,7 +97,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         addButton("More>>");
         addPopupMenu();
         addCheckbox("Show All", true);
-        
+               
         //order of these calls determines position...
         setupPosLabels();
         setupPosSpinners();

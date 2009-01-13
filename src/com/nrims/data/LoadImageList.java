@@ -26,10 +26,12 @@ public class LoadImageList {
     private com.nrims.UI ui;
     private ArrayList<String> imageList;
     private String workingDirectory;
+    private String listFile;
     
     public LoadImageList(com.nrims.UI ui) {
         this.ui = ui;
         imageList = new ArrayList<String>();
+        
     }
     
     public boolean openList() {
@@ -37,10 +39,10 @@ public class LoadImageList {
         if (fc.showOpenDialog(ui) == JFileChooser.CANCEL_OPTION) {
             return false;
         }
-        String listFile = fc.getSelectedFile().getPath();
+        listFile = fc.getSelectedFile().getName();
         this.workingDirectory  = fc.getSelectedFile().getParent();
          
-        return readList(listFile);
+        return readList(workingDirectory+"/"+listFile);
     }
     
     public boolean readList(String listFile) {
@@ -93,12 +95,21 @@ public class LoadImageList {
                 massImages[i].setIsStack(true);
             }
         }
-
+        
+        String[] names = new String[nMasses];
+        for (int i = 0; i < nMasses; i++) {
+            if(massImages[i]!=null) {
+                String oldname = massImages[i].getTitle();
+                String newname = oldname.substring(0, oldname.indexOf(" "));
+                newname += " : " + listFile;
+                massImages[i].setTitle(newname);
+                names[i]=newname;
+            }
+        }
+        
         for (int i = 1; i < imageList.size(); i++) {
-            System.out.println(workingDirectory + "/" + imageList.get(i));
             UI tempUi = new UI(workingDirectory + "/" + imageList.get(i)); //loadMims here
-            //Opener tempimage = tempUi.getMimsImage();
-            this.ui.getmimsStackEditing().concatImages(false, tempUi);
+            this.ui.getmimsStackEditing().concatImages(false, false, tempUi);
 
             for (MimsPlus image : tempUi.getMassImages()) {
                 if (image != null) {
@@ -110,6 +121,13 @@ public class LoadImageList {
             tempUi = null;
 
         }
+        
+        for (int i = 0; i < nMasses; i++) {
+            if(massImages[i]!=null) {
+               // massImages[i].setTitle(names[i]);
+            }
+        }
+        
         this.ui.setSyncROIs(true);
         this.ui.setSyncStack(true);
         } catch(Exception e) { System.out.println(e.toString()); }

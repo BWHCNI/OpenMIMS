@@ -180,7 +180,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         this.resetTrueIndexLabel();
     }
 
-    public void concatImages(boolean pre, UI tempui) {
+    public void concatImages(boolean pre, boolean labeloriginal, UI tempui) {
         
         ui.setUpdating(true);
         
@@ -194,9 +194,11 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
 
         //label all slices of original image
-        for (int mass = 0; mass <= (numberMasses - 1); mass++) {
-            for (int i = 1; i <= imagestacks[mass].getSize(); i++) {
-                imagestacks[mass].setSliceLabel(images[mass].getTitle(), i);
+        if (labeloriginal) {
+            for (int mass = 0; mass <= (numberMasses - 1); mass++) {
+                for (int i = 1; i <= imagestacks[mass].getSize(); i++) {
+                    imagestacks[mass].setSliceLabel(images[mass].getTitle(), i);
+                }
             }
         }
         //increase action size
@@ -646,7 +648,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                         // (shallow copy in mimsAction is enough as 'restoreMims' creates a new 'actionList' object
                         //mimsAction action = (mimsAction)ui.getmimsAction().clone();
                         //ui.restoreMims();
-                        concatImages(value != JOptionPane.YES_OPTION, tempUi);
+                        concatImages(value != JOptionPane.YES_OPTION, true, tempUi);
                     //applyAction(action);
 //                        for(int k=0; k<image.nMasses(); k++) {     // display the first slice
 //                            images[k].setSlice(1);
@@ -846,7 +848,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
         //not setting roi's to deselect, simply deselecting from list
         //doesn't work
-        ui.getRoiManager().select(-1);
+        //ui.getRoiManager().select(-1);
         String massname = tempImage.getTitle();
         massname = massname.substring(massname.length() - 6, massname.length());
 
