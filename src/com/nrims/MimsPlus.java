@@ -449,33 +449,24 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         java.util.Hashtable rois = ui.getRoiManager().getROIs();        
         for(Object key:rois.keySet()){
             Roi roi = (Roi)rois.get(key);
-            if(roi.contains(mX, mY)){
-                insideRoi = true;
-                ij.process.ImageStatistics stats = this.getStatistics();
-                msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev*stats.stdDev, displayDigits);                
-                roi.setInstanceColor(java.awt.Color.yellow);
-                if(ui.activeRoi != roi){
-//                        //ij.process.ImageProcessor mask = ui.activeRoi==null?null:ui.activeRoi.getMask();
-//                        ip.reset();
-//                        ip.snapshot();
-//                        setRoi(roi);
-//                        ip.setValue(0);
-//                        ip.fill(roi.getMask());
-//                        setProcessor(null,ip);                    
+            if(roi.contains(mX, mY)) {
+               if (ui.getSyncROIsAcrossPlanes() || ui.getRoiManager().getSliceNumber(key.toString()) == getCurrentSlice()) {
+                  insideRoi = true;
+                  ij.process.ImageStatistics stats = this.getStatistics();
+                  msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev*stats.stdDev, displayDigits);                
+                  roi.setInstanceColor(java.awt.Color.yellow);
+                  if(ui.activeRoi != roi){                   
                     ui.activeRoi = roi;
                     setRoi(roi);
-                    //ui.mimsStateChanged(new mimsPlusEvent(this, roi, mimsPlusEvent.ATTR_SET_ROI));
-                }
-                break;
+                  }
+                  break;
+               }
             }
         }
         if (ui.activeRoi != null && !insideRoi){
-//                ip.reset();
-            ui.activeRoi = null;
-            setRoi((Roi)null);
-            //ui.mimsStateChanged(new mimsPlusEvent(this, null, mimsPlusEvent.ATTR_SET_ROI));
-        }
-        
+           ui.activeRoi = null;
+           setRoi((Roi)null);
+        } 
         ui.updateStatus(msg);
     }
     

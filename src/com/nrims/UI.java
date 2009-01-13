@@ -55,8 +55,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private ij.ImageJ ijapp = null;
     private boolean bSyncStack = true;
     private boolean bSyncROIs = true;
+    private boolean bSyncROIsAcrossPlanes = true;
     private boolean bAddROIs = true;
-    private boolean bUpdating = false;
+    private boolean bUpdating = false;    
     /**
      * Flag that indicates whether images are currently being opened.
      */
@@ -1370,7 +1371,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void openMIMSImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMIMSImageMenuItemActionPerformed
-        loadMIMSFile();
+       loadMIMSFile();
 }//GEN-LAST:event_openMIMSImageMenuItemActionPerformed
 
     private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
@@ -1550,8 +1551,8 @@ private void captureImageMenuItemActionPerformed(java.awt.event.ActionEvent evt)
 }//GEN-LAST:event_captureImageMenuItemActionPerformed
 
 private void importIMListMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importIMListMenuItemActionPerformed
-// TODO add your handling code here:
-    com.nrims.data.LoadImageList testLoad = new com.nrims.data.LoadImageList(this);
+// TODO add your handling code here:    
+   com.nrims.data.LoadImageList testLoad = new com.nrims.data.LoadImageList(this);
     boolean read;
     read = testLoad.openList();
     if (!read) {
@@ -1560,9 +1561,7 @@ private void importIMListMenuItemActionPerformed(java.awt.event.ActionEvent evt)
 
     testLoad.printList();
     testLoad.simpleIMImport();
-
     this.mimsStackEditing.setConcatGUI(true);
-
 }//GEN-LAST:event_importIMListMenuItemActionPerformed
 
 //    private void imagesChanged(com.nrims.mimsPlusEvent e) {
@@ -1748,6 +1747,14 @@ private void importIMListMenuItemActionPerformed(java.awt.event.ActionEvent evt)
     public boolean getSyncROIs() {
         return bSyncROIs;
     }
+    
+    public void setSyncROIsAcrossPlanes(boolean bSync) {
+        bSyncROIsAcrossPlanes = bSync;
+    }
+
+    public boolean getSyncROIsAcrossPlanes() {
+        return bSyncROIsAcrossPlanes;
+    }
 
     public void setAddROIs(boolean bOnOff) {
         bAddROIs = bOnOff;
@@ -1854,7 +1861,7 @@ private void importIMListMenuItemActionPerformed(java.awt.event.ActionEvent evt)
         
         for (int i = 0; i < args.length; i++) {
            if (args[i].startsWith("-ijpath") && i+1 < args.length) {
-					Prefs.setHomeDir(args[i+1]);
+					//Prefs.setHomeDir(args[i+1]);
             }
         }
 

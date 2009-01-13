@@ -43,9 +43,25 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
         Roi cRoi = mImp.getRoi();
         javax.swing.JList list = roiManager.getList();
 
-        for (int id = 0; id < list.getModel().getSize(); id++) {
-            Roi roi = (Roi) rois.get((list.getModel().getElementAt(id).toString()));
-            boolean bDraw = true;
+        for (int id = 0; id < list.getModel().getSize(); id++) {            
+            String label = (list.getModel().getElementAt(id).toString());
+            Roi roi = (Roi) rois.get(label);
+            boolean bDraw = true;                        
+            
+            // If the current slice is the one which the 
+            // roi was created then we want to show the roi in red.
+            if (ui.getSyncROIsAcrossPlanes() || roiManager.getSliceNumber(label) == mImp.getCurrentSlice()) {
+               String name = "" + (id + 1);
+               java.awt.Rectangle r = roi.getBounds();
+               int x = screenX(r.x + r.width / 2 - g.getFontMetrics().stringWidth(name) / 2);
+               int y = screenY(r.y + r.height / 2 + g.getFontMetrics().getHeight() / 2);
+               g.drawString(name, x, y);               
+               bDraw = true;
+            } else {
+               bDraw = false;
+            }
+            
+            // We dont want to show the boundry if the mouse is within the roi.
             if (cRoi != null && cRoi.toString().equals(roi.toString())) {
                 bDraw = false;
             }
@@ -112,66 +128,7 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
                         }
                         break;
                 }
-            }
-            String name = "" + (id + 1);
-            java.awt.Rectangle r = roi.getBounds();
-            int x = screenX(r.x + r.width / 2 - g.getFontMetrics().stringWidth(name) / 2);
-            int y = screenY(r.y + r.height / 2 + g.getFontMetrics().getHeight() / 2);
-            g.drawString(name, x, y);
-            
-            //Commented out to not do red fill of ROI on mouse over
-            //maybe do something fancy later, restrict to seg image, etc.
-            /*
-            if (ui.activeRoi == roi) {
-                if (roi.getType() == Roi.COMPOSITE) {
-                    float[] array = ((ShapeRoi) roi).getShapeAsArray();
-                    Shape s = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
-                    int index = 0, type, len;
-                    float[] seg = new float[7];
-                    while (true) {
-                        len = getSegment(array, seg, index);
-                        if (len < 0) {
-                            break;
-                        }
-                        index += len;
-                        type = (int) seg[0];
-                        switch (type) {
-                            case PathIterator.SEG_MOVETO:
-                                ((GeneralPath) s).moveTo(screenX((int) seg[1]), screenY((int) seg[2]));
-                                break;
-                            case PathIterator.SEG_LINETO:
-                                ((GeneralPath) s).lineTo(screenX((int) seg[1]), screenY((int) seg[2]));
-                                break;
-                            case PathIterator.SEG_QUADTO:
-                                ((GeneralPath) s).quadTo(screenX((int) seg[1]), screenY((int) seg[2]), screenX((int) seg[3]), screenY((int) seg[4]));
-                                break;
-                            case PathIterator.SEG_CUBICTO:
-                                ((GeneralPath) s).curveTo(screenX((int) seg[1]), screenY((int) seg[2]), screenX((int) seg[3]), screenY((int) seg[4]), screenX((int) seg[5]), screenY((int) seg[6]));
-                                break;
-                            case PathIterator.SEG_CLOSE:
-                                ((GeneralPath) s).closePath();
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    Graphics2D g2 = (Graphics2D) g;
-                    
-                    g2.fill(s);
-                } else {
-                    Polygon p = roi.getPolygon();
-                    int[] screenXpoints = new int[p.npoints];
-                    int[] screenYpoints = new int[p.npoints];
-                    for (int i = 0; i < p.npoints; i++) {
-                        screenXpoints[i] = screenX(p.xpoints[i]);
-                        screenYpoints[i] = screenY(p.ypoints[i]);
-                    }
-                    Graphics2D g2 = (Graphics2D) g;
-                    
-                    g2.fill(new Polygon(screenXpoints, screenYpoints, p.npoints));
-                }
-            }   */
+            }                       
         }
     }
 

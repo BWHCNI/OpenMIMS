@@ -336,6 +336,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         // DO NOTHING!!  Wait till we are done switching         
         if (!e.getValueIsAdjusting()) return;
                
+        boolean setSlice = false;
         holdUpdate = true;
 
         int[] indices = jlist.getSelectedIndices();
@@ -343,9 +344,11 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
         // Select ROI in the window
         int index = indices[indices.length - 1];
-        if (index < 0) index = 0;
+        if (index < 0) index = 0;        
+        if (ui.getSyncROIsAcrossPlanes()) setSlice = false;
+        else setSlice = true;
         if (WindowManager.getCurrentImage() != null) {
-            restore(index, true);
+            restore(index, setSlice);
         }
 
         // Do spinner stuff
@@ -1050,8 +1053,12 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
     public void select(int index) {
         int n = listModel.size();
-        if (index < 0) jlist.clearSelection();
-        else if (index > -1 && index < n) jlist.setSelectedIndex(index);    
+        if (index < 0) {
+           jlist.clearSelection();
+           return;
+        } else if (index > -1 && index < n) {
+           jlist.setSelectedIndex(index);    
+        }
         
         
         String label = jlist.getSelectedValue().toString();
