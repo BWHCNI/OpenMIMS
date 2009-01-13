@@ -260,6 +260,8 @@ public class MimsRoiControl extends javax.swing.JPanel {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // If not appending reset the data in the table
+       // Need to change...
+       int a = 1;
         if(jCheckBox4.isSelected() == false ) measure.reset();
         measure.measure(jCheckBox3.isSelected());
         ij.WindowManager.getFrame(measure.getName()).setSize(450, 300);
