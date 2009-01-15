@@ -201,7 +201,7 @@ public class MimsTomography extends javax.swing.JPanel {
     private void plotButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plotButtonActionPerformed
         // TODO add your handling code here:
         
-        int currentPlane = images[0].getSlice();
+        int currentPlane = images[0].getCurrentSlice();
         
         MimsRoiManager rm = ui.getRoiManager();
         rm.showFrame();

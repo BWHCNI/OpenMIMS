@@ -707,7 +707,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         double[] sumPixels = new double[templength];
         short[] tempPixels = new short[templength];
 
-        int startSlice = mImage.getSlice();
+        int startSlice = mImage.getCurrentSlice();
 
         if (mImage.getMimsType() == MimsPlus.MASS_IMAGE) {
             for (int i = 1; i <= mImage.getImageStackSize(); i++) {
@@ -729,7 +729,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             double[] numPixels = new double[templength];
             double[] denPixels = new double[templength];
 
-            startSlice = nImage.getSlice();
+            startSlice = nImage.getCurrentSlice();
 
             for (int i = 1; i <= nImage.getImageStackSize(); i++) {
                 nImage.setSlice(i);
@@ -1417,7 +1417,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     addImageFile = null;
                 }
                 UI tempui = new UI(addImageFile);
-                this.mimsStackEditing.concatImages(false, tempui);
+                this.mimsStackEditing.concatImages(false, false, tempui);
 
                 for (MimsPlus img : tempui.getMassImages()) {
                     if (img != null) {
@@ -1505,10 +1505,11 @@ private void ImportISEEListMenuItemActionPerformed(java.awt.event.ActionEvent ev
 
     //this file is getting way too long
     //testing reading old isee format lists...
-    com.nrims.data.LoadImageList testLoad = new com.nrims.data.LoadImageList(this);
+    
+    //com.nrims.data.LoadImageList testLoad = new com.nrims.data.LoadImageList(this);
 
-    testLoad.openList();
-    testLoad.printList();
+    //testLoad.openList();
+    //testLoad.printList();
     //testLoad.dumbImport(3);
 
 

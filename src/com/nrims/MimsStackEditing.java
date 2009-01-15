@@ -139,7 +139,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         System.out.println("try to add at: " + restoreIndex);
         try {
             if (restoreIndex < displaysize) {
-                int currentPlane = images[0].getSlice();
+                int currentPlane = images[0].getCurrentSlice();
 
                 image.setStackIndex(plane - 1);
                 for (int i = 0; i < image.nMasses(); i++) {
@@ -155,7 +155,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
                 this.holdupdate = true;
 
-                int currentPlane = images[0].getSlice();
+                int currentPlane = images[0].getCurrentSlice();
                 image.setStackIndex(plane - 1);
 
                 for (int i = 0; i < image.nMasses(); i++) {
@@ -844,7 +844,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         
         ImagePlus tempImage = WindowManager.getCurrentImage();
         ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
-        int startPlane = images[0].getSlice();
+        int startPlane = images[0].getCurrentSlice();
         ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
         //not setting roi's to deselect, simply deselecting from list
         //doesn't work
@@ -990,7 +990,7 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         this.holdupdate = true;
         for (int restoreIndex = 1; restoreIndex <= image.nImages(); restoreIndex++) {
             try {
-                int currentPlane = images[0].getSlice();
+                int currentPlane = images[0].getCurrentSlice();
                 image.setStackIndex(restoreIndex - 1);
                 for (int i = 0; i < image.nMasses(); i++) {
                     image.readPixels(i);  //really "bad" don't use????
