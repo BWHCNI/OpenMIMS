@@ -31,8 +31,6 @@ public class Measure {
         for (int i = 0; i < bMeasurePerImage.length; i++) {
             bMeasurePerImage[i] = false;
         }
-        // These are measured once per series since ROIs are the same for all images..
-        //^^^^^ what?
         bMeasurePerImage[ResultsTable.MEAN] = true;
         bMeasurePerImage[ResultsTable.STD_DEV] = true;
         bMeasurePerImage[ResultsTable.MODE] = true;
@@ -41,18 +39,7 @@ public class Measure {
         bMeasurePerImage[ResultsTable.X_CENTER_OF_MASS] = true;
         bMeasurePerImage[ResultsTable.Y_CENTER_OF_MASS] = true;
         bMeasurePerImage[ResultsTable.MEDIAN] = true;
-        bMeasurePerImage[ResultsTable.INTEGRATED_DENSITY] = true;
-        
-        /*
-        //Better way to do this...
-        //doesn't work?
-        //Trying to set default save path to image directory
-        String p = ui.getImageDir();
-        ij.Prefs prefs = new ij.Prefs();
-        prefs.setImagesURL(p);
-        //System.out.println("images: "+prefs.getImagesURL());
-        prefs.savePreferences();
-        */
+        bMeasurePerImage[ResultsTable.INTEGRATED_DENSITY] = true;       
     }
 
     public void reset() {
@@ -264,119 +251,216 @@ public class Measure {
         }
         return ncol;
     }
+    
+    // This method creates a results table for rois
+    // that are NOT synched across all slices.
+    // The results table for Rois which are synched across
+    // all slices of a mass image has a different format. Possibly merge later...
+    public void generateRoiTable() {       
+       
+       // Get all open images.
+       MimsPlus[] images = getMeasureImages();                 
+       if (images.length == 0) 
+          return;
 
-    public void measure(boolean bStack) {
-        if (ui.getMimsImage().nImages() < 2) {
-            bStack = false;
-        }
+       // Get the number of slices in stack.
+       int nSlices = images[0].getNSlices();
+       if (nSlices < 1) 
+          return;            
+        
+       // Get the list of ROIs.
+       MimsRoiManager rm = ui.getRoiManager();
+       Roi[] rois;
+       javax.swing.JList rlist = rm.getList();        
+       if (rm.getROIs().isEmpty()) 
+          rois = new Roi[0];           
+       else {
+          int length = rlist.getModel().getSize();
+          rois = new Roi[length];
+          for (int i = 0; i < length; i++) {
+              rois[i] = (Roi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
+          }            
+       }               
+       
+       // Generate column headings. We are hard coding the "Plane" column
+       // because for this table, we want it first in the list.
+       rTable.setHeading(0, "Plane");
+       int ncol = 1;
+       for (int i = 0; i < images.length; i++) { //number of mass-hsi images.
+          for (int m = 0; m < bMeasure.length; m++) { //boolean list of fields to compute.
+             if (bMeasure[m]) {
+                String hd = measureNames[m];
+                if (bMeasurePerImage[m] == false && i > 0) {
+                   //do nothing.
+                } else if (bMeasurePerImage[m] == false && i == 0) {
+                   rTable.setHeading(ncol++, hd);
+                } else {
+                   hd += "_";
+                   if (images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
+                      hd += "m" + (images[i].getNumMass() + 1) + "/m" + (images[i].getDenMass() + 1);
+                   } else {
+                      hd += "m" + (images[i].getMimsMassIndex() + 1);
+                   }
+                   rTable.setHeading(ncol++, hd);                   
+                }
+             }
+          }
+       }                    
+        
+       // No idea what this is for...
+       int mOptions = 0;
+       for (int m = 0; m < bMeasure.length; m++) {
+          if (bMeasure[m]) {
+             mOptions |= (1 << m);
+          }
+       }         
+       
+       // Fill in table data.
+       int nrois = rois.length;
+       if (nrois == 0) 
+          nrois = 1;        
+       for (int n = 1; n <= nSlices; n++) {   
+          for (int r = 0; r < nrois; r++) {
+             if (ui.getRoiManager().getSliceNumber(rois[r].getName()) == n ||
+                 nSlices == 1) {
+             ncol = 0;
+             rTable.incrementCounter();                     
+             rTable.addValue(ncol++, n); 
+             for (int i = 0; i < images.length; i++) {
+                
+                // Set the mass image to the current slice.
+                if (images[i].getMimsType() == MimsPlus.MASS_IMAGE) {
+                   images[i].setSlice(n);
+                }
+                
+                // Set the rois to the images.
+                if (rois.length > 0) {
+                   images[i].setRoi(rois[r]);
+                }
+                               
+                // Generate Roi statistics and put in table.            
+                ImageStatistics is =
+                        ij.process.ImageStatistics.getStatistics(
+                        images[i].getProcessor(),
+                        mOptions,
+                        images[i].getCalibration());
+                ncol = addResults(is, i, rois.length > 0 ? rois[r] : null, n, ncol);
+             }             
+             
+             String slicelabel = images[0].getStack().getShortSliceLabel(nSlices);
+             String filename = "";
+             String label = "";
+             String labelHeader = "";
+             if (slicelabel !=  null) {
+                slicelabel = images[0].getStack().getShortSliceLabel(n);
+                filename = slicelabel.substring(slicelabel.indexOf(":")+1, slicelabel.length());
+                labelHeader = "File name : Roi name";
+                label = "\'"+filename+"\' : \'"+rois[r].getName()+"\'";
+             } else {
+                labelHeader = "Roi name";
+                label = "\'"+rois[r].getName()+"\'";
+             }
+             rTable.addLabel(labelHeader, label);
+             }
+          }          
+       }               
+       
+       // Done! Show table.
+       rTable.show(fileName);
+    }
 
-        MimsPlus[] images = getMeasureImages();
-        if (images.length == 0) {
-            return;
-        }
+    public void generateStackTable() {
+       
+        // Get all open images.
+        MimsPlus[] images = getMeasureImages();                 
+        if (images.length == 0) return;
 
+        // Get the number of slices in stack.
+        int nSlices = images[0].getNSlices();
+        if (nSlices < 1) return;            
+        
+        // Get the list of ROIs.
         MimsRoiManager rm = ui.getRoiManager();
         Roi[] rois;
-        javax.swing.JList rlist = rm.getList();
+        javax.swing.JList rlist = rm.getList();        
+        if (rm.getROIs().isEmpty()) rois = new Roi[0];           
+        else {
+           int length = rlist.getModel().getSize();
+           rois = new Roi[length];
+           for (int i = 0; i < length; i++) {
+               rois[i] = (Roi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
+           }            
+        }        
 
-        if (!rm.getROIs().isEmpty()) {
-            int length = rlist.getModel().getSize();
-            rois = new Roi[length];
-            for (int i = 0; i < length; i++) {
-                rois[i] = (Roi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
-            }
-        } else {
-            rois = new Roi[0];
-        }
-
-        int nSlices = bStack ? images[0].getImageStackSize() : 1;
-        if (nSlices < 1) {
-            nSlices = 1;
-        }
-
-        /*
-         *  Mean[mass1,roi1] StdDev[mass1,1] ... Mean[mass1,roi2] ... ... Mean[mass2,roi1] 
-         */
-
+        // Generate column heading.
         int ncol = 0;
-
-        int nrois = rois.length;
         int currentMaxColumns = 150;
-//        while (columnMultiplier !=0){
-//        
-//            this.rTable.addColumns();
-//            columnMultiplier -=1;
-//        }
-        if (nrois == 0) {
-            nrois = 1;
+        int nrois = rois.length;
+        if (nrois == 0) nrois = 1;        
+        for (int r = 1; r <= nrois; r++) { //number of rois.           
+            for (int i = 0; i < images.length; i++) { //number of mass-hsi images.
+                for (int m = 0; m < bMeasure.length; m++) { //boolean list of fields to compute.
+                   if (bMeasure[m]) {
+                      if (bMeasurePerImage[m] == false && i > 0) { //do nothing.
+                      } else {
+                         String hd = measureNames[m] + "_";
+                         if (images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
+                            hd += "m" + (images[i].getNumMass() + 1) + "/m" + (images[i].getDenMass() + 1);
+                         } else {
+                            hd += "m" + (images[i].getMimsMassIndex() + 1);
+                         }
+                         if (nrois > 1) {
+                            hd += "_r" + r;
+                         }
+                         if (ncol == currentMaxColumns - 2) {
+                            rTable.addColumns();
+                            currentMaxColumns = currentMaxColumns * 2;
+                         }
+                         rTable.setHeading(ncol++, hd);
+                      }
+                  }
+               }
+            }
         }
-        for (int r = 1; r <= nrois; r++) {
-            for (int i = 0; i < images.length; i++) {
-                for (int m = 0; m < bMeasure.length; m++) {
-                    if (bMeasure[m]) {
-                        if (!bMeasurePerImage[m] && i > 0) {
-                            // ROI measurements only for the 1st image
-                        } else {
-                            String hd = measureNames[m] + "_";
-                            if (images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
-                                hd += "m" + (images[i].getNumMass() + 1) + "/m" + (images[i].getDenMass() + 1);
-                            } else {
-                                hd += "m" + (images[i].getMimsMassIndex() + 1);
-                            }
-                            if (nrois > 1) {
-                                hd += "_r" + r;
-                            }
-                            if (ncol == currentMaxColumns - 2) {
 
-                                rTable.addColumns();
-                                currentMaxColumns = currentMaxColumns * 2;
-                            }
-                            rTable.setHeading(ncol++, hd);
+       // No idea what this is for...
+       int mOptions = 0;
+       for (int m = 0; m < bMeasure.length; m++) {
+          if (bMeasure[m]) {
+             mOptions |= (1 << m);
+          }
+       }
 
-                        }
-                    }
+       // Fill in table data.
+       for (int n = 0; n < nSlices; n++) {           
+          ncol = 0;
+          rTable.incrementCounter();
+          for (int r = 0; r < nrois; r++) {            
+             for (int i = 0; i < images.length; i++) {
+                
+                // Set the mass image to the current slice.
+                if (images[i].getMimsType() == MimsPlus.MASS_IMAGE) {
+                   images[i].setSlice(n + 1);
                 }
-            }
-        }
-
-        int mOptions = 0;
-        for (int m = 0; m < bMeasure.length; m++) {
-            if (bMeasure[m]) {
-                mOptions |= (1 << m);
-            }
-        }
-
-        for (int n = 0; n < nSlices; n++) {
-            if (bStack) {
-                for (int i = 0; i < images.length; i++) {
-                    if (images[i].getMimsType() == MimsPlus.MASS_IMAGE) {
-                        images[i].setSlice(n + 1);
-                    }
+                
+                // Set the rois to the images.
+                if (rois.length > 0) {
+                   images[i].setRoi(rois[r]);
                 }
-            }
-            ncol = 0;
-            rTable.incrementCounter();
+                
+                // Generate Roi statistics and put in table.
+                ImageStatistics is =
+                        ij.process.ImageStatistics.getStatistics(
+                        images[i].getProcessor(),
+                        mOptions,
+                        images[i].getCalibration());
+                ncol = addResults(is, i, rois.length > 0 ? rois[r] : null, n+1, ncol);
+             }
+          }
+       }
 
-            for (int r = 0; r < nrois; r++) {
-                //if(rois.length > 0) rlist.select(r);
-                for (int i = 0; i < images.length; i++) {
-                    // ij.WindowManager.setCurrentWindow(images[i].getWindow());
-                    // rm.runCommand("measure");
-                    if (rois.length > 0) {
-                        images[i].setRoi(rois[r]);
-                    }
-                    ImageStatistics is =
-                            ij.process.ImageStatistics.getStatistics(
-                            images[i].getProcessor(),
-                            mOptions,
-                            images[i].getCalibration());
-                    ncol = addResults(is, i, rois.length > 0 ? rois[r] : null, n, ncol);
-                }
-            }
-        }
-
-        rTable.show(fileName);
-
+       // Done! Show table.
+       rTable.show(fileName);
     }
     
     ///God damn it
@@ -453,11 +537,6 @@ public class Measure {
 
         ncol = 0;
         rTable.incrementCounter();
-// ??? throws "AWT-EventQueue-0" java.lang.IllegalArgumentException: row>=counter
-//            for(int k = 0; k<images.length; k++) {
-//                rTable.setLabel(images[k].getTitle(), k);
-//            }
-        //System.out.println("mSumImages.length -> " + mSumImages.length);
         int start = rTable.getCounter();
         
         for (int i = 0; i < mSumImages.length; i++) {

@@ -130,7 +130,6 @@ public class MimsRoiControl extends javax.swing.JPanel {
       jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
       jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-      jCheckBox4.setSelected(true);
       jCheckBox4.setText("Append to table");
       jCheckBox4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
       jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -259,11 +258,15 @@ public class MimsRoiControl extends javax.swing.JPanel {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        
         // If not appending reset the data in the table
-       // Need to change...
-       int a = 1;
-        if(jCheckBox4.isSelected() == false ) measure.reset();
-        measure.measure(jCheckBox3.isSelected());
+        if(!jCheckBox4.isSelected()) 
+           measure.reset();
+        
+        if(jCheckBox5.isSelected()) 
+           measure.generateStackTable();
+        else 
+           measure.generateRoiTable();
         ij.WindowManager.getFrame(measure.getName()).setSize(450, 300);
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -328,39 +331,6 @@ private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     } catch (Exception e) {
     }
-
-
-    
-    
-    /*
-    ij.ImagePlus tempimage = ij.WindowManager.getCurrentImage();
-    java.awt.image.BufferedImage awtimage = tempimage.getBufferedImage();
-    java.awt.image.PixelGrabber pixgrabber = new java.awt.image.PixelGrabber(awtimage, 0, 0, 256, 256, true);
-    
-    try {
-        if(pixgrabber.grabPixels()) {
-            int[] pix = new int[(256*256)];
-            System.out.println("pix.length: "+pix.length);
-            pix = (int[])pixgrabber.getPixels();
-            System.out.println("pix.length: "+pix.length);
-            
-            
-            //for(int i=0; i<256*4; i++) {
-            //    System.out.println(pix[i]);
-            //}
-            
-            ij.ImagePlus foo = new ij.ImagePlus();
-            foo.setDimensions(256, 256, 1);
-            ij.process.ImageProcessor fooproc = foo.getProcessor();
-            fooproc.setPixels(pix);
-            foo.show();
-            
-        }
-    }
-    catch(Exception e) {
-        e.printStackTrace();
-    }
-    */
 }//GEN-LAST:event_testButtonActionPerformed
 
 private void jCheckBox5ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox5ItemStateChanged
