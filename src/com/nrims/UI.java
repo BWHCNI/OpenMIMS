@@ -96,6 +96,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         super("NRIMS Analysis Module");
 
         System.out.println("Ui constructor");
+        System.out.println("Branch");
 
         // Set look and feel to native OS
         try {
@@ -139,7 +140,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             xloc = (int) (screenwidth > 832 ? screenwidth * 0.8 : screenwidth * 0.9);
             xloc -= this.getPreferredSize().width + 10;
         }
-
+        
         this.setLocation(xloc, yloc);
         ij.WindowManager.addWindow(this);
 
