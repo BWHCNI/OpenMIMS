@@ -18,19 +18,14 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 import org.jfree.ui.RefineryUtilities;
 import org.jfree.chart.event.ChartProgressEvent;
-import org.jfree.chart.event.ChartProgressListener;
-
-
 
 /**
- *
  * @author cpoczatek
  */
 public class MimsJFreeChart {
@@ -57,7 +52,6 @@ public class MimsJFreeChart {
         
         public void addData(XYDataset dataset) {
             JFreeChart chart = createChart(dataset);
-            //chart.addProgressListener(arg0);
             ChartPanel chartPanel = new ChartPanel(chart);
             chartPanel.setPreferredSize(new java.awt.Dimension(600, 400));
             setContentPane(chartPanel);
@@ -83,12 +77,9 @@ public class MimsJFreeChart {
                     dataset.addSeries(getSeriesData(rois[i], stats[j], masses[k], min, max));
                 }
             }
-        }
-        
+        }        
         return dataset;
-    }
-    
-        
+    }            
     
     private static JFreeChart createChart(XYDataset dataset) {
         JFreeChart chart = ChartFactory.createXYLineChart("", "Plane", "", dataset, PlotOrientation.VERTICAL, true, true, false);
@@ -103,23 +94,14 @@ public class MimsJFreeChart {
         plot.setRangeGridlinePaint(Color.white);
         
         plot.setDomainCrosshairVisible(true);
-        plot.setRangeCrosshairVisible(true);
-        
-        //XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
-        //depricated...
-        //renderer.setShapesVisible(true);
-        //renderer.setShapesFilled(true);
+        plot.setRangeCrosshairVisible(true);        
         
         // change the auto tick unit selection to integer units only...
         NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
         NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
         domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        
-        
-        
-        // OPTIONAL CUSTOMISATION COMPLETED.
-        
+
         return chart;
     }
     
@@ -136,15 +118,10 @@ public class MimsJFreeChart {
                 seriesname = rp[mass-numberMasses].getShortTitle();
                 seriesname = seriesname+" "+statname+"\n"+roi.getName();
             }
-        
-        
+               
         XYSeries series = new XYSeries(seriesname);
         ImageStatistics tempstats = null;
-        
-        
-        
-        //System.out.println("Mass #: " + mass + "ROI: " + roi.getName());
-        
+
         if(mass<numberMasses) {
             for(int i=min; i<=max; i++) {
                 images[mass].setSlice(i);
@@ -164,7 +141,6 @@ public class MimsJFreeChart {
     }
     
     public double getSingleStat(ImageStatistics stats, String statname) {
-        double st;
         
         if(statname.equals("area"))
             return stats.area;
@@ -216,9 +192,7 @@ public class MimsJFreeChart {
         return -999;
     }
     
-    public void chartProgress(ChartProgressEvent event) {
-        
-    }
+    public void chartProgress(ChartProgressEvent event) {}
     
     private com.nrims.UI ui;
     private com.nrims.data.Opener image;

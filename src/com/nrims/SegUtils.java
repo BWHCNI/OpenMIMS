@@ -11,6 +11,7 @@ import ij.plugin.filter.ParticleAnalyzer;
 import ij.plugin.frame.RoiManager;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
+
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 import java.io.BufferedOutputStream;
@@ -20,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -135,19 +135,7 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
             int ratioIndex = ui.getRatioImageIndex(num,den);
             if(ratioIndex > -1) images[cnt++] = ui.getRatioImage(ratioIndex);
             else{
-                // this can not be done in the SwingWorker thread as it involves GUI operation !!
-
-//                // create ratio image
-//                HSIProps props = new HSIProps();
-//                props.setNumMass(num);
-//                props.setDenMass(den);
-//                ui.computeRatio(props);
-//                ratioIndex = ui.getRatioImageIndex(num,den);
-//                if(ratioIndex > -1) images[cnt++] = ui.getRatioImage(ratioIndex);
-//                else{
-
-                    System.out.println("Error: ratio image not available!");
-//                }
+               System.out.println("Error: ratio image not available!");
             }
         }        
         return images;
@@ -339,15 +327,9 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         for(int classI=0; classI<predClasses.getClasses().length; classI++){ // iterate through all classes
             SegRoi[] rois = predClasses.getRois(classNames[classI]);         // get all ROIs from one class
             for(int classJ=classI+1; classJ<predClasses.getClasses().length; classJ++){ 
-                SegRoi[] newRois = predClasses.getRois(classNames[classJ]);  // get all ROIs from another class    
-                
-//                System.out.println(newRois.length);
-//                System.out.println(rois.length);
-//                int n=0;
+                SegRoi[] newRois = predClasses.getRois(classNames[classJ]);  // get all ROIs from another class                    
                 for(SegRoi newSegRoi : newRois){                                        
-//                    System.out.println(n++);
                     for(SegRoi segRoi : rois){ // check for overlap with all other ROIs
-//                        if(segRoi.getClassName().equals(newSegRoi.getClassName())) continue; // 1st filter: different classes?
                         comparisons++;
                                                      
                         // the ROI objects that might need updating
@@ -393,26 +375,10 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
                             }
                                                         
                             overlaps++;
-                            
-//                            System.out.print(segRoi.getClassName() + "_" + segRoi.getID());
-//                            System.out.print("\t");
-//                            System.out.print(newSegRoi.getClassName() + "_" + newSegRoi.getID());
-//                            System.out.print("\t");
-//                            System.out.print(intersection.getLength());
-//                            System.out.println();
-                            
-//                            String ID = String.valueOf(overlaps);
-//                            showRois.add(new SegRoi(roi, segRoi.getClassName() + "orig", ID)); // original A
-//                            showRois.add(new SegRoi(newRoi, newSegRoi.getClassName() + "orig", ID)); // original B
-//                            showRois.add(new SegRoi(intersection, "inter", ID)); // A - B
-//                            showRois.add(new SegRoi((ShapeRoi)roiShape.clone(), segRoi.getClassName() + "-", ID)); // A - B
-//                            showRois.add(new SegRoi((ShapeRoi)newRoiShape.clone(), newSegRoi.getClassName() + "-", ID)); // B - A
-                            
+                                                        
                             // as this is a partial overlap, we need to add back overlapping points to their
                             // corresponding area
                             ShapeRoi addToRoi;
-                            boolean roiAdded = false;
-                            boolean newRoiAdded = false;
                             Rectangle mbr = intersection.getBounds();
                             // walk through the bounding rectangle of the overlap and check class membership of each point
                             for(int y=mbr.y; y<mbr.y+mbr.height; y++){
@@ -423,10 +389,8 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
                                     addToRoi = null;
                                     if(tmpClassID == classI){
                                         addToRoi = roiShape;
-                                        roiAdded = true;
                                     }else if(tmpClassID == classJ){
                                         addToRoi = newRoiShape;
-                                        newRoiAdded = true;
                                     }
                                                                         
                                     if(addToRoi !=null){
@@ -442,15 +406,6 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
                                     }
                                 }
                             }
-                            // try to convert each ShapeRoi that got points added back to a non-composite ROI
-//                            if(roiAdded) roiUpdated = tryConvert(roiShape);
-                                //showRois.add(segRoi);
-//                            if(newRoiAdded) newRoiUpdated = tryConvert(newRoiShape);
-                                //showRois.add(newSegRoi);
-                            
-                            // update the original ROI objects
-//                            segRoi.setRoi(roiUpdated, roiShape);
-//                            newSegRoi.setRoi(newRoiUpdated, newRoiShape);
                             segRoi.setRoi(roiShape, roiShape);
                             newSegRoi.setRoi(newRoiShape, newRoiShape);
                         }
@@ -460,12 +415,7 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
             progress += step;
             setProgress(progress);
         }
-        long stop = System.currentTimeMillis();
-//        System.out.println("Time:" + (stop - start)/1000);
-//        System.out.println("comparisons:" + comparisons);
-//        System.out.println("intersections:" + intersections);
-//        System.out.println("subtractions:" + subtractions);
-//        System.out.println("overlaps:" + overlaps);        
+        long stop = System.currentTimeMillis();       
     }
     
     // helper method trying to convert a ShapeRoi object into a single Roi
@@ -473,17 +423,6 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
     private static Roi tryConvert(ShapeRoi shapeRoi){
         if(shapeRoi.getLength() > 0 ) return shapeRoi;
         else return null;
-//        Roi[] roisTmp = shapeRoi.getRois();
-//        if(roisTmp.length > 0){
-//            int type = roisTmp[0].getType();
-//            if (roisTmp.length==1 && (type==Roi.POLYGON||type==Roi.FREEROI)){
-//                return roisTmp[0];                        
-//            }else{
-//                return shapeRoi;
-//            }     
-//        }else{
-//            return null;
-//        }
     }
     
     public static void saveSegmentation(String fileName, ClassManager train, ClassManager pred, String[] classNames, byte[] classification, int[] classColors){

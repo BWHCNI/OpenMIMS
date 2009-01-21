@@ -45,7 +45,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
         initComponents();
 
-
         this.ui = ui;
         this.image = im;
 
@@ -82,9 +81,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
     public void removeSlice(int plane) {
 
         for (int k = 0; k <= (numberMasses - 1); k++) {
-
             imagestacks[k].deleteSlice(plane);
-
             this.images[k].setStack(null, imagestacks[k]);
         }
         this.ui.mimsAction.dropPlane(plane);
@@ -125,14 +122,10 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     public void insertSlice(int plane) {
 
-        System.out.println("inside insertSlice...");
-
         if (ui.mimsAction.isDropped(plane) == 0) {
             System.out.println("already there...");
             return;
         }
-
-        //int n = ui.mimsAction.getSize();
 
         int restoreIndex = ui.mimsAction.displayIndex(plane);
         int displaysize = images[0].getNSlices();
@@ -644,15 +637,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                     int value = JOptionPane.showOptionDialog(this, tempImage.getName(), "Concatenate",
                             JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
                     if (value != JOptionPane.CANCEL_OPTION) {
-                        // store action to reapply it after restoring
-                        // (shallow copy in mimsAction is enough as 'restoreMims' creates a new 'actionList' object
-                        //mimsAction action = (mimsAction)ui.getmimsAction().clone();
-                        //ui.restoreMims();
                         concatImages(value != JOptionPane.YES_OPTION, true, tempUi);
-                    //applyAction(action);
-//                        for(int k=0; k<image.nMasses(); k++) {     // display the first slice
-//                            images[k].setSlice(1);
-//                        }
                     }
                 } else {
                     IJ.error("Images do not have the same spot size.");
@@ -679,53 +664,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
         ui.setSyncStack(true);
         
         ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
-        //wo.run("tile");
         ui.updateStatus("");
         ij.WindowManager.repaintImageWindows();
-
-//        mimsPlus[] finalImages =this.ui.getMassImages();
-//        
-//        for (int p =0; p<finalImages.length;p++){
-//            this.ui.getMassImage(p).setAllowClose(false);
-//        }
-
-//            jLabel4.setText(tempmims.getName());
-//            ui.getmimsLog().Log("Additional image: "+tempmims.getName()+"\n"+getImageHeader(tempmims));
-//            tempui.updateStatus("");        
-//        }
-//        else{            
-//            jLabel4.setText("");
-//        }
-
-//        if(gd.wasCanceled()) return ;        
-//        int[] windowIDList = ij.WindowManager.getIDList();
-//        
-//        if (tempui != null && tempmims != null){
-////            ui.restoreMims();
-//            tempui.restoreMims();
-//                if(ui.getMimsImage().nMasses() == tempmims.nMasses()){
-//                if (sameResolution(image,tempmims)) {
-//                    if (sameSpotSize(image,tempmims)) {
-//                        concatOpenImages(prepend);
-//                        ui.getmimsTomography().resetBounds();
-////                        for (int i=(windowIDList.length-numberMasses); i<windowIDList.length; i++) 
-////                            ij.WindowManager.getImage(windowIDList[i]).close();
-//                        
-//                        ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
-//                        wo.run("tile");
-//                    } else {
-//                        IJ.error("Images do not have the same spot size.");
-//                    }   
-//                } else {
-//                    IJ.error("Images are not the same resolution.");
-//                }
-//            } else {
-//                IJ.error("Two images with the same\nnumber of masses must be open.");
-//            }
-//        }
-//        
-//        ui.updateStatus("");
-//        ij.WindowManager.repaintImageWindows();
 }//GEN-LAST:event_concatButtonActionPerformed
 
     private void rawExportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rawExportButtonActionPerformed
@@ -846,9 +786,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
         ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
         int startPlane = images[0].getCurrentSlice();
         ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
-        //not setting roi's to deselect, simply deselecting from list
-        //doesn't work
-        //ui.getRoiManager().select(-1);
         String massname = tempImage.getTitle();
         massname = massname.substring(massname.length() - 6, massname.length());
 
@@ -877,14 +814,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
 
         int xval, yval;
-        int actx = 0;
-        int acty = 0;
-
-        int deltax = 0;
-        int deltay = 0;
         int plane;
-
-        boolean redraw;
 
         for (int i = 0; i < translations.length; i++) {
             plane = i + 1;
@@ -947,7 +877,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
                 }
                 ui.mimsAction.setShiftX(plane, xval);
                 ui.mimsAction.setShiftY(plane, yval);
-            //System.out.println("ychanged "+ foo++);
             }
         }
         autoTrackButton.setEnabled(true);
@@ -1005,14 +934,6 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 System.err.println(e.toString());
                 e.printStackTrace();
             }
-
-        //pritnt entire actionlist
-        //test this.ui.mimsAction.dropPlane(2);
-        //this.ui.mimsAction.printAction();
-
-        //for(int i=1; i<=10; i++) {
-        //    System.out.println("vect: " + (i-1) + " pl: " + i + " dr: " + ui.mimsAction.isDropped(i) + " disp: " + ui.mimsAction.displayIndex(i) );
-        //}
         }
         ui.getmimsAction().resetAction(ui, image);
         this.holdupdate = false;
@@ -1020,7 +941,6 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     protected void resetSpinners() {
         if (this.images != null && (!holdupdate) && (images[0] != null) && (!ui.isUpdating())) {
-            //System.out.println("resetspinners ");
             holdupdate = true;
             int plane = images[0].getCurrentSlice();
             int xval = ui.mimsAction.getXShift(plane);
@@ -1028,7 +948,6 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             this.translateXSpinner.setValue(xval);
             this.translateYSpinner.setValue(yval);
             holdupdate = false;
-        //System.out.println("resetspinners "+ foo++);
         }
     }
 

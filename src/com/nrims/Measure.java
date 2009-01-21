@@ -255,7 +255,8 @@ public class Measure {
     // This method creates a results table for rois
     // that are NOT synched across all slices.
     // The results table for Rois which are synched across
-    // all slices of a mass image has a different format. Possibly merge later...
+    // all slices has a different format. See generateStackTable(). 
+    // Possibly merge later...
     public void generateRoiTable() {       
        
        // Get all open images.

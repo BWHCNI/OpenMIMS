@@ -1,7 +1,8 @@
 package com.nrims;
 import ij.IJ ;
+import ij.ImagePlus;
+import ij.WindowManager;
 import ij.gui.* ;
-//import ij.process.*;
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent ;
 import java.awt.event.WindowListener ;
@@ -12,7 +13,6 @@ import javax.swing.event.EventListenerList;
 /**
  * extends ImagePlus with methods to synchronize display of multiple stacks
  * and drawing ROIs in each windows
- * 
  */
 public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListener, MouseMotionListener {
     
@@ -45,34 +45,24 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 null);
             String title = "m" + image.getMassName(index) + " : " + image.getName();
             setProcessor(title, ip);
-            getProcessor().setMinAndMax(0, 65535); // default display range
+            getProcessor().setMinAndMax(0, 65535);
             fStateListeners = new EventListenerList() ;
             setProperty("Info", srcImage.getInfo());
-            //added, was only set in appendImage(), only called
-            //for multi-plane images
             bIgnoreClose = true;
-            //------
         } catch (Exception x) { IJ.log(x.toString());}
     }
     
     public MimsPlus(UI ui,int width, int height, int[] pixels, String name) {
         super();
         this.ui=ui;
-           // srcImage = image ;
-           //ui = srcImage.getUI();
-          // nMass = -1;
         nType = SEG_IMAGE ;
            
         try {
-           // image.setMassIndex(0);
-           // image.setStackIndex(0);
             ij.process.ImageProcessor ipp = new ij.process.ColorProcessor(
                 width,
                 height,
                 pixels);
-        
             setProcessor(name, ipp);
-          //     getProcessor().setMinAndMax(0, 65535); // default display range
             fStateListeners = new EventListenerList() ;
         } catch (Exception x) { IJ.log(x.toString());}
     }
@@ -116,7 +106,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                    rgbPixels);
                title = "HSI m" + srcImage.getMassName(numIndex)+":m"+ srcImage.getMassName(denIndex) + " : " + title;
                setProcessor(title, ip);
-               getProcessor().setMinAndMax(0, 255); // default display range
+               getProcessor().setMinAndMax(0, 255); 
                fStateListeners = new EventListenerList() ;
                info += "Type=HSI\n";  
             }
@@ -130,7 +120,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                title = "m" + srcImage.getMassName(numIndex)+"/m"+ srcImage.getMassName(denIndex) + " : " + title;
                info += "Type=Ratio";
                setProcessor(title, ip);
-               getProcessor().setMinAndMax(0, 1.0); // default display range
+               getProcessor().setMinAndMax(0, 1.0);
                fStateListeners = new EventListenerList() ;
             }
 
@@ -216,7 +206,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public String getShortTitle() {
         String tempstring = this.getTitle();
         int colonindex = tempstring.indexOf(":");
-        //System.out.println("asdf="+tempstring.substring(0, colonindex-1));
         return tempstring.substring(0, colonindex-1);
     }
     
@@ -246,14 +235,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(roi == null) super.killRoi();
         else super.setRoi(roi);
         stateChanged(roi,MimsPlusEvent.ATTR_SET_ROI);
-    }
+    }        
     
-    public void windowClosing(WindowEvent e) { 
-//        System.out.println("STOP");
-//        this.bIgnoreClose =false;
-//        this.
-        
-    }
     @Override
     public void windowClosed(WindowEvent e) {
         // When opening a stack, we get a close event 
@@ -273,6 +256,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
         stateChanged(0,MimsPlusEvent.ATTR_IMAGE_CLOSED);
     }
+    public void windowClosing(WindowEvent e) {}
     public void windowStateChanged(WindowEvent e) {}
     @Override
     public void windowDeactivated(WindowEvent e) {}
@@ -337,12 +321,16 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
          // Get the location so that if the user simply declicks without 
          // moving, a duplicate roi is not created at the same location.
          Rectangle r = getRoi().getBounds();
-         x1 = r.x; y1 = r.y; w1 = r.width; h1 = r.height;         
-         
+         x1 = r.x; y1 = r.y; w1 = r.width; h1 = r.height;                  
       }
     }
     @Override
-    public void mouseClicked(MouseEvent e) {}    
+    public void mouseClicked(MouseEvent e) {           
+       ImagePlus imp = WindowManager.getCurrentImage();
+       int y = imp.getID();
+       System.out.println("int = "+y);
+    }    
+    
     /**
      * Catch drawing ROIs to enable updating other images with the same ROI
      * @param e MouseEvent
@@ -539,7 +527,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     private boolean bIgnoreClose = false ;
     boolean bMoving = false;
     static boolean bStateChanging = false ;
-    private boolean bWindowListenerInstalled = false ;
     private int nMass = 0 ;
     private int nType = 0 ;
     private int nRatioNum = 0 ;

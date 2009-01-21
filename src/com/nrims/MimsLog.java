@@ -79,8 +79,7 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 }//GEN-LAST:event_clearButtonActionPerformed
 
     private com.nrims.UI ui;
-    private com.nrims.data.Opener image;
-    
+    private com.nrims.data.Opener image;    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton clearButton;

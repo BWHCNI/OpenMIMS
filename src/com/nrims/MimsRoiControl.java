@@ -7,24 +7,13 @@
 package com.nrims;
 
 import ij.*;
-import ij.process.*;
 import ij.gui.*;
+ 
 import java.awt.*;
 
 import com.nrims.UI;
-import ij.plugin.filter.RGBStackSplitter;
-import ij.gui.Roi;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
-import java.awt.Frame;
-import java.util.ArrayList;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.util.Enumeration;
-import javax.swing.JFileChooser;
+
 /**
- *
  * @author  Douglas Benson
  */
 public class MimsRoiControl extends javax.swing.JPanel {
@@ -35,16 +24,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
     public MimsRoiControl(UI ui) {
         this.ui = ui ;
         measure = new Measure(ui);
-        initComponents();
-        
-//        this.jButton5.setVisible(false);
-//        this.jButton6.setVisible(false);
-//        this.jTextField3.setVisible(false);
-//        this.jLabel2.setVisible(false);
-//        this.jLabel3.setVisible(false);
-//        this.jCheckBox5.setVisible(false);
-//        this.jTextField2.setVisible(false);
-//        this.featuresButton.setVisible(false);
+        initComponents();        
         
         jCheckBox2.setSelected(ui.getSyncROIs());
         jCheckBox3.setSelected(ui.getAddROIs());
@@ -283,7 +263,6 @@ public class MimsRoiControl extends javax.swing.JPanel {
     }//GEN-LAST:event_jCheckBox2ItemStateChanged
 
 private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-// TODO add your handling code here:
     // If not appending reset the data in the table
     if(jCheckBox4.isSelected() == false ) measure.reset();
     measure.measureSums(jCheckBox3.isSelected());
@@ -295,13 +274,8 @@ private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 }//GEN-LAST:event_jButton5ActionPerformed
 
 private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
-// TODO add your handling code here:
-    
-    //testing trying to grab screen pixels from image for rois and annotations
-    
 
-	/** Captures the active image window and returns it as an ImagePlus. */
-
+    /** Captures the active image window and returns it as an ImagePlus. */
     ImagePlus imp = ij.WindowManager.getCurrentImage();
     if (imp == null) {
         IJ.noImage();
@@ -315,7 +289,6 @@ private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         win.toFront();
         Point loc = win.getLocation();
-        //canvas type?
         ImageCanvas ic = win.getCanvas();
         ic.update(ic.getGraphics());
         
@@ -337,7 +310,6 @@ private void jCheckBox5ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIR
 // TODO add your handling code here:   
    ui.setSyncROIsAcrossPlanes(jCheckBox5.isSelected());
    WindowManager.getCurrentImage().updateAndRepaintWindow();   
-   //WindowManager.repaintImageWindows();
 }//GEN-LAST:event_jCheckBox5ItemStateChanged
 
 public void setROIsSynchedAcrossPlanes(boolean setSynched) {

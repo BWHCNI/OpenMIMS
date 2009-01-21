@@ -11,6 +11,9 @@ public class MimsRoi extends Roi {
    int plane;
    int imageID;
    
+   // This class extends the ImageJ Roi class. Allows
+   // us to keep track of the plane/slice number 
+   // and the imageID for which the ROI was drawn. 
    public MimsRoi(Roi roi){      
       super(roi.getBoundingRect().x, roi.getBoundingRect().y, 
               roi.getBoundingRect().width, roi.getBoundingRect().height);
@@ -18,8 +21,7 @@ public class MimsRoi extends Roi {
       if (imp != null) {
           this.plane = imp.getCurrentSlice();
           this.imageID = imp.getID();
-      }
-      
+      }      
    }
    
    public MimsRoi(int startX, int startY, int width, int height){
@@ -31,8 +33,6 @@ public class MimsRoi extends Roi {
       }
    }
    
-   // This class extends the ImageJ Roi class because we would like to keep track 
-   // of the plane/slice number and the imageID for which the ROI was drawn. 
    public MimsRoi(int startX, int startY, int width, int height, int plane, int imageID){
       super(startX, startY, width, height);      
       this.plane = plane;

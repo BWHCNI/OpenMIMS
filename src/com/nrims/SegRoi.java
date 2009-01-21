@@ -17,7 +17,6 @@ import ij.gui.ShapeRoi;
         private ShapeRoi shapeRoi;    
         private String className;
         private int ID;
-        private int size;
 
         public SegRoi(Roi roi, String className, int ID) {            
             this.className = className;

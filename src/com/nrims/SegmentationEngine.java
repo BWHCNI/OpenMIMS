@@ -54,8 +54,6 @@ public abstract class SegmentationEngine extends SwingWorker<byte[],Void>{
             Logger.getLogger(SegmentationEngine.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ExecutionException ex) {
             Logger.getLogger(SegmentationEngine.class.getName()).log(Level.SEVERE, null, ex);
-        }
-//            result = this.getResult();
-      
+        }      
     }   
 }

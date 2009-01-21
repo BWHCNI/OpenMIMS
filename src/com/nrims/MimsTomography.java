@@ -212,8 +212,7 @@ public class MimsTomography extends javax.swing.JPanel {
         
         if(!rm.getROIs().isEmpty()) {
             rois = new ij.gui.Roi[roiIndexes.length];
-            for(int i = 0 ; i < roiIndexes.length; i++ ) {
-                //rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
+            for(int i = 0 ; i < roiIndexes.length; i++ ) {                
                 rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getModel().getElementAt(roiIndexes[i]));
             }
         }            

@@ -5,9 +5,8 @@
  */
 
 package com.nrims;
-import com.nrims.data.Opener;
+
 /**
- *
  * @author  Douglas Benson
  */
 public class MimsData extends javax.swing.JPanel {

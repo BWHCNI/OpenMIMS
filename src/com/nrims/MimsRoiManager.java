@@ -10,7 +10,6 @@ import ij.gui.*;
 import ij.io.*;
 import ij.plugin.filter.*;
 import ij.util.Tools;
-import ij.macro.Interpreter;
 import ij.measure.Calibration;
 import ij.plugin.frame.*;
 import javax.swing.BorderFactory;
@@ -227,7 +226,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         Roi oldroi = (Roi)rois.get(label);
         if (oldroi == null) return;
         
-        // There is no setWidth or  setHeight method for a ROI
+        // There is no setWidth or setHeight method for a ROI
         // so essentially we have to create a new one, setRoi
         // will delete the old one from the rois hashtable.
         Roi newroi = null;
@@ -1059,29 +1058,13 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         } else if (index > -1 && index < n) {
            jlist.setSelectedIndex(index);    
         }
-        
-        
+                
         String label = jlist.getSelectedValue().toString();
                 
         // Make sure we have a ROI
         Roi roi = (Roi)rois.get(label);
         if (roi == null) return;
-        else resetSpinners(roi);
-        
-        // Dont know why this is being done... commenting out for now. 
-        /*
-        if (jlist.getSelectionMode() != ListSelectionModel.SINGLE_SELECTION) {
-            jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        }
-        if (index < n) {
-            jlist.setSelectedIndex(index);
-            restore(index, true);
-            if (!Interpreter.isBatchMode()) {
-                IJ.wait(10);
-            }
-        }
-        jlist.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);                        
-        */
+        else resetSpinners(roi);        
     }
     
     // Programatically selects all items in the list 
@@ -1097,8 +1080,6 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     /** Overrides PlugInFrame.close(). */
     @Override
     public void close() {
-//    	super.close();
-//    	instance = null;
         this.setVisible(false);
     }
 
@@ -1109,17 +1090,13 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
     }
 
-    public void mouseReleased(MouseEvent e) {
-    }
+    public void mouseReleased(MouseEvent e) {}
 
-    public void mouseClicked(MouseEvent e) {
-    }
+    public void mouseClicked(MouseEvent e) {}
 
-    public void mouseEntered(MouseEvent e) {
-    }
+    public void mouseEntered(MouseEvent e) {}
 
-    public void mouseExited(MouseEvent e) {
-    }
+    public void mouseExited(MouseEvent e) {}
 
     public void setShowAll(boolean bEnabled) {
         cbShowAll.setSelected(bEnabled);
