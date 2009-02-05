@@ -197,12 +197,13 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (imp == null) return;
         
         // Make sure we have a ROI
-        Roi roi = (Roi)rois.get(label);
+        Roi roi = ((MimsRoi)rois.get(label)).getRoi();
         if (roi == null) return;
 
         // Set new location        
         roi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
-        move(imp, roi);       
+        MimsRoi mroi = new MimsRoi(roi, imp);
+        move(imp, mroi);       
     }
 
     private void hwSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
@@ -223,7 +224,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (imp == null) return;
         
         // Make sure we have a ROI
-        Roi oldroi = (Roi)rois.get(label);
+        Roi oldroi = ((MimsRoi)rois.get(label)).getRoi();
         if (oldroi == null) return;
         
         // There is no setWidth or setHeight method for a ROI
@@ -245,7 +246,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         //we give it the old name so that setRoi will
         // know which original roi to delete.
         newroi.setName(oldroi.getName());
-        move(imp, newroi);             
+        MimsRoi mroi = new MimsRoi(newroi, imp);
+        move(imp, mroi);             
     }
 
     void addCheckbox(String label, boolean bEnabled) {
@@ -335,17 +337,18 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         // DO NOTHING!!  Wait till we are done switching         
         if (!e.getValueIsAdjusting()) return;
                
-        boolean setSlice = false;
+        boolean setSlice = true;
+        if (ui.getSyncROIsAcrossPlanes()) setSlice = false;
         holdUpdate = true;
 
+        // Get the highlighted Rois from the list
         int[] indices = jlist.getSelectedIndices();
         if (indices.length == 0) return;
 
         // Select ROI in the window
         int index = indices[indices.length - 1];
         if (index < 0) index = 0;        
-        if (ui.getSyncROIsAcrossPlanes()) setSlice = false;
-        else setSlice = true;
+        
         if (WindowManager.getCurrentImage() != null) {
             restore(index, setSlice);
         }
@@ -434,9 +437,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
     }
     
-   void setRoi(ImagePlus imp, Roi roi) {               
+   void setRoi(ImagePlus imp, MimsRoi mroi) {               
       
       // ROI old name - based on its old bounding rect
+      Roi roi = mroi.getRoi();
       String oldName = roi.getName();           
 
       // ROI new name - based on its new bounding rect
@@ -452,16 +456,16 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
       // update rois hashtable with new ROI            
       rois.remove(oldName); 
-      rois.put(newName, roi);
+      rois.put(newName, mroi);
       
       imp.updateAndRepaintWindow();
    }
    
-   boolean move(ImagePlus imp, Roi roi) {
+   boolean move(ImagePlus imp, MimsRoi mroi) {
       if (imp == null) return false;               
-      if (roi == null) return false;
+      if (mroi == null) return false;
       
-      setRoi(imp, roi);
+      setRoi(imp, mroi);
         
       // Debug
       if (Recorder.record) {
@@ -474,8 +478,9 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         // Get the image and the roi
         ImagePlus imp = getImage();
         Roi roi = imp.getRoi();
+        MimsRoi mroi = new MimsRoi(roi, imp);
         
-        boolean b = move(imp, roi);        
+        boolean b = move(imp, mroi);        
         return b;
     }    
     
@@ -484,11 +489,11 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (imp == null) {
             return false;
         }
-        Roi roi = imp.getRoi();
+        Roi roi = imp.getRoi();        
         if (roi == null) {
             error("The active image does not have a selection.");
             return false;
-        }
+        }        
         String name = roi.getName();
         if (isStandardName(name)) {
             name = null;
@@ -504,8 +509,20 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (cal.xOrigin != 0.0 || cal.yOrigin != 0.0) {
             Rectangle r = roi.getBounds();
             roi.setLocation(r.x - (int) cal.xOrigin, r.y - (int) cal.yOrigin);
-        }
-        rois.put(label, roi);
+        }        
+        
+        MimsPlus mImp = (MimsPlus)imp;
+        int plane = imp.getCurrentSlice();
+        boolean isRatio = (mImp.getMimsType() == MimsPlus.RATIO_IMAGE) || 
+                          (mImp.getMimsType() == MimsPlus.HSI_IMAGE);        
+        if (isRatio) 
+           plane = ui.getMassImages()[mImp.getNumMass()].getCurrentSlice();
+                        
+        MimsRoi mroi = new MimsRoi(roi, plane, imp.getID());
+        ImageWindow imwin = imp.getWindow();
+        mroi.setImageWindow(imwin);
+        
+        rois.put(label, mroi);
         if (Recorder.record) {
             Recorder.record("mimsRoiManager", "Add");
         }
@@ -606,10 +623,20 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (name2 == null) {
             return false;
         }
-        Roi roi = (Roi) rois.get(name);
+        
+        // Get Roi properties
+        MimsRoi mroi1 = (MimsRoi) rois.get(name);
+        Roi roi = mroi1.getRoi();
+        int plane = mroi1.getPlaneNumber();
+        int imageID = mroi1.getImageID();
+        
+        // Remove it from the rois list
         rois.remove(name);
+        
+        // Set the new Roi properties
         roi.setName(name2);
-        rois.put(name2, roi);
+        MimsRoi mroi2 = new MimsRoi(roi, plane, imageID);
+        rois.put(name2, mroi2);
         listModel.set(index, name2);
         jlist.setSelectedIndex(index);
         if (Recorder.record) {
@@ -632,15 +659,32 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
     boolean restore(int index, boolean setSlice) {
         String label = listModel.get(index).toString();
-        Roi roi = (Roi) rois.get(label);
-        ImagePlus imp = getImage();
+        MimsRoi mroi = (MimsRoi) rois.get(label);
+        Roi roi = mroi.getRoi();
+        
+        // Clear any stale ROIs on the image
+        ImagePlus imp = getImage();   
+        MimsPlus mImp = (MimsPlus)imp;
+        imp.killRoi();
+        int stackSize = ui.getMassImages()[mImp.getNumMass()].getStackSize();
+        
+        // Set foreground window
+        WindowManager.setCurrentWindow(mroi.getImageWindow());       
+        
+        // We must re-get the image because we may have changed windows.
+        imp = getImage();
         if (imp == null || roi == null) {
             return false;
         }
-        if (setSlice) {
-            int slice = getSliceNumber(label);
-            if (slice >= 1 && slice <= imp.getStackSize()) {
-                imp.setSlice(slice);
+                
+        if (setSlice) {            
+            int slice = mroi.getPlaneNumber(); 
+            if (slice >= 1 && slice <= stackSize) {
+               mImp = (MimsPlus)imp;
+               if ((mImp.getMimsType() == MimsPlus.RATIO_IMAGE) || (mImp.getMimsType() == MimsPlus.HSI_IMAGE))
+                  ui.getMassImages()[mImp.getNumMass()].setSlice(slice);
+               else
+                  imp.setSlice(slice);
             }
         }
         Roi roi2 = (Roi) roi.clone();
@@ -648,8 +692,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (cal.xOrigin != 0.0 || cal.yOrigin != 0.0) {
             Rectangle r = roi2.getBounds();
             roi2.setLocation(r.x + (int) cal.xOrigin, r.y + (int) cal.yOrigin);
-        }
-        imp.setRoi(roi2);
+        }                        
+        imp.setRoi(roi2);        
         return true;
     }
 
@@ -661,8 +705,11 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         return slice;
     }
 
+    // This method needs to be rewritten for 
+    // using MimsRoi instead of Roi.
     void open(String path) {
-        Macro.setOptions(null);
+       error("This function is not ready for use.");
+        /*Macro.setOptions(null);
         String name = null;
         if (path == null) {
             OpenDialog od = new OpenDialog("Open Selection(s)...", "");
@@ -692,10 +739,14 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             name = getUniqueName(name);
             listModel.addElement(name);
             rois.put(name, roi);
-        }
+        }*/
     }
-    // Modified on 2005/11/15 by Ulrik Stervbo to only read .roi files and to not empty the current list
+    // Modified on 2005/11/15 by Ulrik Stervbo to only read .roi files and to not empty the current list.
+    // This method needs to be rewritten for 
+    // using MimsRoi instead of Roi.           
     void openZip(String path) {
+       error("This function is not ready for use.");
+       /*
         ZipInputStream in = null;
         ByteArrayOutputStream out;
         int nRois = 0;
@@ -732,15 +783,16 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (nRois == 0) {
             error("This ZIP archive does not appear to contain \".roi\" files");
         }
+        */
     }
 
     String getUniqueName(String name) {
         String name2 = name;
         int n = 1;
-        Roi roi2 = (Roi) rois.get(name2);
-        while (roi2 != null) {
-            roi2 = (Roi) rois.get(name2);
-            if (roi2 != null) {
+        MimsRoi mroi2 = (MimsRoi) rois.get(name2);
+        while (mroi2 != null) {
+            mroi2 = (MimsRoi) rois.get(name2);
+            if (mroi2 != null) {
                 int lastDash = name2.lastIndexOf("-");
                 if (lastDash != -1 && name2.length() - lastDash < 5) {
                     name2 = name2.substring(0, lastDash);
@@ -748,12 +800,17 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 name2 = name2 + "-" + n;
                 n++;
             }
-            roi2 = (Roi) rois.get(name2);
+            mroi2 = (MimsRoi) rois.get(name2);
         }
         return name2;
     }
 
+    // This method needs to be rewritten for 
+    // using MimsRoi instead of Roi.          
     boolean save(String name) {
+       error("This function is not ready for use.");
+       return false;
+       /*
         if (listModel.size() == 0) {
             return error("The selection list is empty.");
         }
@@ -796,9 +853,15 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             IJ.error("MIMS ROI Manager", e.getMessage());
         }
         return true;
+        */
     }
 
+    // This method needs to be rewritten for 
+    // using MimsRoi instead of Roi.    
     boolean saveMultiple(int[] indexes, String path, boolean bPrompt) {
+        error("This function is not ready for use.");
+        return false;
+        /*
         Macro.setOptions(null);
         if (path == null || bPrompt) {
             String defaultname = ui.getMimsImage().getName();
@@ -839,6 +902,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             Recorder.record("mimsRoiManager", "Save", path);
         }
         return true;
+         */
     }
     
     boolean measure() {
@@ -856,7 +920,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         int nLines = 0;
         for (int i = 0; i < indexes.length; i++) {
             String label = listModel.get(indexes[i]).toString();
-            Roi roi = (Roi) rois.get(label);
+            Roi roi = ((MimsRoi) rois.get(label)).getRoi();
             if (roi.isLine()) {
                 nLines++;
             }
@@ -913,7 +977,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
         ShapeRoi s1 = null, s2 = null;
         for (int i = 0; i < indexes.length; i++) {
-            Roi roi = (Roi) rois.get(listModel.get(indexes[i]).toString());
+            Roi roi = ((MimsRoi) rois.get(listModel.get(indexes[i]).toString())).getRoi();
             if (roi.isLine() || roi.getType() == Roi.POINT) {
                 continue;
             }
@@ -963,7 +1027,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (roi == null || roi.getType() != Roi.COMPOSITE) {
             error("Image with composite selection required");
             return;
-        }
+        }                
         Roi[] rois = ((ShapeRoi) roi).getRois();
         for (int i = 0; i < rois.length; i++) {
             imp.setRoi(rois[i]);
@@ -980,7 +1044,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         return indexes;
     }
 
-    ImagePlus getImage() {
+    ImagePlus getImage() {        
         ImagePlus imp = WindowManager.getCurrentImage();
         if (imp == null) {
             error("There are no images open.");
@@ -1062,7 +1126,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         String label = jlist.getSelectedValue().toString();
                 
         // Make sure we have a ROI
-        Roi roi = (Roi)rois.get(label);
+        Roi roi = ((MimsRoi)rois.get(label)).getRoi();
         if (roi == null) return;
         else resetSpinners(roi);        
     }

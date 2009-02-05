@@ -50,7 +50,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private boolean bDebug = false;
     private ij.ImageJ ijapp = null;
     private boolean bSyncStack = true;
-    private boolean bSyncROIs = true;
+    private boolean bSyncROIsAcrossMasses = true;
     private boolean bSyncROIsAcrossPlanes = true;
     private boolean bAddROIs = true;
     private boolean bUpdating = false;    
@@ -911,7 +911,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             /* Update all images with a selected ROI 
              * MOUSE_RELEASE catches drawing new ROIs
              */
-            if (bSyncROIs) {
+            if (bSyncROIsAcrossMasses) {
                 int i;
                 MimsPlus mp = (MimsPlus) evt.getSource();
                 for (i = 0; i < image.nMasses(); i++) {
@@ -1616,12 +1616,12 @@ private void importIMListMenuItemActionPerformed(java.awt.event.ActionEvent evt)
         return bSyncStack;
     }
 
-    public void setSyncROIs(boolean bSync) {
-        bSyncROIs = bSync;
+    public void setSyncROIsAcrossMasses(boolean bSync) {
+        bSyncROIsAcrossMasses = bSync;
     }
 
-    public boolean getSyncROIs() {
-        return bSyncROIs;
+    public boolean getSyncROIsAcrossMasses() {
+        return bSyncROIsAcrossMasses;
     }
     
     public void setSyncROIsAcrossPlanes(boolean bSync) {

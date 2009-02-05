@@ -327,8 +327,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     public void mouseClicked(MouseEvent e) {           
        ImagePlus imp = WindowManager.getCurrentImage();
-       int y = imp.getID();
-       System.out.println("int = "+y);
     }    
     
     /**
@@ -436,9 +434,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         boolean insideRoi = false;
         java.util.Hashtable rois = ui.getRoiManager().getROIs();        
         for(Object key:rois.keySet()){
-            Roi roi = (Roi)rois.get(key);
+            MimsRoi mroi = (MimsRoi)rois.get(key);
+            Roi roi = mroi.getRoi();
             if(roi.contains(mX, mY)) {
-               if (ui.getSyncROIsAcrossPlanes() || ui.getRoiManager().getSliceNumber(key.toString()) == getCurrentSlice()) {
+               int currentSlice = getCurrentSlice();
+               if ((nType == MimsPlus.RATIO_IMAGE) || (nType == MimsPlus.HSI_IMAGE))
+                  currentSlice = ui.getMassImages()[getNumMass()].getCurrentSlice();
+               if (mroi.show(ui, currentSlice, getID())) {                  
                   insideRoi = true;
                   ij.process.ImageStatistics stats = this.getStatistics();
                   //the displayed statistic was variance not sd... changed.

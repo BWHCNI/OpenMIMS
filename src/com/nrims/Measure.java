@@ -277,9 +277,9 @@ public class Measure {
           rois = new Roi[0];           
        else {
           int length = rlist.getModel().getSize();
-          rois = new Roi[length];
+          rois = new Roi[length];          
           for (int i = 0; i < length; i++) {
-              rois[i] = (Roi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
+              rois[i] = ((MimsRoi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString())).getRoi();
           }            
        }               
        
@@ -389,7 +389,7 @@ public class Measure {
            int length = rlist.getModel().getSize();
            rois = new Roi[length];
            for (int i = 0; i < length; i++) {
-               rois[i] = (Roi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
+               rois[i] = ((MimsRoi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString())).getRoi();
            }            
         }        
 
@@ -484,7 +484,7 @@ public class Measure {
             int length = rlist.getModel().getSize();
             rois = new Roi[length];
             for (int i = 0; i < length; i++) {
-                rois[i] = (Roi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
+               rois[i] = ((MimsRoi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString())).getRoi();
             }
         } else {
             rois = new Roi[0];

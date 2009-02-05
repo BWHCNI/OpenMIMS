@@ -41,13 +41,14 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
 
         g.setColor(Color.RED);
         Roi cRoi = mImp.getRoi();
-        javax.swing.JList list = roiManager.getList();
+        javax.swing.JList list = roiManager.getList();               
         
         //to count the rois on a plane if not synced
         int nSyncid = 0;
         //test is ratio/hsi to get correct plane number
         //note getType is from ImagePlus
-        boolean isRatio = (mImp.getMimsType() == MimsPlus.RATIO_IMAGE) || (mImp.getMimsType() == MimsPlus.HSI_IMAGE);
+        boolean isRatio = (mImp.getMimsType() == MimsPlus.RATIO_IMAGE) || 
+                          (mImp.getMimsType() == MimsPlus.HSI_IMAGE);
         int parentplane = 1;
         if(isRatio) {
             parentplane = ui.getMassImages()[mImp.getNumMass()].getCurrentSlice();
@@ -55,37 +56,26 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
         
         for (int id = 0; id < list.getModel().getSize(); id++) {            
             String label = (list.getModel().getElementAt(id).toString());
-            Roi roi = (Roi) rois.get(label);
-            boolean bDraw = true;                        
-            
+            MimsRoi mroi = ((MimsRoi) rois.get(label));
+            Roi roi = mroi.getRoi();
+            boolean bDraw = false;                                    
             
             // If the current slice is the one which the 
-            // roi was created then we want to show the roi in red.
-            if (ui.getSyncROIsAcrossPlanes()) {
+            // roi was created then we want to show the roi in red.            
+            if (mroi.show(ui, mImp.getCurrentSlice(), mImp.getID()) && !isRatio) {
                 String name = "" + (id + 1);
                 java.awt.Rectangle r = roi.getBounds();
                 int x = screenX(r.x + r.width / 2 - g.getFontMetrics().stringWidth(name) / 2);
                 int y = screenY(r.y + r.height / 2 + g.getFontMetrics().getHeight() / 2);
                 g.drawString(name, x, y);
                 bDraw = true;
-            } else if (!(ui.getSyncROIsAcrossPlanes()) && (roiManager.getSliceNumber(label) == mImp.getCurrentSlice()) && !isRatio) {
-                String name = "" + (nSyncid + 1);
+            } else if (mroi.show(ui, parentplane, mImp.getID()) && isRatio) {
+                String name = "" + (id + 1);
                 java.awt.Rectangle r = roi.getBounds();
                 int x = screenX(r.x + r.width / 2 - g.getFontMetrics().stringWidth(name) / 2);
                 int y = screenY(r.y + r.height / 2 + g.getFontMetrics().getHeight() / 2);
                 g.drawString(name, x, y);
                 bDraw = true;
-                nSyncid = nSyncid + 1;
-            } else if (!(ui.getSyncROIsAcrossPlanes()) && (roiManager.getSliceNumber(label) == parentplane) && isRatio) {
-                String name = "" + (nSyncid + 1);
-                java.awt.Rectangle r = roi.getBounds();
-                int x = screenX(r.x + r.width / 2 - g.getFontMetrics().stringWidth(name) / 2);
-                int y = screenY(r.y + r.height / 2 + g.getFontMetrics().getHeight() / 2);
-                g.drawString(name, x, y);
-                bDraw = true;
-                nSyncid = nSyncid + 1;
-            } else {
-                bDraw = false;
             }
             
             // We dont want to show the boundry if the mouse is within the roi.
@@ -93,7 +83,7 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
                 bDraw = false;
             }
             if (bDraw) {
-                switch (roi.getType()) {
+                switch (roi.getType()) {                    
                     case Roi.COMPOSITE:
                         roi.setImage(imp);
                         Color tmp = roi.getInstanceColor();

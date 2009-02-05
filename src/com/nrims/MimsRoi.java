@@ -2,41 +2,50 @@ package com.nrims;
 
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.gui.ImageWindow;
 import ij.gui.Roi;
 
 /**
  * @author zkaufman
  */
-public class MimsRoi extends Roi {
+public class MimsRoi {
+   
+   Roi roi;
    int plane;
-   int imageID;
+   int imageID;  
+   String windowtitle;
+   ImageWindow imagewindow;
+   
    
    // This class extends the ImageJ Roi class. Allows
    // us to keep track of the plane/slice number 
    // and the imageID for which the ROI was drawn. 
-   public MimsRoi(Roi roi){      
-      super(roi.getBoundingRect().x, roi.getBoundingRect().y, 
-              roi.getBoundingRect().width, roi.getBoundingRect().height);
-      ImagePlus imp = WindowManager.getCurrentImage();                                      
-      if (imp != null) {
+   public MimsRoi (Roi roi, ImagePlus imp){      
+      this.roi = roi;
+      if (imp != null) {          
           this.plane = imp.getCurrentSlice();
           this.imageID = imp.getID();
       }      
-   }
+   }  
    
-   public MimsRoi(int startX, int startY, int width, int height){
-      super(startX, startY, width, height);
-      ImagePlus imp = WindowManager.getCurrentImage();       
-      if (imp != null) {
-          this.plane = imp.getCurrentSlice();
-          this.imageID = imp.getID();
-      }
-   }
-   
-   public MimsRoi(int startX, int startY, int width, int height, int plane, int imageID){
-      super(startX, startY, width, height);      
+   public MimsRoi (Roi roi, int plane, int imageID){      
+      this.roi = roi;                                               
       this.plane = plane;
-      this.imageID = imageID;      
+      this.imageID = imageID;     
+   }  
+   
+   // Checks the plane and imageID for the Roi and compares it to
+   // the current plane and imageID to see if it should be displayed.
+   // Also must check user parameters ui.getSyncROIsAcrossPlanes 
+   // and ui.getSyncROIsAcrossMasses.
+   public boolean show(UI ui, int currentPlane, int currentImageID) {
+      boolean planeMatch = (this.plane == currentPlane);
+      boolean imageIDMatch = (this.imageID == currentImageID);      
+      if ((ui.getSyncROIsAcrossPlanes() && ui.getSyncROIsAcrossMasses()) || (planeMatch && imageIDMatch) ||
+                    (ui.getSyncROIsAcrossPlanes() && imageIDMatch) || (ui.getSyncROIsAcrossMasses() && planeMatch)) {
+         return true;
+      }
+      return false;
    }
    
    // The plane number is the plane/slice which the ROI was drawn.
@@ -56,6 +65,22 @@ public class MimsRoi extends Roi {
    public void setImageID(int imageID){
       this.imageID = imageID;
    }
-  
-
+   
+   // The roi. 
+   public Roi getRoi(){
+      return this.roi;
+   }
+   
+   private void setRoi(Roi roi){
+      this.roi = roi;
+   }
+   
+   // The window the roi was created in.
+   public ImageWindow getImageWindow(){
+      return this.imagewindow;
+   }
+   
+   public void setImageWindow(ImageWindow imagewin){
+      this.imagewindow = imagewin;
+   }
 }

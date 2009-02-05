@@ -26,7 +26,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
         measure = new Measure(ui);
         initComponents();        
         
-        jCheckBox2.setSelected(ui.getSyncROIs());
+        jCheckBox2.setSelected(ui.getSyncROIsAcrossMasses());
         jCheckBox3.setSelected(ui.getAddROIs());
         jCheckBox5.setSelected(ui.getSyncROIsAcrossPlanes());
         jTextField1.setText(ui.getMimsImage().getImageFile().getName()+".txt");
@@ -259,7 +259,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
     }//GEN-LAST:event_jCheckBox3ItemStateChanged
 
     private void jCheckBox2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox2ItemStateChanged
-        ui.setSyncROIs(jCheckBox2.isSelected());
+        ui.setSyncROIsAcrossMasses(jCheckBox2.isSelected());
     }//GEN-LAST:event_jCheckBox2ItemStateChanged
 
 private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
