@@ -1,6 +1,7 @@
 package com.nrims;
 
 import ij.plugin.frame.*;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -15,7 +16,7 @@ import ij.measure.*;
 	allows the user to interactively adjust the brightness  and
 	contrast of the active image. It is multi-threaded to 
 	provide a more  responsive user interface. */
-public class ContrastAdjuster extends PlugInFrame implements Runnable,
+public class ContrastAdjuster extends JPanel implements Runnable,
 	ActionListener, AdjustmentListener, ItemListener {
 
 	public static final String LOC_KEY = "b&c.loc";
@@ -23,7 +24,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "All"};
 	static final String[] altChannelLabels = {"Channel 1", "Channel 2", "Channel 3", "Channel 4", "Channel 5", "Channel 6", "All"};
 	static final int[] channelConstants = {4, 2, 1, 3, 5, 6, 7};
-	
 	ContrastPlot plot = new ContrastPlot();
 	Thread thread;
 	private static Frame instance;
@@ -57,37 +57,13 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	int channels = 7; // RGB
 	Choice choice;
 	boolean updatingRGBStack;
+        UI ui;
 
 
-	public ContrastAdjuster() {
-		super("B&C");
-	}
-	
-	public void run(String arg) {
-		windowLevel = arg.equals("wl");
-		balance = arg.equals("balance");
-		if (windowLevel)
-			setTitle("W&L");
-		else if (balance) {
-			setTitle("Color");
-			channels = 4;
-		}
-
-		if (instance!=null) {
-			if (!instance.getTitle().equals(getTitle())) {
-				ContrastAdjuster ca = (ContrastAdjuster)instance;
-				Prefs.saveLocation(LOC_KEY, ca.getLocation());
-				ca.close();
-			} else {
-				instance.toFront();
-				return;
-			}
-		}
-		instance = this;
-		IJ.register(ContrastAdjuster.class);
-		WindowManager.addWindow(this);
-
-		ij = IJ.getInstance();
+	//public ContrastAdjuster(UI ui) {          
+        public ContrastAdjuster() {          
+	   //this.ui = ui;	
+           ij = IJ.getInstance();
 		gridbag = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(gridbag);
@@ -217,13 +193,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		add(panel);
 		
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
-		pack();
+		//pack();
 		Point loc = Prefs.getLocation(LOC_KEY);
-		if (loc!=null)
-			setLocation(loc);
-		else
-			GUI.center(this);
-		if (IJ.isMacOSX()) setResizable(false);
 		show();
 
 		thread = new Thread(this, "ContrastAdjuster");
@@ -622,7 +593,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		ip.setRoi(imp.getRoi());
 		if (imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
-			YesNoCancelDialog d = new YesNoCancelDialog(this,
+			YesNoCancelDialog d = new YesNoCancelDialog(ui,
 				"Entire Stack?", "Apply LUT to all "+stack.getSize()+" slices in the stack?");
 			if (d.cancelPressed())
 				{imp.unlock(); return;}
@@ -921,28 +892,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			imp.unlock();
 	}
 
-	public void windowClosing(WindowEvent e) {
-	 	close();
-		Prefs.saveLocation(LOC_KEY, getLocation());
-	}
-
-    /** Overrides close() in PlugInFrame. */
-    public void close() {
-    	super.close();
-		instance = null;
-		done = true;
-		synchronized(this) {
-			notify();
-		}
-	}
-
-	public void windowActivated(WindowEvent e) {
-		super.windowActivated(e);
-		previousImageID = 0; // user may have modified image
-		setup();
-		WindowManager.setWindow(this);
-	}
-
 	public synchronized  void itemStateChanged(ItemEvent e) {
 		int index = choice.getSelectedIndex();
 		channels = channelConstants[index];
@@ -958,14 +907,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			doReset = true;
 		notify();
 	}
-
-    /** Resets this ContrastAdjuster and brings it to the front. */
-    public void updateAndDraw() {
-        previousImageID = 0;
-        toFront();
-    }
     
-    /** Updates the ContrastAdjuster. */
+    /** Updates the ContrastAdjuster. 
     public static void update() {
 		if (instance!=null) {
 			ContrastAdjuster ca = ((ContrastAdjuster)instance);
@@ -974,7 +917,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				ca.setup();
 			}
 		}
-    }
+    }*/
     
 } // ContrastAdjuster class
 

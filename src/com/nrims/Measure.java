@@ -464,11 +464,7 @@ public class Measure {
     }
     
     ///God damn it
-    public void measureSums(boolean bStack) {
-        if (ui.getMimsImage().nImages() < 2) {
-            bStack = false;
-        }
-
+    public void measureSums() {
         MimsPlus[] mSumImages = ui.getOpenSumImages();
         
         if (mSumImages.length == 0) {
@@ -489,7 +485,7 @@ public class Measure {
             rois = new Roi[0];
         }
 
-        int nSlices = bStack ? mSumImages[0].getImageStackSize() : 1;
+        int nSlices = mSumImages[0].getImageStackSize();
         if (nSlices < 1) {
             nSlices = 1;
         }

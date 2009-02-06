@@ -35,16 +35,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
     public MimsRoiControl(UI ui) {
         this.ui = ui ;
         measure = new Measure(ui);
-        initComponents();
-        
-//        this.jButton5.setVisible(false);
-//        this.jButton6.setVisible(false);
-//        this.jTextField3.setVisible(false);
-//        this.jLabel2.setVisible(false);
-//        this.jLabel3.setVisible(false);
-//        this.jCheckBox5.setVisible(false);
-//        this.jTextField2.setVisible(false);
-//        this.featuresButton.setVisible(false);
+        initComponents();        
         
         jCheckBox2.setSelected(ui.getSyncROIs());
         jCheckBox3.setSelected(ui.getAddROIs());
@@ -67,13 +58,14 @@ public class MimsRoiControl extends javax.swing.JPanel {
       jButton2 = new javax.swing.JButton();
       jButton3 = new javax.swing.JButton();
       jButton4 = new javax.swing.JButton();
-      jCheckBox1 = new javax.swing.JCheckBox();
       jCheckBox4 = new javax.swing.JCheckBox();
       jLabel1 = new javax.swing.JLabel();
       jTextField1 = new javax.swing.JTextField();
       jButton5 = new javax.swing.JButton();
-      testButton = new javax.swing.JButton();
       jCheckBox5 = new javax.swing.JCheckBox();
+      contrastAdjuster1 = new com.nrims.ContrastAdjuster();
+      jSeparator1 = new javax.swing.JSeparator();
+      jLabel2 = new javax.swing.JLabel();
 
       setToolTipText("Drawing ROIs automatically adds to RoiManager");
 
@@ -126,10 +118,6 @@ public class MimsRoiControl extends javax.swing.JPanel {
          }
       });
 
-      jCheckBox1.setText("Measure All Sections");
-      jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-      jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
       jCheckBox4.setText("Append to table");
       jCheckBox4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
       jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -150,13 +138,6 @@ public class MimsRoiControl extends javax.swing.JPanel {
          }
       });
 
-      testButton.setText("test");
-      testButton.addActionListener(new java.awt.event.ActionListener() {
-         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            testButtonActionPerformed(evt);
-         }
-      });
-
       jCheckBox5.setText("Synchronize ROIs across all planes ");
       jCheckBox5.setToolTipText("Display ROI in all images");
       jCheckBox5.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -172,6 +153,13 @@ public class MimsRoiControl extends javax.swing.JPanel {
          }
       });
 
+      jSeparator1.setForeground(new java.awt.Color(153, 153, 255));
+      jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+      jSeparator1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+      jSeparator1.setOpaque(true);
+
+      jLabel2.setText("Brightness / Contrast");
+
       org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
       this.setLayout(layout);
       layout.setHorizontalGroup(
@@ -181,66 +169,65 @@ public class MimsRoiControl extends javax.swing.JPanel {
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                .add(layout.createSequentialGroup()
                   .add(jCheckBox3)
-                  .add(46, 46, 46)
-                  .add(jButton1)
-                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 197, Short.MAX_VALUE)
-                  .add(testButton)
-                  .add(73, 73, 73))
+                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                  .add(jButton1))
                .add(layout.createSequentialGroup()
-                  .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                     .add(layout.createSequentialGroup()
-                        .add(jCheckBox1)
-                        .add(26, 26, 26)
-                        .add(jCheckBox4))
-                     .add(layout.createSequentialGroup()
-                        .add(jButton2)
-                        .add(27, 27, 27)
-                        .add(jButton5))
-                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 144, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                  .addContainerGap(225, Short.MAX_VALUE))
+                  .add(jLabel1)
+                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                  .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 144, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+               .add(jCheckBox5)
+               .add(jCheckBox2)
+               .add(jCheckBox4)
                .add(layout.createSequentialGroup()
-                  .add(jCheckBox5)
-                  .addContainerGap(319, Short.MAX_VALUE))
-               .add(layout.createSequentialGroup()
-                  .add(jCheckBox2)
-                  .addContainerGap(317, Short.MAX_VALUE))))
+                  .add(jButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 138, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                  .add(12, 12, 12)
+                  .add(jButton5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 166, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+               .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                  .add(org.jdesktop.layout.GroupLayout.LEADING, jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                  .add(org.jdesktop.layout.GroupLayout.LEADING, jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .add(77, 77, 77)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(31, 31, 31)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+               .add(jLabel2)
+               .add(contrastAdjuster1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(44, 44, 44))
       );
       layout.setVerticalGroup(
          layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
          .add(layout.createSequentialGroup()
-            .add(4, 4, 4)
+            .add(12, 12, 12)
             .add(jCheckBox5)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+            .add(18, 18, 18)
             .add(jCheckBox2)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-               .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                  .add(jButton1)
-                  .add(testButton))
-               .add(jCheckBox3))
-            .add(22, 22, 22)
-            .add(jButton4)
-            .add(10, 10, 10)
-            .add(jButton3)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+            .add(16, 16, 16)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-               .add(jCheckBox1)
-               .add(jCheckBox4))
-            .add(14, 14, 14)
+               .add(jCheckBox3)
+               .add(jButton1))
+            .add(51, 51, 51)
+            .add(jButton4)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+            .add(jButton3)
+            .add(12, 12, 12)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                .add(jLabel1)
                .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(14, 14, 14)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-               .add(jButton2)
-               .add(jButton5))
-            .addContainerGap(50, Short.MAX_VALUE))
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+               .add(jButton5)
+               .add(jButton2))
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+            .add(jCheckBox4)
+            .add(27, 27, 27))
+         .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .addContainerGap()
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+               .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+               .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                  .add(jLabel2)
+                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                  .add(contrastAdjuster1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)))
+            .addContainerGap())
       );
    }// </editor-fold>//GEN-END:initComponents
 
@@ -286,52 +273,13 @@ private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 // TODO add your handling code here:
     // If not appending reset the data in the table
     if(jCheckBox4.isSelected() == false ) measure.reset();
-    measure.measureSums(jCheckBox3.isSelected());
+    measure.measureSums();
     
     if (ij.WindowManager.getFrame(measure.getName()) != null) {
         ij.WindowManager.getFrame(measure.getName()).setSize(450, 300);
         ij.WindowManager.getFrame(measure.getName());
     }
 }//GEN-LAST:event_jButton5ActionPerformed
-
-private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
-// TODO add your handling code here:
-    
-    //testing trying to grab screen pixels from image for rois and annotations
-    
-
-	/** Captures the active image window and returns it as an ImagePlus. */
-
-    ImagePlus imp = ij.WindowManager.getCurrentImage();
-    if (imp == null) {
-        IJ.noImage();
-        return;
-    }
-    ImagePlus imp2 = null;
-    try {
-        ImageWindow win = imp.getWindow();
-        if (win == null) {
-            return;
-        }
-        win.toFront();
-        Point loc = win.getLocation();
-        //canvas type?
-        ImageCanvas ic = win.getCanvas();
-        ic.update(ic.getGraphics());
-        
-        Rectangle bounds = ic.getBounds();
-        loc.x += bounds.x;
-        loc.y += bounds.y;
-        Rectangle r = new Rectangle(loc.x, loc.y, bounds.width, bounds.height);
-        Robot robot = new Robot();
-        Image img = robot.createScreenCapture(r);
-        if (img != null) {
-            imp2 = new ImagePlus("Grab of " + imp.getTitle(), img);
-            imp2.show();
-        }
-    } catch (Exception e) {
-    }
-}//GEN-LAST:event_testButtonActionPerformed
 
 private void jCheckBox5ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox5ItemStateChanged
 // TODO add your handling code here:   
@@ -348,23 +296,27 @@ private void jCheckBox5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 // TODO add your handling code here:
 }//GEN-LAST:event_jCheckBox5ActionPerformed
    
+public ContrastAdjuster getContrastAdjuster() {
+   return this.contrastAdjuster1;
+}
     private com.nrims.UI ui = null ;
     private com.nrims.Measure measure = null ;
     
    // Variables declaration - do not modify//GEN-BEGIN:variables
+   private com.nrims.ContrastAdjuster contrastAdjuster1;
    private javax.swing.JButton jButton1;
    private javax.swing.JButton jButton2;
    private javax.swing.JButton jButton3;
    private javax.swing.JButton jButton4;
    private javax.swing.JButton jButton5;
-   private javax.swing.JCheckBox jCheckBox1;
    private javax.swing.JCheckBox jCheckBox2;
    private javax.swing.JCheckBox jCheckBox3;
    private javax.swing.JCheckBox jCheckBox4;
    private javax.swing.JCheckBox jCheckBox5;
    private javax.swing.JLabel jLabel1;
+   private javax.swing.JLabel jLabel2;
+   private javax.swing.JSeparator jSeparator1;
    private javax.swing.JTextField jTextField1;
-   private javax.swing.JButton testButton;
    // End of variables declaration//GEN-END:variables
     
 }

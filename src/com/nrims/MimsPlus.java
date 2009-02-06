@@ -1,5 +1,7 @@
 package com.nrims;
 import ij.IJ ;
+import ij.ImagePlus;
+import ij.WindowManager;
 import ij.gui.* ;
 //import ij.process.*;
 import java.awt.Rectangle;
@@ -279,6 +281,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     public void windowActivated(WindowEvent e) {
         ui.setActiveMimsPlus(this);
+        ca = ui.getRoiControl().getContrastAdjuster();
+        if (ca != null)
+           ca.setup();
     }
     @Override
     public void windowDeiconified(WindowEvent e) {}
@@ -516,6 +521,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             return;
         }
         super.setSlice(index);
+        if (ca != null)
+            ca.setup(); 
         if(bStateChanging) {
             return;
         }
@@ -550,4 +557,5 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     private com.nrims.data.Opener srcImage ;
     private com.nrims.UI ui = null;
     private EventListenerList fStateListeners = null ;
+    ContrastAdjuster ca;
 }
