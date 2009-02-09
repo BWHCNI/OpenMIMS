@@ -753,7 +753,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 			if (allChannels) {
 				int channel = imp.getChannel();
 				for (int c=1; c<=channels; c++) {
-					imp.setPositionWithoutUpdate(c, imp.getSlice(), imp.getFrame());
+			//		imp.setPositionWithoutUpdate(c, imp.getSlice(), imp.getFrame());
 					imp.setDisplayRange(min, max);
 				}
 				((CompositeImage)imp).reset();

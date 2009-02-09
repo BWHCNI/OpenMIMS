@@ -454,12 +454,24 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         java.util.Hashtable rois = ui.getRoiManager().getROIs();        
         for(Object key:rois.keySet()){
             Roi roi = (Roi)rois.get(key);
+            int slice=1;
+            if(this.getMimsType()==this.HSI_IMAGE || this.getMimsType()==this.RATIO_IMAGE) {
+                int neum = getHSIProps().getNumMass();
+                slice = ui.getMassImage(neum).getCurrentSlice();
+            } else {
+                slice = getCurrentSlice();
+            }
             if(roi.contains(mX, mY)) {
-               if (ui.getSyncROIsAcrossPlanes() || ui.getRoiManager().getSliceNumber(key.toString()) == getCurrentSlice()) {
+               if (ui.getSyncROIsAcrossPlanes() || ui.getRoiManager().getSliceNumber(key.toString()) == slice) {
                   insideRoi = true;
                   ij.process.ImageStatistics stats = this.getStatistics();
                   //the displayed statistic was variance not sd... changed.
-                  msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);                
+                  //TODO fix HSI rollover to show underlying ratio stats
+                  if(this.getMimsType()==this.HSI_IMAGE) {
+                  msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
+                  } else {
+                      msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
+                  }
                   roi.setInstanceColor(java.awt.Color.yellow);
                   if(ui.activeRoi != roi){                   
                     ui.activeRoi = roi;

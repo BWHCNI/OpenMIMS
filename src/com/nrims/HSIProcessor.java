@@ -306,7 +306,7 @@ public class HSIProcessor implements Runnable {
 
                 }
             }
-            
+
             denominator.unlock();
             numerator.unlock();
             hsiImage.unlock();

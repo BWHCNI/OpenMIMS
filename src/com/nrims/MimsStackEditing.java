@@ -850,7 +850,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         //doesn't work
         //ui.getRoiManager().select(-1);
         String massname = tempImage.getTitle();
-        massname = massname.substring(massname.length() - 6, massname.length());
+        
 
         for (int i = 1; i <= images[0].getStackSize(); i++) {
             images[0].setSlice(i);

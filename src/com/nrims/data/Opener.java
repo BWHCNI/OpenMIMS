@@ -835,6 +835,14 @@ public class Opener {
     /**
      * @return the analysis_duration from the SIMS header
      */
+    public double getDurationD() {
+        if (this.maskIm == null) {
+            return 0.0;
+        }
+        double duration = (double) this.maskIm.analysis_duration;
+        return duration;
+    }
+    
     public String getDuration() {
         if (this.maskIm == null) {
             return null;

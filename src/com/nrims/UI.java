@@ -85,9 +85,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private com.nrims.SegmentationForm segmentation = null;
     protected ij.gui.Roi activeRoi;
     private int ratioScaleFactor = 10000;    //tesing fixed contrast
+    
     private boolean fixRatioContrast = true;
+    private boolean autoContrastMass = true;
+    private boolean medianFilterRatios = false;
+    
     private com.nrims.data.FileDrop mimsDrop;
-
+    
     /**
      * Creates new form UI
      * @param fileName name of the .im image file to be opened.
@@ -249,6 +253,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
         MIMSFileFilter filter = new MIMSFileFilter();
         fc.setFileFilter(filter);
+        fc.setPreferredSize(new java.awt.Dimension(650, 500));
+
         if (lastFolder != null) {
             fc.setCurrentDirectory(new java.io.File(lastFolder));
         }
@@ -291,8 +297,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             int nImages = image.nImages();
 
             long memRequired = nMasses * image.getWidth() * image.getHeight() * 2 * nImages;
-            long maxMemory = IJ.maxMemory();
-
+            //added wiggle room to how big a file can be opened
+            //was causing heap size exceptions to be thrown
+            long maxMemory = IJ.maxMemory()-(128000000);
+            
             for (int i = 0; i < nMasses; i++) {
                 bOpenMass[i] = true;
             }
@@ -638,20 +646,22 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         }
 
-
-        /*
-        ij.process.ImageStatistics imgStats = ratioImages[ratioIndex].getStatistics();
-        
-        props.setMinRatio(java.lang.Math.max(0.0, imgStats.mean-(2*imgStats.stdDev)));
-        props.setMaxRatio(imgStats.mean+(imgStats.stdDev));
-         */
-
-
         mp.getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
-        //mp.getProcessor().setMinAndMax(0.001,0.4);
-
-        //System.out.println("rMin: "+rMin+" rMax: "+rMax);
-
+        
+        //DANGER DANGER DANGER DANGER DANGER DANGER
+        if (this.medianFilterRatios) {
+            Roi temproi = mp.getRoi();
+            mp.killRoi();
+            ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
+            double r = this.hsiControl.getMedianRadius();
+            //System.out.println("r: " + r);
+            rfilter.rank(mp.getProcessor(), r, rfilter.MEDIAN);
+            rfilter = null;
+            mp.setRoi(temproi);
+        }
+        
+        //End danger
+        
         if (bShow) {
             mp.show();
             mp.updateAndDraw();
@@ -681,16 +691,50 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
         str += "\n";
         str += "Pixels: " + im.getWidth() + "x" + im.getHeight() + "\n";
-        str += "Duration: " + im.getDuration() + "\n";
-        str += "Dwell time: " + im.getDwellTime() + "\n";
-        str += "Position: " + im.getPosition() + "\n";
+        str += "Raster (nm): " + im.getRaster() + "\n";
+        str += "Duration (s): " + im.getDuration() + "\n";
+        str += "Dwell time (ms/xy): " + im.getDwellTime() + "\n";
+        str += "Stage Position: " + im.getPosition() + "\n";
         str += "Sample name: " + im.getSampleName() + "\n";
         str += "Sample date: " + im.getSampleDate() + "\n";
         str += "Sample hour: " + im.getSampleHour() + "\n";
-        str += "Pixel width: " + im.getPixelWidth() + "\n";
-        str += "Pixel height: " + im.getPixelHeight() + "\n";
+        str += "Pixel width (nm): " + im.getPixelWidth() + "\n";
+        str += "Pixel height (nm): " + im.getPixelHeight() + "\n";
         str += "End header.\n\n";
         return str;
+    }
+    
+    public void updateAllImages() {
+        for (int i = 0; i < maxMasses; i++) {
+            if (segImages[i] != null) {
+                segImages[i].updateAndDraw();
+            }
+            if (massImages[i] != null) {
+                massImages[i].updateAndDraw();
+            }
+            if (hsiImages[i] != null) {
+                hsiImages[i].updateAndDraw();
+            }
+            if (ratioImages[i] != null) {
+                ratioImages[i].updateAndDraw();
+            }
+        }
+
+        for (int i = 0; i < maxMasses * 2; i++) {
+            if (sumImages[i] != null) {
+                sumImages[i].updateAndDraw();
+            }
+        }
+    }
+
+        public void recomputeAllRatio(HSIProps props) {
+        for (int i = 0; i < maxMasses; i++) {
+            if (ratioImages[i] != null) {
+                computeRatio(props);
+                ratioImages[i].updateAndDraw();
+            }
+        }
+
     }
 
     public synchronized boolean computeSum(MimsPlus mImage) {
@@ -937,13 +981,21 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 if ((massImages[i] != mp) && (massImages[i] != null) && bOpenMass[i]) {
                     massImages[i].setSlice(nSlice);
                 }
+                //deselect roi when changing?
+                massImages[i].killRoi();
+                if (autoContrastMass) {
+                    autocontrast(massImages[i]);
+                }
+
             }
+            
             for (int i = 0; i < maxMasses; i++) {
                 if ((hsiImages[i] != mp) && (hsiImages[i] != null)) {
                     if (hsiImages[i].isStack()) {
                         hsiImages[i].setSlice(evt.getSlice());
                     } else {
                         computeHSI(hsiImages[i].getHSIProps());
+                        hsiImages[i].killRoi();
                     }
                 }
                 if ((ratioImages[i] != mp) && (ratioImages[i] != null)) {
@@ -966,7 +1018,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
                         props.setMinRatio(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)));
                         props.setMaxRatio(imgStats.mean + (imgStats.stdDev));
-
+                        ratioImages[i].killRoi();
                         computeRatio(props);
                         rp[i].getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
 
@@ -974,9 +1026,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
                     }
                     if (fixRatioContrast || i != hsiControl.whichRatio()) {
-                        fixedProps.setMinRatio(this.hsiControl.getRatioMinVal());
-                        fixedProps.setMaxRatio(this.hsiControl.getRatioMaxVal());
-
+                        //fixedProps.setMinRatio(this.hsiControl.getRatioMinVal());
+                        //fixedProps.setMaxRatio(this.hsiControl.getRatioMaxVal());
+                        fixedProps.setMinRatio(ratioImages[i].getProcessor().getMin());
+                        fixedProps.setMaxRatio(ratioImages[i].getProcessor().getMax());
+                        
                         computeRatio(fixedProps);
                         rp[i].getProcessor().setMinAndMax(fixedProps.getMinRatio(), fixedProps.getMaxRatio());
                     }
@@ -1095,7 +1149,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         ImportISEEListMenuItem = new javax.swing.JMenuItem();
         captureImageMenuItem = new javax.swing.JMenuItem();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("NRIMS Analysis Module");
         setName("NRIMSUI"); // NOI18N
 
@@ -1115,7 +1169,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 347, Short.MAX_VALUE)
+            .add(0, 346, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Images", jPanel1);
@@ -1277,11 +1331,73 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             restoreMims();
         }
     }
+    
+    public void setAutoContrastMass(boolean set) {
+        this.autoContrastMass = set;
+    }
+    
+    public void setMedianFilterRatios(boolean set) {
+        this.medianFilterRatios = set;
+    }
+    
+    public void autocontrastAllMasses() {
+        for (int i = 0; i < maxMasses; i++) {
+            if (massImages[i] != null) {
+                autocontrast(massImages[i]);
+                massImages[i].updateAndDraw();
+            }
+        }
 
+    }
+
+    
     public void autocontrast(MimsPlus img) {
-        ij.process.ImageStatistics imgStats = img.getStatistics();
+        //old
+        //ij.process.ImageStatistics imgStats = img.getStatistics();
+        //img.getProcessor().setMinAndMax(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)), imgStats.mean + (2 * imgStats.stdDev));
+        //
+        //copied from IJ->Image->Adjust B/C code
+        //
+        Calibration cal = img.getCalibration();
+        img.setCalibration(null);
+        ij.process.ImageStatistics stats = img.getStatistics(); // get uncalibrated stats
+        img.setCalibration(cal);
+        int limit = stats.pixelCount / 10;
+        int[] histogram = stats.histogram;
 
-        img.getProcessor().setMinAndMax(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)), imgStats.mean + (2 * imgStats.stdDev));
+        int autoThreshold = (int) img.getProcessor().getMaxThreshold();
+        int threshold = stats.pixelCount / autoThreshold;
+        int j = -1;
+        boolean found = false;
+        int count;
+        do {
+            j++;
+            count = histogram[j];
+            if (count > limit) {
+                count = 0;
+            }
+            found = count > threshold;
+        } while (!found && j < 255);
+        int hmin = j;
+        j = 256;
+        do {
+            j--;
+            count = histogram[j];
+            if (count > limit) {
+                count = 0;
+            }
+            found = count > threshold;
+        } while (!found && j > 0);
+        int hmax = j;
+        if (hmax >= hmin) {
+            double min = stats.histMin + hmin * stats.binSize;
+            double max = stats.histMin + hmax * stats.binSize;
+            if (min == max) {
+                min = stats.min;
+                max = stats.max;
+            }
+            img.getProcessor().setMinAndMax(min, max);
+        }
     }
 
     public void restoreMims() {
@@ -1391,6 +1507,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     private void openActionFileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openActionFileMenuItemActionPerformed
         JFileChooser fc = new JFileChooser();
+        fc.setPreferredSize(new java.awt.Dimension(650, 500));
         if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
             currentlyOpeningImages = false;
             return;

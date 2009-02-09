@@ -48,6 +48,8 @@ public class MimsData extends javax.swing.JPanel {
         syncjCheckBox = new javax.swing.JCheckBox();
         jLabel17 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
+        jLabel20 = new javax.swing.JLabel();
 
         jLabel1.setText("File");
 
@@ -94,6 +96,10 @@ public class MimsData extends javax.swing.JPanel {
 
         jLabel18.setText("jLabel18");
 
+        jLabel19.setText("Duration");
+
+        jLabel20.setText("jLabel20");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -107,13 +113,13 @@ public class MimsData extends javax.swing.JPanel {
                     .add(jLabel5)
                     .add(jLabel6)
                     .add(jLabel7)
-                    .add(jLabel8)
                     .add(jLabel1)
-                    .add(jLabel17))
+                    .add(jLabel17)
+                    .add(jLabel19)
+                    .add(jLabel8))
                 .add(30, 30, 30)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 302, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel16)
                     .add(jLabel15)
                     .add(jLabel14)
                     .add(jLabel13)
@@ -123,8 +129,10 @@ public class MimsData extends javax.swing.JPanel {
                         .add(jLabel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(syncjCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 153, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jLabel9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 243, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 243, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel20)
+                    .add(jLabel16))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {jLabel11, jLabel12, jLabel13, jLabel14, jLabel15, jLabel16, jLabel18, jLabel9}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -169,9 +177,13 @@ public class MimsData extends javax.swing.JPanel {
                     .add(jLabel15))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel19)
+                    .add(jLabel20))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel8)
                     .add(jLabel16))
-                .addContainerGap(109, Short.MAX_VALUE))
+                .addContainerGap(88, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -196,14 +208,36 @@ public class MimsData extends javax.swing.JPanel {
             syncjCheckBox.setEnabled(false);        
         }
         else {
-            jLabel9.setText(image.getImageFile().getAbsolutePath());
-            jLabel10.setText("" + image.nImages());
-            jLabel11.setText(image.getPosition());
-            jLabel12.setText(image.getSampleDate() + " " + image.getSampleHour());
-            jLabel13.setText(image.getUserName());
-            jLabel14.setText(image.getSampleName());
-            jLabel15.setText("" + image.getDwellTime());
-            jLabel16.setText("" + image.getRaster());
+            String tempstring = "";
+            tempstring = image.getImageFile().getAbsolutePath();
+            jLabel9.setText(tempstring);
+            
+            tempstring = "" + image.nImages();
+            jLabel10.setText(tempstring);
+            
+            tempstring = image.getPosition();
+            jLabel11.setText(tempstring);
+            
+            tempstring = image.getSampleDate() + " " + image.getSampleHour();
+            jLabel12.setText(tempstring);
+            
+            tempstring = image.getUserName();
+            jLabel13.setText(tempstring);
+            
+            tempstring = image.getSampleName();
+            jLabel14.setText(tempstring);
+            
+            tempstring = image.getDwellTime() + " ms/xy";
+            jLabel15.setText(tempstring);
+            
+            tempstring = Double.toString(image.getDurationD()) + " s";
+            jLabel20.setText(tempstring);
+            
+            int raster = image.getRaster();
+            raster = java.lang.Math.round(raster/1000);
+            tempstring = raster + " um";
+            jLabel16.setText(tempstring);
+            
             int i, nMasses = image.nMasses();
             String massNames = "" + nMasses + " [" ;
             for(i=0;i<nMasses;i++) {
@@ -228,7 +262,9 @@ public class MimsData extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;

@@ -549,10 +549,20 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         xs = "000" + xc;
         ys = "000" + yc;
         String label = ys.substring(ys.length() - digits) + "-" + xs.substring(xs.length() - digits);
+/*  Cludgy...  TODO: why is this passed an imageplus and not mimsplus?
         if (imp.getStackSize() > 1) {
             String zs = "000" + imp.getCurrentSlice();
             label = zs.substring(zs.length() - digits) + "-" + label;
         }
+*/
+        MimsPlus mimsp = ui.getMassImages()[0];
+        if(mimsp == null) { return label; }
+        
+        if (mimsp.getStackSize() > 1) {
+            String zs = "000" + mimsp.getCurrentSlice();
+            label = zs.substring(zs.length() - digits) + "-" + label;
+        }
+     
         return label;
     }
 
@@ -592,6 +602,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (Recorder.record) {
             Recorder.record("mimsRoiManager", "Delete");
         }
+        
+        this.ui.updateAllImages();
         return true;
     }
 

@@ -43,6 +43,14 @@ public class Measure {
     }
 
     public void reset() {
+        //ij.WindowManager wm = ij.WindowManager.get
+        java.lang.String title = "";
+        java.awt.Frame tempframe = ij.WindowManager.getFrame(fileName);
+        
+        if(tempframe != null) {
+            title = tempframe.getTitle();
+            System.out.println("title found: "+title); 
+        }
         rTable.reset();
         bHasLabels = false;
     }
@@ -284,7 +292,7 @@ public class Measure {
        
        // Generate column headings. We are hard coding the "Plane" column
        // because for this table, we want it first in the list.
-       rTable.setHeading(0, "Plane");
+       rTable.setHeading(0, "Series");
        int ncol = 1;
        for (int i = 0; i < images.length; i++) { //number of mass-hsi images.
           for (int m = 0; m < bMeasure.length; m++) { //boolean list of fields to compute.
@@ -296,11 +304,15 @@ public class Measure {
                    rTable.setHeading(ncol++, hd);
                 } else {
                    hd += "_";
-                   if (images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
+                   //changed to retrive mass name, eg m12.09 instead of m1
+                   //old
+/*                   if (images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
                       hd += "m" + (images[i].getNumMass() + 1) + "/m" + (images[i].getDenMass() + 1);
                    } else {
                       hd += "m" + (images[i].getMimsMassIndex() + 1);
                    }
+ */
+                   hd += images[i].getShortTitle();
                    rTable.setHeading(ncol++, hd);                   
                 }
              }
@@ -404,11 +416,15 @@ public class Measure {
                       if (bMeasurePerImage[m] == false && i > 0) { //do nothing.
                       } else {
                          String hd = measureNames[m] + "_";
-                         if (images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
+                         //changed to retrive mass name, eg m12.09 instead of m1
+                        //old
+/*                         if (images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
                             hd += "m" + (images[i].getNumMass() + 1) + "/m" + (images[i].getDenMass() + 1);
                          } else {
                             hd += "m" + (images[i].getMimsMassIndex() + 1);
                          }
+*/
+                         hd += images[i].getShortTitle();
                          if (nrois > 1) {
                             hd += "_r" + r;
                          }

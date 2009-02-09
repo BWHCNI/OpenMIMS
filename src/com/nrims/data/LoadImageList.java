@@ -36,6 +36,7 @@ public class LoadImageList {
     
     public boolean openList() {
         JFileChooser fc = new JFileChooser();
+        fc.setPreferredSize(new java.awt.Dimension(650, 500));
         if (fc.showOpenDialog(ui) == JFileChooser.CANCEL_OPTION) {
             return false;
         }
