@@ -56,6 +56,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	Choice choice;
 	boolean updatingRGBStack;
         UI ui;
+        boolean hold = false;
 
 	//public ContrastAdjuster(UI ui) {          
         public ContrastAdjuster() {          
@@ -241,6 +242,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	}
 	
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
+                if (hold) return;
 		Object source = e.getSource();
 		if (source==minSlider)
 			minSliderValue = minSlider.getValue();
@@ -303,7 +305,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		} else {
 			defaultMin = 0;
 			defaultMax = 255;
-		}
+		}                
 		setMinAndMax(imp, min2, max2);
 		min = imp.getDisplayRangeMin();
 		max = imp.getDisplayRangeMax();
@@ -753,7 +755,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 			if (allChannels) {
 				int channel = imp.getChannel();
 				for (int c=1; c<=channels; c++) {
-			//		imp.setPositionWithoutUpdate(c, imp.getSlice(), imp.getFrame());
+					imp.setPositionWithoutUpdate(c, imp.getSlice(), imp.getFrame());
 					imp.setDisplayRange(min, max);
 				}
 				((CompositeImage)imp).reset();
@@ -901,20 +903,21 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 				channels = 7;
 			}
 		} else
-			doReset = true;
+			doReset = true;                          
 		notify();
 	}
     
-    /** Updates the ContrastAdjuster. 
-    public static void update() {
-		if (instance!=null) {
-			ContrastAdjuster ca = ((ContrastAdjuster)instance);
-			if (!ca.updatingRGBStack) {
-				ca.previousImageID = 0;
-				ca.setup();
-			}
-		}
-    }*/
+    // Updates the ContrastAdjuster. 
+    public void update() {
+			//if (!updatingRGBStack) {
+                                //super.windowActivated(e);
+                                hold = true;
+				previousImageID = 0;
+				setup();
+                                WindowManager.setWindow(ui);
+                                hold = false;
+			//}		
+    }
     
 } // ContrastAdjuster class
 

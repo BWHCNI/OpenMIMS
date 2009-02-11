@@ -281,12 +281,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     public void windowActivated(WindowEvent e) {
         ui.setActiveMimsPlus(this);
-        MimsRoiControl tempcontrol = ui.getRoiControl();
-        if(tempcontrol != null) {
-            ca = tempcontrol.getContrastAdjuster();
-        }
-        if (ca != null)
-           ca.setup();
+        ui.getCBControl().updateHistogram();        
     }
     @Override
     public void windowDeiconified(WindowEvent e) {}
@@ -536,8 +531,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             return;
         }
         super.setSlice(index);
-        if (ca != null)
-            ca.setup(); 
         if(bStateChanging) {
             return;
         }
