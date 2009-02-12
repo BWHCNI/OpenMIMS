@@ -274,14 +274,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             ui.updateStatus("mimsPlus listener window closed");
         }
         stateChanged(0,MimsPlusEvent.ATTR_IMAGE_CLOSED);
+        ui.getCBControl().removeWindowfromList(this);
     }
     public void windowStateChanged(WindowEvent e) {}
     @Override
     public void windowDeactivated(WindowEvent e) {}
     @Override
     public void windowActivated(WindowEvent e) {
-        ui.setActiveMimsPlus(this);
-        ui.getCBControl().updateHistogram();        
+        ui.setActiveMimsPlus(this);         
     }
     @Override
     public void windowDeiconified(WindowEvent e) {}
@@ -317,6 +317,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(ui.getDebug()) {
             ui.updateStatus("mimsPlus::windowOpened listener installed");
         }
+        ui.getCBControl().addWindowtoList(this);        
     }
     @Override
     public void mouseExited(MouseEvent e){ ui.updateStatus(" "); }
@@ -565,5 +566,4 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     private com.nrims.data.Opener srcImage ;
     private com.nrims.UI ui = null;
     private EventListenerList fStateListeners = null ;
-    ContrastAdjuster ca;
 }

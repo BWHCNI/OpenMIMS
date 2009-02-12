@@ -259,7 +259,6 @@ public class MimsTomography extends javax.swing.JPanel {
     public void resetImageNamesList() {
         
         rp = ui.getOpenRatioImages();
-        System.out.println("rp length: "+rp.length); 
                         
         java.util.ArrayList<String> strings = new java.util.ArrayList<String>();
         String[] tempstrings = image.getMassNames();

@@ -49,6 +49,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	GridBagLayout gridbag;
 	GridBagConstraints c;
 	int y = 0;
+        int x = 0;
 	boolean windowLevel, balance;
 	Font monoFont = new Font("Monospaced", Font.PLAIN, 12);
 	//Font sanFont = new Font("SansSerif", Font.PLAIN, 12);
@@ -57,6 +58,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	boolean updatingRGBStack;
         UI ui;
         boolean hold = false;
+        ImagePlus imp;
 
 	//public ContrastAdjuster(UI ui) {          
         public ContrastAdjuster() {          
@@ -65,19 +67,21 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		gridbag = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(gridbag);
-		
+
 		// plot
 		c.gridx = 0;
-		y = 0;
-		c.gridy = y++;
-		c.fill = GridBagConstraints.BOTH;
-		c.anchor = GridBagConstraints.CENTER;
-		c.insets = new Insets(10, 10, 0, 10);
+		c.gridy = 1; 
+                c.gridheight = 10;
+		c.fill = GridBagConstraints.BOTH;		
+                c.anchor = GridBagConstraints.PAGE_START;
+		c.insets = new Insets(2, 10, 10, 30);
 		gridbag.setConstraints(plot, c);
 		add(plot);
 		plot.addKeyListener(ij);		
 		// min and max labels
-		
+                c.anchor = GridBagConstraints.CENTER;
+		c.gridheight = 1;
+                c.gridx = 1;
 		if (!windowLevel) {
 			panel = new Panel();
 			c.gridy = y++;
@@ -110,6 +114,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		// max slider
 		if (!windowLevel) {
 			maxSlider = new JScrollBar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+                        c.gridx = 1;
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(maxSlider, c);
@@ -123,8 +128,9 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		
 		// brightness slider
 		brightnessSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+                c.gridx = 1;
 		c.gridy = y++;
-		c.insets = new Insets(windowLevel?12:2, 10, 0, 10);
+		c.insets = new Insets(2, 10, 0, 10);
 		gridbag.setConstraints(brightnessSlider, c);
 		add(brightnessSlider);
 		brightnessSlider.addAdjustmentListener(this);
@@ -139,7 +145,8 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		// contrast slider
 		if (!balance) {
 			contrastSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
-			c.gridy = y++;
+                        c.gridx = 1;
+			c.gridy = y++;                        
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(contrastSlider, c);
 			add(contrastSlider);
@@ -155,8 +162,9 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 
 		// color channel popup menu
 		if (balance) {
+                        c.gridx = 1;
 			c.gridy = y++;
-			c.insets = new Insets(5, 10, 0, 10);
+			c.insets = new Insets(2, 10, 0, 10);
 			choice = new Choice();
 			addBalanceChoices();
 			gridbag.setConstraints(choice, c);
@@ -185,8 +193,9 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		applyB.addActionListener(this);
 		applyB.addKeyListener(ij);
 		panel.add(applyB);
+                c.gridx = 1;
 		c.gridy = y++;
-		c.insets = new Insets(8, 5, 10, 5);
+		c.insets = new Insets(2, 10, 0, 10);
 		gridbag.setConstraints(panel, c);
 		add(panel);
 		
@@ -202,7 +211,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	}
 		
 	void addBalanceChoices() {
-		ImagePlus imp = WindowManager.getCurrentImage();
+		//ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null && imp.isComposite()) {
 			for (int i=0; i<altChannelLabels.length; i++)
 				choice.addItem(altChannelLabels[i]);
@@ -232,7 +241,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	}
 
 	void setup() {
-		ImagePlus imp = WindowManager.getCurrentImage();
+		//ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			setup(imp);
 			updatePlot();
@@ -506,6 +515,25 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	}
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
+ 		if (RGBImage)
+			ip.reset();
+		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor)) {
+			imp.resetDisplayRange();
+			defaultMin = imp.getDisplayRangeMin();
+			defaultMax = imp.getDisplayRangeMax();
+			plot.defaultMin = defaultMin;
+			plot.defaultMax = defaultMax;
+		}
+		min = defaultMin;
+		max = defaultMax;
+		setMinAndMax(imp, min, max);
+		updateScrollBars(null, false);
+		plotHistogram(imp);
+		autoThreshold = 0;
+	}
+        
+        void reset() {
+                ImageProcessor ip = imp.getProcessor();
  		if (RGBImage)
 			ip.reset();
 		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor)) {
@@ -840,7 +868,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	}
 
 	void doUpdate() {
-		ImagePlus imp;
+		//ImagePlus imp;
 		ImageProcessor ip;
 		int action;
 		int minvalue = minSliderValue;
@@ -858,7 +886,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		else return;
 		minSliderValue = maxSliderValue = brightnessValue = contrastValue = -1;
 		doReset = doAutoAdjust = doSet = doApplyLut = false;
-		imp = WindowManager.getCurrentImage();
+		//imp = WindowManager.getCurrentImage();
 		if (imp==null) {
 			IJ.beep();
 			IJ.showStatus("No image");
@@ -894,7 +922,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	public synchronized  void itemStateChanged(ItemEvent e) {
 		int index = choice.getSelectedIndex();
 		channels = channelConstants[index];
-		ImagePlus imp = WindowManager.getCurrentImage();
+		//ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null && imp.isComposite()) {
 			if (index+1<=imp.getNChannels()) 
 				imp.setPosition(index+1, imp.getSlice(), imp.getFrame());
@@ -907,16 +935,29 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		notify();
 	}
     
-    // Updates the ContrastAdjuster. 
+    // Updates the ContrastAdjuster with current window. 
     public void update() {
-			//if (!updatingRGBStack) {
-                                //super.windowActivated(e);
+                                this.imp = WindowManager.getCurrentImage();
                                 hold = true;
 				previousImageID = 0;
 				setup();
-                                WindowManager.setWindow(ui);
-                                hold = false;
-			//}		
+                                //WindowManager.setWindow(ui);
+                                hold = false;		
+    }
+    
+    // Updates the ContrastAdjuster with current window. 
+    public void update(ImagePlus imp) {         
+                                hold = true;				
+                                if (imp!=null) {
+                                   this.imp = imp; 
+                                   previousImageID = 0;
+                                   setup(imp);
+                                   updatePlot();
+                                   updateLabels(imp);
+                                   imp.updateAndDraw();
+                                   //WindowManager.setWindow(ui);
+                                }                                
+                                hold = false;		
     }
     
 } // ContrastAdjuster class
@@ -924,7 +965,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 
 class ContrastPlot extends Canvas implements MouseListener {
 	
-	static final int WIDTH = 128, HEIGHT=64;
+	static final int WIDTH = 256, HEIGHT=185;
 	double defaultMin = 0;
 	double defaultMax = 255;
 	double min = 0;
