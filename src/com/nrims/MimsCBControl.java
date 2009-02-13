@@ -13,12 +13,56 @@ import java.util.Hashtable;
 public class MimsCBControl extends javax.swing.JPanel {
    
    Hashtable windows = new Hashtable();
+   UI ui;
 
-    public MimsCBControl() {
-        initComponents();               
+    public MimsCBControl(UI ui) {
+       this.ui = ui;
+       initComponents();               
     }
-
-    @SuppressWarnings("unchecked")
+    
+   // Call this method whenever you want to update the histogram.
+   // Histogram updates to reflect title selected in combobox.
+   public void updateHistogram(){      
+      
+      // Initialize imp variable.
+      ImagePlus imp = null;   
+      
+      // Get the title of the window currently selected in the combobox.
+      // Then get the window associated with that title. 
+      String title = (String)jComboBox1.getSelectedItem();                  
+      if (title != null) 
+         imp = (ImagePlus)windows.get(title);              
+      
+      // Update the histogram for the image in that window.
+      contrastAdjuster1.update(imp);
+      
+   }
+   
+   // Adds the window's title to the combobox list.
+   public void addWindowtoList(ImagePlus imp){
+      String title = imp.getTitle();
+      if (!windows.containsKey(title)) {
+         jComboBox1.addItem(title);
+         windows.put(title, imp);
+      }
+      if (jComboBox1.getItemCount() == 1){
+         jComboBox1.setSelectedItem(title);
+      }
+   }   
+   
+   // Removes the window's title from combobox list.
+   public void removeWindowfromList(ImagePlus imp){
+      String title = imp.getTitle();
+      if (windows.containsKey(title)) {
+         jComboBox1.removeItem(title);
+         windows.remove(title);
+      }
+   }
+   
+   // Is auto-contrast radiobutton selected.
+   public boolean autoContrastRadioButtonIsSelected(){      
+      return jRadioButton1.isSelected();
+   }
    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
    private void initComponents() {
 
@@ -39,6 +83,11 @@ public class MimsCBControl extends javax.swing.JPanel {
       jLabel2.setText("Window :");
 
       jRadioButton1.setText("Auto adjust");
+      jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jRadioButton1ActionPerformed(evt);
+         }
+      });
 
       javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
       this.setLayout(layout);
@@ -84,6 +133,11 @@ private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
    updateHistogram();           
 }//GEN-LAST:event_jComboBox1ActionPerformed
 
+private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
+   ui.autocontrastAllImages();
+   updateHistogram();
+}//GEN-LAST:event_jRadioButton1ActionPerformed
+
    // Variables declaration - do not modify//GEN-BEGIN:variables
    private com.nrims.ContrastAdjuster contrastAdjuster1;
    private javax.swing.JComboBox jComboBox1;
@@ -91,49 +145,4 @@ private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
    private javax.swing.JLabel jLabel2;
    private javax.swing.JRadioButton jRadioButton1;
    // End of variables declaration//GEN-END:variables
-   
-   // Call this method whenever you want to update the histogram.
-   // Histogram updates to reflect title selected in combobox.
-   public void updateHistogram(){      
-      
-      // Initialize imp variable.
-      ImagePlus imp = null;   
-      
-      // Get the title of the window currently selected in the combobox.
-      // Then get the window associated with that title. 
-      String title = (String)jComboBox1.getSelectedItem();                  
-      if (title != null) 
-         imp = (ImagePlus)windows.get(title);              
-      
-      // Update the histogram for the image in that window.
-      contrastAdjuster1.update(imp);
-      
-      // Autoadjust, if selected.
-      if (jRadioButton1.isSelected()) {
-         contrastAdjuster1.doReset = true; // no need to reset...
-         contrastAdjuster1.doUpdate(); 
-      }
-      
-   }
-   
-   // Adds window title to list in combobox
-   public void addWindowtoList(ImagePlus imp){
-      String title = imp.getTitle();
-      if (!windows.containsKey(title)) {
-         jComboBox1.addItem(title);
-         windows.put(title, imp);
-      }
-      if (jComboBox1.getItemCount() == 1){
-         jComboBox1.setSelectedItem(title);
-      }
-   }   
-   
-   // Removes window title from list in combobox
-   public void removeWindowfromList(ImagePlus imp){
-      String title = imp.getTitle();
-      if (windows.containsKey(title)) {
-         jComboBox1.removeItem(title);
-         windows.remove(title);
-      }
-   }
 }

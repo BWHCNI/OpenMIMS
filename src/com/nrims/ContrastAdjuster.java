@@ -59,8 +59,15 @@ public class ContrastAdjuster extends JPanel implements Runnable,
         UI ui;
         boolean hold = false;
         ImagePlus imp;
-
-	//public ContrastAdjuster(UI ui) {          
+        boolean updatehist = true;
+        
+        // If you do not want JPanel and Histogram,
+        // but do want contrasting functionality.
+        public ContrastAdjuster(ImagePlus imp){
+           this.imp = imp;
+           this.updatehist = false;           
+        }
+         
         public ContrastAdjuster() {          
 	   //this.ui = ui;	
            ij = IJ.getInstance();
@@ -527,8 +534,10 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		min = defaultMin;
 		max = defaultMax;
 		setMinAndMax(imp, min, max);
-		updateScrollBars(null, false);
-		plotHistogram(imp);
+                if (updatehist) {
+		   updateScrollBars(null, false);
+		   plotHistogram(imp);
+                }
 		autoThreshold = 0;
 	}
         
@@ -867,8 +876,12 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		}
 	}
 
+        // Call doUpdate() if you want to autocontrast the 
+        // image and update the histogram. Call doUpdate(ImagePlus imp)
+        // if you only want to autocontrast the image 
+        // with no changes to the displayed histogram (it may be
+        // reflecting another image).
 	void doUpdate() {
-		//ImagePlus imp;
 		ImageProcessor ip;
 		int action;
 		int minvalue = minSliderValue;
@@ -886,7 +899,6 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		else return;
 		minSliderValue = maxSliderValue = brightnessValue = contrastValue = -1;
 		doReset = doAutoAdjust = doSet = doApplyLut = false;
-		//imp = WindowManager.getCurrentImage();
 		if (imp==null) {
 			IJ.beep();
 			IJ.showStatus("No image");
@@ -895,7 +907,6 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		ip = imp.getProcessor();
 		if (RGBImage && !imp.lock())
 			{imp=null; return;}
-		//IJ.write("setup: "+(imp==null?"null":imp.getTitle()));
 		switch (action) {
 			case RESET:
 				reset(imp, ip);
@@ -911,6 +922,55 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		}
 		updatePlot();
 		updateLabels(imp);
+		if ((IJ.shiftKeyDown()||(balance&&channels==7)) && imp.isComposite()) {
+			((CompositeImage)imp).updateAllChannelsAndDraw();
+		} else
+			imp.updateChannelAndDraw();
+		if (RGBImage)
+			imp.unlock();
+	}
+        
+        // Call this method to autoaudjust an image without
+        // any updates to a histogram.
+        void doUpdate(ImagePlus imp) {
+		ImageProcessor ip;
+		int action;
+		int minvalue = minSliderValue;
+		int maxvalue = maxSliderValue;
+		int bvalue = brightnessValue;
+		int cvalue = contrastValue;
+		if (doReset) action = RESET;
+		else if (doAutoAdjust) action = AUTO;
+		else if (doSet) action = SET;
+		else if (doApplyLut) action = APPLY;
+		else if (minSliderValue>=0) action = MIN;
+		else if (maxSliderValue>=0) action = MAX;
+		else if (brightnessValue>=0) action = BRIGHTNESS;
+		else if (contrastValue>=0) action = CONTRAST;
+		else return;
+		minSliderValue = maxSliderValue = brightnessValue = contrastValue = -1;
+		doReset = doAutoAdjust = doSet = doApplyLut = false;
+		if (imp==null) {
+			IJ.beep();
+			IJ.showStatus("No image");
+			return;
+		}
+		ip = imp.getProcessor();
+		if (RGBImage && !imp.lock())
+			{imp=null; return;}
+		switch (action) {
+			case RESET:
+				reset(imp, ip);
+				if (Recorder.record) Recorder.record("resetMinAndMax");
+				break;
+			case AUTO: autoAdjust(imp, ip); break;
+			case SET: if (windowLevel) setWindowLevel(imp, ip); else setMinAndMax(imp, ip); break;
+			case APPLY: apply(imp, ip); break;
+			case MIN: adjustMin(imp, ip, minvalue); break;
+			case MAX: adjustMax(imp, ip, maxvalue); break;
+			case BRIGHTNESS: adjustBrightness(imp, ip, bvalue); break;
+			case CONTRAST: adjustContrast(imp, ip, cvalue); break;
+		}
 		if ((IJ.shiftKeyDown()||(balance&&channels==7)) && imp.isComposite()) {
 			((CompositeImage)imp).updateAllChannelsAndDraw();
 		} else

@@ -408,7 +408,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 mimsTomography = new MimsTomography(this, image);
                 mimsAction = new MimsAction(this, image);
                 segmentation = new SegmentationForm(this);
-                cbControl = new MimsCBControl();
+                cbControl = new MimsCBControl(this);
 
                 //mimsLog.Log("\n\nNew image: " + image.getName() + "\n" + getImageHeader(image));
 
@@ -987,10 +987,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
                 //deselect roi when changing?
                 massImages[i].killRoi();
-                if (autoContrastMass) {
-                    //autocontrast(massImages[i]);
-                }
-
             }
             
             for (int i = 0; i < maxMasses; i++) {
@@ -1039,8 +1035,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         rp[i].getProcessor().setMinAndMax(fixedProps.getMinRatio(), fixedProps.getMaxRatio());
                     }
                 }
-            }
+            }                            
+                
+            if (cbControl.autoContrastRadioButtonIsSelected())
+               autocontrastAllImages();
             cbControl.updateHistogram();
+            
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_IMAGE_CLOSED) {
             /* If an image was closed by a window event,
              * dispose the corresponding reference
@@ -1353,18 +1353,33 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.medianFilterRatios = set;
     }
     
-    public void autocontrastAllMasses() {
+    public void autocontrastAllImages() {
         for (int i = 0; i < maxMasses; i++) {
             if (massImages[i] != null) {
                 autocontrast(massImages[i]);
-                massImages[i].updateAndDraw();
             }
         }
-
+        
+        // All ratio images
+        MimsPlus rp[] = getOpenRatioImages();
+        for (int i = 0; i < rp.length; i++) {
+            autocontrast(rp[i]);// replace with Collins autocontrast code
+        }
+        
+        // All hsi images
+        MimsPlus hsi[] = this.getOpenHSIImages();
+        for (int i = 0; i < hsi.length; i++) {
+            autocontrast(hsi[i]);
+        }
     }
-
     
     public void autocontrast(MimsPlus img) {
+       
+       ContrastAdjuster ca = new ContrastAdjuster(img);
+       ca.doReset = true;  // no need to reset...
+       ca.doUpdate(img);       
+       
+       /*
         //old
         //ij.process.ImageStatistics imgStats = img.getStatistics();
         //img.getProcessor().setMinAndMax(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)), imgStats.mean + (2 * imgStats.stdDev));
@@ -1411,6 +1426,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
             img.getProcessor().setMinAndMax(min, max);
         }
+        * */
     }
 
     public void restoreMims() {
