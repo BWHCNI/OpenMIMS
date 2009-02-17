@@ -317,7 +317,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(ui.getDebug()) {
             ui.updateStatus("mimsPlus::windowOpened listener installed");
         }
-        ui.getCBControl().addWindowtoList(this);        
+        
+        if (nType != HSI_IMAGE)
+           ui.getCBControl().addWindowtoList(this);        
     }
     @Override
     public void mouseExited(MouseEvent e){ ui.updateStatus(" "); }
@@ -547,6 +549,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public void setHSIProcessor( HSIProcessor processor ) { this.hsiProcessor = processor ; }
     public HSIProcessor getHSIProcessor() { return hsiProcessor ; }
     
+    public void setAutoContrastAdjust( boolean auto ) { this.autoAdjustContrast = auto ; }
+    public boolean getAutoContrastAdjust() { return autoAdjustContrast ; }
+    
     public boolean isStack() { return bIsStack ; }
     public void setIsStack(boolean isS) { bIsStack = isS; }
     public UI getUI() { return ui ; }
@@ -554,6 +559,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     private boolean allowClose =true;
     private boolean bIgnoreClose = false ;
     boolean bMoving = false;
+    boolean autoAdjustContrast = false;
     static boolean bStateChanging = false ;
     private boolean bWindowListenerInstalled = false ;
     private int nMass = 0 ;

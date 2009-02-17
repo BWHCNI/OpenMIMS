@@ -18,6 +18,8 @@ import ij.gui.ImageWindow;
 import ij.gui.ImageCanvas;
 import ij.measure.Calibration;
 
+import ij.process.ImageProcessor;
+import ij.process.ImageStatistics;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Point;
@@ -828,7 +830,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             mp.addListener(this);
             mp.show();
             if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {
-                this.autocontrast(mp);
+                this.autocontrastMassImage(mp);
             }
             mp.updateAndDraw();
 
@@ -960,85 +962,37 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public synchronized void mimsStateChanged(MimsPlusEvent evt) {
 
         // do not call updateStatus() here - causes a race condition..
-
-        if (currentlyOpeningImages || bUpdating) {
+        if (currentlyOpeningImages || bUpdating)
             return;
-        }
         bUpdating = true; // Stop recursion
 
         /* sychronize Stack displays */
         if (bSyncStack && evt.getAttribute() == MimsPlusEvent.ATTR_UPDATE_SLICE) {
-            MimsPlus mp = (MimsPlus) evt.getSource();
+            //MimsPlus mp = (MimsPlus) evt.getSource();
+            MimsPlus mp[] = this.getOpenMassImages();
             MimsPlus rp[] = this.getOpenRatioImages();
             MimsPlus hsi[] = this.getOpenHSIImages();
 
-            for (int i = 0; i < rp.length; i++) {
-                rp[i].updateAndRepaintWindow();
-            }
-            for (int i = 0; i < hsi.length; i++) {
-                hsi[i].updateAndRepaintWindow();
-            }
-            mp.updateAndRepaintWindow();
-
+            // Set mass images.
             int nSlice = evt.getSlice();
-            for (int i = 0; i < image.nMasses(); i++) {
-                if ((massImages[i] != mp) && (massImages[i] != null) && bOpenMass[i]) {
-                    massImages[i].setSlice(nSlice);                    
-                }
-                //deselect roi when changing?
-                massImages[i].killRoi();
+            for (int i = 0; i < mp.length; i++) {
+               massImages[i].setSlice(nSlice);                    
+               massImages[i].killRoi();
+            }                                                    
+                            
+            // Update HSI image slice.
+            for (int i = 0; i < hsi.length; i++) {                   
+               computeHSI(hsiImages[i].getHSIProps());
+               hsiImages[i].killRoi();
             }
             
-            for (int i = 0; i < maxMasses; i++) {
-                if ((hsiImages[i] != mp) && (hsiImages[i] != null)) {
-                    if (hsiImages[i].isStack()) {
-                        hsiImages[i].setSlice(evt.getSlice());
-                    } else {
-                        computeHSI(hsiImages[i].getHSIProps());
-                        hsiImages[i].killRoi();
-                    }
-                }
-                if ((ratioImages[i] != mp) && (ratioImages[i] != null)) {
-
-                    HSIProps fixedProps = ratioImages[i].getHSIProps();
-                    double minThresh = 0.0;
-                    double maxThresh = 0.0;
-
-                    fixRatioContrast = this.hsiControl.ratioIsFixed();
-
-                    ij.process.ImageStatistics imgStats = null;
-
-                    if (ratioImages[i].isStack()) {
-                        ratioImages[i].setSlice(evt.getSlice());
-                    } else //System.out.println("fixRatioContrast: "+fixRatioContrast);
-                    if (!fixRatioContrast && i == hsiControl.whichRatio()) {
-
-                        imgStats = ratioImages[i].getStatistics();
-                        HSIProps props = ratioImages[i].getHSIProps();
-
-                        props.setMinRatio(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)));
-                        props.setMaxRatio(imgStats.mean + (imgStats.stdDev));
-                        ratioImages[i].killRoi();
-                        computeRatio(props);
-                        rp[i].getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
-
-                        this.hsiControl.resetRatioSpinners(props);
-
-                    }
-                    if (fixRatioContrast || i != hsiControl.whichRatio()) {
-                        //fixedProps.setMinRatio(this.hsiControl.getRatioMinVal());
-                        //fixedProps.setMaxRatio(this.hsiControl.getRatioMaxVal());
-                        fixedProps.setMinRatio(ratioImages[i].getProcessor().getMin());
-                        fixedProps.setMaxRatio(ratioImages[i].getProcessor().getMax());
-                        
-                        computeRatio(fixedProps);
-                        rp[i].getProcessor().setMinAndMax(fixedProps.getMinRatio(), fixedProps.getMaxRatio());
-                    }
-                }
+            // Update ratio images.
+            for (int i = 0; i < rp.length; i++) {                                                                     
+               computeRatio(ratioImages[i].getHSIProps());
+               ratioImages[i].killRoi();               
             }                            
                 
-            if (cbControl.autoContrastRadioButtonIsSelected())
-               autocontrastAllImages();
+            autocontrastAllImages();
             cbControl.updateHistogram();
             
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_IMAGE_CLOSED) {
@@ -1353,81 +1307,43 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.medianFilterRatios = set;
     }
     
-    public void autocontrastAllImages() {
-        for (int i = 0; i < maxMasses; i++) {
-            if (massImages[i] != null) {
-                autocontrast(massImages[i]);
-            }
+    public void autocontrastAllImages() {       
+       // All mass images      
+       MimsPlus mp[] = getOpenMassImages();
+        for (int i = 0; i < mp.length; i++) {
+            if (mp[i].getAutoContrastAdjust())
+               autocontrastMassImage(mp[i]);
         }
         
         // All ratio images
         MimsPlus rp[] = getOpenRatioImages();
         for (int i = 0; i < rp.length; i++) {
-            autocontrast(rp[i]);// replace with Collins autocontrast code
-        }
-        
-        // All hsi images
-        MimsPlus hsi[] = this.getOpenHSIImages();
-        for (int i = 0; i < hsi.length; i++) {
-            autocontrast(hsi[i]);
-        }
+           if (rp[i].getAutoContrastAdjust())
+              autocontrastRatioImage(rp[i]);
+        }                
     }
     
-    public void autocontrast(MimsPlus img) {
-       
+    // Calls the default ImageJ autocontrast (reset).
+    public void autocontrastMassImage(MimsPlus img) {       
        ContrastAdjuster ca = new ContrastAdjuster(img);
-       ca.doReset = true;  // no need to reset...
-       ca.doUpdate(img);       
-       
-       /*
-        //old
-        //ij.process.ImageStatistics imgStats = img.getStatistics();
-        //img.getProcessor().setMinAndMax(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)), imgStats.mean + (2 * imgStats.stdDev));
-        //
-        //copied from IJ->Image->Adjust B/C code
-        //
-        Calibration cal = img.getCalibration();
-        img.setCalibration(null);
-        ij.process.ImageStatistics stats = img.getStatistics(); // get uncalibrated stats
-        img.setCalibration(cal);
-        int limit = stats.pixelCount / 10;
-        int[] histogram = stats.histogram;
-
-        int autoThreshold = (int) img.getProcessor().getMaxThreshold();
-        int threshold = stats.pixelCount / autoThreshold;
-        int j = -1;
-        boolean found = false;
-        int count;
-        do {
-            j++;
-            count = histogram[j];
-            if (count > limit) {
-                count = 0;
-            }
-            found = count > threshold;
-        } while (!found && j < 255);
-        int hmin = j;
-        j = 256;
-        do {
-            j--;
-            count = histogram[j];
-            if (count > limit) {
-                count = 0;
-            }
-            found = count > threshold;
-        } while (!found && j > 0);
-        int hmax = j;
-        if (hmax >= hmin) {
-            double min = stats.histMin + hmin * stats.binSize;
-            double max = stats.histMin + hmax * stats.binSize;
-            if (min == max) {
-                min = stats.min;
-                max = stats.max;
-            }
-            img.getProcessor().setMinAndMax(min, max);
-        }
-        * */
+       ca.doReset = true;
+       ca.doUpdate(img);             
     }
+    
+    // Custom contrasting code for ratio images.
+   public void autocontrastRatioImage(MimsPlus img) {
+      
+      // Get the current image statistics.
+      ImageStatistics imgStats = img.getStatistics();
+      
+      // Get the current image properties and override some fields.
+      HSIProps props = img.getHSIProps();
+      props.setMinRatio(java.lang.Math.max(0.0, imgStats.mean - (2 * imgStats.stdDev)));
+      props.setMaxRatio(imgStats.mean + (imgStats.stdDev));
+      
+      // Generate new image.
+      computeRatio(props);            
+   }
 
     public void restoreMims() {
         for (int i = 0; i < image.nMasses(); i++) {
