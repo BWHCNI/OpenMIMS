@@ -21,7 +21,8 @@ public class Measure {
         this.ui = ui;
         reset();
         int n = ui.getMimsImage().nMasses();
-        System.out.println("nMasses() -> " + n);
+        //System.out.println("nMasses() -> " + n);
+        setsize = true;
         for (int i = 0; i < n; i++) {
             bMass[i] = true;
         }
@@ -44,16 +45,9 @@ public class Measure {
     }
 
     public void reset() {
-        //ij.WindowManager wm = ij.WindowManager.get
-        java.lang.String title = "";
-        java.awt.Frame tempframe = ij.WindowManager.getFrame(fileName);
-        
-        if(tempframe != null) {
-            title = tempframe.getTitle();
-            System.out.println("title found: "+title); 
-        }
         rTable.reset();
         bHasLabels = false;
+        setsize = true;
     }
 
     public ij.measure.ResultsTable getTable() {
@@ -305,7 +299,7 @@ public class Measure {
                    rTable.setHeading(ncol++, hd);
                 } else {
                    hd += "_";
-                   hd += images[i].getShortTitle();
+                   hd += images[i].getRoundedTitle();
                    rTable.setHeading(ncol++, hd);                   
                 }
              }
@@ -360,6 +354,9 @@ public class Measure {
        
        // Done! Show table.
        rTable.show(fileName);
+       if (setsize) {
+            resizeWindow(new java.awt.Dimension(500, 450));
+        }
     }
 
     public void generateStackTable() {
@@ -397,7 +394,7 @@ public class Measure {
                       if (bMeasurePerImage[m] == false && i > 0) { //do nothing.
                       } else {
                          String hd = measureNames[m] + "_";
-                         hd += images[i].getShortTitle();
+                         hd += images[i].getRoundedTitle();
                          if (nrois > 1) {
                             hd += "_r" + r;
                          }
@@ -438,6 +435,9 @@ public class Measure {
 
        // Done! Show table.
        rTable.show(fileName);
+       if (setsize) {
+            resizeWindow(new java.awt.Dimension(500, 450));
+        }
     }
     
     ///God damn it
@@ -542,9 +542,24 @@ public class Measure {
         }
 
         rTable.show(fileName);
+        if (setsize) {
+            resizeWindow(new java.awt.Dimension(500, 450));
+        }
 
     }
+    void setResize(boolean set) {
+        setsize = set;
+    }
+    
+    void resizeWindow(java.awt.Dimension dim) {
+        //java.lang.String title = "";
+        java.awt.Frame tempframe = ij.WindowManager.getFrame(fileName);
 
+        if (tempframe != null) {
+            tempframe.setSize(dim);
+        }
+    }
+    
     public String getName() {
         return fileName;
     }
@@ -555,6 +570,7 @@ public class Measure {
     private boolean bStack = true;
     private boolean bHasLabels = false;
     private boolean bMeasureRatios = true;
+    private boolean setsize;
     //must fix should not be 8... was 6
     private boolean bMass[] = new boolean[8];
     private boolean bMeasure[] = new boolean[ij.measure.ResultsTable.SLICE + 1];
