@@ -412,8 +412,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 segmentation = new SegmentationForm(this);
                 cbControl = new MimsCBControl(this);
 
-                //mimsLog.Log("\n\nNew image: " + image.getName() + "\n" + getImageHeader(image));
-
                 jTabbedPane1.setComponentAt(0, mimsData);
                 jTabbedPane1.setTitleAt(0, "MIMS Data");
                 jTabbedPane1.add("Process", hsiControl);
@@ -424,29 +422,24 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 jTabbedPane1.add("Segmentation", segmentation);
                 jTabbedPane1.add("MIMS Log", mimsLog);
 
-
             } else {
 
-                ///Added to solve restore MIMS problem (PG)   START
                 mimsData = new com.nrims.MimsData(this, image);
-                //roiControl = new MimsRoiControl(this);
                 hsiControl = new HSIView(this);
-                //Commented out so mimsLog is persistent...
-                //mimsLog = new MimsLog(this, image);
+                cbControl = new MimsCBControl(this);
                 mimsStackEditing = new MimsStackEditing(this, image);
                 mimsTomography = new MimsTomography(this, image);
                 mimsAction = new MimsAction(this, image);
                 segmentation = new SegmentationForm(this);
-                //    jTabbedPane1.removeAll();
                 jTabbedPane1.setComponentAt(0, mimsData);
                 jTabbedPane1.setTitleAt(0, "MIMS Data");
                 jTabbedPane1.setComponentAt(1, hsiControl);
-                jTabbedPane1.setComponentAt(2, roiControl);
-                jTabbedPane1.setComponentAt(3, mimsStackEditing);
-                jTabbedPane1.setComponentAt(4, mimsTomography);
-                jTabbedPane1.setComponentAt(5, segmentation);
-                jTabbedPane1.setComponentAt(6, cbControl);
-
+                jTabbedPane1.setComponentAt(2, cbControl);
+                jTabbedPane1.setComponentAt(3, roiControl);
+                jTabbedPane1.setComponentAt(4, mimsStackEditing);
+                jTabbedPane1.setComponentAt(5, mimsTomography);
+                jTabbedPane1.setComponentAt(6, segmentation);
+                
 
 
                 //   jTabbedPane1.add("Process",hsiControl);
