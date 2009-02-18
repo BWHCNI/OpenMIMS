@@ -139,23 +139,19 @@ public class MimsJFreeChart {
         
         
         XYSeries series = new XYSeries(seriesname);
-        ImageStatistics tempstats = null;
-        
-        
-        
-        //System.out.println("Mass #: " + mass + "ROI: " + roi.getName());
+        ImageStatistics tempstats = null;       
         
         if(mass<numberMasses) {
             for(int i=min; i<=max; i++) {
-                images[mass].setSlice(i);
-                tempstats = ImageStatistics.getStatistics(images[mass].getProcessor(), 0, images[mass].getCalibration());
+                images[mass].setSlice(i);               
+                tempstats = images[mass].getStatistics();
                 series.add(i, getSingleStat(tempstats, statname));
             }
         } else {
             for(int i=min; i<=max; i++) {
                 images[0].setSlice(i);
                 System.out.println("rp.length="+rp.length);
-                tempstats = ImageStatistics.getStatistics(rp[mass-numberMasses].getProcessor(), 0, rp[mass-numberMasses].getCalibration() );
+                tempstats = rp[mass-numberMasses].getStatistics();
                 series.add(i, getSingleStat(tempstats, statname));
             }
         }

@@ -968,7 +968,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         /* sychronize Stack displays */
         if (bSyncStack && evt.getAttribute() == MimsPlusEvent.ATTR_UPDATE_SLICE) {
-            //MimsPlus mp = (MimsPlus) evt.getSource();
             MimsPlus mp[] = this.getOpenMassImages();
             MimsPlus rp[] = this.getOpenRatioImages();
             MimsPlus hsi[] = this.getOpenHSIImages();
@@ -977,19 +976,16 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             int nSlice = evt.getSlice();
             for (int i = 0; i < mp.length; i++) {
                massImages[i].setSlice(nSlice);                    
-               massImages[i].killRoi();
             }                                                    
                             
             // Update HSI image slice.
             for (int i = 0; i < hsi.length; i++) {                   
                computeHSI(hsiImages[i].getHSIProps());
-               hsiImages[i].killRoi();
             }
             
             // Update ratio images.
             for (int i = 0; i < rp.length; i++) {                                                                     
-               computeRatio(ratioImages[i].getHSIProps());
-               ratioImages[i].killRoi();               
+               computeRatio(ratioImages[i].getHSIProps());               
             }                            
                 
             autocontrastAllImages();
@@ -1019,7 +1015,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     bNotFound = false;
                 }
             }
-        } else if (evt.getAttribute() == MimsPlusEvent.ATTR_SET_ROI || evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
+        } else if (evt.getAttribute() == MimsPlusEvent.ATTR_SET_ROI || 
+                   evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
             /* Update all images with a selected ROI 
              * MOUSE_RELEASE catches drawing new ROIs
              */
@@ -1029,25 +1026,21 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 for (i = 0; i < image.nMasses(); i++) {
                     if (massImages[i] != mp && massImages[i] != null && bOpenMass[i]) {
                         massImages[i].setRoi(evt.getRoi());
-//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
                     }
                 }
                 for (i = 0; i < hsiImages.length; i++) {
                     if (hsiImages[i] != mp && hsiImages[i] != null) {
                         hsiImages[i].setRoi(evt.getRoi());
-//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
                     }
                 }
                 for (i = 0; i < ratioImages.length; i++) {
                     if (ratioImages[i] != mp && ratioImages[i] != null) {
                         ratioImages[i].setRoi(evt.getRoi());
-//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
                     }
                 }
                 for (i = 0; i < segImages.length; i++) {
                     if (segImages[i] != mp && segImages[i] != null) {
                         segImages[i].setRoi(evt.getRoi());
-//                        ij.WindowManager.setTempCurrentImage(ratioImages[i]);
                     }
                 }
             }

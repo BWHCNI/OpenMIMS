@@ -231,7 +231,7 @@ public class MimsTomography extends javax.swing.JPanel {
             }
             
             int[] masses = imageJList.getSelectedIndices();
-
+            
             tomographyChart.creatNewFrame(rois, image.getName(), statnames, masses, lowerSlider.getValue(), upperSlider.getValue());
                         
         } else {

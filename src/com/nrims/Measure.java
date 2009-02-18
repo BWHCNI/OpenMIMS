@@ -1,5 +1,6 @@
 package com.nrims;
 
+import ij.IJ;
 import ij.measure.ResultsTable;
 import ij.process.ImageStatistics;
 import ij.gui.Roi;
@@ -304,28 +305,12 @@ public class Measure {
                    rTable.setHeading(ncol++, hd);
                 } else {
                    hd += "_";
-                   //changed to retrive mass name, eg m12.09 instead of m1
-                   //old
-/*                   if (images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
-                      hd += "m" + (images[i].getNumMass() + 1) + "/m" + (images[i].getDenMass() + 1);
-                   } else {
-                      hd += "m" + (images[i].getMimsMassIndex() + 1);
-                   }
- */
                    hd += images[i].getShortTitle();
                    rTable.setHeading(ncol++, hd);                   
                 }
              }
           }
-       }                    
-        
-       // No idea what this is for...
-       int mOptions = 0;
-       for (int m = 0; m < bMeasure.length; m++) {
-          if (bMeasure[m]) {
-             mOptions |= (1 << m);
-          }
-       }         
+       }                                     
        
        // Fill in table data.
        int nrois = rois.length;
@@ -351,11 +336,7 @@ public class Measure {
                 }
                                
                 // Generate Roi statistics and put in table.            
-                ImageStatistics is =
-                        ij.process.ImageStatistics.getStatistics(
-                        images[i].getProcessor(),
-                        mOptions,
-                        images[i].getCalibration());
+                ImageStatistics is = images[i].getStatistics();
                 ncol = addResults(is, i, rois.length > 0 ? rois[r] : null, n, ncol);
              }             
              
@@ -416,14 +397,6 @@ public class Measure {
                       if (bMeasurePerImage[m] == false && i > 0) { //do nothing.
                       } else {
                          String hd = measureNames[m] + "_";
-                         //changed to retrive mass name, eg m12.09 instead of m1
-                        //old
-/*                         if (images[i].getMimsType() == MimsPlus.RATIO_IMAGE) {
-                            hd += "m" + (images[i].getNumMass() + 1) + "/m" + (images[i].getDenMass() + 1);
-                         } else {
-                            hd += "m" + (images[i].getMimsMassIndex() + 1);
-                         }
-*/
                          hd += images[i].getShortTitle();
                          if (nrois > 1) {
                             hd += "_r" + r;
@@ -438,14 +411,6 @@ public class Measure {
                }
             }
         }
-
-       // No idea what this is for...
-       int mOptions = 0;
-       for (int m = 0; m < bMeasure.length; m++) {
-          if (bMeasure[m]) {
-             mOptions |= (1 << m);
-          }
-       }
 
        // Fill in table data.
        for (int n = 0; n < nSlices; n++) {           
@@ -464,12 +429,8 @@ public class Measure {
                    images[i].setRoi(rois[r]);
                 }
                 
-                // Generate Roi statistics and put in table.
-                ImageStatistics is =
-                        ij.process.ImageStatistics.getStatistics(
-                        images[i].getProcessor(),
-                        mOptions,
-                        images[i].getCalibration());
+                // Generate Roi statistics and put in table.                
+                ImageStatistics is = images[i].getStatistics();                        
                 ncol = addResults(is, i, rois.length > 0 ? rois[r] : null, n+1, ncol);
              }
           }
