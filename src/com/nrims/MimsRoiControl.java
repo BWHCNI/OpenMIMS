@@ -115,9 +115,9 @@ public class MimsRoiControl extends javax.swing.JPanel {
          }
       });
 
-      jCheckBox4.setText("Append to table");
-      jCheckBox4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-      jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jCheckBox4.setText("Append to table");
+        jCheckBox4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
       jLabel1.setText("Table Name");
 
@@ -225,16 +225,21 @@ public class MimsRoiControl extends javax.swing.JPanel {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        
+
         // If not appending reset the data in the table
-        if(!jCheckBox4.isSelected()) 
-           measure.reset();
+        if (!jCheckBox4.isSelected()) {
+            measure.reset();
+            measure.setResize(true);
+        } else {
+            measure.setResize(false);
+        }
         
-        if(jCheckBox5.isSelected()) 
-           measure.generateStackTable();
-        else 
-           measure.generateRoiTable();
-        ij.WindowManager.getFrame(measure.getName()).setSize(450, 300);
+        if (jCheckBox5.isSelected()) {
+            measure.generateStackTable();
+        } else {
+            measure.generateRoiTable();
+        //ij.WindowManager.getFrame(measure.getName()).setSize(450, 300);
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
