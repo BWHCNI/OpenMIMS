@@ -1024,7 +1024,8 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 
 
 class ContrastPlot extends Canvas implements MouseListener {
-	
+        
+        //static final int WIDTH = 128, HEIGHT=64; 
 	static final int WIDTH = 256, HEIGHT=185;
 	double defaultMin = 0;
 	double defaultMax = 255;
@@ -1112,8 +1113,10 @@ class ContrastPlot extends Canvas implements MouseListener {
 				osg.setColor(Color.white);
 				osg.fillRect(0, 0, WIDTH, HEIGHT);
 				osg.setColor(color);
-				for (int i = 0; i < WIDTH; i++)
-					osg.drawLine(i, HEIGHT, i, HEIGHT - ((int)(HEIGHT * histogram[i])/hmax));
+				for (int i = 0; i < WIDTH; i++){                                        
+                                        int bin = Math.round(i * (float)128 / (float)WIDTH);
+					osg.drawLine(i, HEIGHT, i, HEIGHT - ((int)(HEIGHT * histogram[bin])/hmax));
+                                }
 				osg.dispose();
 			}
 			if (os!=null) g.drawImage(os, 0, 0, this);
