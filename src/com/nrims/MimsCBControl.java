@@ -7,6 +7,7 @@
 package com.nrims;
 
 import ij.ImagePlus;
+import ij.process.ImageProcessor;
 import java.util.Hashtable;
 
 /* @author zkaufman */
@@ -31,7 +32,12 @@ public class MimsCBControl extends javax.swing.JPanel {
       // Then get the window associated with that title. 
       String title = (String)jComboBox1.getSelectedItem();                  
       if (title != null) 
-         imp = (MimsPlus)windows.get(title);              
+         imp = (MimsPlus)windows.get(title); 
+      
+      // Not sure why but sometimes images have NULL image processors.
+      // Cant update histogram if it does not have one.
+      ImageProcessor ip = imp.getProcessor();
+      if (ip == null) return;
       
       // Update the histogram for the image in that window.
       contrastAdjuster1.update(imp);
@@ -155,10 +161,10 @@ private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
       imp = (MimsPlus)windows.get(title);
 
    // Select autocontrasting radio button...
-   if (imp != null)
+   if (imp != null) {
       jRadioButton1.setSelected(imp.getAutoContrastAdjust());
-           
-   updateHistogram();           
+      updateHistogram();           
+   }
 }//GEN-LAST:event_jComboBox1ActionPerformed
 
 private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
