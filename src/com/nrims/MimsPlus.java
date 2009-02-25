@@ -10,6 +10,7 @@ import java.awt.event.WindowListener ;
 import java.awt.event.MouseListener ;
 import java.awt.event.MouseMotionListener ;
 import java.awt.event.MouseEvent ;
+import java.util.Calendar;
 import javax.swing.event.EventListenerList;
 /**
  * extends ImagePlus with methods to synchronize display of multiple stacks
@@ -490,7 +491,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                   //the displayed statistic was variance not sd... changed.
                   //TODO fix HSI rollover to show underlying ratio stats
                   if(this.getMimsType()==this.HSI_IMAGE) {
-                  msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
+                      msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
                   } else {
                       msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
                   }
@@ -511,7 +512,32 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
     
     @Override
-    public void mouseDragged(MouseEvent e) {}
+    // Display statistics while dragging or creating ROIs.
+    public void mouseDragged(MouseEvent e) {
+       
+       // get mouse poistion
+       int x = (int) e.getPoint().getX();
+       int y = (int) e.getPoint().getY();
+       int mX = getWindow().getCanvas().offScreenX(x);
+       int mY = getWindow().getCanvas().offScreenY(y); 
+       String msg = "" + mX + "," + mY ;
+       
+       // precision
+       int displayDigits = 2;
+       
+       // Get the ROI, (the area in yellow).
+       Roi roi = getRoi();              
+       
+       // Display stats in the message bar.
+       ij.process.ImageStatistics stats = this.getStatistics();
+       if(this.getMimsType()==MimsPlus.HSI_IMAGE) {
+          msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
+       } else {
+          msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
+       }
+       
+       ui.updateStatus(msg);       
+    }
     
     public void addListener( MimsUpdateListener inListener ) {
          fStateListeners.add(MimsUpdateListener.class, inListener );
