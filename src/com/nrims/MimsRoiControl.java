@@ -115,9 +115,9 @@ public class MimsRoiControl extends javax.swing.JPanel {
          }
       });
 
-        jCheckBox4.setText("Append to table");
-        jCheckBox4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
+      jCheckBox4.setText("Append to table");
+      jCheckBox4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+      jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
       jLabel1.setText("Table Name");
 
@@ -170,7 +170,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
                .add(jCheckBox4)
                .add(layout.createSequentialGroup()
                   .add(jButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 138, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                  .add(12, 12, 12)
+                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                   .add(jButton5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 166, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                   .add(org.jdesktop.layout.GroupLayout.LEADING, jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -180,7 +180,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
                   .add(org.jdesktop.layout.GroupLayout.LEADING, jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                .add(jCheckBox5)
                .add(jCheckBox2))
-            .add(215, 215, 215))
+            .add(198, 198, 198))
       );
       layout.setVerticalGroup(
          layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -202,9 +202,9 @@ public class MimsRoiControl extends javax.swing.JPanel {
                .add(jLabel1)
                .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-               .add(jButton5)
-               .add(jButton2))
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+               .add(jButton2)
+               .add(jButton5))
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
             .add(jCheckBox4)
             .addContainerGap(47, Short.MAX_VALUE))

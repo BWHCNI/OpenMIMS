@@ -6,7 +6,6 @@
 
 package com.nrims;
 
-import ij.ImagePlus;
 import ij.process.ImageProcessor;
 import java.util.Hashtable;
 
@@ -108,45 +107,44 @@ public class MimsCBControl extends javax.swing.JPanel {
       layout.setHorizontalGroup(
          layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
          .addGroup(layout.createSequentialGroup()
-            .addGap(193, 193, 193)
-            .addComponent(jLabel1)
-            .addContainerGap(641, Short.MAX_VALUE))
-         .addGroup(layout.createSequentialGroup()
-            .addGap(48, 48, 48)
-            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(12, 12, 12)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                .addGroup(layout.createSequentialGroup()
+                  .addContainerGap()
+                  .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
                   .addGap(12, 12, 12)
-                  .addComponent(jLabel3)
-                  .addGap(225, 225, 225)
-                  .addComponent(jLabel4)
-                  .addGap(563, 563, 563))
-               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                  .addComponent(contrastAdjuster1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                  .addGroup(layout.createSequentialGroup()
-                     .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
-                     .addGap(91, 91, 91)
-                     .addComponent(jRadioButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
-                     .addContainerGap(226, Short.MAX_VALUE)))))
+                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                     .addComponent(contrastAdjuster1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                     .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                           .addGroup(layout.createSequentialGroup()
+                              .addGap(12, 12, 12)
+                              .addComponent(jLabel3))
+                           .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                           .addComponent(jRadioButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                           .addComponent(jLabel4)))))
+               .addGroup(layout.createSequentialGroup()
+                  .addGap(152, 152, 152)
+                  .addComponent(jLabel1)))
+            .addContainerGap(91, Short.MAX_VALUE))
       );
       layout.setVerticalGroup(
          layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
          .addGroup(layout.createSequentialGroup()
-            .addGap(22, 22, 22)
+            .addGap(28, 28, 28)
             .addComponent(jLabel1)
-            .addGap(12, 12, 12)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(contrastAdjuster1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                .addComponent(jLabel3)
                .addComponent(jLabel4))
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                  .addComponent(jLabel2)
-                  .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-               .addComponent(jRadioButton1))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+               .addComponent(jLabel2)
+               .addComponent(jRadioButton1)
+               .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGap(23, 23, 23))
       );
    }// </editor-fold>//GEN-END:initComponents
@@ -179,9 +177,9 @@ private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
    
    // If setting to true, do autocontrasting.
    if (jRadioButton1.isSelected())
-      if (imp.getMimsType() == imp.MASS_IMAGE)
+      if (imp.getMimsType() == MimsPlus.MASS_IMAGE)
          ui.autocontrastMassImage(imp);
-      if (imp.getMimsType() == imp.RATIO_IMAGE)
+      if (imp.getMimsType() == MimsPlus.RATIO_IMAGE)
          ui.autocontrastRatioImage(imp);
    
    updateHistogram();

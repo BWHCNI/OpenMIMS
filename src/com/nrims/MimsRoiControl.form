@@ -50,7 +50,7 @@
                   <Component id="jCheckBox5" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jCheckBox2" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="215" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="198" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
