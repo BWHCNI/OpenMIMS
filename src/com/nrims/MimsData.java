@@ -50,6 +50,8 @@ public class MimsData extends javax.swing.JPanel {
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
+        jLabel22 = new javax.swing.JLabel();
 
         jLabel1.setText("File");
 
@@ -100,6 +102,10 @@ public class MimsData extends javax.swing.JPanel {
 
         jLabel20.setText("jLabel20");
 
+        jLabel21.setText("Pixels");
+
+        jLabel22.setText("jLabel22");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -116,9 +122,11 @@ public class MimsData extends javax.swing.JPanel {
                     .add(jLabel1)
                     .add(jLabel17)
                     .add(jLabel19)
-                    .add(jLabel8))
+                    .add(jLabel8)
+                    .add(jLabel21))
                 .add(30, 30, 30)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel22)
                     .add(jLabel18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 302, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel15)
                     .add(jLabel14)
@@ -183,7 +191,11 @@ public class MimsData extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel8)
                     .add(jLabel16))
-                .addContainerGap(88, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel21)
+                    .add(jLabel22))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -205,6 +217,7 @@ public class MimsData extends javax.swing.JPanel {
             jLabel15.setText("");
             jLabel16.setText("");
             jLabel18.setText("0");
+            jLabel22.setText("0");
             syncjCheckBox.setEnabled(false);        
         }
         else {
@@ -227,7 +240,7 @@ public class MimsData extends javax.swing.JPanel {
             tempstring = image.getSampleName();
             jLabel14.setText(tempstring);
             
-            tempstring = image.getDwellTime() + " ms/xy";
+            tempstring = image.getDwellTime() + " ms/px    " + image.getCountTime() + " s/plane";
             jLabel15.setText(tempstring);
             
             tempstring = Double.toString(image.getDurationD()) + " s";
@@ -246,6 +259,8 @@ public class MimsData extends javax.swing.JPanel {
                 else massNames += "]";
             }
             jLabel18.setText(massNames);
+            jLabel22.setText(image.getHeight() +" x " + image.getWidth());
+            
             syncjCheckBox.setEnabled(image.nImages() > 1);
         }
     }
@@ -265,6 +280,8 @@ public class MimsData extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
