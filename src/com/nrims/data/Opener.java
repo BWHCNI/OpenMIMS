@@ -476,7 +476,7 @@ public class Opener {
 
         this.ui = ui;
         this.verbose = ui.getDebug() ? 1 : 0;
-
+        
         this.file = new File(imageFileName);
         in = new RandomAccessFile(file, "r");
 
@@ -812,16 +812,37 @@ public class Opener {
         if (this.maskIm == null || this.ihdr == null) {
             return new String(" ");
         }
-        double duration = (double) this.maskIm.analysis_duration;
+        double ctime = getCountTimeD();
         double size = (double) (this.ihdr.w * this.ihdr.h);
         if (size == 0) {
             return new String(" ");
         }
-        duration = 1000.0 * duration / size;
-        String dtime = DecimalToStr(duration, 3);
+        double dwelltime = 1000 * ctime/(size);
+        String dtime = DecimalToStr(dwelltime, 3);
         return dtime;
     }
-
+    /**
+     * @return the counttime units are second per plane
+     */
+    public String getCountTime() {
+        String ctime = "";
+        if(this.massImages[0]!=null) {
+            TabMass temptab = massImages[0].getTabMass();
+            ctime = Double.toString(temptab.counting_time);
+        }
+        
+        return ctime;
+    }
+    
+    public double getCountTimeD() {
+       if(this.massImages[0]!=null) {
+            TabMass temptab = massImages[0].getTabMass();
+            return temptab.counting_time;
+        }
+        
+        return 0.0;
+    }
+    
     /**
      * @return the nickname from the SIMS header
      */
