@@ -206,6 +206,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 HSIProps props = new HSIProps() ;
                 props.setNumMass(nRatioNum);
                 props.setDenMass(nRatioDen);
+                
+                // Unlikee an HSIimage, the props of a ratio image 
+                // CAN NOT be changed. Therefore we get the default values
+                // and overwrite the minRatio and maxRatio with the current 
+                // min and max used by ImageJ to render the image.                                 
+                props.setMaxRatio(this.getProcessor().getMax());
+                props.setMinRatio(this.getProcessor().getMin());
+                
                 return props ;
             }
         }
