@@ -38,6 +38,8 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import java.util.ArrayList;
+
 /**
  *
  * The main user interface of the NRIMS ImageJ plugin.
@@ -644,7 +646,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
 
         }
-
+        
         mp.getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
         
         //DANGER DANGER DANGER DANGER DANGER DANGER
@@ -1505,7 +1507,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
 
             // read and perform actions
+            bUpdating = true;
             int trueIndex = 1;
+            ArrayList<Integer> deleteList = new ArrayList<Integer>();
             while ((line = br.readLine()) != null) {
                 if (line.equals("")) {
                     break;
@@ -1514,14 +1518,22 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 for (int k = 0; k < image.nMasses(); k++) {     // set the current slice
                     massImages[k].setSlice(trueIndex);
                 }
+                //apply shifts to all planes
                 int displayIndex = this.mimsAction.displayIndex(trueIndex);
                 this.mimsStackEditing.XShiftSlice(displayIndex, Integer.parseInt(actionRow[1]));
                 this.mimsStackEditing.YShiftSlice(displayIndex, Integer.parseInt(actionRow[2]));
                 if (Integer.parseInt(actionRow[3]) == 1) {
-                    this.mimsStackEditing.removeSlice(displayIndex);
+                    deleteList.add(trueIndex);
                 }
                 trueIndex++;
             }
+            //remove dropped planes "all at once"
+            this.mimsStackEditing.removeSliceList(deleteList);
+            for (int k = 0; k < image.nMasses(); k++) {     // set to first slice
+                    massImages[k].setSlice(1);
+                }
+            bUpdating = false;
+ 
         // TODO we need more refined Exception checking here
         } catch (Exception e) {
             e.printStackTrace();
