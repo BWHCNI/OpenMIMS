@@ -16,6 +16,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
@@ -103,28 +104,41 @@ public class MimsRatioManager extends PlugInJFrame implements ActionListener {
         
       if (e.getActionCommand() == "Add") {
          
-        // Determine the selected radio button in the numerator group.
-        for (Enumeration enu=numeratorGroup.getElements(); enu.hasMoreElements();) {
+         // Determine the selected radio button in the numerator group.
+         for (Enumeration enu=numeratorGroup.getElements(); enu.hasMoreElements();) {
             JRadioButton b = (JRadioButton)enu.nextElement();
-            if (b.getModel() == numeratorGroup.getSelection()) {
-                num = b;
-            }
-        }
+            if (b.getModel() == numeratorGroup.getSelection())
+               num = b;            
+         }
         
-        // Determine the selected radio button in the denominator group.
-        for (Enumeration enu=denomatorGroup.getElements(); enu.hasMoreElements();) {
+         // Determine the selected radio button in the denominator group.
+         for (Enumeration enu=denomatorGroup.getElements(); enu.hasMoreElements();) {
             JRadioButton b = (JRadioButton)enu.nextElement();
-            if (b.getModel() == denomatorGroup.getSelection()) {
-                den = b;
-            }
-        }
+            if (b.getModel() == denomatorGroup.getSelection())
+               den = b;            
+         }
         
-        hsiview.addToRatioList(new Integer(num.getName()), new Integer(den.getName()));
-      }
+         // example names: m12.99, m13.01
+         String numName = num.getName();
+         String denName = den.getName();
+        
+         // Numberator and Denominator can not be the same.
+         if (numName.matches(denName)) 
+            JOptionPane.showMessageDialog(ui, "Numerator can not be the same as Denominator", "Error", JOptionPane.ERROR_MESSAGE);           
+         else {
+            hsiview.addToRatioList(new Integer(num.getName()), new Integer(den.getName())); 
+            closeWindow();
+         }
       
+      } else if (e.getActionCommand() == "Cancel") {
+         closeWindow();
+      }
+   }  
+   
+   public void closeWindow() {
       super.close();
       instance = null;
-      this.setVisible(false);         
+      this.setVisible(false);       
    }
    
    

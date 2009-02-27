@@ -176,11 +176,12 @@ private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
    imp.setAutoContrastAdjust(jRadioButton1.isSelected());
    
    // If setting to true, do autocontrasting.
-   if (jRadioButton1.isSelected())
+   if (jRadioButton1.isSelected()) {
       if (imp.getMimsType() == MimsPlus.MASS_IMAGE)
          ui.autocontrastMassImage(imp);
       if (imp.getMimsType() == MimsPlus.RATIO_IMAGE)
          ui.autocontrastRatioImage(imp);
+   }
    
    updateHistogram();
 }//GEN-LAST:event_jRadioButton1ActionPerformed

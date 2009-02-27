@@ -78,7 +78,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		// plot
 		c.gridx = 0;
 		c.gridy = 1; 
-                c.gridheight = 10;
+                c.gridheight = 10;                
 		c.fill = GridBagConstraints.BOTH;		
                 c.anchor = GridBagConstraints.PAGE_START;
 		c.insets = new Insets(2, 10, 10, 30);
@@ -101,6 +101,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 			maxLabel = new JLabel("      " , Label.RIGHT);
 			maxLabel.setFont(monoFont);
 			panel.add("East", maxLabel);
+                        c.ipadx = 75;                        
 			add(panel);
 		}
 
@@ -199,7 +200,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		applyB = new JButton("Apply");
 		applyB.addActionListener(this);
 		applyB.addKeyListener(ij);
-		panel.add(applyB);
+		//panel.add(applyB);
                 c.gridx = 1;
 		c.gridy = y++;
 		c.insets = new Insets(2, 10, 0, 10);
@@ -769,7 +770,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		GenericDialog gd = new GenericDialog("Set Display Range");
 		gd.addNumericField("Minimum Displayed Value: ", minValue, digits);
 		gd.addNumericField("Maximum Displayed Value: ", maxValue, digits);
-		gd.addCheckbox("Propagate to all open images", false);
+		//gd.addCheckbox("Propagate to all open images", false);
 		if (imp.isComposite())
 			gd.addCheckbox("Propagate to all "+channels+" channels", false);
 		gd.showDialog();
@@ -778,7 +779,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		minValue = gd.getNextNumber();
 		maxValue = gd.getNextNumber();
 		minValue = cal.getRawValue(minValue);
-		maxValue = cal.getRawValue(maxValue);
+		maxValue = cal.getRawValue(maxValue);                
 		boolean propagate = gd.getNextBoolean();
 		boolean allChannels = imp.isComposite()&&gd.getNextBoolean();
 		if (maxValue>=minValue) {
