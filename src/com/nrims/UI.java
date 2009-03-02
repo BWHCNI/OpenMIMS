@@ -83,7 +83,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private com.nrims.MimsLog mimsLog = null;
     private com.nrims.MimsRoiControl roiControl = null;
     private com.nrims.HSIView hsiControl = null;
-    private com.nrims.MimsCBControl cbControl = null;
+    private com.nrims.MimsCBControl cbControl = new MimsCBControl(this);
     private com.nrims.MimsStackEditing mimsStackEditing = null;
     private com.nrims.MimsTomography mimsTomography = null;
     protected com.nrims.MimsAction mimsAction = null;
@@ -412,7 +412,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 mimsTomography = new MimsTomography(this, image);
                 mimsAction = new MimsAction(this, image);
                 segmentation = new SegmentationForm(this);
-                cbControl = new MimsCBControl(this);
 
                 jTabbedPane1.setComponentAt(0, mimsData);
                 jTabbedPane1.setTitleAt(0, "MIMS Data");
