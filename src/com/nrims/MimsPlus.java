@@ -407,6 +407,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       switch (Toolbar.getToolId()) {
          case Toolbar.RECTANGLE:
          case Toolbar.OVAL:
+         case Toolbar.LINE:
          case Toolbar.FREELINE:
          case Toolbar.FREEROI:
          case Toolbar.POINT:
@@ -508,6 +509,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                     ui.activeRoi = roi;
                     setRoi(roi);
                   }
+                  
+                   double[] roiPix = this.getRoiPixels();
+                   if (roiPix != null) {
+                       String label = this.getShortTitle() + " ROI: " + roi.getName();
+                       this.ui.getRoiControl().updateHistogram(roiPix, label, true);
+                   }
+                  
                   break;
                }
             }
@@ -537,14 +545,65 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        Roi roi = getRoi();              
        
        // Display stats in the message bar.
-       ij.process.ImageStatistics stats = this.getStatistics();
-       if(this.getMimsType()==MimsPlus.HSI_IMAGE) {
-          msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
-       } else {
-          msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
-       }
-       
-       ui.updateStatus(msg);       
+        if (roi != null) {
+            ij.process.ImageStatistics stats = this.getStatistics();
+            if (this.getMimsType() == MimsPlus.HSI_IMAGE) {
+                msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
+            } else {
+                msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
+            }
+            
+            ui.updateStatus(msg);
+            
+            double[] roiPix = this.getRoiPixels();
+            if ( ( roiPix != null ) && (roiPix.length > 1) ) {
+                String label = this.getShortTitle() + " ROI: " + roi.getName();
+                this.ui.getRoiControl().updateHistogram(roiPix, label, false);
+            }
+        }
+    }
+    
+    public double[] getRoiPixels() {
+        if (this.getRoi()==null) return null;
+        
+        Rectangle rect = roi.getBoundingRect();
+        ij.process.ImageProcessor imp = this.getProcessor();
+        ij.process.ImageStatistics stats = this.getStatistics();
+        
+        byte[] mask = imp.getMaskArray();
+        int i, mi;
+        
+        if (mask == null) {
+            double[] pixels = new double[rect.width * rect.height];
+            i = 0;
+
+            for (int y = rect.y; y < (rect.y + rect.height); y++) {
+                for (int x = rect.x; x < (rect.x + rect.width); x++) {
+                    pixels[i] = imp.getPixel(x, y);
+                    i++;
+                }
+            }
+            //System.out.println("pixels.length: " + pixels.length);
+            return pixels;
+        } else {
+            java.util.ArrayList<Double> pixellist = new java.util.ArrayList<Double>();
+            for (int y = rect.y, my = 0; y < (rect.y + rect.height); y++, my++) {
+                i = y * width + rect.x;
+                mi = my * rect.width;
+                for (int x = rect.x; x < (rect.x + rect.width); x++) {
+                    if (mask == null || mask[mi++] != 0) {
+                        pixellist.add((double)imp.getPixel(x, y));
+
+                    }
+                    i++;
+                }
+            }
+            double[] foo = new double[pixellist.size()];
+            for(int j =0; j< foo.length; j++) 
+                foo[j] = pixellist.get(j);
+            //System.out.println("foo.length: " + foo.length);
+            return foo;
+        }
     }
     
     public void addListener( MimsUpdateListener inListener ) {
