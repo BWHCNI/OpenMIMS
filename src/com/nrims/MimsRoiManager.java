@@ -623,6 +623,14 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
      
         return label;
     }
+    
+    void deleteAll(){
+       if (listModel.getSize() > 0) {
+          jlist.setSelectedIndices(getAllIndexes());
+          
+          delete();
+       }
+    }
 
     boolean delete() {
         int count = listModel.getSize();

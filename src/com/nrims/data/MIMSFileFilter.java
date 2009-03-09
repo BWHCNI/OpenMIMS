@@ -39,9 +39,9 @@ public class MIMSFileFilter extends FileFilter {
      *
      * @see #addExtension
      */
-    public MIMSFileFilter() {
+    public MIMSFileFilter(String extension) {
 	this.filters = new Hashtable();
-        addExtension("im");
+        addExtension(extension);
         setDescription("MIMS Format images");
     }
 

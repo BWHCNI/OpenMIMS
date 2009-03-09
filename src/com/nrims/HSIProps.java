@@ -13,7 +13,7 @@ package com.nrims;
  *
  * @author Douglas Benson
  */
-public class HSIProps {
+public class HSIProps implements java.io.Serializable {
     
     /** Creates a new instance of HSIProps */
     public HSIProps() {

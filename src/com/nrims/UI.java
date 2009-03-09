@@ -12,13 +12,10 @@ import com.nrims.data.FileDrop;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Roi;
-import ij.Prefs;
-import ij.WindowManager;
 import ij.gui.ImageWindow;
 import ij.gui.ImageCanvas;
-import ij.measure.Calibration;
+import ij.io.RoiEncoder;
 
-import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 import java.awt.Rectangle;
 import java.awt.Robot;
@@ -26,19 +23,31 @@ import java.awt.Point;
 import java.awt.Image;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowListener;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  *
@@ -73,6 +82,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * The folder from which the last image was loaded.
      */
     private String lastFolder = null;
+    private String actionFileName = "action.txt"; 
+    private String defaultImageName = "image.im";
+    private String HSIprefix = "HSIimage";
+    private String HSIextension = ".hsi";        
     private boolean[] bOpenMass = new boolean[maxMasses];
     private com.nrims.MimsPlus[] massImages = new com.nrims.MimsPlus[maxMasses];
     private com.nrims.MimsPlus[] ratioImages = new com.nrims.MimsPlus[maxMasses];
@@ -256,7 +269,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     //changed to public...
     public synchronized void loadMIMSFile() {
         javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
-        MIMSFileFilter filter = new MIMSFileFilter();
+        MIMSFileFilter filter = new MIMSFileFilter("im");
         fc.setFileFilter(filter);
         fc.setPreferredSize(new java.awt.Dimension(650, 500));
 
@@ -1078,7 +1091,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       jMenuBar1 = new javax.swing.JMenuBar();
       fileMenu = new javax.swing.JMenu();
       openNewMenuItem = new javax.swing.JMenuItem();
-      jMenuItem5 = new javax.swing.JMenuItem();
+      jMenuItem6 = new javax.swing.JMenuItem();
+      jMenuItem7 = new javax.swing.JMenuItem();
       jSeparator1 = new javax.swing.JSeparator();
       aboutMenuItem = new javax.swing.JMenuItem();
       jSeparator2 = new javax.swing.JSeparator();
@@ -1088,11 +1102,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       jMenuItem4 = new javax.swing.JMenuItem();
       viewMenu = new javax.swing.JMenu();
       jMenuItem2 = new javax.swing.JMenuItem();
-      jMenuItem1 = new javax.swing.JMenuItem();
       utilitiesMenu = new javax.swing.JMenu();
       sumAllMenuItem = new javax.swing.JMenuItem();
       importIMListMenuItem = new javax.swing.JMenuItem();
-      ImportISEEListMenuItem = new javax.swing.JMenuItem();
       captureImageMenuItem = new javax.swing.JMenuItem();
       jSeparator3 = new javax.swing.JSeparator();
       closeAllRatioMenuItem = new javax.swing.JMenuItem();
@@ -1142,14 +1154,21 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       fileMenu.add(openNewMenuItem);
       openNewMenuItem.getAccessibleContext().setAccessibleDescription("Open a MIMS Image");
 
-      jMenuItem5.setText("Open Action File");
-      jMenuItem5.setToolTipText("Open Action File");
-      jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+      jMenuItem6.setText("Save Session");
+      jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
          public void actionPerformed(java.awt.event.ActionEvent evt) {
-            openActionFileMenuItemActionPerformed(evt);
+            jMenuItem6ActionPerformed(evt);
          }
       });
-      fileMenu.add(jMenuItem5);
+      fileMenu.add(jMenuItem6);
+
+      jMenuItem7.setText("Open Session");
+      jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItem7ActionPerformed(evt);
+         }
+      });
+      fileMenu.add(jMenuItem7);
       fileMenu.add(jSeparator1);
 
       aboutMenuItem.setText("About OpenMIMS");
@@ -1206,14 +1225,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       });
       viewMenu.add(jMenuItem2);
 
-      jMenuItem1.setText("Brightness / Contrast");
-      jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            jMenuItem1ActionPerformed(evt);
-         }
-      });
-      viewMenu.add(jMenuItem1);
-
       jMenuBar1.add(viewMenu);
 
       utilitiesMenu.setText("Utilities");
@@ -1234,14 +1245,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
          }
       });
       utilitiesMenu.add(importIMListMenuItem);
-
-      ImportISEEListMenuItem.setText("Import ISEE List");
-      ImportISEEListMenuItem.addActionListener(new java.awt.event.ActionListener() {
-         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            ImportISEEListMenuItemActionPerformed(evt);
-         }
-      });
-      utilitiesMenu.add(ImportISEEListMenuItem);
 
       captureImageMenuItem.setText("Capture current Image");
       captureImageMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1466,79 +1469,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     }//GEN-LAST:event_jTabbedPane1StateChanged
 
-    private void openActionFileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openActionFileMenuItemActionPerformed
-        JFileChooser fc = new JFileChooser();
-        fc.setPreferredSize(new java.awt.Dimension(650, 500));
-        if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
-            currentlyOpeningImages = false;
-            return;
-        }
-        String actionFile = fc.getSelectedFile().getPath();
-        String actionDir = fc.getSelectedFile().getParent();
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(actionFile));
-            String mainImageFile = br.readLine();
-            mainImageFile = actionDir + System.getProperty("file.separator") + mainImageFile + ".im";
-            if (!new File(mainImageFile).exists()) {
-                mainImageFile = null;
-            }
-            loadMIMSFile(mainImageFile);
-            // read and concatenate more files, if required
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.equals("")) {
-                    break;
-                }
-                String addImageFile = actionDir + System.getProperty("file.separator") + line + ".im";
-                if (!new File(addImageFile).exists()) {
-                    addImageFile = null;
-                }
-                UI tempui = new UI(addImageFile);
-                this.mimsStackEditing.concatImages(false, false, tempui);
-
-                for (MimsPlus img : tempui.getMassImages()) {
-                    if (img != null) {
-                        img.setAllowClose(true);
-                        img.close();
-                    }
-                }
-            }
-
-            // read and perform actions
-            bUpdating = true;
-            int trueIndex = 1;
-            ArrayList<Integer> deleteList = new ArrayList<Integer>();
-            while ((line = br.readLine()) != null) {
-                if (line.equals("")) {
-                    break;
-                }
-                String[] actionRow = line.split("\t");
-                for (int k = 0; k < image.nMasses(); k++) {     // set the current slice
-                    massImages[k].setSlice(trueIndex);
-                }
-                //apply shifts to all planes
-                int displayIndex = this.mimsAction.displayIndex(trueIndex);
-                this.mimsStackEditing.XShiftSlice(displayIndex, Integer.parseInt(actionRow[1]));
-                this.mimsStackEditing.YShiftSlice(displayIndex, Integer.parseInt(actionRow[2]));
-                if (Integer.parseInt(actionRow[3]) == 1) {
-                    deleteList.add(trueIndex);
-                }
-                trueIndex++;
-            }
-            //remove dropped planes "all at once"
-            this.mimsStackEditing.removeSliceList(deleteList);
-            for (int k = 0; k < image.nMasses(); k++) {     // set to first slice
-                    massImages[k].setSlice(1);
-                }
-            bUpdating = false;
- 
-        // TODO we need more refined Exception checking here
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-}//GEN-LAST:event_openActionFileMenuItemActionPerformed
-
 private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
     System.exit(0);
 }//GEN-LAST:event_exitMenuItemActionPerformed
@@ -1588,20 +1518,6 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     dialog.setVisible(true);
 }//GEN-LAST:event_aboutMenuItemActionPerformed
-
-private void ImportISEEListMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ImportISEEListMenuItemActionPerformed
-
-    //this file is getting way too long
-    //testing reading old isee format lists...
-    
-    //com.nrims.data.LoadImageList testLoad = new com.nrims.data.LoadImageList(this);
-
-    //testLoad.openList();
-    //testLoad.printList();
-    //testLoad.dumbImport(3);
-
-
-}//GEN-LAST:event_ImportISEEListMenuItemActionPerformed
 
 private void captureImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_captureImageMenuItemActionPerformed
     //testing trying to grab screen pixels from image for rois and annotations
@@ -1653,10 +1569,6 @@ private void importIMListMenuItemActionPerformed(java.awt.event.ActionEvent evt)
     this.mimsStackEditing.setConcatGUI(true);
 }//GEN-LAST:event_importIMListMenuItemActionPerformed
 
-private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_jMenuItem1ActionPerformed
-
 private void closeAllRatioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeAllRatioMenuItemActionPerformed
     for (int i = 0; i < ratioImages.length; i++) {
         if (ratioImages[i] != null) {
@@ -1681,29 +1593,222 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
     }
 }//GEN-LAST:event_closeAllSumMenuItemActionPerformed
 
-//    private void imagesChanged(com.nrims.mimsPlusEvent e) {
-//        mimsStackEditing.resetTrueIndexLabel();
-//    }            
-    /**
-     * @return an instance of the RoiManager
-     */
+// Saves all *.im files, action file, roi list, and HSI images to a single zip file.
+private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+               
+   byte[] buf = new byte[1024];
+   byte[] newline = (new String("\n")).getBytes();
+   int len;    
+   
+   // Let user select name and location of zip file.
+   JFileChooser fc = new JFileChooser();
+   fc.setFileFilter(new MIMSFileFilter("zip"));   
+   int returnVal = fc.showSaveDialog(this);   
+   String zipName;
+   if (returnVal == JFileChooser.APPROVE_OPTION)
+      zipName = fc.getSelectedFile().getAbsolutePath();
+   else
+      return;      
+   if (zipName == null) return;         
+   if (!(zipName.endsWith(".zip") || zipName.endsWith(".ZIP"))) {
+      zipName = zipName + ".zip";
+   }
+   
+   try {
+     
+      // Creates the zip file.
+      ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipName));      
+         
+      // Save *.im files to zip.        
+      for (Opener im : mimsAction.getImages()) {
+         if (im.getImageFile().exists()) {
+            FileInputStream in = new FileInputStream(im.getImageFile().getAbsolutePath());
+            zos.putNextEntry(new ZipEntry(im.getImageFile().getName()));           
+            while ((len = in.read(buf)) > 0) {
+                zos.write(buf, 0, len);
+            }
+            zos.closeEntry();            
+            in.close();
+         }                  
+      }                     
+      
+      // Save the action file to zip.
+      zos.putNextEntry(new ZipEntry(actionFileName));
+      for (Opener im : mimsAction.getImages()) {
+         byte[] b = im.getName().getBytes();
+         zos.write(b);
+         zos.write(newline);
+      }
+      zos.write(newline);
+      for (int i = 1; i <= mimsAction.getSize(); i++) {
+         byte[] b = mimsAction.getActionRow(i).getBytes();
+         zos.write(b);
+         zos.write(newline);
+      }            
+      zos.closeEntry();      
+      
+      // Save the ROI files to zip.       
+      int[] indexes = getRoiManager().getAllIndexes();
+      DataOutputStream out = new DataOutputStream(new BufferedOutputStream(zos));
+      RoiEncoder re = new RoiEncoder(out);
+      for (int i = 0; i < indexes.length; i++) {
+         String label = getRoiManager().getList().getModel().getElementAt(indexes[i]).toString();
+         Roi roi = (Roi) getRoiManager().getROIs().get(label);
+         if (!label.endsWith(".roi")) {
+            label += ".roi";
+         }
+         zos.putNextEntry(new ZipEntry(label));
+         re.write(roi);
+         out.flush();
+      }      
+      
+      // Save the HSI images     
+      MimsPlus hsi[] = this.getOpenHSIImages();
+      ObjectOutputStream obj_out = null;
+      for (int i = 0; i < hsi.length; i++) {
+         HSIProps hsiprops = hsi[i].getHSIProps(); 
+         String label = HSIprefix+i+HSIextension;
+         zos.putNextEntry(new ZipEntry(label));
+         obj_out = new ObjectOutputStream(zos);
+         obj_out.writeObject(hsiprops);
+         zos.closeEntry();
+      }    
+      obj_out.close();          
+      zos.close();                              
+      
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+}//GEN-LAST:event_jMenuItem6ActionPerformed
+
+// Loads a previous session.
+private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+                         
+           // User gets Zip file containg all .im files, action file, ROI files and HSIs. 
+           JFileChooser fc = new JFileChooser();
+           fc.setFileFilter(new MIMSFileFilter("zip"));
+           fc.setPreferredSize(new java.awt.Dimension(650, 500));
+           if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
+              currentlyOpeningImages = false;
+              return;
+           }
+           currentlyOpeningImages = true;
+           File selectedFile = fc.getSelectedFile();
+
+           // Begin process of reading zip file contents
+           // and extracting files if necessary.
+           try {          
+              
+              // Read action file straight from zip.
+              ZipFile zipFile = new ZipFile(selectedFile);
+              ZipEntry actionEntry = zipFile.getEntry(actionFileName);
+              InputStream input = zipFile.getInputStream(actionEntry);
+              InputStreamReader isr = new InputStreamReader(input);
+              BufferedReader br = new BufferedReader(isr);
+                                          
+              // Read image name from action file.
+              String mainImageFile = br.readLine();
+              mainImageFile += ".im";
+              ZipEntry mainImageEntry = zipFile.getEntry(mainImageFile);
+              if (mainImageEntry == null) {
+                 System.out.println("Zip file does not contain " + mainImageFile);
+                 return;
+              }
+
+              // Extract image file from zip to temp directory.  
+              File imageFile = extractFromZipfile(zipFile, mainImageEntry, null);              
+              if (imageFile == null || !imageFile.exists()) {
+                 System.out.println("Unable to extract " + mainImageEntry + " from " + zipFile.getName());
+                 return;
+              }
+              imageFile.deleteOnExit();
+              
+              // Read main image file.
+              loadMIMSFile(imageFile.getAbsolutePath());
+
+              // Continue to read action file, and extract more images if necessary.
+              String line;
+              while ((line = br.readLine()) != null) {
+                 if (line.equals("")) {break;}
+                 String addImageFile = line + ".im";
+                 ZipEntry imageEntry = zipFile.getEntry(addImageFile);
+                 imageFile = extractFromZipfile(zipFile, imageEntry, null);
+                 if (imageFile == null || !imageFile.exists()) {
+                    System.out.println("Unable to extract " + imageFile + " from " + zipFile.getName());
+                    return;
+                 }
+                 UI tempui = new UI(imageFile.getAbsolutePath());
+                 this.mimsStackEditing.concatImages(false, false, tempui);
+                 for (MimsPlus img : tempui.getMassImages()) {
+                    if (img != null) {
+                       img.setAllowClose(true);
+                       img.close();
+                    }
+                 }
+              }
+
+              // Continue to read action file, and perform actions
+              bUpdating = true;
+              int trueIndex = 1;
+              ArrayList<Integer> deleteList = new ArrayList<Integer>();
+              while ((line = br.readLine()) != null) {
+                 if (line.equals("")) {break;}
+                 String[] actionRow = line.split("\t");
+                 for (int k = 0; k < image.nMasses(); k++) {
+                    massImages[k].setSlice(trueIndex);
+                 }
+                 int displayIndex = this.mimsAction.displayIndex(trueIndex);
+                 this.mimsStackEditing.XShiftSlice(displayIndex, Integer.parseInt(actionRow[1]));
+                 this.mimsStackEditing.YShiftSlice(displayIndex, Integer.parseInt(actionRow[2]));
+                 if (Integer.parseInt(actionRow[3]) == 1) {
+                    deleteList.add(trueIndex);
+                 }
+                 trueIndex++;
+              }
+              this.mimsStackEditing.removeSliceList(deleteList);
+              for (int k = 0; k < image.nMasses(); k++) {
+                 massImages[k].setSlice(1);
+              }
+              bUpdating = false;
+              
+              // Load ROI list.
+              MimsRoiManager rm = getRoiManager();  
+              rm.deleteAll();
+              rm.openZip(selectedFile.getAbsolutePath());
+              rm.showFrame();
+                            
+              // Load HSI images.              
+              FileInputStream fis = new FileInputStream(selectedFile);
+              ZipInputStream zis = new ZipInputStream(fis);
+              ZipEntry zipEntry = null;        
+              while((zipEntry = zis.getNextEntry()) != null ) {
+                 if (zipEntry.getName().endsWith(HSIextension)) {
+                    ObjectInputStream ois = new ObjectInputStream(zis);
+                    HSIProps hsiprops = (HSIProps)ois.readObject();                    
+                    computeHSI(hsiprops);
+                 }                                  
+              }        
+              zis.close();                           
+                            
+           // TODO we need more refined Exception checking here
+           } catch (Exception e) {
+              e.printStackTrace();
+           }  
+           
+           currentlyOpeningImages = false;
+}//GEN-LAST:event_jMenuItem7ActionPerformed
+    
+    // Returns an instance of the RoiManager.
     public MimsRoiManager getRoiManager() {
         roiManager = MimsRoiManager.getInstance();
         if (roiManager == null) {
             roiManager = new MimsRoiManager(this, image);
         }
-// RoiManager shouldn't necessarily show up, when the object is requested (S. Reckow)        
-//      else
-//          roiManager.toFront();
         return roiManager;
     }
-
-    /** returns array of massImages indexed to the corresponding mass index
-     * Note,  if a window is closed, the corresponding massImage is null
-     * @return 
-     */
-    
-        
+            
     String getImageDir() {
         //won't work on windows?
         String path = image.getImageFile().getAbsolutePath();
@@ -2004,7 +2109,6 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
     }
 
    // Variables declaration - do not modify//GEN-BEGIN:variables
-   private javax.swing.JMenuItem ImportISEEListMenuItem;
    private javax.swing.JMenuItem aboutMenuItem;
    private javax.swing.JMenuItem captureImageMenuItem;
    private javax.swing.JMenuItem closeAllHSIMenuItem;
@@ -2015,11 +2119,11 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
    private javax.swing.JMenu fileMenu;
    private javax.swing.JMenuItem importIMListMenuItem;
    private javax.swing.JMenuBar jMenuBar1;
-   private javax.swing.JMenuItem jMenuItem1;
    private javax.swing.JMenuItem jMenuItem2;
    private javax.swing.JMenuItem jMenuItem3;
    private javax.swing.JMenuItem jMenuItem4;
-   private javax.swing.JMenuItem jMenuItem5;
+   private javax.swing.JMenuItem jMenuItem6;
+   private javax.swing.JMenuItem jMenuItem7;
    private javax.swing.JPanel jPanel1;
    private javax.swing.JSeparator jSeparator1;
    private javax.swing.JSeparator jSeparator2;
@@ -2031,4 +2135,38 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
    private javax.swing.JMenu utilitiesMenu;
    private javax.swing.JMenu viewMenu;
    // End of variables declaration//GEN-END:variables
+
+   private File extractFromZipfile(ZipFile zipFile, ZipEntry zipEntry, File destinationFile) {
+                  
+      // If no destination specified, use temp directory and default image name.
+      if (destinationFile == null) {
+         File destinationDir = new File(System.getProperty("java.io.tmpdir"));
+         if (!destinationDir.canRead() || !destinationDir.canWrite())
+            return null;
+         destinationFile = new File(System.getProperty("java.io.tmp"), defaultImageName);
+      }
+                                             
+      try {
+         // Create input and output streams.
+         byte[] buf = new byte[2048]; int n;
+         BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+         FileOutputStream fos = new FileOutputStream(destinationFile);
+         BufferedOutputStream bos = new BufferedOutputStream(fos, buf.length);
+         
+         // Write the file.         
+         while ((n = bis.read(buf, 0, buf.length)) != -1) {
+            bos.write(buf, 0, n);
+         }
+         
+         // Close all streams.
+         bos.flush();
+         bos.close();
+         fos.close();
+         bis.close();
+                  
+      } catch (Exception e) {e.printStackTrace();}      
+      
+      destinationFile.deleteOnExit();
+      return destinationFile;
+   }
 }
