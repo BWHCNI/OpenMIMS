@@ -183,27 +183,69 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
     private void posSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
         String label = "";
-       
-        if (holdUpdate) return;
-        
-        if (jlist.getSelectedIndices().length != 1) {
-           error("Exactly one item in the list must be selected.");
-           return;
-        } else {
-           label = jlist.getSelectedValue().toString();
-        }
 
+        if (holdUpdate) {
+            return;
+        }
+        if (jlist.getSelectedIndices().length != 1) {
+            error("Exactly one item in the list must be selected.");
+            return;
+        } else {
+            label = jlist.getSelectedValue().toString();
+        }
+        
         // Make sure we have an image
         ImagePlus imp = getImage();
-        if (imp == null) return;
+        if (imp == null) {
+            return;        // Make sure we have a ROI
+        }
+        Roi roi = (Roi) rois.get(label);
+        if (roi == null) {
+            return;        // Set new location
+        }
         
-        // Make sure we have a ROI
-        Roi roi = (Roi)rois.get(label);
-        if (roi == null) return;
+        //Grab old/new x,y positions
+        java.awt.Rectangle rect = roi.getBoundingRect();
+        int oldx = rect.x;
+        int oldy = rect.y;
+        int newx = (Integer) xPosSpinner.getValue();
+        int newy = (Integer) yPosSpinner.getValue();
+        
+        if (roi.getType() == Roi.RECTANGLE || roi.getType() == Roi.OVAL || roi.getType() == Roi.POLYGON || roi.getType() == Roi.FREEROI) {
+            roi.setLocation(newx,newy);
+            move(imp, roi);
+            
+            MimsPlus im = (MimsPlus) WindowManager.getCurrentImage();
+            if (im != null) {
+                double[] roiPix = im.getRoiPixels();
+                if ((roiPix != null) && (roiPix.length > 1)) {
+                    String histlabel = im.getShortTitle() + " ROI: " + roi.getName();
+                    this.ui.getRoiControl().updateHistogram(roiPix, histlabel, false);
+                }
+            } 
+        } 
+        if (roi instanceof ij.gui.Line) {
+            int deltax = newx-oldx;
+            int deltay = newy-oldy;
+            ij.gui.Line lineroi = (Line) roi;
+            ij.gui.Line newline = new Line(lineroi.x1 + deltax, lineroi.y1 + deltay, lineroi.x2 + deltax, lineroi.y2 + deltay, imp);
+            
+            String newName = getLabel(imp, newline);
+            newName = getUniqueName(newName);
+            if (newName != null) {
+                newline.setName(newName);
+            }
 
-        // Set new location        
-        roi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
-        move(imp, roi);       
+            int i = getIndex(roi.getName());
+            if (i < 0) {
+                return;
+            }
+            listModel.set(i, newName);
+
+            // update rois hashtable with new ROI            
+            rois.remove(roi.getName());
+            rois.put(getLabel(imp, newline), newline); 
+        }
     }
 
     private void hwSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
@@ -239,7 +281,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             newroi = new ij.gui.Roi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue(), imp);                                
         } else if (oldroi.getType() == ij.gui.Roi.OVAL) {
             newroi = new ij.gui.OvalRoi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue());
-        } else {
+        } /*else if (oldroi.getType() == Roi.LINE) {
+            newroi = (ij.gui.Line) oldroi.clone();
+            newroi.setLineWidth((Integer) widthSpinner.getValue());
+        } */else {
            return;
         }
         
@@ -388,6 +433,19 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
           java.awt.Rectangle rect = roi.getBoundingRect();   
           xPosSpinner.setValue(rect.x);
           yPosSpinner.setValue(rect.y); 
+       } else if (roiType == Roi.LINE || roiType == Roi.POLYLINE || roiType == Roi.FREELINE) {
+           enablePosSpinners();
+           disableSizeSpinners();
+           
+           //widthSpinner.setEnabled(true);
+           //heightSpinner.setEnabled(false);
+           
+           java.awt.Rectangle rect = roi.getBoundingRect();
+           xPosSpinner.setValue(rect.x);
+           yPosSpinner.setValue(rect.y);
+           
+           //ij.gui.Line lineroi = (Line) roi;
+           //widthSpinner.setValue(lineroi.getWidth());
        }
        else {
           disablespinners();
