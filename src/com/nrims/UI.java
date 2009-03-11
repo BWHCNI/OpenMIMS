@@ -1691,7 +1691,6 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
            fc.setFileFilter(new MIMSFileFilter("zip"));
            fc.setPreferredSize(new java.awt.Dimension(650, 500));
            if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
-              currentlyOpeningImages = false;
               return;
            }
            currentlyOpeningImages = true;
@@ -1723,7 +1722,6 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                  System.out.println("Unable to extract " + mainImageEntry + " from " + zipFile.getName());
                  return;
               }
-              imageFile.deleteOnExit();
               
               // Read main image file.
               loadMIMSFile(imageFile.getAbsolutePath());
@@ -1777,7 +1775,8 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
               MimsRoiManager rm = getRoiManager();  
               rm.deleteAll();
               rm.openZip(selectedFile.getAbsolutePath());
-              rm.showFrame();
+              if (rm.getAllIndexes().length > 0)
+                 rm.showFrame();
                             
               // Load HSI images.              
               FileInputStream fis = new FileInputStream(selectedFile);
@@ -2138,12 +2137,12 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
    private File extractFromZipfile(ZipFile zipFile, ZipEntry zipEntry, File destinationFile) {
                   
-      // If no destination specified, use temp directory and default image name.
+      // If no destination specified, use temp directory.
       if (destinationFile == null) {
          File destinationDir = new File(System.getProperty("java.io.tmpdir"));
          if (!destinationDir.canRead() || !destinationDir.canWrite())
             return null;
-         destinationFile = new File(System.getProperty("java.io.tmp"), defaultImageName);
+         destinationFile = new File(destinationDir, zipEntry.getName());
       }
                                              
       try {

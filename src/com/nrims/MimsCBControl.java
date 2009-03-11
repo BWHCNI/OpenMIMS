@@ -6,6 +6,8 @@
 
 package com.nrims;
 
+import ij.WindowManager;
+import ij.plugin.LutLoader;
 import ij.process.ImageProcessor;
 import java.util.Hashtable;
 
@@ -53,7 +55,7 @@ public class MimsCBControl extends javax.swing.JPanel {
          windows.put(title, imp);
       }
       if (jComboBox1.getItemCount() == 1){
-         jComboBox1.setSelectedItem(title);
+         jComboBox1.setSelectedItem(title);         
       }
    }   
    
@@ -80,6 +82,8 @@ public class MimsCBControl extends javax.swing.JPanel {
       jRadioButton1 = new javax.swing.JRadioButton();
       jLabel3 = new javax.swing.JLabel();
       jLabel4 = new javax.swing.JLabel();
+      jComboBox2 = new javax.swing.JComboBox();
+      jLabel5 = new javax.swing.JLabel();
 
       jLabel1.setText("Contrast / Brightness");
 
@@ -102,6 +106,15 @@ public class MimsCBControl extends javax.swing.JPanel {
 
       jLabel4.setText("max");
 
+      jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Grays", "Fire", "Ice", "Spectrum", "3-3-2 RGB", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Red/Green", "Invert LUT" }));
+      jComboBox2.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jComboBox2ActionPerformed(evt);
+         }
+      });
+
+      jLabel5.setText("Lookup Table :");
+
       javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
       this.setLayout(layout);
       layout.setHorizontalGroup(
@@ -109,25 +122,32 @@ public class MimsCBControl extends javax.swing.JPanel {
          .addGroup(layout.createSequentialGroup()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                .addGroup(layout.createSequentialGroup()
-                  .addContainerGap()
-                  .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                  .addGap(12, 12, 12)
+                  .addGap(81, 81, 81)
                   .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                      .addComponent(contrastAdjuster1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                      .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                            .addGroup(layout.createSequentialGroup()
-                              .addGap(12, 12, 12)
-                              .addComponent(jLabel3))
-                           .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                              .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                 .addGroup(layout.createSequentialGroup()
+                                    .addGap(12, 12, 12)
+                                    .addComponent(jLabel3))
+                                 .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE))
+                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                              .addComponent(jLabel4))
+                           .addGroup(layout.createSequentialGroup()
+                              .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                              .addComponent(jRadioButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(39, 39, 39)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                           .addComponent(jRadioButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                           .addComponent(jLabel4)))))
+                           .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                           .addComponent(jLabel5))))
+                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                .addGroup(layout.createSequentialGroup()
                   .addGap(152, 152, 152)
                   .addComponent(jLabel1)))
-            .addContainerGap(91, Short.MAX_VALUE))
+            .addContainerGap())
       );
       layout.setVerticalGroup(
          layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -140,12 +160,16 @@ public class MimsCBControl extends javax.swing.JPanel {
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                .addComponent(jLabel3)
                .addComponent(jLabel4))
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+            .addGap(12, 12, 12)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                .addComponent(jLabel2)
                .addComponent(jRadioButton1)
-               .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGap(23, 23, 23))
+               .addComponent(jLabel5))
+            .addGap(4, 4, 4)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+               .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+               .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addContainerGap())
       );
    }// </editor-fold>//GEN-END:initComponents
 
@@ -156,7 +180,7 @@ private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
    // Then get the window associated with that title. 
    String title = (String)jComboBox1.getSelectedItem();                  
    if (title != null) 
-      imp = (MimsPlus)windows.get(title);
+      imp = (MimsPlus)windows.get(title);      
 
    // Select autocontrasting radio button...
    if (imp != null) {
@@ -186,13 +210,44 @@ private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
    updateHistogram();
 }//GEN-LAST:event_jRadioButton1ActionPerformed
 
+private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
+   
+   // Get the selected LUT  
+   String label = (String)jComboBox2.getSelectedItem();
+   
+   // Get the selected window.
+   String title = (String)jComboBox1.getSelectedItem();  
+   MimsPlus imp = null;
+   if (title != null) 
+      imp = (MimsPlus)windows.get(title);    
+   if (imp != null)
+      WindowManager.setCurrentWindow(imp.getWindow());
+      
+   // Manipulate the string
+   if (label.equals("Red/Green"))
+      label = "redgreen";
+   else if (label.equals("Invert LUT"))
+      label = "invert";
+   else if (label.equals("3-3-2 RGB"))
+      label = "3-3-2 RGB";
+   else
+      label = label.toLowerCase();
+      
+   // Change the LUT
+   LutLoader ll = new LutLoader();
+   ll.run(label);
+                    
+}//GEN-LAST:event_jComboBox2ActionPerformed
+
    // Variables declaration - do not modify//GEN-BEGIN:variables
    private com.nrims.ContrastAdjuster contrastAdjuster1;
    private javax.swing.JComboBox jComboBox1;
+   private javax.swing.JComboBox jComboBox2;
    private javax.swing.JLabel jLabel1;
    private javax.swing.JLabel jLabel2;
    private javax.swing.JLabel jLabel3;
    private javax.swing.JLabel jLabel4;
+   private javax.swing.JLabel jLabel5;
    private javax.swing.JRadioButton jRadioButton1;
    // End of variables declaration//GEN-END:variables
 }
