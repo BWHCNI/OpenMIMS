@@ -311,7 +311,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public void windowDeactivated(WindowEvent e) {}
     @Override
     public void windowActivated(WindowEvent e) {
-        ui.setActiveMimsPlus(this);         
+        ui.setActiveMimsPlus(this); 
+        ui.getCBControl().setWindowlistCombobox(getTitle()); 
     }
     @Override
     public void windowDeiconified(WindowEvent e) {}

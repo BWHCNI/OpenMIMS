@@ -15,8 +15,8 @@ import ij.gui.Roi;
 import ij.gui.ImageWindow;
 import ij.gui.ImageCanvas;
 import ij.io.RoiEncoder;
-
 import ij.process.ImageStatistics;
+
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Point;
@@ -34,14 +34,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.JOptionPane;
 
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
@@ -49,21 +50,13 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-/**
- *
+/* 
  * The main user interface of the NRIMS ImageJ plugin.
- * 
- * @author  Douglas Benson
- * @author <a href="mailto:rob.gonzalez@gmail.com">Rob Gonzalez</a>
  */
 public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListener {
 
     public static final long serialVersionUID = 1;
-    //more masses
     private int maxMasses = 8;
-    /**
-     * Whether we're running the UI in debug mode.
-     */
     private boolean bDebug = false;
     private ij.ImageJ ijapp = null;
     private boolean bSyncStack = true;
@@ -71,19 +64,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private boolean bSyncROIsAcrossPlanes = true;
     private boolean bAddROIs = true;
     private boolean bUpdating = false;    
-    /**
-     * Flag that indicates whether images are currently being opened.
-     */
     private boolean currentlyOpeningImages = false;
     private boolean bCloseOldWindows = true;
     private MimsRoiManager roiManager = null;
     private com.nrims.data.Opener image = null;
-    /**
-     * The folder from which the last image was loaded.
-     */
     private String lastFolder = null;
     private String actionFileName = "action.txt"; 
-    private String defaultImageName = "image.im";
     private String HSIprefix = "HSIimage";
     private String HSIextension = ".hsi";        
     private boolean[] bOpenMass = new boolean[maxMasses];
@@ -110,10 +96,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     
     private com.nrims.data.FileDrop mimsDrop;
     
-    /**
-     * Creates new form UI
-     * @param fileName name of the .im image file to be opened.
-     */
+    // fileName name of the .im image file to be opened.
     public UI(String fileName) {
         super("NRIMS Analysis Module");
 
@@ -1703,6 +1686,10 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
               // Read action file straight from zip.
               ZipFile zipFile = new ZipFile(selectedFile);
               ZipEntry actionEntry = zipFile.getEntry(actionFileName);
+              if (actionEntry == null) {
+                 JOptionPane.showMessageDialog(this, "Zip file does not contain " + actionFileName, "Error", JOptionPane.ERROR_MESSAGE);           
+                 return;
+              }                 
               InputStream input = zipFile.getInputStream(actionEntry);
               InputStreamReader isr = new InputStreamReader(input);
               BufferedReader br = new BufferedReader(isr);

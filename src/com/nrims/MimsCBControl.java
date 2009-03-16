@@ -19,7 +19,8 @@ public class MimsCBControl extends javax.swing.JPanel {
 
     public MimsCBControl(UI ui) {
        this.ui = ui;
-       initComponents();               
+       initComponents();   
+       jComboBox2.setMaximumRowCount(jComboBox2.getItemCount());
     }
     
    // Call this method whenever you want to update the histogram.
@@ -46,6 +47,13 @@ public class MimsCBControl extends javax.swing.JPanel {
       jLabel4.setText( (new Double(max)).toString() );
       
    }
+   
+   // set the windowlist jComboBox
+   public void setWindowlistCombobox(String title){
+      if (windows.containsKey(title)) {
+         jComboBox1.setSelectedItem(title);
+      }      
+   }   
    
    // Adds the window's title to the combobox list.
    public void addWindowtoList(MimsPlus imp){
@@ -142,12 +150,11 @@ public class MimsCBControl extends javax.swing.JPanel {
                         .addGap(39, 39, 39)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                            .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
-                           .addComponent(jLabel5))))
-                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                           .addComponent(jLabel5)))))
                .addGroup(layout.createSequentialGroup()
                   .addGap(152, 152, 152)
                   .addComponent(jLabel1)))
-            .addContainerGap())
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
       );
       layout.setVerticalGroup(
          layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -222,7 +229,7 @@ private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
       imp = (MimsPlus)windows.get(title);    
    if (imp != null)
       WindowManager.setCurrentWindow(imp.getWindow());
-      
+  
    // Manipulate the string
    if (label.equals("Red/Green"))
       label = "redgreen";
