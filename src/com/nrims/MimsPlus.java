@@ -579,7 +579,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
             for (int y = rect.y; y < (rect.y + rect.height); y++) {
                 for (int x = rect.x; x < (rect.x + rect.width); x++) {
-                    pixels[i] = imp.getPixel(x, y);
+                    pixels[i] = imp.getPixelValue(x, y);
                     i++;
                 }
             }
@@ -592,8 +592,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 mi = my * rect.width;
                 for (int x = rect.x; x < (rect.x + rect.width); x++) {
                     if (mask == null || mask[mi++] != 0) {
-                        pixellist.add((double)imp.getPixel(x, y));
-
+                        pixellist.add((double)imp.getPixelValue(x, y));
                     }
                     i++;
                 }
