@@ -460,10 +460,19 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     ui.setMedianFilterRatios(this.jRadioButton2.isSelected());
     
     ui.recomputeAllRatio(props);
+    MimsPlus[] ratioimages = ui.getOpenRatioImages();
+    for(int i = 0; i < ratioimages.length; i++) {
+        ui.autocontrastRatioImage(ratioimages[i]);
+    }
 }//GEN-LAST:event_jRadioButton2ActionPerformed
 
 private void jSpinner5StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner5StateChanged
-        ui.recomputeAllRatio(props);
+    ui.recomputeAllRatio(props);
+    MimsPlus[] ratioimages = ui.getOpenRatioImages();
+    for (int i = 0; i < ratioimages.length; i++) {
+        ui.autocontrastRatioImage(ratioimages[i]);
+    }
+   
 }//GEN-LAST:event_jSpinner5StateChanged
 
 private void rgbMinjSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rgbMinjSliderStateChanged
@@ -503,6 +512,8 @@ private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
       props.setDenMass(denomator);
       update(false);
       computeRatio();
+      MimsPlus[] ratioimages = ui.getOpenRatioImages();
+      ui.autocontrastRatioImage(ratioimages[ratioimages.length-1]);
    }   
 }//GEN-LAST:event_jButton4ActionPerformed
 
