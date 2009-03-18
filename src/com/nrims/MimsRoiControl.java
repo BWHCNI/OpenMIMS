@@ -49,6 +49,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
         jCheckBox5 = new javax.swing.JCheckBox();
         histogramjPanel = new javax.swing.JPanel();
         histogramUpdatejCheckBox = new javax.swing.JCheckBox();
+        profilejButton = new javax.swing.JButton();
 
         setToolTipText("Drawing ROIs automatically adds to RoiManager");
 
@@ -149,6 +150,13 @@ public class MimsRoiControl extends javax.swing.JPanel {
 
         histogramUpdatejCheckBox.setText("Autoupdate Histogram");
 
+        profilejButton.setText("Dynamic Profile");
+        profilejButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                profilejButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -172,20 +180,24 @@ public class MimsRoiControl extends javax.swing.JPanel {
                                 .add(org.jdesktop.layout.GroupLayout.LEADING, jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .add(40, 40, 40)
                         .add(histogramjPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 144, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(116, 116, 116)
-                        .add(histogramUpdatejCheckBox))
                     .add(jCheckBox4)
-                    .add(layout.createSequentialGroup()
-                        .add(jButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 138, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 166, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jCheckBox5)
-                    .add(jCheckBox2))
-                .add(107, 107, 107))
+                    .add(jCheckBox2)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel1)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 144, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(layout.createSequentialGroup()
+                                .add(jButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 138, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jButton5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 166, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(43, 43, 43)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(profilejButton)
+                            .add(histogramUpdatejCheckBox))))
+                .add(139, 139, 139))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -219,7 +231,9 @@ public class MimsRoiControl extends javax.swing.JPanel {
                         .add(jCheckBox4))
                     .add(layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(histogramUpdatejCheckBox)))
+                        .add(histogramUpdatejCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(profilejButton)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -257,12 +271,14 @@ public class MimsRoiControl extends javax.swing.JPanel {
     }
     
     public void updateHistogram(double[] pixelvalues, String label, boolean forceupdate) {
+        if(pixelvalues == null) {
+            return;
+        } else if (pixelvalues.length == 0) {
+            return;
+        }
         if (forceupdate || histogramUpdatejCheckBox.isSelected()) {
             HistogramDataset dataset = new HistogramDataset();
 
-            if (pixelvalues == null) {
-                return;
-            }
             dataset.addSeries(label, pixelvalues, 100);
 
             org.jfree.chart.plot.XYPlot plot = (XYPlot) chart.getPlot();
@@ -334,6 +350,20 @@ private void jCheckBox5ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIR
    //WindowManager.repaintImageWindows();
 }//GEN-LAST:event_jCheckBox5ItemStateChanged
 
+private void profilejButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profilejButtonActionPerformed
+// TODO add your handling code here:
+    
+    if (ui.lineProfile == null) {
+        ui.lineProfile = new MimsLineProfile();
+        double[] foo = new double[100];
+        for (int i = 0; i < 100; i++) {
+            foo[i] = 10;
+        }
+        ui.updateLineProfile(foo, "line");
+    }
+ 
+}//GEN-LAST:event_profilejButtonActionPerformed
+
 public void setROIsSynchedAcrossPlanes(boolean setSynched) {
    jCheckBox5.setSelected(setSynched);
 }
@@ -358,6 +388,7 @@ public void setROIsSynchedAcrossPlanes(boolean setSynched) {
     private javax.swing.JCheckBox jCheckBox5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JButton profilejButton;
     // End of variables declaration//GEN-END:variables
     
 }

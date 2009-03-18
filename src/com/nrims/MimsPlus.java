@@ -271,6 +271,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 ui.updateStatus("mimsPlus::show() addWindowListener " + getWindow().toString());
             }
         }
+        if (nType != HSI_IMAGE) {
+           ui.getCBControl().addWindowtoList(this);        
+        }
     }
     
     @Override
@@ -348,9 +351,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(ui.getDebug()) {
             ui.updateStatus("mimsPlus::windowOpened listener installed");
         }
-        
-        if (nType != HSI_IMAGE)
-           ui.getCBControl().addWindowtoList(this);        
+
     }
     @Override
     public void mouseExited(MouseEvent e){ ui.updateStatus(" "); }
@@ -494,7 +495,16 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             } else {
                 slice = getCurrentSlice();
             }
-            if(roi.contains(mX, mY)) {
+            
+            boolean linecheck = false;
+            if( roi.getType() == roi.LINE ) {
+                Line line = (Line)roi;
+                int c = roi.isHandle(x, y);
+                if(c != -1) linecheck=true;
+                
+            }
+            
+            if(roi.contains(mX, mY) || linecheck) {
                if (ui.getSyncROIsAcrossPlanes() || ui.getRoiManager().getSliceNumber(key.toString()) == slice) {
                   insideRoi = true;
                   ij.process.ImageStatistics stats = this.getStatistics();
@@ -516,8 +526,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                        String label = this.getShortTitle() + " ROI: " + roi.getName();
                        this.ui.getRoiControl().updateHistogram(roiPix, label, true);
                    }
-                  
-                  break;
+                   
+                   if ((roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE)) {
+                       ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(this);
+                       ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() + " : " + roi.getName());
+                   }
+
+                   break;
                }
             }
         }
@@ -561,6 +576,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 String label = this.getShortTitle() + " ROI: " + roi.getName();
                 this.ui.getRoiControl().updateHistogram(roiPix, label, false);
             }
+            
+            if ( (roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE) ) {
+                ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(this);
+                ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() +" : " + roi.getName());
+            }
+            
         }
     }
     

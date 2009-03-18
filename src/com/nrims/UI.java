@@ -96,12 +96,14 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     
     private com.nrims.data.FileDrop mimsDrop;
     
+    protected MimsLineProfile lineProfile;
+    
     // fileName name of the .im image file to be opened.
     public UI(String fileName) {
         super("NRIMS Analysis Module");
 
         System.out.println("Ui constructor");
-
+        
         // Set look and feel to native OS
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -184,7 +186,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 this.loadMIMSFile(fileName);
             }
         }
-
+        
     }
 
     /**
@@ -1786,6 +1788,14 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
            currentlyOpeningImages = false;
 }//GEN-LAST:event_jMenuItem7ActionPerformed
     
+public void updateLineProfile(double[] newdata, String name) {
+    if(this.lineProfile==null) {
+        return;
+    } else {
+        lineProfile.updateData(newdata, name);
+    }
+}
+
     // Returns an instance of the RoiManager.
     public MimsRoiManager getRoiManager() {
         roiManager = MimsRoiManager.getInstance();

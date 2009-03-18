@@ -36,7 +36,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
     }
     //Philipp method for demo
-
     /** Creates new form mimsStackEditing
      * @param ui ??
      * @param im ??
@@ -181,14 +180,14 @@ public class MimsStackEditing extends javax.swing.JPanel {
     }
 
     public void concatImages(boolean pre, boolean labeloriginal, UI tempui) {
-        
+
         ui.setUpdating(true);
-        
+
         MimsPlus[] tempimage = tempui.getMassImages();
         ImageStack[] tempstacks = new ImageStack[numberMasses];
-        
+
         for (int i = 0; i < image.nMasses(); i++) {
-            if(images[i]!=null) {
+            if (images[i] != null) {
                 images[i].setIsStack(true);
             }
         }
@@ -233,20 +232,22 @@ public class MimsStackEditing extends javax.swing.JPanel {
         ui.mimsAction.addImage(pre, tempui.getMimsImage());
 
         ui.getmimsLog().Log("New size: " + images[0].getNSlices() + " planes");
-        
+
         resetImageStacks();
-        for(int i=0; i<tempimage.length;i++) { 
-            if(tempimage[i]!=null) {
+        for (int i = 0; i < tempimage.length; i++) {
+            if (tempimage[i] != null) {
                 tempimage[i].setAllowClose(true);
-                tempimage[i].close(); 
-                tempimage[i]=null;
-            } 
+                tempimage[i].close();
+                tempimage[i] = null;
+            }
         }
-        for(int i=0; i<tempstacks.length;i++) { tempstacks[i]=null; }
-        
+        for (int i = 0; i < tempstacks.length; i++) {
+            tempstacks[i] = null;
+        }
+
         // disable certain functions
         setConcatGUI(true);
-        
+
         ui.setUpdating(false);
     }
 
@@ -427,6 +428,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         jLabel4 = new javax.swing.JLabel();
         saveActionButton = new javax.swing.JButton();
         sumButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         concatButton.setText("Concatenate");
         concatButton.addActionListener(new java.awt.event.ActionListener() {
@@ -515,6 +517,13 @@ public class MimsStackEditing extends javax.swing.JPanel {
             }
         });
 
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -536,7 +545,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                                 .addComponent(deleteListTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jLabel5)
                                 .addComponent(deleteListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(trueIndexLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE))
+                                .addComponent(trueIndexLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(jLabel1)
@@ -556,14 +565,17 @@ public class MimsStackEditing extends javax.swing.JPanel {
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel2))
-                            .addComponent(translateYSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                            .addComponent(translateXSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE))
+                            .addComponent(translateYSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+                            .addComponent(translateXSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE))
                         .addGap(51, 51, 51))
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(autoTrackButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(untrackButton)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButton1)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(autoTrackButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(untrackButton)))
                         .addContainerGap(143, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -586,8 +598,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(reinsertListTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(reinsertButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE))
+                        .addComponent(reinsertButton))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel2)
@@ -601,6 +612,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(translateYSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(concatButton))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(rawExportButton)
                     .addGroup(layout.createSequentialGroup()
@@ -611,6 +623,10 @@ public class MimsStackEditing extends javax.swing.JPanel {
                             .addComponent(autoTrackButton))
                         .addGap(31, 31, 31)))
                 .addGap(36, 36, 36))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(201, Short.MAX_VALUE)
+                .addComponent(jButton1)
+                .addGap(105, 105, 105))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -673,11 +689,11 @@ public class MimsStackEditing extends javax.swing.JPanel {
             }
         }
         tempUi = null;
-        
+
         ui.getmimsTomography().resetBounds();
         ui.getMimsData().setHasStack(true);
         ui.setSyncStack(true);
-        
+
         ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
         //wo.run("tile");
         ui.updateStatus("");
@@ -841,7 +857,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoTrackButtonActionPerformed
         //ugly....
-        
+
         ImagePlus tempImage = WindowManager.getCurrentImage();
         ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
         int startPlane = images[0].getCurrentSlice();
@@ -850,7 +866,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         //doesn't work
         //ui.getRoiManager().select(-1);
         String massname = tempImage.getTitle();
-        
+
 
         for (int i = 1; i <= images[0].getStackSize(); i++) {
             images[0].setSlice(i);
@@ -980,11 +996,88 @@ private void saveActionButtonActionPerformed(java.awt.event.ActionEvent evt) {//
 
 private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumButtonActionPerformed
 // TODO add your handling code here:
-    
+
     String name = WindowManager.getCurrentImage().getTitle();
-    
+
     ui.computeSum(ui.getImageByName(name));
 }//GEN-LAST:event_sumButtonActionPerformed
+
+private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+// TODO add your handling code here:
+    compressPlanes(4, images[0].getNSlices());//GEN-LAST:event_jButton1ActionPerformed
+
+}
+
+    private void compressPlanes(int startplane, int endplane) {
+        //do a couple checks
+        if (images[0]==null) return;
+        if ((startplane < 1) || (endplane > this.images[0].getNSlices())) {
+            return;
+        }
+        
+        int nmasses = this.image.nMasses();
+        int currentplane = images[0].getSlice();
+        int templength = images[0].getProcessor().getPixelCount();
+        double[][] sumPixels = new double[nmasses][templength];
+        short[][] tempPixels = new short[nmasses][templength];
+
+        //add up pixel values
+        for (int mindex = 0; mindex < nmasses; mindex++) {
+            for (int i = startplane; i <= endplane; i++) {
+                images[mindex].setSlice(i);
+                tempPixels[mindex] = (short[]) images[mindex].getProcessor().getPixels();
+                for (int j = 0; j < sumPixels[mindex].length; j++) {
+                    sumPixels[mindex][j] += tempPixels[mindex][j];
+                }
+            }
+        }
+        
+        //check to see if pixel values fit in 16bit image
+        for (int mindex = 0; mindex < nmasses; mindex++) {
+
+            double max = 0;
+            for (int i = 0; i < sumPixels[mindex].length; i++) {
+                max = java.lang.Math.max(max, sumPixels[mindex][i]);
+            }
+            if (max > 65535) {
+                System.out.println("over limit!");
+                return;
+            }
+        }
+        
+        //set tempixels to cast sumpixels
+        for (int mindex = 0; mindex < nmasses; mindex++) {
+            for (int i = 0; i < sumPixels[mindex].length; i++) {
+                tempPixels[mindex][i] = (short) sumPixels[mindex][i];
+            }
+        }
+        //delete unneeded planes and set pixel values
+        for (int mindex = 0; mindex < nmasses; mindex++) {
+            for (int i = startplane + 1; i <= endplane; i++) {
+                imagestacks[mindex].deleteSlice(startplane+1);
+            }
+            //must be in this order, why?
+            this.images[mindex].setSlice(startplane);
+            this.images[mindex].setStack(null, imagestacks[mindex]);
+            this.images[mindex].getProcessor().setPixels(tempPixels[mindex]);
+
+        }
+        
+        //a little cleanup
+        //multiple calls to setSlice are to get image scroll bars triggered right
+        for (int mindex = 0; mindex < this.image.nMasses(); mindex++) {
+            if (images[mindex].getNSlices() > 1) {
+                //kludgy hack
+                images[mindex].setSlice(1);
+                images[mindex].setSlice(images[mindex].getNSlices());
+                images[mindex].setSlice(currentplane);
+            } else {
+                images[mindex].setIsStack(false);
+            }
+            images[mindex].updateAndDraw();
+        }
+        
+    }
 
     protected void restoreAllPlanes() {
         this.holdupdate = true;
@@ -1005,7 +1098,7 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 System.err.println(e.toString());
                 e.printStackTrace();
             }
-
+            
         //pritnt entire actionlist
         //test this.ui.mimsAction.dropPlane(2);
         //this.ui.mimsAction.printAction();
@@ -1052,6 +1145,7 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JButton deleteListButton;
     private javax.swing.JTextField deleteListTextField;
     private javax.swing.JButton displayActionButton;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

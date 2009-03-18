@@ -64,7 +64,7 @@ public class MimsCBControl extends javax.swing.JPanel {
       }
       if (jComboBox1.getItemCount() == 1){
          jComboBox1.setSelectedItem(title);         
-      }
+      } 
    }   
    
    // Removes the window's title from combobox list.
