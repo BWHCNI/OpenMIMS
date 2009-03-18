@@ -984,9 +984,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             cbControl.updateHistogram();
             
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_IMAGE_CLOSED) {
-            /* If an image was closed by a window event,
-             * dispose the corresponding reference
-             */
+            // If an image was closed by a window event,
+            // dispose the corresponding reference.            
             boolean bNotFound = true;
             int i;
             for (i = 0; bNotFound && i < image.nMasses(); i++) {
@@ -1009,9 +1008,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_SET_ROI || 
                    evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
-            /* Update all images with a selected ROI 
-             * MOUSE_RELEASE catches drawing new ROIs
-             */
+            // Update all images with a selected ROI 
+            // MOUSE_RELEASE catches drawing new ROIs             
             if (bSyncROIs) {
                 int i;
                 MimsPlus mp = (MimsPlus) evt.getSource();
@@ -1036,9 +1034,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     }
                 }
             }
-            /* Automatically appends a drawn ROI to the RoiManager
-             * to improve work flow without extra mouse actions
-             */
+            // Automatically appends a drawn ROI to the RoiManager
+            // to improve work flow without extra mouse actions.             
             if (bAddROIs && evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
                 ij.gui.Roi roi = evt.getRoi();
                 if (roi != null && roi.getState() != Roi.CONSTRUCTING) {
@@ -1056,8 +1053,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         bUpdating = false;
 
-        //had to wait untill not changing....
-        //System.out.println("mims state changed...");
+        // had to wait untill not changing....
+        // System.out.println("mims state changed...");
         this.mimsStackEditing.resetTrueIndexLabel();
         this.mimsStackEditing.resetSpinners();
     }
@@ -1376,8 +1373,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         for (int i = 0; i < image.nMasses(); i++) {
             if (massImages[i] == null && bOpenMass[i]) {
                 currentlyOpeningImages = true;
-//                int nMasses = image.nMasses();
-//                int nImages = image.nImages();
 
                 try {
                     MimsPlus mp = new MimsPlus(image, i);
@@ -1410,7 +1405,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.mimsStackEditing.resetImageStacks();
         this.mimsStackEditing.restoreAllPlanes();
         ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
-        //wo.run("tile");
         this.getmimsStackEditing().setConcatGUI(false);
         this.mimsLog.Log("File restored.");
     }//GEN-LAST:event_jMenuItem4ActionPerformed
@@ -1426,8 +1420,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
         bCloseOldWindows = gd.getNextBoolean();
         bDebug = gd.getNextBoolean();
-    //this.setRatioScaleFactor((int)gd.getNextNumber());
-    //HSI color scale not changing/bug, fix scale factor at 10000
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
@@ -1479,10 +1471,6 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
 }//GEN-LAST:event_sumAllMenuItemActionPerformed
 
 private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-// TODO add your handling code here:
-
-    //This should be better
-    //Text is not selectable in a JOptionPane...
 
     String message = "OpenMIMS v0.7\n\n";
     message += "OpenMIMS was Developed at NRIMS, the National Resource\n";
@@ -1496,8 +1484,6 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     message += " jFreeChart:  http://www.jfree.org/jfreechart/\n";
     message += " FileDrop:  http://iharder.sourceforge.net/current/java/filedrop/\n";
 
-    //System.out.println(message);
-
     javax.swing.JOptionPane pane = new javax.swing.JOptionPane(message);
     javax.swing.JDialog dialog = pane.createDialog(new javax.swing.JFrame(), "About OpenMIMS");
 
@@ -1507,7 +1493,7 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 private void captureImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_captureImageMenuItemActionPerformed
     //testing trying to grab screen pixels from image for rois and annotations
 
-    /** Captures the active image window and returns it as an ImagePlus. */
+    // Captures the active image window and returns it as an ImagePlus.
     ImagePlus imp = ij.WindowManager.getCurrentImage();
     if (imp == null) {
         IJ.noImage();
@@ -1541,8 +1527,7 @@ private void captureImageMenuItemActionPerformed(java.awt.event.ActionEvent evt)
 }//GEN-LAST:event_captureImageMenuItemActionPerformed
 
 private void importIMListMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importIMListMenuItemActionPerformed
-// TODO add your handling code here:    
-   com.nrims.data.LoadImageList testLoad = new com.nrims.data.LoadImageList(this);
+    com.nrims.data.LoadImageList testLoad = new com.nrims.data.LoadImageList(this);
     boolean read;
     read = testLoad.openList();
     if (!read) {
@@ -1831,9 +1816,7 @@ public void updateLineProfile(double[] newdata, String name) {
         return null;
     }
 
-    /** returns only the open mass images as an array
-     * @return 
-     */
+    // Returns only the open mass images as an array.
     public MimsPlus[] getOpenMassImages() {
         int i, nOpen = 0;
         for (i = 0; i < massImages.length; i++) {
