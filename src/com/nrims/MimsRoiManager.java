@@ -51,6 +51,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     boolean holdUpdate = false;
     private UI ui = null;
     private com.nrims.data.Opener image = null;
+    private String savedpath = "";
+    boolean previouslySaved = false;
 
     public MimsRoiManager(UI ui, com.nrims.data.Opener im) {
         super("MIMS ROI Manager");
@@ -326,6 +328,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         addPopupItem("Combine");
         addPopupItem("Split");
         addPopupItem("Add [t]");
+        addPopupItem("Save As");
         add(pm);
     }
 
@@ -373,6 +376,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             combine();
         } else if (command.equals("Split")) {
             split();
+        } else if (command.equals("Save As")) {
+            String path = ui.getImageDir();
+            previouslySaved = false;
+            save(path);
         }
     }
 
@@ -392,9 +399,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (index < 0) index = 0;        
         if (ui.getSyncROIsAcrossPlanes()) setSlice = false;
         else setSlice = true;
-        if (WindowManager.getCurrentImage() != null) {
-            restore(index, setSlice);
-        }
+        
+        restore(index, setSlice);
 
         // Do spinner stuff
         if (indices.length == 1) {
@@ -652,6 +658,12 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 }
             }
             index = getAllIndexes();
+            //if clearing the whole list assume
+            //you're working with a "new" file
+            this.previouslySaved = false;
+            this.savedpath = "";
+            this.resetTitle();
+            
         }
         for (int i = count - 1; i >= 0; i--) {
             boolean delete = false;
@@ -712,10 +724,16 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     boolean restore(int index, boolean setSlice) {
         String label = listModel.get(index).toString();
         Roi roi = (Roi) rois.get(label);
-        ImagePlus imp = getImage();
+        MimsPlus imp;
+        try{
+            imp = (MimsPlus)getImage();
+        } catch(ClassCastException e) {
+            imp = ui.getOpenMassImages()[0];
+        }
         if (imp == null || roi == null) {
             return false;
         }
+        
         if (setSlice) {
             int slice = getSliceNumber(label);
             if (slice >= 1 && slice <= imp.getStackSize()) {
@@ -744,7 +762,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         Macro.setOptions(null);
         String name = null;
         if (path == null) {
-            OpenDialog od = new OpenDialog("Open Selection(s)...", "");
+            OpenDialog od = new OpenDialog("Open Selection(s)...", ui.getImageDir(), "");
             String directory = od.getDirectory();
             name = od.getFileName();
             if (name == null) {
@@ -805,8 +823,12 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 entry = in.getNextEntry();
             }
             in.close();
+            savedpath = path;
+            previouslySaved = true;
+            resetTitle();
         } catch (IOException e) {
             error(e.toString());
+            System.out.println(e.toString());
         }
         if (nRois == 0) {
             error("This ZIP archive does not appear to contain \".roi\" files");
@@ -841,7 +863,11 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             indexes = getAllIndexes();
         }
         if (indexes.length > 1) {
-            return saveMultiple(indexes, name, true);
+            if(indexes.length == getAllIndexes().length) {
+                return saveMultiple(indexes, name, !previouslySaved);
+            } else {
+                return saveMultiple(indexes, name, true);
+            }
         }
         //only called if one roi selected...
         String path = name;
@@ -873,6 +899,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             re.write(roi);
         } catch (IOException e) {
             IJ.error("MIMS ROI Manager", e.getMessage());
+            System.out.println(e.toString());
         }
         return true;
     }
@@ -894,6 +921,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             }
             String dir = sd.getDirectory();
             path = dir + name;
+        } else {
+            path = savedpath;
         }
         try {
             ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
@@ -910,8 +939,12 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 out.flush();
             }
             out.close();
+            savedpath = path;
+            previouslySaved = true;
+            resetTitle();
         } catch (IOException e) {
             error("" + e);
+            System.out.println(e.toString());
             return false;
         }
         if (Recorder.record) {
@@ -919,7 +952,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
         return true;
     }
-    
+    private void resetTitle() {
+        String name = savedpath.substring(savedpath.lastIndexOf("/")+1, savedpath.length());
+        this.setTitle("MIMS ROI Manager: "+name);
+    }
     boolean measure() {
         ImagePlus imp = getImage();
         if (imp == null) {
