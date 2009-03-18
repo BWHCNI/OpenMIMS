@@ -359,11 +359,16 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public void mouseEntered(MouseEvent e) {}
     @Override
     public void mousePressed(MouseEvent e) { 
-      // Highlight the selected ROI in the ROI list
+      
       if(getRoi() != null) {                  
          
          // Set the moving flag so we know if user is attempting to move a roi.
-         if (getRoi().getState() == Roi.MOVING) bMoving = true;
+         // Line Rois have to be treated differently because their state is never MOVING .       
+         int roiState = getRoi().getState();
+         int roiType = getRoi().getType();
+         
+         if (roiState == Roi.MOVING) bMoving = true;
+         else if (roiType == Roi.LINE && roiState == Roi.MOVING_HANDLE) bMoving = true;
          else bMoving = false;
          
          // Highlight the roi in the jlist that the user is selecting
@@ -515,7 +520,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                   } else {
                       msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
                   }
-                  roi.setInstanceColor(java.awt.Color.yellow);
+                  
                   if(ui.activeRoi != roi){                   
                     ui.activeRoi = roi;
                     setRoi(roi);

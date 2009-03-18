@@ -247,6 +247,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             // update rois hashtable with new ROI            
             rois.remove(roi.getName());
             rois.put(getLabel(imp, newline), newline); 
+            imp.setRoi(newline);
         }
     }
 
@@ -283,10 +284,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             newroi = new ij.gui.Roi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue(), imp);                                
         } else if (oldroi.getType() == ij.gui.Roi.OVAL) {
             newroi = new ij.gui.OvalRoi(rect.x, rect.y, (Integer) widthSpinner.getValue(), (Integer) heightSpinner.getValue());
-        } /*else if (oldroi.getType() == Roi.LINE) {
-            newroi = (ij.gui.Line) oldroi.clone();
-            newroi.setLineWidth((Integer) widthSpinner.getValue());
-        } */else {
+        } else {
            return;
         }
         
@@ -518,6 +516,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
       // update rois hashtable with new ROI            
       rois.remove(oldName); 
       rois.put(newName, roi);
+      imp.setRoi(roi);
       
       imp.updateAndRepaintWindow();
    }
@@ -681,7 +680,11 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             Recorder.record("mimsRoiManager", "Delete");
         }
         
-        this.ui.updateAllImages();
+        // As far as i can tell, this is the only way to get rid
+        // of stale (yellow) Rois from the image w/o having to click the window.
+        // killRoi() only gets rid of it in the CURRENT window.
+        getImage().setRoi(0,0,0,0);        
+                     
         return true;
     }
 
@@ -739,14 +742,12 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             if (slice >= 1 && slice <= imp.getStackSize()) {
                 imp.setSlice(slice);
             }
-        }
-        Roi roi2 = (Roi) roi.clone();
-        Calibration cal = imp.getCalibration();
-        if (cal.xOrigin != 0.0 || cal.yOrigin != 0.0) {
-            Rectangle r = roi2.getBounds();
-            roi2.setLocation(r.x + (int) cal.xOrigin, r.y + (int) cal.yOrigin);
-        }
-        imp.setRoi(roi2);
+        }       
+        
+        // Set the selected roi to yellow
+        roi.setInstanceColor(java.awt.Color.yellow);
+        imp.setRoi(roi);              
+        
         return true;
     }
 
@@ -788,7 +789,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             }
             name = getUniqueName(name);
             listModel.addElement(name);
-            rois.put(name, roi);
+            rois.put(name, roi);            
         }
     }
     // Modified on 2005/11/15 by Ulrik Stervbo to only read .roi files and to not empty the current list
@@ -817,6 +818,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                         name = getUniqueName(name);
                         listModel.addElement(name);
                         rois.put(name, roi);
+                        getImage().setRoi(roi);
                         nRois++;
                     }
                 }
