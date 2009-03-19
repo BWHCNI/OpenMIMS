@@ -360,6 +360,8 @@ private void profilejButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             foo[i] = 10;
         }
         ui.updateLineProfile(foo, "line");
+    } else {
+        ui.lineProfile.setVisible(true);
     }
  
 }//GEN-LAST:event_profilejButtonActionPerformed
