@@ -249,6 +249,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             rois.put(getLabel(imp, newline), newline); 
             imp.setRoi(newline);
         }
+        updatePlots(false);
     }
 
     private void hwSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {
@@ -291,7 +292,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         //we give it the old name so that setRoi will
         // know which original roi to delete.
         newroi.setName(oldroi.getName());
-        move(imp, newroi);             
+        move(imp, newroi);
+        updatePlots(false);
     }
 
     void addCheckbox(String label, boolean bEnabled) {
@@ -406,6 +408,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             if (imp == null) return;
             Roi roi = imp.getRoi();
             resetSpinners(roi);
+            updatePlots(true);
         } else {
             disablespinners();
         }      
@@ -1107,6 +1110,28 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
     }
 
+    void updatePlots(boolean force) {
+        MimsPlus imp;
+        try{
+            imp = (MimsPlus)this.getImage();
+        } catch(ClassCastException e) {
+            return;
+        }
+        if(imp == null) return;
+        
+        Roi roi = imp.getRoi();
+        if(roi == null) return;
+        double[] roipix = imp.getRoiPixels();
+        
+        if ((roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE)) {
+            ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(imp);
+            ui.updateLineProfile(profileP.getProfile(), imp.getShortTitle() + " : " + roi.getName());
+        } else {
+            String label = imp.getShortTitle() + " ROI: " + roi.getName();
+            ui.getRoiControl().updateHistogram(roipix, label, force);
+        }
+    }
+    
     boolean error(String msg) {
         new MessageDialog(this, "MIMS ROI Manager", msg);
         Macro.abort();

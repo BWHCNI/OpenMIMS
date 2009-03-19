@@ -502,9 +502,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             }
             
             boolean linecheck = false;
-            if( roi.getType() == roi.LINE ) {
-                Line line = (Line)roi;
-                int c = roi.isHandle(x, y);
+            int c = -1;
+            if( (roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE) ) {
+                c = roi.isHandle(x, y);
                 if(c != -1) linecheck=true;
                 
             }
