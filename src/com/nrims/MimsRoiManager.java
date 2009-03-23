@@ -1125,7 +1125,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         
         if ((roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE)) {
             ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(imp);
-            ui.updateLineProfile(profileP.getProfile(), imp.getShortTitle() + " : " + roi.getName());
+            ui.updateLineProfile(profileP.getProfile(), imp.getShortTitle() + " : " + roi.getName(), imp.getProcessor().getLineWidth());
         } else {
             String label = imp.getShortTitle() + " ROI: " + roi.getName();
             ui.getRoiControl().updateHistogram(roipix, label, force);

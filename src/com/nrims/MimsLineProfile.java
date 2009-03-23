@@ -26,14 +26,18 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 
+import javax.swing.JPopupMenu;
+import javax.swing.JMenuItem;
+import java.awt.event.*;
 /**
  *
  * @author cpoczatek
  */
-public class MimsLineProfile extends JFrame{
+public class MimsLineProfile extends JFrame implements ActionListener{
 
     private JFreeChart chart;
     private ChartPanel chartPanel;
+    private int linewidth = 1;
     
     public MimsLineProfile() {
         super("Dynamic Line Profile");
@@ -41,13 +45,25 @@ public class MimsLineProfile extends JFrame{
 
         XYDataset dataset = createDataset();
         chart = createChart(dataset);
+
         chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+        JPopupMenu menu = chartPanel.getPopupMenu();
+        JMenuItem menuItem = new javax.swing.JMenuItem("Display text");
+        menuItem.addActionListener(this);
+
+        menu.add(menuItem, 2);
         setContentPane(chartPanel);
+
         this.pack();
         this.setVisible(true);
     }
 
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(e.getActionCommand()=="Display text")
+            this.displayProfileData();
+    }
     /*
     
     private void setupLineProfile() {
@@ -137,11 +153,12 @@ public class MimsLineProfile extends JFrame{
         
     }
     
-    public void updateData(double[] newdata, String name) {
+    public void updateData(double[] newdata, String name, int width) {
         if (newdata == null) {
             return;
         }
-        
+
+        linewidth = width;
         XYSeries series = new XYSeries(name);
         for(int i = 0; i< newdata.length; i++) {
             series.add(i, newdata[i]);
@@ -154,5 +171,23 @@ public class MimsLineProfile extends JFrame{
 
         chart.fireChartChanged();
     }
-    
+
+    public void displayProfileData() {
+        org.jfree.chart.plot.XYPlot plot = (XYPlot) chart.getPlot();
+        XYDataset data = plot.getDataset();
+
+        ij.measure.ResultsTable table = new ij.measure.ResultsTable();
+        table.setHeading(1, "Position");
+        table.setHeading(2, plot.getLegendItems().get(0).getLabel() + " : width " + linewidth);
+        table.incrementCounter();
+
+        for (int i = 0; i < data.getItemCount(0); i++) {
+            table.addValue(1, data.getXValue(0, i));
+            table.addValue(2, data.getYValue(0, i));
+            table.incrementCounter();
+        }
+
+        table.show("");
+    }
+
 }

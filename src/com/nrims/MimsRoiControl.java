@@ -359,7 +359,7 @@ private void profilejButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         for (int i = 0; i < 100; i++) {
             foo[i] = 10;
         }
-        ui.updateLineProfile(foo, "line");
+        ui.updateLineProfile(foo, "line", 1);
     } else {
         ui.lineProfile.setVisible(true);
     }

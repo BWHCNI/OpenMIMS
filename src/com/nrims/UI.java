@@ -103,6 +103,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         super("NRIMS Analysis Module");
 
         System.out.println("Ui constructor");
+        System.out.println(System.getProperty("java.version")+" : "+System.getProperty("java.vendor"));
         
         // Set look and feel to native OS
         try {
@@ -1773,11 +1774,11 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
            currentlyOpeningImages = false;
 }//GEN-LAST:event_jMenuItem7ActionPerformed
     
-public void updateLineProfile(double[] newdata, String name) {
+public void updateLineProfile(double[] newdata, String name, int width) {
     if(this.lineProfile==null) {
         return;
     } else {
-        lineProfile.updateData(newdata, name);
+        lineProfile.updateData(newdata, name, width);
     }
 }
 

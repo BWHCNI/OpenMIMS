@@ -534,7 +534,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                    
                    if ((roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE)) {
                        ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(this);
-                       ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() + " : " + roi.getName());
+                       ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() + " : " + roi.getName(), this.getProcessor().getLineWidth());
                    }
 
                    break;
@@ -551,14 +551,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     // Display statistics while dragging or creating ROIs.
     public void mouseDragged(MouseEvent e) {
-       
+      
        // get mouse poistion
        int x = (int) e.getPoint().getX();
        int y = (int) e.getPoint().getY();
        int mX = getWindow().getCanvas().offScreenX(x);
        int mY = getWindow().getCanvas().offScreenY(y); 
        String msg = "" + mX + "," + mY ;
-       
+
        // precision
        int displayDigits = 2;
        
@@ -581,15 +581,15 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 String label = this.getShortTitle() + " ROI: " + roi.getName();
                 this.ui.getRoiControl().updateHistogram(roiPix, label, false);
             }
-            
+
             if ( (roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE) ) {
                 ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(this);
-                ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() +" : " + roi.getName());
+                ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() + " : " + roi.getName(), this.getProcessor().getLineWidth());
             }
             
         }
     }
-    
+
     public double[] getRoiPixels() {
         if (this.getRoi()==null) return null;
         
@@ -621,13 +621,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                     if (mask == null || mask[mi++] != 0) {
                         pixellist.add((double)imp.getPixelValue(x, y));
                     }
+                    //mi++;
                     i++;
                 }
             }
             double[] foo = new double[pixellist.size()];
             for(int j =0; j< foo.length; j++) 
                 foo[j] = pixellist.get(j);
-            //System.out.println("foo.length: " + foo.length);
             return foo;
         }
     }
