@@ -159,7 +159,7 @@ public class MimsLineProfile extends JFrame implements ActionListener{
         }
 
         linewidth = width;
-        XYSeries series = new XYSeries(name);
+        XYSeries series = new XYSeries(name + " w: "+width);
         for(int i = 0; i< newdata.length; i++) {
             series.add(i, newdata[i]);
         }
