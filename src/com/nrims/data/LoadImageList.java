@@ -88,7 +88,7 @@ public class LoadImageList {
         try {
         this.ui.loadMIMSFile(workingDirectory + "/" + imageList.get(0));
         MimsPlus[] massImages = this.ui.getMassImages();
-        int nMasses = this.ui.getMimsImage().nMasses();
+        int nMasses = this.ui.getOpener().nMasses();
         
         
         for (int i = 0; i < nMasses; i++) {
@@ -110,8 +110,7 @@ public class LoadImageList {
         
         for (int i = 1; i < imageList.size(); i++) {
             UI tempUi = new UI(workingDirectory + "/" + imageList.get(i)); //loadMims here
-            this.ui.getmimsStackEditing().concatImages(false, false, tempUi);
-
+            this.ui.getmimsStackEditing().concatImages(false, false, tempUi);            
             for (MimsPlus image : tempUi.getMassImages()) {
                 if (image != null) {
                     image.setAllowClose(true);
