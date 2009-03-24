@@ -46,7 +46,7 @@ public class MimsRatioManager extends PlugInJFrame implements ActionListener {
       instance = this;      
       
       // Get the mass names.
-      String[] massNames = ui.getMimsImage().getMassNames();
+      String[] massNames = ui.getOpener().getMassNames();
       
       // Create the numerator and denominator panel.
       JPanel numeratorPanel = new JPanel(new GridLayout(0,1));      

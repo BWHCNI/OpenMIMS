@@ -116,7 +116,7 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         // extract features for prediction
         dataPoints = new ArrayList<ArrayList<int[]>>(1);
         // create "dummy ROI which corresponds to the whole image
-        ij.gui.Roi testRoi = new ij.gui.Roi(0,0,ui.getMimsImage().getWidth(), ui.getMimsImage().getHeight());
+        ij.gui.Roi testRoi = new ij.gui.Roi(0,0,ui.getOpener().getWidth(), ui.getOpener().getHeight());
         dataPoints.add(getDataPoints(testRoi));
         predData = extractFeatures(dataPoints, images, classMeans);               
     }

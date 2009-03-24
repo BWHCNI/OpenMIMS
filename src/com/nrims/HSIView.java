@@ -572,7 +572,7 @@ private synchronized void update(boolean bUpdateUI) {
         if(ui == null)
             return;
         
-        com.nrims.data.Opener image = ui.getMimsImage() ;
+        com.nrims.data.Opener image = ui.getOpener() ;
         if(image == null)
             return;
         
@@ -710,7 +710,7 @@ private synchronized void update(boolean bUpdateUI) {
         int den = new Integer(num_den[1]).intValue();
         
         // convert to the form 'Mass 13.01 / Mass 12.99'
-        String[] massNames = ui.getMimsImage().getMassNames();
+        String[] massNames = ui.getOpener().getMassNames();
         String label = " Mass "+massNames[num]+" / Mass "+massNames[den]+" ";
         
         // set text

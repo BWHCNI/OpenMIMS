@@ -15,35 +15,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     public static final long serialVersionUID = 1;
 
-    //Philipp method for demo
-    //needs to be deleted
-    public void setConcatGUI(boolean status) {
-        if (status) {
-            this.reinsertButton.setEnabled(false);
-            this.reinsertListTextField.setEnabled(false);
-            this.concatButton.setEnabled(false);
-            this.untrackButton.setEnabled(false);
-            this.translateXSpinner.setEnabled(false);
-            this.translateYSpinner.setEnabled(false);
-        } else {
-            this.reinsertButton.setEnabled(true);
-            this.reinsertListTextField.setEnabled(true);
-            this.concatButton.setEnabled(true);
-            this.untrackButton.setEnabled(true);
-            this.translateXSpinner.setEnabled(true);
-            this.translateYSpinner.setEnabled(true);
-            autoTrackButton.setEnabled(true);
-        }
-    }
-    //Philipp method for demo
-    /** Creates new form mimsStackEditing
-     * @param ui ??
-     * @param im ??
-     */
     public MimsStackEditing(UI ui, Opener im) {
 
         initComponents();
-
 
         this.ui = ui;
         this.image = im;
@@ -53,7 +27,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
         imagestacks = new ImageStack[numberMasses];
 
         resetImageStacks();
-
     }
 
     public void resetImageStacks() {
@@ -108,11 +81,16 @@ public class MimsStackEditing extends javax.swing.JPanel {
     public void restoreSlice(int plane) {
         int restoreIndex = ui.mimsAction.trueIndex(plane);
         try {
-            image.setStackIndex(restoreIndex - 1);
+           
+            int openerIndex = ui.mimsAction.getOpenerIndex(plane - 1);
+            String openerName = ui.mimsAction.getOpenerName(plane - 1);
+            Opener op = ui.getFromOpenerList(openerName);
+            
+            op.setStackIndex(openerIndex);
             for (int k = 0; k <= (numberMasses - 1); k++) {
-                image.readPixels(k);
+                op.readPixels(k);
                 images[k].setSlice(plane);
-                images[k].getProcessor().setPixels(image.getPixels(k));
+                images[k].getProcessor().setPixels(op.getPixels(k));
                 images[k].updateAndDraw();
             }
         } catch (Exception e) {
@@ -131,20 +109,23 @@ public class MimsStackEditing extends javax.swing.JPanel {
             return;
         }
 
-        //int n = ui.mimsAction.getSize();
-
+        // Get some properties about the image we are trying to restore.
         int restoreIndex = ui.mimsAction.displayIndex(plane);
         int displaysize = images[0].getNSlices();
         System.out.println("try to add at: " + restoreIndex);
         try {
             if (restoreIndex < displaysize) {
                 int currentPlane = images[0].getCurrentSlice();
-
-                image.setStackIndex(plane - 1);
-                for (int i = 0; i < image.nMasses(); i++) {
+                
+                int openerIndex = ui.mimsAction.getOpenerIndex(plane - 1);
+                String openerName = ui.mimsAction.getOpenerName(plane - 1);
+                Opener op = ui.getFromOpenerList(openerName);
+                                
+                op.setStackIndex(openerIndex);
+                for (int i = 0; i < op.nMasses(); i++) {
                     images[i].setSlice(restoreIndex);
                     imagestacks[i].addSlice("", images[i].getProcessor(), restoreIndex);
-                    images[i].getProcessor().setPixels(image.getPixels(i));
+                    images[i].getProcessor().setPixels(op.getPixels(i));
                     images[i].updateAndDraw();
                 }
                 ui.mimsAction.undropPlane(plane);
@@ -155,14 +136,18 @@ public class MimsStackEditing extends javax.swing.JPanel {
                 this.holdupdate = true;
 
                 int currentPlane = images[0].getCurrentSlice();
-                image.setStackIndex(plane - 1);
-
-                for (int i = 0; i < image.nMasses(); i++) {
+                
+                int openerIndex = ui.mimsAction.getOpenerIndex(plane  - 1);
+                String openerName = ui.mimsAction.getOpenerName(plane - 1);
+                Opener op = ui.getFromOpenerList(openerName);
+                
+                op.setStackIndex(openerIndex);
+                for (int i = 0; i < op.nMasses(); i++) {
                     images[i].setSlice(displaysize);
                     imagestacks[i].addSlice("", images[i].getProcessor());
                     images[i].setStack(null, imagestacks[i]);
                     images[i].setSlice(restoreIndex);
-                    images[i].getProcessor().setPixels(image.getPixels(i));
+                    images[i].getProcessor().setPixels(op.getPixels(i));
                     images[i].updateAndDraw();
                 }
 
@@ -182,7 +167,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
     public void concatImages(boolean pre, boolean labeloriginal, UI tempui) {
 
         ui.setUpdating(true);
-
+        
+        Opener tempImage = tempui.getOpener();
         MimsPlus[] tempimage = tempui.getMassImages();
         ImageStack[] tempstacks = new ImageStack[numberMasses];
 
@@ -201,8 +187,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
             }
         }
         //increase action size
-        ui.mimsAction.addPlanes(pre, tempimage[0].getNSlices());
-
+        ui.mimsAction.addPlanes(pre, tempimage[0].getNSlices(), tempImage);
+        ui.mimsAction.addImage(pre, tempImage);
+        
         for (int i = 0; i <= (numberMasses - 1); i++) {
             tempstacks[i] = tempimage[i].getStack();
         }
@@ -213,14 +200,14 @@ public class MimsStackEditing extends javax.swing.JPanel {
                     imagestacks[mass].addSlice(tempimage[mass].getTitle(), tempstacks[mass].getProcessor(i), 0);
                 }
             }
-            ui.getmimsLog().Log("Concat: " + tempui.getMimsImage().getName() + " + " + image.getName());
+            ui.getmimsLog().Log("Concat: " + tempui.getOpener().getName() + " + " + image.getName());
         } else {
             for (int mass = 0; mass <= (numberMasses - 1); mass++) {
                 for (int i = 1; i <= tempstacks[mass].getSize(); i++) {
                     imagestacks[mass].addSlice(tempimage[mass].getTitle(), tempstacks[mass].getProcessor(i));
                 }
             }
-            ui.getmimsLog().Log("Concat: " + image.getName() + " + " + tempui.getMimsImage().getName());
+            ui.getmimsLog().Log("Concat: " + image.getName() + " + " + tempui.getOpener().getName());
         }
 
 
@@ -229,7 +216,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
             this.images[i].updateImage();
         }
 
-        ui.mimsAction.addImage(pre, tempui.getMimsImage());
+        
 
         ui.getmimsLog().Log("New size: " + images[0].getNSlices() + " planes");
 
@@ -246,8 +233,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
 
         // disable certain functions
-        setConcatGUI(true);
+        //setConcatGUI(true);
 
+        ui.addToOpenerList(tempui.getOpener().getImageFile().getName(), tempui.getOpener());
         ui.setUpdating(false);
     }
 
@@ -375,23 +363,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
     }
 
-    public void applyAction(MimsAction action) {
-        int trueIndex = 1;
-        for (Opener im : action.getImages()) {    // iterate through all .im files contained in the action
-            for (int i = 0; i < im.nImages(); i++) {  // iterate through all planes of the current .im file
-                for (int k = 0; k < image.nMasses(); k++) {     // set the current slice
-                    images[k].setSlice(trueIndex);
-                }
-                int displayIndex = action.displayIndex(trueIndex);
-                XShiftSlice(displayIndex, action.getXShift(displayIndex));
-                YShiftSlice(displayIndex, action.getYShift(displayIndex));
-                if (action.isDropped(trueIndex) == 1) {
-                    removeSlice(displayIndex);
-                }
-                trueIndex++;
-            }
-        }
-    }
     private UI ui = null;
     private Opener image = null;
     private int numberMasses = -1;
@@ -649,11 +620,11 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     private void concatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_concatButtonActionPerformed
         UI tempUi = new UI(ui.getImageDir()); //loadMims here
-        Opener tempImage = tempUi.getMimsImage();
+        Opener tempImage = tempUi.getOpener();
         if (tempImage == null) {
             return; // if the FileChooser dialog was canceled
         }
-        if (ui.getMimsImage().nMasses() == tempImage.nMasses()) {
+        if (ui.getOpener().nMasses() == tempImage.nMasses()) {
             if (sameResolution(image, tempImage)) {
                 if (sameSpotSize(image, tempImage)) {
                     Object[] options = {"Append images", "Prepend images", "Cancel"};
@@ -662,13 +633,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                     if (value != JOptionPane.CANCEL_OPTION) {
                         // store action to reapply it after restoring
                         // (shallow copy in mimsAction is enough as 'restoreMims' creates a new 'actionList' object
-                        //mimsAction action = (mimsAction)ui.getmimsAction().clone();
-                        //ui.restoreMims();
                         concatImages(value != JOptionPane.YES_OPTION, true, tempUi);
-                    //applyAction(action);
-//                        for(int k=0; k<image.nMasses(); k++) {     // display the first slice
-//                            images[k].setSlice(1);
-//                        }
                     }
                 } else {
                     IJ.error("Images do not have the same spot size.");
@@ -786,7 +751,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     private void displayActionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayActionButtonActionPerformed
         // TODO add your handling code here:
-        ij.text.TextWindow actionWindow = new ij.text.TextWindow("Current Action State", "plane\tx\ty\tdrop", "", 300, 400);
+        ij.text.TextWindow actionWindow = new ij.text.TextWindow("Current Action State", "plane\tx\ty\tdrop\timage index\timage", "", 300, 400);
 
         int n = ui.mimsAction.getSize();
         String tempstr = "";
@@ -989,7 +954,8 @@ private void saveActionButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             }
 
         }
-        MimsAction.writeAction(ui.getmimsAction(), actionFilePath);
+        //MimsAction.writeAction(ui.getmimsAction(), actionFilePath);
+        ui.getmimsAction().writeAction(actionFilePath);
         break;
     }
 }//GEN-LAST:event_saveActionButtonActionPerformed

@@ -5,59 +5,52 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
-/**
- *
- * @author cpoczatek
- * @author <a href="mailto:rob.gonzalez@gmail.com">Rob Gonzalez</a>
- */
-// TODO why is this Coneable?
 public class MimsAction implements Cloneable {
-
-    private ArrayList<Opener> images;
-    private java.util.ArrayList<int[]> actionList;
+    
+    // actionList and imageList have one entry per slice in the stack.
+    private ArrayList<int[]> actionList;
+    private ArrayList<String> imageList;
 
     public MimsAction(UI ui, Opener im) {
         resetAction(ui, im);
     }
 
-    public void resetAction(UI ui, Opener im) {
-        this.images = new ArrayList<Opener>();
-        images.add(im);
+    public void resetAction(UI ui, Opener im) {                    
 
-        this.actionList = new ArrayList<int[]>();
+        actionList = new ArrayList<int[]>();
+        imageList = new ArrayList<String>();
         int tempsize = ui.getMassImage(0).getNSlices();
 
+        // index [0] = slice number
+        // index [1] = X offset
+        // index [2] = Y offset
+        // index [3] = 0 or 1 (kept or dropped)
+        // index [4] = image index
         for (int i = 0; i < tempsize; i++) {
-            int[] temparray = {i + 1, 0, 0, 0};
+            int[] temparray = {i + 1, 0, 0, 0, i};
             actionList.add(temparray);
+            imageList.add(im.getImageFile().getName());
         }
     }
 
-    public void printAction() {
-        int n = this.actionList.size();
-        int[] row = new int[4];
-        for (int i = 0; i < n; i++) {
-            row = actionList.get(i);
-            System.out.println("p:" + row[0] + " " + row[1] + " " + row[2] + " " + row[3]);
-        }
-
-    }
-
-    public void addPlanes(boolean pre, int n) {
+    public void addPlanes(boolean pre, int n, Opener op) {
         int origSize = actionList.size();
         int startIndex;
         if (pre) {
             startIndex = 0;
         } else {
             startIndex = origSize;
-        }
+        }       
 
-        // add planes to the action-ArrayList
+        // Add planes to the action-ArrayList.
+        int openerPlaneNum = 0;
         for (int i = startIndex; i < n + startIndex; i++) {
-            int[] temparray = {i + 1, 0, 0, 0};
-            System.out.println("i=" + (i + 1));
+            int[] temparray = {i + 1, 0, 0, 0, openerPlaneNum};            
             actionList.add(i, temparray);
+            imageList.add(i, op.getImageFile().getName());
+            openerPlaneNum++;
         }
 
         // renumber original planes, if new ones were prepended
@@ -71,7 +64,8 @@ public class MimsAction implements Cloneable {
 
     public String getActionRow(int plane) {
         int[] row = actionList.get(plane - 1);
-        return "p:" + row[0] + "\t" + row[1] + "\t" + row[2] + "\t" + row[3];
+        String imageName = imageList.get(plane - 1);
+        return "p:" + row[0] + "\t" + row[1] + "\t" + row[2] + "\t" + row[3] + "\t" + row[4] + "\t" + imageName;
     }
 
     public int getSize() {
@@ -154,18 +148,30 @@ public class MimsAction implements Cloneable {
         return (actionList.get(tIndex - 1)[3]);
     }
 
-    public ArrayList<Opener> getImages() {
-        return images;
+    public ArrayList<String> getImageList(){
+       return imageList;
     }
-
+    
     public void addImage(boolean pre, Opener im) {
+       
+       String imageName = im.getName();       
+       
+       // Keep plane dependant list up to date.
         if (pre) {
-            images.add(0, im);
+           imageList.add(0, imageName);
         } else {
-            images.add(im);
+           imageList.add(imageName);
         }
     }
-
+    
+    public int getOpenerIndex(int plane) {       
+       return actionList.get(plane)[4];       
+    }
+    
+    public String getOpenerName(int plane) {
+       return imageList.get(plane);
+    }
+    
     @Override
     public Object clone() {
         // only a shallow copy is retrurned!!
@@ -176,29 +182,29 @@ public class MimsAction implements Cloneable {
         }
     }
 
-    public static boolean writeAction(MimsAction action, String filename) {
+    public boolean writeAction(String filename) {
         BufferedWriter bw = null;
+        
+        int imageSize = imageList.size();
+        int actionSize = actionList.size();
+        
+        if (imageSize != actionSize){
+           System.out.println("internal decrepancy between image list and action list.");
+           return false;
+        }
+        
         try {
             bw = new BufferedWriter(new FileWriter(filename));
 
-            // write header containing .im filenames
-            for (Opener im : action.getImages()) {
-                bw.append(im.getName());
-                bw.newLine();
-            }
-            bw.newLine();
-
             // write image state
-            for (int i = 1; i <= action.getSize(); i++) {
-                bw.append(action.getActionRow(i));
+            for (int i = 1; i <= actionSize; i++) {
+                bw.append(getActionRow(i));
                 bw.newLine();
             }
             bw.close();
             return true;
         } catch (IOException e) {
             System.out.println(e.getStackTrace().toString());
-            // TODO write to log file?
-            // TODO should we honestly silently ignore this?
             return false;
         } finally {
             if (bw != null) {
@@ -211,4 +217,11 @@ public class MimsAction implements Cloneable {
             }
         }
     }
+
+   void setSliceImage(int plane, String file) {
+        int tplane = trueIndex(plane);
+        if (!imageList.get(tplane - 1).equals(file)) {
+            imageList.set(tplane - 1, file);
+        }   
+   }
 }

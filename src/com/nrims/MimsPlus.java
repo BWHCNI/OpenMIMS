@@ -188,7 +188,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        
     }
     
-    public com.nrims.data.Opener getMimsImage() { return srcImage ; }
+    public com.nrims.data.Opener getOpener() { return srcImage ; }
     public int getMimsMassIndex() { return nMass ; }
     public int getMimsType() { return nType ; }
 
@@ -350,6 +350,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
         if(ui.getDebug()) {
             ui.updateStatus("mimsPlus::windowOpened listener installed");
+        }
+        if (nType != HSI_IMAGE) {
+           ui.getCBControl().addWindowtoList(this);        
         }
 
     }

@@ -24,7 +24,7 @@ public class FeaturesDialog extends javax.swing.JDialog {
         initComponents();
         ratios = new ArrayList<String>();
         
-        Opener opener = ui.getMimsImage();
+        Opener opener = ui.getOpener();
         // 6 hard coded buttons correspond to the current maximum supported number of mass images
         massBoxes = new javax.swing.JCheckBox[]{jCheckBox1,jCheckBox2,jCheckBox3,jCheckBox4,jCheckBox5,jCheckBox6};
         for(int i=0; i<massBoxes.length; i++) massBoxes[i].setVisible(false);
