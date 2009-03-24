@@ -9,7 +9,7 @@ import java.awt.Color;
 
 /**
  * Extends ij.gui.ImageCanvas with utility to display all ROIs.
- * 
+ *
  * @author Douglas Benson
  * @author <a href="mailto:rob.gonzalez@gmail.com">Rob Gonzalez</a>
  */
@@ -42,7 +42,7 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
         g.setColor(Color.RED);
         Roi cRoi = mImp.getRoi();
         javax.swing.JList list = roiManager.getList();
-        
+
         //to count the rois on a plane if not synced
         int nSyncid = 0;
         //test is ratio/hsi to get correct plane number
@@ -52,14 +52,14 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
         if(isRatio) {
             parentplane = ui.getMassImages()[mImp.getNumMass()].getCurrentSlice();
         }
-        
-        for (int id = 0; id < list.getModel().getSize(); id++) {            
+
+        for (int id = 0; id < list.getModel().getSize(); id++) {
             String label = (list.getModel().getElementAt(id).toString());
             Roi roi = (Roi) rois.get(label);
-            boolean bDraw = true;                        
-            
-            
-            // If the current slice is the one which the 
+            boolean bDraw = true;
+
+
+            // If the current slice is the one which the
             // roi was created then we want to show the roi in red.
             if (ui.getSyncROIsAcrossPlanes()) {
                 String name = "" + (id + 1);
@@ -87,25 +87,70 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
             } else {
                 bDraw = false;
             }
-            
+
             // We dont want to show the boundry if the mouse is within the roi.
             if (cRoi != null && cRoi.toString().equals(roi.toString())) {
                 bDraw = false;
             }
             if (bDraw) {
                 switch (roi.getType()) {
-                    case Roi.COMPOSITE:
+                    case Roi.COMPOSITE: {
                         roi.setImage(imp);
                         Color tmp = roi.getInstanceColor();
                         roi.setInstanceColor(Color.RED);
                         roi.draw(g);
                         roi.setInstanceColor(tmp);
+                        break; //TODO test
+                    }
+                    case Roi.FREELINE: {
+                        int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+                        Polygon p = roi.getPolygon();
+                        for (int j = 0; j < p.npoints; j++) {
+                            x2 = screenX(p.xpoints[j]);
+                            y2 = screenY(p.ypoints[j]);
+                            if (j > 0) {
+                                g.drawLine(x1, y1, x2, y2);
+                            }
+                            x1 = x2;
+                            y1 = y2;
+                        }
                         break;
-                    case Roi.FREELINE:
-                    case Roi.FREEROI:
+                    }
+                    case Roi.POLYLINE: {
+                        int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+                        Polygon p = roi.getPolygon();
+                        for (int j = 0; j < p.npoints; j++) {
+                            x2 = screenX(p.xpoints[j]);
+                            y2 = screenY(p.ypoints[j]);
+                            if (j > 0) {
+                                g.drawLine(x1, y1, x2, y2);
+                            }
+                            x1 = x2;
+                            y1 = y2;
+                        }
+                        break;
+                    }
+                    case Roi.LINE: {
+                        Line lroi = (Line) roi;
+                        int x1 = screenX(lroi.x1);
+                        int x2 = screenX(lroi.x2);
+                        int y1 = screenY(lroi.y1);
+                        int y2 = screenY(lroi.y2);
+                        g.drawLine(x1, y1, x2, y2);
+                        break;
+                    }
+                    case Roi.POINT:
+                         {
+                            java.awt.Rectangle r = roi.getBounds();
+                            int x1 = screenX(r.x);
+                            int y1 = screenY(r.y);
+                            g.drawLine(x1, y1 - 5, x1, y1 + 5);
+                            g.drawLine(x1 - 5, y1, x1 + 5, y1);
+                        }
+                        break;
                     case Roi.OVAL:
+                    case Roi.FREEROI:
                     case Roi.POLYGON:
-                    case Roi.POLYLINE:
                     case Roi.RECTANGLE:
                     default:
                          {
@@ -135,27 +180,9 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
                             }
                         }
                         break;
-                    case Roi.LINE:
-                         {
-                            Line lroi = (Line) roi;
-                            int x1 = screenX(lroi.x1);
-                            int x2 = screenX(lroi.x2);
-                            int y1 = screenY(lroi.y1);
-                            int y2 = screenY(lroi.y2);
-                            g.drawLine(x1, y1, x2, y2);
-                        }
-                        break;
-                    case Roi.POINT:
-                         {
-                            java.awt.Rectangle r = roi.getBounds();
-                            int x1 = screenX(r.x);
-                            int y1 = screenY(r.y);
-                            g.drawLine(x1, y1 - 5, x1, y1 + 5);
-                            g.drawLine(x1 - 5, y1, x1 + 5, y1);
-                        }
-                        break;
+
                 }
-            }                       
+            }
         }
     }
 
