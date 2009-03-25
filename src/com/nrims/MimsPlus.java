@@ -271,9 +271,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 ui.updateStatus("mimsPlus::show() addWindowListener " + getWindow().toString());
             }
         }
-        if (nType != HSI_IMAGE) {
-           ui.getCBControl().addWindowtoList(this);        
-        }
     }
     
     @Override
@@ -351,10 +348,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(ui.getDebug()) {
             ui.updateStatus("mimsPlus::windowOpened listener installed");
         }
-        if (nType != HSI_IMAGE) {
-           ui.getCBControl().addWindowtoList(this);        
-        }
-
     }
     @Override
     public void mouseExited(MouseEvent e){ ui.updateStatus(" "); }

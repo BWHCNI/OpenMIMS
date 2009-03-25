@@ -368,7 +368,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         double dMax = (double) image.getMax(i);
                         if (mp != null) {
                             massImages[i].getProcessor().setMinAndMax(dMin, dMax);
-                            massImages[i].getProcessor().setPixels(image.getPixels(i));
+                            massImages[i].getProcessor().setPixels(image.getPixels(i));                            
                         }
                     }
                 }
@@ -456,12 +456,19 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             this.mimsTomography.resetBounds();
             this.mimsTomography.resetImageNamesList();
             this.mimsStackEditing.resetSpinners();
+            
+            String fName = (new File(fileName)).getName();     
+            openers.put(fName, image);            
+            
+            // Add the windows to the combobox in CBControl.
+            MimsPlus[] mp = getOpenMassImages();
+            for(int i = 0; i < mp.length; i++) {
+               cbControl.addWindowtoList(mp[i]);
+            }            
+            
         } finally {
             currentlyOpeningImages = false;
-        }
-        
-        String fName = (new File(fileName)).getName();     
-        openers.put(fName, image);
+        }        
     }
 
     /**
@@ -706,21 +713,26 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         for (int i = 0; i < maxMasses; i++) {
             if (segImages[i] != null) {
                 segImages[i].updateAndDraw();
+                segImages[i].killRoi();
             }
             if (massImages[i] != null) {
                 massImages[i].updateAndDraw();
+                massImages[i].killRoi();
             }
             if (hsiImages[i] != null) {
                 hsiImages[i].updateAndDraw();
+                hsiImages[i].killRoi();
             }
             if (ratioImages[i] != null) {
                 ratioImages[i].updateAndDraw();
+                ratioImages[i].killRoi();
             }
         }
 
         for (int i = 0; i < maxMasses * 2; i++) {
             if (sumImages[i] != null) {
                 sumImages[i].updateAndDraw();
+                sumImages[i].killRoi();
             }
         }
     }

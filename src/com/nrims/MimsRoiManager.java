@@ -496,7 +496,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     
     void showall() {
         if (getImage() != null) {
-            getImage().updateAndRepaintWindow();
+            ui.updateAllImages();
         }
     }
     
@@ -683,10 +683,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             Recorder.record("mimsRoiManager", "Delete");
         }
         
-        // As far as i can tell, this is the only way to get rid
-        // of stale (yellow) Rois from the image w/o having to click the window.
-        // killRoi() only gets rid of it in the CURRENT window.
-        getImage().setRoi(0,0,0,0);        
+        ui.updateAllImages();
                      
         return true;
     }
