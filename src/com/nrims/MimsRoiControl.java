@@ -33,210 +33,213 @@ public class MimsRoiControl extends javax.swing.JPanel {
         measure.setName(jTextField1.getText());
     }
     
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+   private void initComponents() {
 
-        jCheckBox2 = new javax.swing.JCheckBox();
-        jCheckBox3 = new javax.swing.JCheckBox();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jCheckBox4 = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jButton5 = new javax.swing.JButton();
-        jCheckBox5 = new javax.swing.JCheckBox();
-        histogramjPanel = new javax.swing.JPanel();
-        histogramUpdatejCheckBox = new javax.swing.JCheckBox();
-        profilejButton = new javax.swing.JButton();
+      jCheckBox2 = new javax.swing.JCheckBox();
+      jCheckBox3 = new javax.swing.JCheckBox();
+      jButton1 = new javax.swing.JButton();
+      jButton2 = new javax.swing.JButton();
+      jButton3 = new javax.swing.JButton();
+      jButton4 = new javax.swing.JButton();
+      jCheckBox4 = new javax.swing.JCheckBox();
+      jLabel1 = new javax.swing.JLabel();
+      jTextField1 = new javax.swing.JTextField();
+      jButton5 = new javax.swing.JButton();
+      jCheckBox5 = new javax.swing.JCheckBox();
+      histogramjPanel = new javax.swing.JPanel();
+      histogramUpdatejCheckBox = new javax.swing.JCheckBox();
+      profilejButton = new javax.swing.JButton();
 
-        setToolTipText("Drawing ROIs automatically adds to RoiManager");
+      setToolTipText("Drawing ROIs automatically adds to RoiManager");
 
-        jCheckBox2.setText("Synchronize ROIs across all masses");
-        jCheckBox2.setToolTipText("Display ROI in all images");
-        jCheckBox2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jCheckBox2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jCheckBox2.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jCheckBox2ItemStateChanged(evt);
-            }
-        });
+      jCheckBox2.setSelected(true);
+      jCheckBox2.setText("Synchronize ROIs across all masses");
+      jCheckBox2.setToolTipText("Display ROI in all images");
+      jCheckBox2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+      jCheckBox2.setMargin(new java.awt.Insets(0, 0, 0, 0));
+      jCheckBox2.addItemListener(new java.awt.event.ItemListener() {
+         public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            jCheckBox2ItemStateChanged(evt);
+         }
+      });
 
-        jCheckBox3.setText("Add ROIs");
-        jCheckBox3.setToolTipText("Automatically add ROs to the RoiManager");
-        jCheckBox3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jCheckBox3.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jCheckBox3.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jCheckBox3ItemStateChanged(evt);
-            }
-        });
+      jCheckBox3.setSelected(true);
+      jCheckBox3.setText("Add ROIs");
+      jCheckBox3.setToolTipText("Automatically add ROs to the RoiManager");
+      jCheckBox3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+      jCheckBox3.setMargin(new java.awt.Insets(0, 0, 0, 0));
+      jCheckBox3.addItemListener(new java.awt.event.ItemListener() {
+         public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            jCheckBox3ItemStateChanged(evt);
+         }
+      });
 
-        jButton1.setText("RoiManager");
-        jButton1.setToolTipText("Launch RoiManager");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
+      jButton1.setText("RoiManager");
+      jButton1.setToolTipText("Launch RoiManager");
+      jButton1.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton1ActionPerformed(evt);
+         }
+      });
 
-        jButton2.setText("Measure All Rois");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
+      jButton2.setText("Measure All Rois");
+      jButton2.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton2ActionPerformed(evt);
+         }
+      });
 
-        jButton3.setText("Data Options...");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
+      jButton3.setText("Data Options...");
+      jButton3.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton3ActionPerformed(evt);
+         }
+      });
 
-        jButton4.setText("Source images...");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
-            }
-        });
+      jButton4.setText("Source images...");
+      jButton4.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton4ActionPerformed(evt);
+         }
+      });
 
-        jCheckBox4.setText("Append to table");
-        jCheckBox4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
+      jCheckBox4.setText("Append to table");
+      jCheckBox4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+      jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jLabel1.setText("Table Name");
+      jLabel1.setText("Table Name");
 
-        jTextField1.setText("NRIMS.txt");
-        jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                jTextField1KeyPressed(evt);
-            }
-        });
+      jTextField1.setText("NRIMS.txt");
+      jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
+         public void keyPressed(java.awt.event.KeyEvent evt) {
+            jTextField1KeyPressed(evt);
+         }
+      });
 
-        jButton5.setText("Measure Sum Images");
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
-            }
-        });
+      jButton5.setText("Measure Sum Images");
+      jButton5.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton5ActionPerformed(evt);
+         }
+      });
 
-        jCheckBox5.setText("Synchronize ROIs across all planes ");
-        jCheckBox5.setToolTipText("Display ROI in all images");
-        jCheckBox5.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jCheckBox5.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jCheckBox5.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jCheckBox5ItemStateChanged(evt);
-            }
-        });
+      jCheckBox5.setSelected(true);
+      jCheckBox5.setText("Synchronize ROIs across all planes ");
+      jCheckBox5.setToolTipText("Display ROI in all images");
+      jCheckBox5.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+      jCheckBox5.setMargin(new java.awt.Insets(0, 0, 0, 0));
+      jCheckBox5.addItemListener(new java.awt.event.ItemListener() {
+         public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            jCheckBox5ItemStateChanged(evt);
+         }
+      });
 
-        histogramjPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        histogramjPanel.setMaximumSize(new java.awt.Dimension(300, 250));
-        histogramjPanel.setMinimumSize(new java.awt.Dimension(300, 250));
-        histogramjPanel.setPreferredSize(new java.awt.Dimension(350, 250));
+      histogramjPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+      histogramjPanel.setMaximumSize(new java.awt.Dimension(300, 250));
+      histogramjPanel.setMinimumSize(new java.awt.Dimension(300, 250));
+      histogramjPanel.setPreferredSize(new java.awt.Dimension(350, 250));
 
-        org.jdesktop.layout.GroupLayout histogramjPanelLayout = new org.jdesktop.layout.GroupLayout(histogramjPanel);
-        histogramjPanel.setLayout(histogramjPanelLayout);
-        histogramjPanelLayout.setHorizontalGroup(
-            histogramjPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 348, Short.MAX_VALUE)
-        );
-        histogramjPanelLayout.setVerticalGroup(
-            histogramjPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 248, Short.MAX_VALUE)
-        );
+      org.jdesktop.layout.GroupLayout histogramjPanelLayout = new org.jdesktop.layout.GroupLayout(histogramjPanel);
+      histogramjPanel.setLayout(histogramjPanelLayout);
+      histogramjPanelLayout.setHorizontalGroup(
+         histogramjPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+         .add(0, 348, Short.MAX_VALUE)
+      );
+      histogramjPanelLayout.setVerticalGroup(
+         histogramjPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+         .add(0, 248, Short.MAX_VALUE)
+      );
 
-        histogramUpdatejCheckBox.setText("Autoupdate Histogram");
+      histogramUpdatejCheckBox.setText("Autoupdate Histogram");
 
-        profilejButton.setText("Dynamic Profile");
-        profilejButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                profilejButtonActionPerformed(evt);
-            }
-        });
+      profilejButton.setText("Dynamic Profile");
+      profilejButton.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            profilejButtonActionPerformed(evt);
+         }
+      });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(jCheckBox3)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(jButton1))
-                            .add(jCheckBox5)
-                            .add(jCheckBox2)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .add(40, 40, 40)
-                        .add(histogramjPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jCheckBox4)
-                    .add(jCheckBox5)
-                    .add(jCheckBox2)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 144, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(layout.createSequentialGroup()
-                                .add(jButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 138, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jButton5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 166, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .add(43, 43, 43)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(profilejButton)
-                            .add(histogramUpdatejCheckBox))))
-                .add(139, 139, 139))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, histogramjPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(jCheckBox5)
-                        .add(18, 18, 18)
-                        .add(jCheckBox2)
-                        .add(16, 16, 16)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jCheckBox3)
-                            .add(jButton1))
-                        .add(51, 51, 51)
-                        .add(jButton4)
+      org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+      this.setLayout(layout);
+      layout.setHorizontalGroup(
+         layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+         .add(layout.createSequentialGroup()
+            .addContainerGap()
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+               .add(layout.createSequentialGroup()
+                  .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                     .add(layout.createSequentialGroup()
+                        .add(jCheckBox3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jButton3)))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel1)
-                            .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(jButton1))
+                     .add(jCheckBox5)
+                     .add(jCheckBox2)
+                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                  .add(40, 40, 40)
+                  .add(histogramjPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+               .add(jCheckBox4)
+               .add(jCheckBox5)
+               .add(jCheckBox2)
+               .add(layout.createSequentialGroup()
+                  .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                     .add(layout.createSequentialGroup()
+                        .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jButton2)
-                            .add(jButton5))
+                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 144, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                     .add(layout.createSequentialGroup()
+                        .add(jButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 138, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jCheckBox4))
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(histogramUpdatejCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(profilejButton)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-    }// </editor-fold>//GEN-END:initComponents
+                        .add(jButton5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 166, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                  .add(43, 43, 43)
+                  .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                     .add(profilejButton)
+                     .add(histogramUpdatejCheckBox))))
+            .add(139, 139, 139))
+      );
+      layout.setVerticalGroup(
+         layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+         .add(layout.createSequentialGroup()
+            .add(12, 12, 12)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+               .add(org.jdesktop.layout.GroupLayout.LEADING, histogramjPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+               .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                  .add(jCheckBox5)
+                  .add(18, 18, 18)
+                  .add(jCheckBox2)
+                  .add(16, 16, 16)
+                  .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                     .add(jCheckBox3)
+                     .add(jButton1))
+                  .add(51, 51, 51)
+                  .add(jButton4)
+                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                  .add(jButton3)))
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+               .add(layout.createSequentialGroup()
+                  .add(12, 12, 12)
+                  .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                     .add(jLabel1)
+                     .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                  .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                     .add(jButton2)
+                     .add(jButton5))
+                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                  .add(jCheckBox4))
+               .add(layout.createSequentialGroup()
+                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                  .add(histogramUpdatejCheckBox)
+                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                  .add(profilejButton)))
+            .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+      );
+   }// </editor-fold>//GEN-END:initComponents
 
     private void setupHistogram() {
         // Create arbitrary dataset
@@ -376,21 +379,21 @@ public void setROIsSynchedAcrossPlanes(boolean setSynched) {
     private JFreeChart chart;
     private ChartPanel chartPanel;
     
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox histogramUpdatejCheckBox;
-    private javax.swing.JPanel histogramjPanel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JCheckBox jCheckBox3;
-    private javax.swing.JCheckBox jCheckBox4;
-    private javax.swing.JCheckBox jCheckBox5;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JButton profilejButton;
-    // End of variables declaration//GEN-END:variables
+   // Variables declaration - do not modify//GEN-BEGIN:variables
+   private javax.swing.JCheckBox histogramUpdatejCheckBox;
+   private javax.swing.JPanel histogramjPanel;
+   private javax.swing.JButton jButton1;
+   private javax.swing.JButton jButton2;
+   private javax.swing.JButton jButton3;
+   private javax.swing.JButton jButton4;
+   private javax.swing.JButton jButton5;
+   private javax.swing.JCheckBox jCheckBox2;
+   private javax.swing.JCheckBox jCheckBox3;
+   private javax.swing.JCheckBox jCheckBox4;
+   private javax.swing.JCheckBox jCheckBox5;
+   private javax.swing.JLabel jLabel1;
+   private javax.swing.JTextField jTextField1;
+   private javax.swing.JButton profilejButton;
+   // End of variables declaration//GEN-END:variables
     
 }

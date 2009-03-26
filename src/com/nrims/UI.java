@@ -402,7 +402,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 x.printStackTrace();
             }
 
-            for (int i = 0; i < image.nMasses(); i++) {
+            for (int i = 0; i < image.nMasses(); i++) {               
                 if (bOpenMass[i]) {
                     massImages[i].addListener(this);
                 } else {
@@ -460,11 +460,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             String fName = (new File(fileName)).getName();     
             openers.put(fName, image);            
             
-            // Add the windows to the combobox in CBControl.
+            // Add the windows to the combobox in CBControl.            
             MimsPlus[] mp = getOpenMassImages();
             for(int i = 0; i < mp.length; i++) {
                cbControl.addWindowtoList(mp[i]);
-            }            
+            }    
             
         } finally {
             currentlyOpeningImages = false;
@@ -683,6 +683,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             mp.updateAndRepaintWindow();
         }
 
+        cbControl.addWindowtoList(mp);
         return true;
     }
 
@@ -838,6 +839,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
             mp.updateAndDraw();
 
+            cbControl.addWindowtoList(mp);
             bShow = true;
             return true;
         } else {

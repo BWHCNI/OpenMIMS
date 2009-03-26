@@ -5,7 +5,13 @@ import java.awt.geom.PathIterator;
 import java.awt.Polygon;
 import java.util.Hashtable;
 import ij.gui.*;
+import ij.io.RoiEncoder;
+import ij.io.RoiDecoder;
 import java.awt.Color;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 
 /**
  * Extends ij.gui.ImageCanvas with utility to display all ROIs.
@@ -139,16 +145,66 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
                         g.drawLine(x1, y1, x2, y2);
                         break;
                     }
-                    case Roi.POINT:
-                         {
+                    case Roi.POINT: {
                             java.awt.Rectangle r = roi.getBounds();
                             int x1 = screenX(r.x);
                             int y1 = screenY(r.y);
                             g.drawLine(x1, y1 - 5, x1, y1 + 5);
                             g.drawLine(x1 - 5, y1, x1 + 5, y1);
+                            break;
+                    }                    
+                    case Roi.OVAL: {
+                       
+                       // THIS IS A TEMPORARY FIX.
+                       // I am not sure why this needs to be done but
+                       // otherwise ovals do not appear. They were appearing if they 
+                       // were saved and then reloaded (which makes no sense) so this
+                       // code mimics that process using a bytestram only. (And solves the problem).
+                       // A more permamnent solution should be sought. But I beleive it is an ImageJ bug.
+                       
+                          ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
+                          RoiEncoder re = new RoiEncoder(bos);
+                          try {
+                             re.write(roi);
+                          } catch (Exception e) {
+                             e.printStackTrace();
+                          }
+                                                                              
+                          byte[] bytes = bos.toByteArray();
+                          RoiDecoder rd = new RoiDecoder(bytes, roi.getName());
+                          try {
+                             roi = rd.getRoi();
+                          } catch (Exception e) {
+                             e.printStackTrace();
+                          }
+                        
+                        // END OF TEMPORARY SOLUTION.
+                          
+                            Shape p = (Shape) roi.getPolygon();
+                            PathIterator pi = p.getPathIterator(null);
+                            int nc = 0;
+                            float[] xys = new float[6];
+                            int xn = 0, yn = 0, xp = 0, yp = 0, xi = 0, yi = 0;
+                            int ct = 0;
+                            while (!pi.isDone()) {
+                                ct = pi.currentSegment(xys);
+                                xn = screenX(Math.round(xys[0]));
+                                yn = screenY(Math.round(xys[1]));
+                                if (nc == 0) {
+                                    xi = xn;
+                                    yi = yn;
+                                } else {
+                                    g.drawLine(xp, yp, xn, yn);
+                                }
+                                xp = xn;
+                                yp = yn;
+                                pi.next();
+                                nc++;
+                            }
+                            if (ct == pi.SEG_CLOSE) {
+                                g.drawLine(xn, yn, xi, yi);
+                            }
                         }
-                        break;
-                    case Roi.OVAL:
                     case Roi.FREEROI:
                     case Roi.POLYGON:
                     case Roi.RECTANGLE:

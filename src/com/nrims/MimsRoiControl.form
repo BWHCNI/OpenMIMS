@@ -120,6 +120,7 @@
   <SubComponents>
     <Component class="javax.swing.JCheckBox" name="jCheckBox2">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" value="Synchronize ROIs across all masses"/>
         <Property name="toolTipText" type="java.lang.String" value="Display ROI in all images"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -137,6 +138,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="jCheckBox3">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" value="Add ROIs"/>
         <Property name="toolTipText" type="java.lang.String" value="Automatically add ROs to the RoiManager"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -221,6 +223,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="jCheckBox5">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" value="Synchronize ROIs across all planes "/>
         <Property name="toolTipText" type="java.lang.String" value="Display ROI in all images"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
