@@ -639,6 +639,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 //       classNames.remove(activeClass);
        int index = classesCombo.getSelectedIndex();
        fillBox();
+       if(index>=classesCombo.getItemCount()) index = classesCombo.getItemCount()-1;
        if(classesCombo.getItemCount() > 0) classesCombo.setSelectedIndex(index);
        else if(runButton.isEnabled()) runButton.setEnabled(false);
     }
