@@ -1760,6 +1760,9 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                                   
                  // Get the display index that corresponds to the true index.
                  int displayIndex = mimsAction.displayIndex(trueIndex);
+                 for (int j = 0; j < image.nMasses(); j++) {
+                    massImages[j].setSlice(displayIndex);
+                 }
                  
                  // Set the XShift, YShift, dropped val, and image name for this slice.
                  mimsStackEditing.XShiftSlice(displayIndex, Integer.parseInt(actionRowString[1]));
@@ -1796,6 +1799,9 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
               e.printStackTrace();
            }  
            
+           for (int j = 0; j < image.nMasses(); j++) {
+              massImages[j].setSlice(1);
+           }
            currentlyOpeningImages = false;
            bUpdating = false;
 }//GEN-LAST:event_jMenuItem7ActionPerformed

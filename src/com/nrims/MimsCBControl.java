@@ -20,7 +20,7 @@ public class MimsCBControl extends javax.swing.JPanel {
     public MimsCBControl(UI ui) {
        this.ui = ui;
        initComponents();   
-       jComboBox2.setMaximumRowCount(jComboBox2.getItemCount());
+       //jComboBox2.setMaximumRowCount(jComboBox2.getItemCount());
     }
     
    // Call this method whenever you want to update the histogram.

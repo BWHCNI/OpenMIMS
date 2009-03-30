@@ -613,11 +613,18 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             for (int y = rect.y, my = 0; y < (rect.y + rect.height); y++, my++) {
                 i = y * width + rect.x;
                 mi = my * rect.width;
-                for (int x = rect.x; x < (rect.x + rect.width); x++) {
+                for (int x = rect.x; x < (rect.x + rect.width); x++) { 
+                   
+                    // Z.K. I had to add this line because oval Rois were generating
+                    // an OutOfBounds exception when being dragged off the screen.
+                    // It is not obvious to me what is going on here (code wise) so I'm just
+                    // going to try and prevent the exception from being thrown.
+                    if (mi >= mask.length) break;
+                    
+                    // mask should never be null here.
                     if (mask == null || mask[mi++] != 0) {
                         pixellist.add((double)imp.getPixelValue(x, y));
                     }
-                    //mi++;
                     i++;
                 }
             }
