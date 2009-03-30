@@ -17,6 +17,7 @@ import ij.gui.ImageCanvas;
 import ij.io.RoiEncoder;
 import ij.process.ImageStatistics;
 
+import java.awt.Cursor;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Point;
@@ -1580,7 +1581,7 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
 
 // Saves all *.im files, action file, roi list, and HSI images to a single zip file.
 private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
-               
+                
    byte[] buf = new byte[1024];
    byte[] newline = (new String("\n")).getBytes();
    int len;    
@@ -1600,6 +1601,8 @@ private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
    }
    
    try {
+      
+      setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
      
       // Creates the zip file.
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipName));
@@ -1657,7 +1660,9 @@ private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
          }
          obj_out.close();
       }
-      zos.close();                              
+      zos.close();     
+      
+      setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       
     } catch (FileNotFoundException e) {
       e.printStackTrace();
@@ -1670,7 +1675,7 @@ private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
                          
            bUpdating = true;
-   
+           
            // User gets Zip file containg all .im files, action file, ROI files and HSIs. 
            JFileChooser fc = new JFileChooser();
            fc.setFileFilter(new MIMSFileFilter("zip"));
@@ -1678,6 +1683,9 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
            if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
               return;
            }
+           
+           setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+           
            currentlyOpeningImages = true;
            File selectedFile = fc.getSelectedFile();
 
@@ -1751,11 +1759,14 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                  firstImage = false;                 
               }              
               
+              // instaitate some variables.
               int trueIndex = 1;                                         
-              ArrayList<Integer> deleteList = new ArrayList<Integer>();                            
+              ArrayList<Integer> deleteList = new ArrayList<Integer>();                  
+              
+              // Loop over the action row list and perform actions.
               for (int i = 0; i < actionRowList.size(); i++) {
                              
-                 // Retreive data from list.
+                 // Get the action row.
                  String[] actionRowString = (String[])actionRowList.get(i);
                                   
                  // Get the display index that corresponds to the true index.
@@ -1767,7 +1778,8 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                  // Set the XShift, YShift, dropped val, and image name for this slice.
                  mimsStackEditing.XShiftSlice(displayIndex, Integer.parseInt(actionRowString[1]));
                  mimsStackEditing.YShiftSlice(displayIndex, Integer.parseInt(actionRowString[2]));                 
-                 if (Integer.parseInt(actionRowString[3]) == 1) deleteList.add(trueIndex);                                                 
+                 if (Integer.parseInt(actionRowString[3]) == 1) 
+                    deleteList.add(trueIndex);                                                 
                  mimsAction.setSliceImage(displayIndex, new String(actionRowString[5]));                                 
                  
                  trueIndex++;
@@ -1799,9 +1811,12 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
               e.printStackTrace();
            }  
            
+           // Set all images to the first slice.
            for (int j = 0; j < image.nMasses(); j++) {
               massImages[j].setSlice(1);
            }
+           
+           setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
            currentlyOpeningImages = false;
            bUpdating = false;
 }//GEN-LAST:event_jMenuItem7ActionPerformed
