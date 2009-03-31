@@ -188,7 +188,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
         //increase action size
         ui.mimsAction.addPlanes(pre, tempimage[0].getNSlices(), tempImage);
-        ui.mimsAction.addImage(pre, tempImage);
         
         for (int i = 0; i <= (numberMasses - 1); i++) {
             tempstacks[i] = tempimage[i].getStack();

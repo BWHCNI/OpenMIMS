@@ -152,18 +152,6 @@ public class MimsAction implements Cloneable {
        return imageList;
     }
     
-    public void addImage(boolean pre, Opener im) {
-       
-       String imageName = im.getName();       
-       
-       // Keep plane dependant list up to date.
-        if (pre) {
-           imageList.add(0, imageName);
-        } else {
-           imageList.add(imageName);
-        }
-    }
-    
     public int getOpenerIndex(int plane) {       
        return actionList.get(plane)[4];       
     }

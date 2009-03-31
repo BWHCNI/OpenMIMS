@@ -1660,15 +1660,15 @@ private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
          }
          obj_out.close();
       }
-      zos.close();     
-      
-      setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+      zos.close();                 
       
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
+   
+    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 }//GEN-LAST:event_jMenuItem6ActionPerformed
 
 // Loads a previous session.
@@ -1698,6 +1698,7 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
               ZipEntry zipEntry = zipFile.getEntry(actionFileName);
               if (zipEntry == null) {
                  JOptionPane.showMessageDialog(this, "Zip file does not contain " + actionFileName, "Error", JOptionPane.ERROR_MESSAGE);           
+                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                  return;
               }                 
               InputStream input = zipFile.getInputStream(zipEntry);
@@ -1731,6 +1732,7 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                  zipEntry = zipFile.getEntry(fileName);
                  if (zipEntry == null) {
                     System.out.println("Zip file does not contain " + fileName);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     return;
                  }
                  
@@ -1738,6 +1740,7 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                  File imageFile = extractFromZipfile(zipFile, zipEntry, null);              
                  if (imageFile == null || !imageFile.exists()) {
                     System.out.println("Unable to extract " + fileName + " from " + zipFile.getName());
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     return;
                  }
                  
