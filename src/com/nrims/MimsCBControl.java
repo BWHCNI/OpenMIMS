@@ -83,7 +83,7 @@ public class MimsCBControl extends javax.swing.JPanel {
    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
    private void initComponents() {
 
-      contrastAdjuster1 = new com.nrims.ContrastAdjuster();
+      contrastAdjuster1 = new com.nrims.ContrastAdjuster(ui);
       jLabel1 = new javax.swing.JLabel();
       jComboBox1 = new javax.swing.JComboBox();
       jLabel2 = new javax.swing.JLabel();

@@ -87,6 +87,9 @@
   </Layout>
   <SubComponents>
     <Component class="com.nrims.ContrastAdjuster" name="contrastAdjuster1">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new com.nrims.ContrastAdjuster(ui)"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>

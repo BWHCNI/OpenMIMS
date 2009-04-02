@@ -58,18 +58,18 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	boolean updatingRGBStack;
         UI ui;
         boolean hold = false;
-        ImagePlus imp;
+        MimsPlus imp;
         boolean updatehist = true;
         
         // If you do not want JPanel and Histogram,
         // but do want contrasting functionality.
-        public ContrastAdjuster(ImagePlus imp){
+        public ContrastAdjuster(MimsPlus imp){
            this.imp = imp;
            this.updatehist = false;           
         }
          
-        public ContrastAdjuster() {          
-	   //this.ui = ui;	
+        public ContrastAdjuster(UI ui) {          
+	   this.ui = ui;	
            ij = IJ.getInstance();
 		gridbag = new GridBagLayout();
 		c = new GridBagConstraints();
@@ -273,9 +273,14 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	}
 
 	public synchronized  void actionPerformed(ActionEvent e) {
-		JButton b = (JButton)e.getSource();
+                JButton b = (JButton)e.getSource();
 		if (b==null) return;
-		if (b==resetB)
+                if (b==resetB && imp.getMimsType() == MimsPlus.RATIO_IMAGE) {                                      
+                   ui.autocontrastRatioImage(imp);    
+                   update(imp);
+                   return;
+                }
+                else if (b==resetB && imp.getMimsType() != MimsPlus.RATIO_IMAGE)
 			doReset = true;
 		else if (b==autoB)
 			doAutoAdjust = true;
@@ -924,7 +929,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		updatePlot();
 		updateLabels(imp);
 		if ((IJ.shiftKeyDown()||(balance&&channels==7)) && imp.isComposite()) {
-			((CompositeImage)imp).updateAllChannelsAndDraw();
+			((CompositeImage)(ImagePlus)imp).updateAllChannelsAndDraw();
 		} else
 			imp.updateChannelAndDraw();
 		if (RGBImage)
@@ -994,20 +999,10 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		} else
 			doReset = true;                          
 		notify();
-	}
+	}   
     
     // Updates the ContrastAdjuster with current window. 
-    public void update() {
-                                this.imp = WindowManager.getCurrentImage();
-                                hold = true;
-				previousImageID = 0;
-				setup();
-                                //WindowManager.setWindow(ui);
-                                hold = false;		
-    }
-    
-    // Updates the ContrastAdjuster with current window. 
-    public void update(ImagePlus imp) {         
+    public void update(MimsPlus imp) {         
                                 hold = true;				
                                 if (imp!=null) {
                                    this.imp = imp; 
