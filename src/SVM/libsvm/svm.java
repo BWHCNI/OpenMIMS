@@ -439,7 +439,7 @@ class Solver {
 
 		while(true)
 		{
-			// show progress and do shrinking
+    
 
 			if(--counter == 0)
 			{

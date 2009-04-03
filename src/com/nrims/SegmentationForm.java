@@ -1,5 +1,6 @@
 package com.nrims;
 
+import com.nrims.segmentation.*;
 import ij.gui.Roi;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -11,181 +12,281 @@ import javax.swing.JOptionPane;
  * @author  sreckow
  */
 public class SegmentationForm extends javax.swing.JPanel implements java.beans.PropertyChangeListener {
-    private SegmentationEngine activeEngine;
-    private ClassManager activeClasses;
-    private ClassManager trainClasses;
-    private ClassManager predClasses;        
-    private String activeClass;
+
+    private static final int NO_TASK = -1,  TRAIN_TASK = 0,  PRED_TASK = 1,  TRAINFEAT_TASK = 2,  PREDFEAT_TASK = 3,  ROI_TASK = 4,  EXPORT_TASK = 5;
+
+    // TODO
+    // ### HARD CODED ###
+    private final int[][] RATIOS = {{1, 0}, {3, 2}}; // ratio images 13/12 and 27/26
+    public static Hashtable<String, String[]> implementedEngines;
+    // #######
     private int activeTask;
+    private SegmentationEngine activeEngine;
+    private String activeClass;
     private SegUtils segUtil;
-    private MimsRoiManager roiManager;    
-    private Hashtable<String,String> implementedEngines;
+    private MimsRoiManager roiManager;
     private UI mimsUi;
-    
-    // members describing current segmentation
+    // members for current model setup
+    private ClassManager trainClasses;
+    private boolean[] massImageFeatures;
+    private boolean[] ratioImageFeatures;
+    private int[] localFeatures;
+    private int colorImageIndex;
+    private SegmentationProperties properties;
+//    private String modelFile;
+
+    // members for current segmentation
+    private ClassManager predClasses;
     private byte[] classification;
     private int[] classColors;
     private String[] classNames;
-    private int height;
-    private int width;
-    
-    private static final int NONE_TASK = -1, SEG_TASK = 0, FEAT_TASK = 1, ROI_TASK = 2; 
-           
+
     public SegmentationForm(UI ui) {
         initComponents();
+        loadPredictionButton.setVisible(false);
+        savePredictionButton.setVisible(false);
+        exportButton.setVisible(false);
+
         mimsUi = ui;
         roiManager = mimsUi.getRoiManager();
-        buttonGroup = new javax.swing.ButtonGroup();        
-        buttonGroup.add(trainRButton);
-        buttonGroup.add(predRButton);
-        
-        implementedEngines = new Hashtable<String,String>();
-        implementedEngines.put("lib-SVM", "SVM.SvmEngine");
-        for(String engine:implementedEngines.keySet()) enginesCombo.addItem(engine);
-        
+
+        progressBar.setMinimum(0);
+        progressBar.setMaximum(100);
+
+        // TO DO
+        // ## HARD CODED ### this should be read from a config file
+        implementedEngines = new Hashtable<String, String[]>();
+        implementedEngines.put("lib-SVM", new String[]{"SVM.SvmEngine", "SVM.SVMSetupDialog"});
+        // #########
+
         resetForm();
     }
-    
-    private boolean fillBox(){
-        classesCombo.removeAllItems();        
-        for(String className : activeClasses.getClasses()){
-            classesCombo.addItem(className);
-        }
-        return classesCombo.getItemCount()>0;
-    }
-    
-    private void resetForm(){
+
+    public void resetForm() {
         activeClass = "";
-        trainRButton.doClick();
-        predRButton.setEnabled(false);
         workLabel.setText("");
-        activeClasses = trainClasses = new ClassManager();
-        predClasses = new ClassManager();        
+        trainClasses = new ClassManager();
+        predClasses = new ClassManager();
         classesCombo.removeAllItems();
-        runButton.setEnabled(false);
-        displayButton.setEnabled(false);
-        roiButton.setEnabled(false);
-        activeTask = NONE_TASK;
-        
+        activeTask = NO_TASK;
+
+        // reset current model setup
+        properties = new SegmentationProperties();
+        properties.setValueOf(SegmentationEngine.ENGINE, "lib-SVM");
+        massImageFeatures = new boolean[]{true, false, true, true};
+        ratioImageFeatures = new boolean[]{false, true};
+        localFeatures = new int[]{1, 1, 1};
+        colorImageIndex = 3;
+        // modelFile = "";
+
         // reset current classification
         classification = new byte[0];
         classColors = new int[0];
         classNames = new String[0];
-        height = 0;
-        width = 0;
+
+        minAreaText.setText("100");
+        updateControls();  // reset controls
+        updateModelInfo(); // reset model info
     }
-    
-    private void setActiveClass(String className){
-        // remove ROIs from the RoiManager, if required
-        if(roiManager.jlist.getModel().getSize()>0){
-            roiManager.selectAll();
-            roiManager.delete();
-            roiManager.getImage().setRoi((Roi)null);
-        }
-        // set the current class and add ROIs to the roiManager
-        activeClass = className;
-        for(SegRoi segRoi : activeClasses.getRois(activeClass)){
-            roiManager.getImage().setRoi(segRoi.getRoi());        
-            roiManager.add();
-        }
-    }
-    
-    public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        if ("progress".equals(evt.getPropertyName())) {
-            int progress = (Integer) evt.getNewValue();
-            progressBar.setValue(progress);
-        }else if ("state".equals(evt.getPropertyName())) {
-            switch(activeTask){
-                case SEG_TASK:
-                    if(evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)){
-                        // setup progress bar
-                        runButton.setText("cancel");
-                        workLabel.setText("running segmentation...");                        
-                        progressBar.setMinimum(activeEngine.getMinWork());
-                        progressBar.setMaximum(activeEngine.getMaxWork());
-                        progressBar.setValue(activeEngine.getMinWork());
-                    }else if(evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE)){
-                        activeTask = NONE_TASK;
-                        runButton.setText("run");
-                        this.runButton.setText("run");
-                        progressBar.setValue(100);
-                        byte[] tmpClassification = activeEngine.getClassification();
-                        if(tmpClassification.length > 0){
-                            workLabel.setText("done");
-                            classification = tmpClassification;
-                            displayButton.setEnabled(true);
-                            roiButton.setEnabled(true);
-                        }else{
-                            // TODO error handling
-                            System.out.println("Error: segmentation failed!");
-                            this.runButton.setText("run");
-                            progressBar.setValue(0);
-                            workLabel.setText("");
-                        }
-                    }
-                    break;
-                case FEAT_TASK:
-                    if(evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)){
-                        workLabel.setText("extracting features...");
-                        progressBar.setMinimum(0);
-                        progressBar.setMaximum(100);
-                        progressBar.setValue(0);
-                    }else if(evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE)){
-                        activeTask = NONE_TASK;
-                        progressBar.setValue(100);
-                        if(segUtil.getSuccess()){
-                            workLabel.setText("done");
-                            ArrayList<ArrayList<ArrayList<Double>>> trainData = segUtil.getTrainData();
-                            ArrayList<ArrayList<ArrayList<Double>>> predData  = segUtil.getPredData();
-                            classColors = segUtil.getClassColors();
-                            startSegmentation(trainData, predData);
-                        }else{ // preparation failed!
-                            workLabel.setText("Error: feature extraction failed!");
-                        }
-                    }
-                    break;
-                case ROI_TASK:
-                    if(evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)){
-                        workLabel.setText("calculating ROIs...");
-                        progressBar.setMinimum(0);
-                        progressBar.setMaximum(100);
-                        progressBar.setValue(0);
-                    }else if(evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE)){
-                        activeTask = NONE_TASK;
-                        progressBar.setValue(100);
-                        ClassManager cm = segUtil.getPredClasses();
-                        if (cm != null && cm.getClasses().length > 0){
-                            workLabel.setText("done");
-                            predClasses = cm;
-                            predRButton.setEnabled(true);
-                            predRButton.doClick();
-                            fillBox();
-                        }else{
-                            String errorText = "calculating ROIs failed!";
-                            workLabel.setText(errorText);
-                            System.out.println("Error: " + errorText);
-                        }                        
-                    }                    
-                    break;
+
+    private MimsPlus[] getImages() {
+        ArrayList<MimsPlus> images = new ArrayList<MimsPlus>();
+
+        // get mass images
+        for (int i = 0; i < massImageFeatures.length; i++) {
+            if (massImageFeatures[i]) {
+                images.add(mimsUi.getMassImage(i));
             }
-        } 
+        }
+
+        // get ratio images
+
+        for (int i = 0; i < ratioImageFeatures.length; i++) {
+            if (ratioImageFeatures[i]) {
+                int num = RATIOS[i][0];
+                int den = RATIOS[i][1];
+                int index = mimsUi.getRatioImageIndex(num, den);
+                if (index == -1) {
+                    // create ratio image
+                    HSIProps props = new HSIProps();
+                    props.setNumMass(num);
+                    props.setDenMass(den);
+                    mimsUi.computeRatio(props);
+                    index = mimsUi.getRatioImageIndex(num, den);
+                    if (index == -1) {
+                        System.out.println("Error computing ratio image!");
+                        return null;
+                    }
+                }
+                images.add(mimsUi.getRatioImage(index));
+            }
+        }
+        return images.toArray(new MimsPlus[images.size()]);
     }
-    
-    private void startSegmentation(ArrayList<ArrayList<ArrayList<Double>>> trainData, ArrayList<ArrayList<ArrayList<Double>>> predData){
-        // a new engine instance is needed for each execution as SwingWorker objects are non-reusable        
+
+    private void startTraining(ArrayList<ArrayList<ArrayList<Double>>> trainData) {
+        // a new engine instance is needed for each execution as SwingWorker objects are non-reusable
         try {
-            Class engineClass = Class.forName(implementedEngines.get(enginesCombo.getSelectedItem()));
-            Class[] params = {java.util.ArrayList.class,java.util.ArrayList.class,String[].class,java.util.Properties.class};
-            java.lang.reflect.Constructor con = engineClass.getConstructor(params);                                                                         
-            activeEngine = (SegmentationEngine)con.newInstance(trainData,predData,new String[0],null);             
+            String engineName = implementedEngines.get(properties.getValueOf(SegmentationEngine.ENGINE))[0];
+            Class engineClass = Class.forName(engineName);
+            Class[] params = {Integer.TYPE, ArrayList.class, SegmentationProperties.class};
+            java.lang.reflect.Constructor con = engineClass.getConstructor(params);
+            activeEngine = (SegmentationEngine) con.newInstance(SegmentationEngine.TRAIN_TYPE, trainData, properties);
             activeEngine.addPropertyChangeListener(this);
-            activeTask = SEG_TASK;
-            activeEngine.execute();            
+            activeTask = TRAIN_TASK;
+            activeEngine.execute();
         } catch (Exception e) {
             System.out.println("Error: engine could not be instantiated!");
             e.printStackTrace();
         }
-}
+    }
+
+    private void startPrediction(ArrayList<ArrayList<ArrayList<Double>>> predData) {
+        // a new engine instance is needed for each execution as SwingWorker objects are non-reusable
+        try {
+            String engineName = implementedEngines.get(properties.getValueOf(SegmentationEngine.ENGINE))[0];
+            Class engineClass = Class.forName(engineName);
+            Class[] params = {Integer.TYPE, ArrayList.class, SegmentationProperties.class};
+            java.lang.reflect.Constructor con = engineClass.getConstructor(params);
+            activeEngine = (SegmentationEngine) con.newInstance(SegmentationEngine.PRED_TYPE, predData, properties);
+            activeEngine.addPropertyChangeListener(this);
+            activeTask = PRED_TASK;
+            activeEngine.execute();
+        } catch (Exception e) {
+            System.out.println("Error: engine could not be instantiated!");
+            e.printStackTrace();
+        }
+    }
+
+    public void updateControls() {
+        boolean working = (segUtil != null && !segUtil.isDone() || activeEngine != null && !activeEngine.isDone());
+        boolean trained = properties.getValueOf(SegmentationEngine.MODEL) != null;
+        boolean predicted = classification != null && classification.length > 0;
+        boolean trainSet = trainClasses != null && trainClasses.getClasses().length > 0;
+
+        resetButton.setEnabled(!working);
+        modifyButton.setEnabled(!working);
+        loadModelButton.setEnabled(!working);
+        saveModelButton.setEnabled(!working);
+        trainButton.setEnabled(!working && trainSet);
+        predictButton.setEnabled(!working && trained);
+        roiButton.setEnabled(!working && predicted);
+        displayButton.setEnabled(!working && predicted);
+//        savePredictionButton.setEnabled(!working && predicted);
+//        loadPredictionButton.setEnabled(!working);
+       
+    }
+
+    private boolean fillBox() {
+        classesCombo.removeAllItems();
+        for (String className : predClasses.getClasses()) {
+            classesCombo.addItem(className);
+        }
+        return classesCombo.getItemCount() > 0;
+    }
+
+    private void setActiveClass(String className) {
+        // remove ROIs from the RoiManager, if required
+        if (roiManager.jlist.getModel().getSize() > 0) {
+            roiManager.selectAll();
+            roiManager.delete();
+            roiManager.getImage().setRoi((Roi) null);
+        }
+        // set the current class and add ROIs to the roiManager
+        activeClass = className;
+        for (SegRoi segRoi : predClasses.getRois(activeClass)) {
+            roiManager.getImage().setRoi(segRoi.getRoi());
+            roiManager.add();
+        }
+    }
+
+    private void updateModelInfo() {
+        String desc = "";
+        desc += "ENGINE\n";
+        desc += "name: " + properties.getValueOf(SegmentationEngine.ENGINE) + "\n";
+        if (properties.getValueOf(SegmentationEngine.MODEL) == null) {
+            desc += "status: untrained\n";
+        } else {
+            desc += "status: trained\n";
+        }
+
+        desc += "\nCLASSES\n";
+        for (String classname : trainClasses.getClasses()) {
+            desc += classname + "\n";
+        }
+
+        desc += "\nIMAGES\n";
+        for (int i = 0; i < massImageFeatures.length; i++) {
+            if (massImageFeatures[i]) {
+                desc += mimsUi.getOpener().getMassName(i) + "\n";
+            }
+        }
+        for (int i = 0; i < ratioImageFeatures.length; i++) {
+            if (ratioImageFeatures[i]) {
+                desc += mimsUi.getOpener().getMassName(RATIOS[i][0]) + "/" + mimsUi.getOpener().getMassName(RATIOS[i][1]) + "\n";
+            }
+        }
+        desc += "\nLOCAL FEATURES\n";
+        if (localFeatures[0] == 1) {
+            desc += "neighborhood statistics\n";
+        }
+        if (localFeatures[1] == 1) {
+            desc += "approximated gradient\n";
+        }
+        if (localFeatures[0] == 1 || localFeatures[1] == 1) {
+            desc += "neighborhood size: " + localFeatures[2] + "\n";
+        }
+
+        descriptionText.setText(desc);
+        descriptionText.setCaretPosition(0);
+    }
+
+    public void setClassColors(int[] classColors) {
+        this.classColors = classColors;
+    }
+
+    public void setClassNames(String[] classNames) {
+        this.classNames = classNames;
+    }
+
+    public void setTrainClasses(ClassManager classes) {
+        this.trainClasses = classes;
+    }
+
+    public void setPredClasses(ClassManager classes) {
+        this.predClasses = classes;
+        fillBox();
+    }
+
+    public void setClassification(byte[] classification) {
+        this.classification = classification;
+    }
+
+    public void setProperties(SegmentationProperties properties) {
+        this.properties = properties;
+        updateModelInfo();
+    }
+
+    public SegmentationProperties getProperties() {
+
+        return this.properties;
+    }
+
+    public void setLocalFeatures(int[] localFeatures) {
+        this.localFeatures = localFeatures;
+    }
+
+    public void setColorImageIndex(int colorImageIndex) {
+        this.colorImageIndex = colorImageIndex;
+    }
+
+    public void setMassImageFeatures(boolean[] massImageFeatures) {
+        this.massImageFeatures = massImageFeatures;
+    }
+
+    public void setRatioImageFeatures(boolean[] ratioImageFeatures) {
+        this.ratioImageFeatures = ratioImageFeatures;
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -196,42 +297,137 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        addButton = new javax.swing.JButton();
-        renameButton = new javax.swing.JButton();
-        classesCombo = new javax.swing.JComboBox();
-        minSizeSpinner = new javax.swing.JSpinner();
-        jLabel1 = new javax.swing.JLabel();
-        minSizeLabel = new javax.swing.JLabel();
-        trainRButton = new javax.swing.JRadioButton();
-        predRButton = new javax.swing.JRadioButton();
-        syncButton = new javax.swing.JButton();
-        removeButton = new javax.swing.JButton();
-        jPanel5 = new javax.swing.JPanel();
-        jButton10 = new javax.swing.JButton();
-        jButton11 = new javax.swing.JButton();
-        enginesCombo = new javax.swing.JComboBox();
-        runButton = new javax.swing.JButton();
-        displayButton = new javax.swing.JButton();
+        modelPanel = new javax.swing.JPanel();
+        modifyButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        descriptionText = new javax.swing.JTextArea();
+        jLabel2 = new javax.swing.JLabel();
+        trainButton = new javax.swing.JButton();
+        exportButton = new javax.swing.JButton();
+        predictionPanel = new javax.swing.JPanel();
+        predictButton = new javax.swing.JButton();
         roiButton = new javax.swing.JButton();
+        displayButton = new javax.swing.JButton();
+        savePredictionButton = new javax.swing.JButton();
+        loadPredictionButton = new javax.swing.JButton();
+        classesCombo = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        minAreaText = new javax.swing.JTextField();
         progressBar = new javax.swing.JProgressBar();
         workLabel = new javax.swing.JLabel();
-        saveButton = new javax.swing.JButton();
-        loadButton = new javax.swing.JButton();
+        resetButton = new javax.swing.JButton();
+        loadModelButton = new javax.swing.JButton();
+        saveModelButton = new javax.swing.JButton();
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Class Manager", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+        modelPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Model Configuration", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
 
-        addButton.setText("add");
-        addButton.addActionListener(new java.awt.event.ActionListener() {
+        modifyButton.setText("Config");
+        modifyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButtonActionPerformed(evt);
+                modifyButtonActionPerformed(evt);
             }
         });
 
-        renameButton.setText("rename");
-        renameButton.addActionListener(new java.awt.event.ActionListener() {
+        descriptionText.setColumns(20);
+        descriptionText.setEditable(false);
+        descriptionText.setRows(5);
+        jScrollPane1.setViewportView(descriptionText);
+
+        jLabel2.setText("Model description");
+
+        trainButton.setText("Train");
+        trainButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                renameButtonActionPerformed(evt);
+                trainButtonActionPerformed(evt);
+            }
+        });
+
+        exportButton.setText("Export");
+        exportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout modelPanelLayout = new javax.swing.GroupLayout(modelPanel);
+        modelPanel.setLayout(modelPanelLayout);
+        modelPanelLayout.setHorizontalGroup(
+            modelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(modelPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(modelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(modelPanelLayout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(modelPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(70, 70, 70))
+                    .addGroup(modelPanelLayout.createSequentialGroup()
+                        .addComponent(trainButton, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(modifyButton, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(exportButton, javax.swing.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)
+                        .addContainerGap())))
+        );
+        modelPanelLayout.setVerticalGroup(
+            modelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(modelPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(modelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(trainButton)
+                    .addComponent(modifyButton)
+                    .addComponent(exportButton))
+                .addContainerGap())
+        );
+
+        predictionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Prediction", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+
+        predictButton.setText("Predict");
+        predictButton.setPreferredSize(new java.awt.Dimension(57, 23));
+        predictButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                predictButtonActionPerformed(evt);
+            }
+        });
+
+        roiButton.setText("ROIs");
+        roiButton.setEnabled(false);
+        roiButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                roiButtonActionPerformed(evt);
+            }
+        });
+
+        displayButton.setText("Display");
+        displayButton.setActionCommand("loadROIs");
+        displayButton.setEnabled(false);
+        displayButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                displayButtonActionPerformed(evt);
+            }
+        });
+
+        savePredictionButton.setText("Save");
+        savePredictionButton.setEnabled(false);
+        savePredictionButton.setRequestFocusEnabled(false);
+        savePredictionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                savePredictionButtonActionPerformed(evt);
+            }
+        });
+
+        loadPredictionButton.setText("Load");
+        loadPredictionButton.setEnabled(false);
+        loadPredictionButton.setRequestFocusEnabled(false);
+        loadPredictionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadPredictionButtonActionPerformed(evt);
             }
         });
 
@@ -241,195 +437,80 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
             }
         });
 
-        minSizeSpinner.setEnabled(false);
-
         jLabel1.setText("current class");
 
-        minSizeLabel.setText("min size");
-        minSizeLabel.setEnabled(false);
+        jLabel3.setText("min area");
 
-        trainRButton.setText("training");
-        trainRButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                trainRButtonActionPerformed(evt);
-            }
-        });
-
-        predRButton.setText("prediction");
-        predRButton.setEnabled(false);
-        predRButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                predRButtonActionPerformed(evt);
-            }
-        });
-
-        syncButton.setText("sync");
-        syncButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                syncButtonActionPerformed(evt);
-            }
-        });
-
-        removeButton.setText("remove");
-        removeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(trainRButton)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel1)))
-                        .addGap(21, 21, 21)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(classesCombo, 0, 163, Short.MAX_VALUE)
-                            .addComponent(predRButton)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(syncButton, javax.swing.GroupLayout.Alignment.LEADING, 0, 0, Short.MAX_VALUE)
-                            .addComponent(addButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(removeButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(renameButton))
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(minSizeSpinner)
-                                .addComponent(minSizeLabel)))))
+        javax.swing.GroupLayout predictionPanelLayout = new javax.swing.GroupLayout(predictionPanel);
+        predictionPanel.setLayout(predictionPanelLayout);
+        predictionPanelLayout.setHorizontalGroup(
+            predictionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, predictionPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(predictionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(classesCombo, 0, 249, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, predictionPanelLayout.createSequentialGroup()
+                        .addComponent(predictButton, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(displayButton)
+                        .addGap(18, 18, 18)
+                        .addComponent(roiButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(predictionPanelLayout.createSequentialGroup()
+                        .addGroup(predictionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(savePredictionButton, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                            .addComponent(loadPredictionButton, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))
+                        .addGap(26, 26, 26)
+                        .addGroup(predictionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addComponent(minAreaText, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING))
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        predictionPanelLayout.setVerticalGroup(
+            predictionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(predictionPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(classesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(trainRButton)
-                    .addComponent(predRButton))
-                .addGap(39, 39, 39)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(removeButton)
-                    .addComponent(renameButton))
+                .addGroup(predictionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(predictButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(displayButton)
+                    .addComponent(roiButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(syncButton)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(minSizeLabel)
+                .addGroup(predictionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(predictionPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(1, 1, 1)
+                        .addComponent(minAreaText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(predictionPanelLayout.createSequentialGroup()
+                        .addComponent(loadPredictionButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(minSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(24, Short.MAX_VALUE))
+                        .addComponent(savePredictionButton)))
+                .addGap(53, 53, 53)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(classesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Segmentation", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
-
-        jButton10.setText("features");
-        jButton10.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton10ActionPerformed(evt);
-            }
-        });
-
-        jButton11.setText("setup");
-
-        runButton.setText("run");
-        runButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                runButtonActionPerformed(evt);
-            }
-        });
-
-        displayButton.setText("display");
-        displayButton.setEnabled(false);
-        displayButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                displayButtonActionPerformed(evt);
-            }
-        });
-
-        roiButton.setText("ROIs");
-        roiButton.setActionCommand("loadROIs");
-        roiButton.setEnabled(false);
-        roiButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                roiButtonActionPerformed(evt);
-            }
-        });
 
         workLabel.setText("working");
 
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(workLabel)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(enginesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jButton11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(runButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(displayButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(roiButton, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(enginesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jButton11)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton10)))
-                .addGap(24, 24, 24)
-                .addComponent(runButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(displayButton)
-                    .addComponent(roiButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
-                .addComponent(workLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-
-        saveButton.setText("save");
-        saveButton.addActionListener(new java.awt.event.ActionListener() {
+        resetButton.setText("Reset");
+        resetButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveButtonActionPerformed(evt);
+                resetButtonActionPerformed(evt);
             }
         });
 
-        loadButton.setText("load");
-        loadButton.addActionListener(new java.awt.event.ActionListener() {
+        loadModelButton.setText("Load");
+        loadModelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadButtonActionPerformed(evt);
+                loadModelButtonActionPerformed(evt);
+            }
+        });
+
+        saveModelButton.setText("Save");
+        saveModelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveModelButtonActionPerformed(evt);
             }
         });
 
@@ -438,245 +519,328 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap()
+                        .addComponent(loadModelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(saveModelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(resetButton, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(saveButton)
-                        .addGap(18, 18, 18)
-                        .addComponent(loadButton)))
-                .addContainerGap(64, Short.MAX_VALUE))
+                        .addGap(14, 14, 14)
+                        .addComponent(modelPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(workLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                                .addGap(85, 85, 85))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(predictionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {loadModelButton, resetButton, saveModelButton});
+
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(loadButton)
-                    .addComponent(saveButton))
+                    .addComponent(predictionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(modelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(59, 59, 59)
+                .addComponent(workLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(loadModelButton)
+                        .addComponent(saveModelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(resetButton))
+                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void trainRButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trainRButtonActionPerformed
-    if(trainClasses == activeClasses) return;    
-    activeClasses = trainClasses;
-    if (fillBox()) setActiveClass((String)classesCombo.getItemAt(0));
-}//GEN-LAST:event_trainRButtonActionPerformed
-
-private void predRButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predRButtonActionPerformed
-    if(predClasses == activeClasses) return;
-    activeClasses = predClasses;
-    if (fillBox()) setActiveClass((String)classesCombo.getItemAt(0));
-}//GEN-LAST:event_predRButtonActionPerformed
-
-private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
-    if (activeTask == SEG_TASK){
-        activeEngine.cancel(true);
-        // TODO: better check whether thread was really canceled before allowing another run
-        runButton.setText("run(!)");
-    }else if (activeTask == FEAT_TASK){
-        // TODO: implement canceling of feature extraction (by suspending thread)
-        segUtil.cancel(true);
-        // TODO: better check whether thread was really canceled before allowing another run
-        runButton.setText("run(!)");
-    }else{
-        // HARD-CODED: feature selection (use mass images 0,2,3 , no ratio image, image 2 for coloring)
-        java.util.ArrayList images = new java.util.ArrayList();
-        //images.add(0);
-        images.add(2);
-        images.add(3);
-        java.util.ArrayList<int[]> ratioImages = new java.util.ArrayList<int[]>();
-        ratioImages.add(new int[]{3,2});
-
-        // create ratio images if they are not open, yet
-        // this can't be done in the SwingWorker thread as this involves some GUI operations !!
-        for(int[] ratio: ratioImages){
-            int num = ratio[0];
-            int den = ratio[1];
-            if(mimsUi.getRatioImageIndex(num,den) == -1){
-                // create ratio image
-                HSIProps props = new HSIProps();
-                props.setNumMass(num);
-                props.setDenMass(den);
-                mimsUi.computeRatio(props);
-                if(mimsUi.getRatioImageIndex(num,den) == -1) System.out.println("Error computing ratio image!");
-            }
-        }
-
-        int colorImage = 2;
-        int features = 0;
-        // HARD-CODED
-        this.height=mimsUi.getOpener().getHeight();
-        this.width = mimsUi.getOpener().getWidth();
-        classNames = trainClasses.getClasses();
-        activeTask = FEAT_TASK;        
-        segUtil = SegUtils.initPrepSeg(mimsUi, trainClasses, images, ratioImages, colorImage, features);
+    private void trainButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trainButtonActionPerformed
+        // TODO warn if current model is already trained
+        MimsPlus[] images = getImages();
+        activeTask = TRAINFEAT_TASK;
+        segUtil = SegUtils.initPrepSeg(images, colorImageIndex, localFeatures, trainClasses);
         segUtil.addPropertyChangeListener(this);
         segUtil.execute();
-    }
-}//GEN-LAST:event_runButtonActionPerformed
+    }//GEN-LAST:event_trainButtonActionPerformed
 
-private void roiButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roiButtonActionPerformed
-    activeTask = ROI_TASK;
-    segUtil = SegUtils.initCalcRoi(height, width, classNames, classification, 100, (int)Double.POSITIVE_INFINITY);
-    segUtil.addPropertyChangeListener(this);
-    segUtil.execute();    
-}//GEN-LAST:event_roiButtonActionPerformed
-
-private void classesComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_classesComboItemStateChanged
-    if(evt.getStateChange()==java.awt.event.ItemEvent.SELECTED){
-        String className = (String)classesCombo.getSelectedItem();
-        if(!className.equals(activeClass)) setActiveClass(className);
-    }
+    private void classesComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_classesComboItemStateChanged
+        if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+            String className = (String) classesCombo.getSelectedItem();
+            if (!className.equals(activeClass)) {
+                setActiveClass(className);
+            }
+        }
 }//GEN-LAST:event_classesComboItemStateChanged
 
-private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-    String className = (String)JOptionPane.showInputDialog(this,"Name for new class:","Edit class",JOptionPane.PLAIN_MESSAGE,null,null,"");
-    if(className != null && className.length() > 0 && activeClasses.addClass(className)){        
-        fillBox();                  // display the new list of class names
-        classesCombo.setSelectedItem(className);
-        if(!runButton.isEnabled()) runButton.setEnabled(true);
-    }
-}//GEN-LAST:event_addButtonActionPerformed
+    private void modifyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modifyButtonActionPerformed
 
-private void renameButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameButtonActionPerformed
-    if(activeClass.equals("")) return;
-    String newName = (String)JOptionPane.showInputDialog(this,"Rename class to:","Edit class",JOptionPane.PLAIN_MESSAGE,null,null,activeClass);
-    if(newName != null && newName.length() > 0 && activeClasses.renameClass(activeClass, newName)){
-        // display the new list of class names
-        fillBox();
-        classesCombo.setSelectedItem(newName);
-    }
-}//GEN-LAST:event_renameButtonActionPerformed
 
-private void syncButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncButtonActionPerformed
-// TODO add your handling code here:
-    Hashtable rois = roiManager.getROIs();
-    activeClasses.removeClass(activeClass);
-    activeClasses.addClass(activeClass);
-    for(Object key : rois.keySet()){
-        activeClasses.addRoi(activeClass, (Roi)rois.get(key));
-    }
-    setActiveClass(activeClass);
-}//GEN-LAST:event_syncButtonActionPerformed
 
-private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-// TODO add your handling code here:
-    FeaturesDialog features = new FeaturesDialog(mimsUi, true, mimsUi, new boolean[]{true,false,true,true}, null);
-    features.setVisible(true);
-}//GEN-LAST:event_jButton10ActionPerformed
+        SegmentationSetupForm setup = new SegmentationSetupForm(mimsUi, this, roiManager, trainClasses, massImageFeatures,
+                ratioImageFeatures, localFeatures, colorImageIndex, properties, mimsUi.getOpener().getMassNames());
+        mimsUi.setState(java.awt.Frame.ICONIFIED);
+        setup.setVisible(true);
+}//GEN-LAST:event_modifyButtonActionPerformed
 
-private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-    String defaultPath = mimsUi.getOpener().getImageFile().getParent() + System.getProperty("file.separator") + "segResult.zip";
-    JFileChooser fc = new JFileChooser(defaultPath);       
-    fc.setSelectedFile(new java.io.File(defaultPath));
-    while(true){
-        if(fc.showSaveDialog(this) == JFileChooser.CANCEL_OPTION ) break;    
-        String filePath = fc.getSelectedFile().getPath();
-        String fileName = fc.getSelectedFile().getName();
-        if(new java.io.File(filePath).exists()){
-            String[] options = {"Overwrite","Cancel"};
-            int value = JOptionPane.showOptionDialog(this,"File \"" + fileName + "\" already exists!",null,
-            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,null,options, options[1]);                      
-            if(value == JOptionPane.NO_OPTION) continue;            
+    private void saveModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveModelButtonActionPerformed
+        String defaultPath = mimsUi.getOpener().getImageFile().getParent() + System.getProperty("file.separator") + "model.MODEL.zip";
+        JFileChooser fc = new JFileChooser(defaultPath);
+        fc.setSelectedFile(new java.io.File(defaultPath));
+        while (true) {
+            if (fc.showSaveDialog(this) == JFileChooser.CANCEL_OPTION) {
+                break;
+            }
+            String filePath = fc.getSelectedFile().getPath();
+            String fileName = fc.getSelectedFile().getName();
+            if (new java.io.File(filePath).exists()) {
+                String[] options = {"Overwrite", "Cancel"};
+                int value = JOptionPane.showOptionDialog(this, "File \"" + fileName + "\" already exists!", null,
+                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[1]);
+                if (value == JOptionPane.NO_OPTION) {
+                    continue;
+                }
+            }
+            //SegFileUtils.saveModel(filePath, trainClasses, classColors, properties,
+            //           massImageFeatures, ratioImageFeatures, localFeatures);
+            SegFileUtils.save(filePath, properties, trainClasses, classColors, colorImageIndex, massImageFeatures, ratioImageFeatures,
+                    localFeatures, classification, predClasses);
+            break;
         }
-        SegUtils.saveSegmentation(filePath, trainClasses, predClasses, classNames, classification, classColors);
-        break;
-    }
-}//GEN-LAST:event_saveButtonActionPerformed
+    }//GEN-LAST:event_saveModelButtonActionPerformed
 
-private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
-// TODO add your handling code here:
-    String defaultPath = mimsUi.getOpener().getImageFile().getParent() + System.getProperty("file.separator") + ".";
-    JFileChooser fc = new JFileChooser(defaultPath);
-    fc.setSelectedFile(new java.io.File(defaultPath));
-    if(fc.showOpenDialog(this) != JFileChooser.CANCEL_OPTION ){
-        resetForm();
-        SegUtils loadedData = SegUtils.loadSegmentation(fc.getSelectedFile().getPath());
-        
-        trainClasses = loadedData.getTrainClasses();
-        // if there are training sets available, display them and enable segmentation
-        if(trainClasses.getClasses().length > 1){
-            runButton.setEnabled(true);
-            trainRButton.doClick();
-        }
-        
-        predClasses = loadedData.getPredClasses();
-        // if there are predicted sets available, display them (priority over training sets       
-        if(predClasses.getClasses().length > 1){
-            predRButton.setEnabled(true);
-            predRButton.doClick();
-        }
-        
-        classification = loadedData.getClassification();
-        // if there is classification data available, enable display and ROI-calculation        
-        if(classification.length > 1){
-            displayButton.setEnabled(true);
-            roiButton.setEnabled(true);
-        }
-        
-        // assuming we have only square dimensions
-        width = height = (int)Math.sqrt(classification.length);
-        
-        classNames = loadedData.getClassNames();
-        classColors = loadedData.getClassColors();
-    }    
-}//GEN-LAST:event_loadButtonActionPerformed
+    private void loadModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadModelButtonActionPerformed
+        String defaultPath = mimsUi.getOpener().getImageFile().getParent() + System.getProperty("file.separator") + ".";
+        JFileChooser fc = new JFileChooser(defaultPath);
+        fc.setSelectedFile(new java.io.File(defaultPath));
+        if (fc.showOpenDialog(this) != JFileChooser.CANCEL_OPTION) {
+            resetForm();
+//            SegFileUtils.loadModel(fc.getSelectedFile().getPath(), this);
+//            updateModelInfo();
+//            modelFile = fc.getSelectedFile().getPath();
+//            trained = (properties.getValueOf(SegmentationProperties.MODEL) != null);
+//            updateControls();
 
-private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-   if (activeClass.equals(""))return;
-   int ok = JOptionPane.showConfirmDialog(this, "Remove class " +activeClass + "?", "Edit class", JOptionPane.OK_OPTION);
-   if(ok == JOptionPane.OK_OPTION && activeClasses.removeClass(activeClass)){
-       // remove the class from the class names array
-//       classNames.remove(activeClass);
-       int index = classesCombo.getSelectedIndex();
-       fillBox();
-       if(index>=classesCombo.getItemCount()) index = classesCombo.getItemCount()-1;
-       if(classesCombo.getItemCount() > 0) classesCombo.setSelectedIndex(index);
-       else if(runButton.isEnabled()) runButton.setEnabled(false);
-    }
-}//GEN-LAST:event_removeButtonActionPerformed
+            SegFileUtils.load(fc.getSelectedFile().getPath(), this);
+            updateModelInfo();
+            updateControls();
+        }
+    }//GEN-LAST:event_loadModelButtonActionPerformed
 
-private void displayButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayButtonActionPerformed
-    int[] pixels = new int[classification.length];
-    for (int i=0; i<pixels.length;i++){
-        // get the color value for each pixel according to its assigned class
-        pixels[i] = classColors[classification[i]];        
-    }    
-    mimsUi.openSeg(pixels, "Segmentation result", height, width);
-}//GEN-LAST:event_displayButtonActionPerformed
+    private void predictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predictButtonActionPerformed
+        MimsPlus[] images = getImages();
+        activeTask = PREDFEAT_TASK;
+        segUtil = SegUtils.initPrepSeg(images, colorImageIndex, localFeatures);
+        segUtil.addPropertyChangeListener(this);
+        segUtil.execute();
+    }//GEN-LAST:event_predictButtonActionPerformed
+
+    private void savePredictionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_savePredictionButtonActionPerformed
+//        String defaultPath = mimsUi.getOpener().getImageFile().getParent() + System.getProperty("file.separator") + "segResult.zip";
+//        JFileChooser fc = new JFileChooser(defaultPath);
+//        fc.setSelectedFile(new java.io.File(defaultPath));
+//        while(true){
+//            if(fc.showSaveDialog(this) == JFileChooser.CANCEL_OPTION ) break;
+//            String filePath = fc.getSelectedFile().getPath();
+//            String fileName = fc.getSelectedFile().getName();
+//            if(new java.io.File(filePath).exists()){
+//                String[] options = {"Overwrite","Cancel"};
+//                int value = JOptionPane.showOptionDialog(this,"File \"" + fileName + "\" already exists!",null,
+//                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,null,options, options[1]);
+//                if(value == JOptionPane.NO_OPTION) continue;
+//            }
+//            SegFileUtils.savePrediction(filePath, predClasses, classification, modelFile);
+//            break;
+//        }
+    }//GEN-LAST:event_savePredictionButtonActionPerformed
+
+    private void loadPredictionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadPredictionButtonActionPerformed
+//        String defaultPath = mimsUi.getOpener().getImageFile().getParent() + System.getProperty("file.separator") + ".";
+//        JFileChooser fc = new JFileChooser(defaultPath);
+//        fc.setSelectedFile(new java.io.File(defaultPath));
+//        if(fc.showOpenDialog(this) != JFileChooser.CANCEL_OPTION ){
+//            resetForm();
+//            SegFileUtils.loadPrediction(fc.getSelectedFile().getPath(), this);
+//            updateModelInfo();
+//            modelFile = fc.getSelectedFile().getPath();
+//            predicted = true;
+//            trained = (properties.getValueOf(SegmentationProperties.MODEL) != null);
+//            updateControls();
+//        }
+    }//GEN-LAST:event_loadPredictionButtonActionPerformed
+
+    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+        int value = JOptionPane.showConfirmDialog(this, "Reset form to default settings?", "Confirm Reset",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (value == JOptionPane.OK_OPTION) {
+            resetForm();
+        }
+}//GEN-LAST:event_resetButtonActionPerformed
+
+    private void displayButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayButtonActionPerformed
+        int[] pixels = new int[classification.length];
+        for (int i = 0; i < pixels.length; i++) {
+            // get the color value for each pixel according to its assigned class
+            pixels[i] = classColors[classification[i]];
+        }
+        mimsUi.openSeg(pixels, "Segmentation result", mimsUi.getOpener().getHeight(), mimsUi.getOpener().getWidth());
+    }//GEN-LAST:event_displayButtonActionPerformed
+
+    private void roiButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roiButtonActionPerformed
+        activeTask = ROI_TASK;
+        // TODO
+        // height & width are taken from the current mims image,
+        // but should be taken from (and thus stored with) the classification
+        int minArea;
+        try {
+            minArea = Integer.parseInt(minAreaText.getText());
+            if (minArea <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please specify a positive integer value for \"min area\"!", "Input Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        segUtil = SegUtils.initCalcRoi(mimsUi.getOpener().getHeight(), mimsUi.getOpener().getWidth(), classNames, classification, minArea, (int) Double.POSITIVE_INFINITY);
+        segUtil.addPropertyChangeListener(this);
+        segUtil.execute();
+    }//GEN-LAST:event_roiButtonActionPerformed
+
+    private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
+        MimsPlus[] images = getImages();
+        activeTask = EXPORT_TASK;
+        segUtil = SegUtils.initPrepSeg(images, colorImageIndex, localFeatures, trainClasses);
+        segUtil.addPropertyChangeListener(this);
+        segUtil.execute();
+}//GEN-LAST:event_exportButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addButton;
     private javax.swing.JComboBox classesCombo;
+    private javax.swing.JTextArea descriptionText;
     private javax.swing.JButton displayButton;
-    private javax.swing.JComboBox enginesCombo;
-    private javax.swing.JButton jButton10;
-    private javax.swing.JButton jButton11;
+    private javax.swing.JButton exportButton;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JButton loadButton;
-    private javax.swing.JLabel minSizeLabel;
-    private javax.swing.JSpinner minSizeSpinner;
-    private javax.swing.JRadioButton predRButton;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton loadModelButton;
+    private javax.swing.JButton loadPredictionButton;
+    private javax.swing.JTextField minAreaText;
+    private javax.swing.JPanel modelPanel;
+    private javax.swing.JButton modifyButton;
+    private javax.swing.JButton predictButton;
+    private javax.swing.JPanel predictionPanel;
     private javax.swing.JProgressBar progressBar;
-    private javax.swing.JButton removeButton;
-    private javax.swing.JButton renameButton;
+    private javax.swing.JButton resetButton;
     private javax.swing.JButton roiButton;
-    private javax.swing.JButton runButton;
-    private javax.swing.JButton saveButton;
-    private javax.swing.JButton syncButton;
-    private javax.swing.JRadioButton trainRButton;
+    private javax.swing.JButton saveModelButton;
+    private javax.swing.JButton savePredictionButton;
+    private javax.swing.JButton trainButton;
     private javax.swing.JLabel workLabel;
     // End of variables declaration//GEN-END:variables
-    private javax.swing.ButtonGroup buttonGroup;
+
+    @Override
+    public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        if ("progress".equals(evt.getPropertyName())) {
+            int progress = (Integer) evt.getNewValue();
+            progressBar.setValue(progress);
+        } else if ("state".equals(evt.getPropertyName())) {
+            switch (activeTask) {
+                case TRAIN_TASK:
+                    if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)) {
+                        workLabel.setText("training model...");
+                        progressBar.setValue(activeEngine.getProgress());
+                    } else if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE)) {
+                        workLabel.setText("done");
+                        progressBar.setValue(0);
+                        activeTask = NO_TASK;
+                        if (activeEngine.getSuccess()) {
+                            // TODO display model info
+                            setProperties(activeEngine.getProperties()); //also updates model info
+                        }
+                    }
+                    break;
+                case PRED_TASK:
+                    if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)) {
+                        workLabel.setText("predicting...");
+                        progressBar.setValue(activeEngine.getProgress());
+                    } else if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE)) {
+                        activeTask = NO_TASK;
+                        workLabel.setText("done");
+                        progressBar.setValue(0);
+                        if (activeEngine.getSuccess() && activeEngine.getClassification() != null) {
+                            byte[] tmpClassification = activeEngine.getClassification();
+                            classification = tmpClassification;
+                        } else {
+                            // TODO error handling
+                            workLabel.setText("Error: segmentation failed!");
+                        }
+                    }
+                    break;
+                case TRAINFEAT_TASK:
+                    if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)) {
+                        workLabel.setText("extracting features for training...");
+                        progressBar.setValue(segUtil.getProgress());
+                    } else if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE)) {
+                        activeTask = NO_TASK;
+                        if (segUtil.getSuccess()) {
+                            workLabel.setText("done");
+                            progressBar.setValue(0);
+                            ArrayList<ArrayList<ArrayList<Double>>> trainData = segUtil.getData();
+                            classColors = segUtil.getClassColors();
+                            startTraining(trainData);
+                        } else { // TODO error handling
+                            workLabel.setText("Error: feature extraction failed!");
+                        }
+                    }
+                    break;
+                case PREDFEAT_TASK:
+                    if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)) {
+                        workLabel.setText("extracting features for prediction...");
+                        progressBar.setValue(segUtil.getProgress());
+                    } else if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE)) {
+                        activeTask = NO_TASK;
+                        if (segUtil.getSuccess()) {
+                            workLabel.setText("done");
+                            progressBar.setValue(0);
+                            ArrayList<ArrayList<ArrayList<Double>>> predData = segUtil.getData();
+                            startPrediction(predData);
+                        } else { // TODO error handling
+                            workLabel.setText("Error: feature extraction failed!");
+                        }
+                    }
+                    break;
+                case ROI_TASK:
+                    if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)) {
+                        workLabel.setText("calculating ROIs...");
+                        progressBar.setValue(segUtil.getProgress());
+                    } else if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE)) {
+                        activeTask = NO_TASK;
+                        ClassManager cm = segUtil.getClasses();
+                        if (segUtil.getSuccess() && cm != null && cm.getClasses().length > 0) {
+                            workLabel.setText("done");
+                            progressBar.setValue(0);
+                            predClasses = cm;
+                            fillBox();
+                            setActiveClass(predClasses.getClasses()[0]); // set first class as active class
+                        } else { // TODO error handling
+                            workLabel.setText("calculating ROIs failed!");
+                        }
+                    }
+                    break;
+            }
+        }
+        updateControls();
+    }
 }
