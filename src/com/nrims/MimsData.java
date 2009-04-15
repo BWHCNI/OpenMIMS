@@ -247,7 +247,7 @@ public class MimsData extends javax.swing.JPanel {
             jLabel20.setText(tempstring);
             
             int raster = image.getRaster();
-            raster = java.lang.Math.round(raster/1000);
+            raster = java.lang.Math.round( ( (float)raster )/1000);
             tempstring = raster + " um";
             jLabel16.setText(tempstring);
             
