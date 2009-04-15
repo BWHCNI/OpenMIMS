@@ -582,7 +582,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       }
    }
     
-    public void updateHistogram() {
+    public void updateHistogram() {      
       
       // Update histogram (area Rois only).      
       if ((roi.getType() == roi.FREEROI) || (roi.getType() == roi.OVAL) ||
@@ -596,7 +596,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             roiPix = this.getRoiPixels();
          }
          if (roiPix != null) {
-            //ui.getRoiControl().updateHistogram(roiPix, label, );
+            ui.getRoiControl().updateHistogram(roiPix, label, true);
          }
       }
 
