@@ -198,6 +198,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
     }
 
+   void medianizeHSIImage(MimsPlus mimsPlus) {
+      
+   }
+
     /**
      * Closes the current image and its associated set of windows if the mode is set to close open windows.
      */
@@ -555,33 +559,39 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
     }
 
-    public synchronized boolean computeRatio(HSIProps props) {
+    public synchronized MimsPlus computeRatio(HSIProps props, boolean show) {
         int i;
 
         int numIndex = props.getNumMass();
         int denIndex = props.getDenMass();
 
-        int ratioIndex = getRatioImageIndex(numIndex, denIndex);
-
+        // If were not showing the image than forget trying 
+        // to see if one already exists (ratioIndex >= 0).
+        int ratioIndex;
+        if (show)
+           ratioIndex = getRatioImageIndex(numIndex, denIndex);
+        else
+           ratioIndex = -1;
+                              
         MimsPlus num = massImages[numIndex];
 
         if (num == null) {
             updateStatus("Error no numerator");
-            return false;
+            return null;
         }
         MimsPlus den = massImages[denIndex];
         if (den == null) {
             updateStatus("Error no denominator");
-            return false;
+            return null;
         }
 
         if (num.getBitDepth() != 16) {
             updateStatus("Error numerator not 16 bits");
-            return false;
+            return null;
         }
         if (den.getBitDepth() != 16) {
             updateStatus("Error denominator not 16 bits");
-            return false;
+            return null;
         }
 
         MimsPlus mp = null;
@@ -589,7 +599,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             mp = ratioImages[ratioIndex];
         }
         boolean bAddSlice = false;
-        boolean bShow = false;
         if (mp != null) {
             if (mp.getNSlices() > 1) {
                 mp = null;
@@ -620,15 +629,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
 
                 mp.addListener(this);
-                bShow = true;
             }
         }
 
         if (mp == null) {
             updateStatus("Error allocating ratio image");
-            return false;
+            return null;
         }
-
 
         float[] rPixels = (float[]) mp.getProcessor().getPixels();
         short[] nPixels = (short[]) num.getProcessor().getPixels();
@@ -668,7 +675,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
         //End danger
         
-        if (bShow) {
+        if (show) {
             mp.show();
             mp.updateAndDraw();
             //System.out.println("calibrated:  "+mp.getCalibration().calibrated());
@@ -685,7 +692,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
 
         cbControl.addWindowtoList(mp);
-        return true;
+        return mp;
     }
 
     public static String getImageHeader(Opener im) {
@@ -742,7 +749,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         public void recomputeAllRatio(HSIProps props) {
         for (int i = 0; i < maxMasses; i++) {
             if (ratioImages[i] != null) {
-                computeRatio(props);
+                computeRatio(props, true);
                 ratioImages[i].updateAndDraw();
             }
         }
@@ -943,6 +950,17 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             IJ.log(x.toString());
             updateStatus("Failed computing HSI image");
         }
+        
+        // DANGER DANGER DANGER DANGER DANGER DANGER
+        if (this.medianFilterRatios) {
+            Roi temproi = mp.getRoi();
+            mp.killRoi();
+            ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
+            double r = this.hsiControl.getMedianRadius();
+            rfilter.rank(mp.getProcessor(), r, rfilter.MEDIAN);
+            rfilter = null;
+            mp.setRoi(temproi);
+        }
 
         if (bShow) {
             while (mp.getHSIProcessor().isRunning()) {
@@ -992,7 +1010,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             
             // Update ratio images.
             for (int i = 0; i < rp.length; i++) {                                                                     
-               computeRatio(ratioImages[i].getHSIProps());               
+               computeRatio(ratioImages[i].getHSIProps(), true);               
             }                            
                 
             autocontrastAllImages();
@@ -1341,7 +1359,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
     
     // Calls the default ImageJ autocontrast (reset).
-    public void autocontrastMassImage(MimsPlus img) {       
+    public void autocontrastMassImage(MimsPlus img) {     
        ContrastAdjuster ca = new ContrastAdjuster(img);
        ca.doReset = true;
        ca.doUpdate(img);             
@@ -1359,7 +1377,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       props.setMaxRatio(imgStats.mean + (imgStats.stdDev));
       
       // Generate new image.
-      computeRatio(props);            
+      computeRatio(props, true);            
    }
 
     public void restoreMims() {

@@ -272,6 +272,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		notify();
 	}
 
+        // TODO fix this.
 	public synchronized  void actionPerformed(ActionEvent e) {
                 JButton b = (JButton)e.getSource();
 		if (b==null) return;

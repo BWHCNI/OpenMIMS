@@ -468,10 +468,10 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 private void jSpinner5StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner5StateChanged
     ui.recomputeAllRatio(props);
     MimsPlus[] ratioimages = ui.getOpenRatioImages();
-    for (int i = 0; i < ratioimages.length; i++) {
-        ui.autocontrastRatioImage(ratioimages[i]);
+    for (int i = 0; i < ratioimages.length; i++) {       
+       ui.autocontrastRatioImage(ratioimages[i]);        
     }
-   
+    
 }//GEN-LAST:event_jSpinner5StateChanged
 
 private void rgbMinjSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rgbMinjSliderStateChanged
@@ -639,8 +639,8 @@ private synchronized void update(boolean bUpdateUI) {
         return true ;
     }
     
-    public boolean computeRatio() {
-        return ui.computeRatio(props) ;
+    public MimsPlus computeRatio() {
+        return ui.computeRatio(props, true) ;
     }
     
     public boolean displayHSI() {

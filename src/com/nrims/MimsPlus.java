@@ -25,6 +25,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     static final int SEG_IMAGE = 3 ;
     static final int SUM_IMAGE = 4 ;
     
+    MimsPlus ratioMims;
+    
     /** Creates a new instance of mimsPlus */
     public MimsPlus() {
         super();
@@ -121,7 +123,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                setProcessor(title, ip);
                getProcessor().setMinAndMax(0, 255); // default display range
                fStateListeners = new EventListenerList() ;
-               info += "Type=HSI\n";  
+               info += "Type=HSI\n";
+               
+               // For HSI images make a copy of a ratio image without 
+               // showing it. This is useful for getting data associated 
+               // with line plot medianization.             
+               ratioMims = ui.computeRatio(props, false);
             }
             else {
                float [] fPixels = new float[image.getWidth()*image.getHeight()];
@@ -140,7 +147,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             info += "Numerator=" + srcImage.getMassName(numIndex)+"\n";
             info += "Denominator=" + srcImage.getMassName(denIndex)+"\n";
             info += srcImage.getInfo();
-            setProperty("Info", info) ;
+            setProperty("Info", info) ;           
             
         }
         catch(Exception x) { IJ.log(x.toString()); }
@@ -450,7 +457,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 if( dgl[0] > 0 ) {
                     ratio = ui.getRatioScaleFactor()*((double) ngl[0] / (double) dgl[0]);
                 }
-                //ui.updateStatus(msg + ngl[0] + " / " + dgl[0] + " = " + IJ.d2s(ratio,4) ) ;
                 msg += "S (" + ngl[0] + " / " + dgl[0] + ") = " + IJ.d2s(ratio,4);
             }
         } 
@@ -463,12 +469,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 int [] dgl = ml[d].getPixel(mX,mY);
                 int [] rgl = getPixel(mX,mY);
                 float r = Float.intBitsToFloat(rgl[0]);
-                //ui.updateStatus(msg + ngl[0] + " / " + dgl[0] + " = " + IJ.d2s(r,4) ) ;
                 msg += "S (" + ngl[0] + " / " + dgl[0] + ") = " + IJ.d2s(r,4);
             }         
         }
         else if(this.nType == SUM_IMAGE) {
-            int[] gl = this.getPixel(mX, mY);
+            int[] gl = getPixel(mX, mY);
             float s = Float.intBitsToFloat(gl[0]);
             msg += IJ.d2s(s,0);
         }
@@ -487,7 +492,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         //should be in preferences
         boolean insideRoi = false;
         java.util.Hashtable rois = ui.getRoiManager().getROIs();        
-        for(Object key:rois.keySet()){
+        for(Object key:rois.keySet()) {
             Roi roi = (Roi)rois.get(key);
             int slice=1;
             if(this.getMimsType()==this.HSI_IMAGE || this.getMimsType()==this.RATIO_IMAGE) {
@@ -509,34 +514,27 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                if (ui.getSyncROIsAcrossPlanes() || ui.getRoiManager().getSliceNumber(key.toString()) == slice) {
                   insideRoi = true;
                   ij.process.ImageStatistics stats = this.getStatistics();
-                  //the displayed statistic was variance not sd... changed.
-                  //TODO fix HSI rollover to show underlying ratio stats
+
+                  // Update message.
                   if(this.getMimsType()==this.HSI_IMAGE) {
                       msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
                   } else {
                       msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
                   }
                   
+                  // Set Roi to yellow.
                   if(ui.activeRoi != roi){                   
                     ui.activeRoi = roi;
                     setRoi(roi);
                   }
                   
-                   double[] roiPix = this.getRoiPixels();
-                   if (roiPix != null) {
-                       String label = this.getShortTitle() + " ROI: " + roi.getName();
-                       this.ui.getRoiControl().updateHistogram(roiPix, label, true);
-                   }
-                   
-                   if ((roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE)) {
-                       ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(this);
-                       ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() + " : " + roi.getName(), this.getProcessor().getLineWidth());
-                   }
-
-                   break;
-               }
-            }
-        }
+                  updateHistogram();
+                  updateLineProfile();           
+                  
+                  break;
+               } // End - if (ui.getSyncROIsAcrossPlanes() 
+            } // End - if(contains)
+        } // End - for(Object key:rois.keySet())
         if (ui.activeRoi != null && !insideRoi){
            ui.activeRoi = null;
            setRoi((Roi)null);
@@ -559,36 +557,71 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        int displayDigits = 2;
        
        // Get the ROI, (the area in yellow).
-       Roi roi = getRoi();              
-       
-       // Display stats in the message bar.
-        if (roi != null) {
-            ij.process.ImageStatistics stats = this.getStatistics();
-            if (this.getMimsType() == MimsPlus.HSI_IMAGE) {
-                msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
-            } else {
-                msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
-            }
-            
-            ui.updateStatus(msg);
-            
-            double[] roiPix = this.getRoiPixels();
-            if ( ( roiPix != null ) && (roiPix.length > 1) ) {
-                String label = this.getShortTitle() + " ROI: " + roi.getName();
-                this.ui.getRoiControl().updateHistogram(roiPix, label, false);
-            }
+      Roi roi = getRoi();
 
-            if ( (roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE) ) {
-                ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(this);
-                ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() + " : " + roi.getName(), this.getProcessor().getLineWidth());
-            }
-            
-        }
-    }
+      // Display stats in the message bar.
+      if (roi != null) {
+         ij.process.ImageStatistics stats = this.getStatistics();
+         if (this.getMimsType() == MimsPlus.HSI_IMAGE) {
+            msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
+         } else {
+            msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
+         }
 
+         ui.updateStatus(msg);
+
+         // Set Roi to yellow.
+         if (ui.activeRoi != roi) {
+            ui.activeRoi = roi;
+            setRoi(roi);
+         }        
+         
+         updateHistogram();
+         updateLineProfile();
+
+      }
+   }
+    
+    public void updateHistogram() {
+      
+      // Update histogram (area Rois only).      
+      if ((roi.getType() == roi.FREEROI) || (roi.getType() == roi.OVAL) ||
+          (roi.getType() == roi.POLYGON) || (roi.getType() == roi.RECTANGLE)) {
+         String label = this.getShortTitle() + " ROI: " + roi.getName();
+         double[] roiPix;
+         if (this.nType == HSI_IMAGE) {
+            ratioMims.setRoi(getRoi());
+            roiPix = ratioMims.getRoiPixels();
+         } else {
+            roiPix = this.getRoiPixels();
+         }
+         if (roiPix != null) {
+            //ui.getRoiControl().updateHistogram(roiPix, label, );
+         }
+      }
+
+   }
+    
+   public void updateLineProfile() {
+
+      // Line profiles for ratio images and HSI images should be identical.
+      if ((roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE)) {
+         if (this.nType == HSI_IMAGE) {
+            ratioMims.setRoi(getRoi());
+            ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(ratioMims);
+            ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() + " : " + roi.getName(), this.getProcessor().getLineWidth());
+         } else {
+            ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(this);
+            ui.updateLineProfile(profileP.getProfile(), this.getShortTitle() + " : " + roi.getName(), this.getProcessor().getLineWidth());
+         }
+      }
+
+   }
+
+    // TODO - needs to more easily handle HSI images
     public double[] getRoiPixels() {
         if (this.getRoi()==null) return null;
-        
+               
         Rectangle rect = roi.getBoundingRect();
         ij.process.ImageProcessor imp = this.getProcessor();
         ij.process.ImageStatistics stats = this.getStatistics();
@@ -617,8 +650,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                    
                     // Z.K. I had to add this line because oval Rois were generating
                     // an OutOfBounds exception when being dragged off the screen.
-                    // It is not obvious to me what is going on here (code wise) so I'm just
-                    // going to try and prevent the exception from being thrown.
                     if (mi >= mask.length) break;
                     
                     // mask should never be null here.

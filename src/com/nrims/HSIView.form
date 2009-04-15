@@ -55,7 +55,7 @@
                           <Component id="jButton5" max="32767" attributes="1"/>
                           <Component id="jButton4" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="303" max="32767" attributes="0"/>
+                      <EmptySpace pref="308" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
