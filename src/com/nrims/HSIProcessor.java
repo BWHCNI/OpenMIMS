@@ -33,6 +33,7 @@ public class HSIProcessor implements Runnable {
      */
     public HSIProcessor(MimsPlus hsiImage ) {
         this.hsiImage = hsiImage ;
+        this.medianize = this.hsiImage.getUI().getMedianFilterRatios();
         compute_hsi_table() ;
     }
     
@@ -63,6 +64,8 @@ public class HSIProcessor implements Runnable {
     
     private int numSlice = 1 ;
     private int denSlice = 1 ;
+
+    private boolean medianize;
 
     public void setProps(HSIProps props) {
         if(hsiImage == null) return ;
@@ -185,7 +188,55 @@ public class HSIProcessor implements Runnable {
             int numThreshold = hsiProps.getMinNum() ;
             int denThreshold = hsiProps.getMinDen() ;
             int transparency = hsiProps.getTransparency() ;
-            
+
+            //TODO
+            //attempt at medianization, need to make better...
+
+            float ratioPixels[] = new float[numPixels.length];
+            MimsPlus internalRatio = this.hsiImage.getInternalRatio();
+            /*
+            float[] medPixels = ratioPixels;
+            if (this.hsiImage.getUI().getMedianFilterRatios() && ( internalRatio != null ) ) {
+                ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
+                double r = this.hsiImage.getUI().getHSIView().getMedianRadius();
+                rfilter.rank(internalRatio.getProcessor(), r, rfilter.MEDIAN);
+                medPixels = (float[])internalRatio.getProcessor().getPixels();
+            } else if(internalRatio != null) {
+                medPixels = (float[])internalRatio.getProcessor().getPixels();
+            }  else {
+                for (int i = 0; i < ratioPixels.length; i++) {
+                    if (denPixels[i] != 0) {
+                        medPixels[i] = ((float) numPixels[i]) / ((float) denPixels[i]);
+                    } else {
+                        medPixels[i] = 0; //doesn't get looked at because of thresholds
+                    }
+                }
+            }
+            */
+            //not the right way to do this
+             for (int i = 0; i < ratioPixels.length; i++) {
+                if (denPixels[i] != 0) {
+                    ratioPixels[i] = hsiProps.getRatioScaleFactor()*((float) numPixels[i]) / ((float) denPixels[i]);
+                } else {
+                    ratioPixels[i] = 0; //doesn't get looked at because of thresholds
+                }
+            }
+            float[] medPixels = ratioPixels;
+            if (medianize && internalRatio != null) {
+                ij.process.FloatProcessor tempProc = new ij.process.FloatProcessor(internalRatio.getProcessor().getWidth(),internalRatio.getProcessor().getHeight()); //change
+                tempProc.setPixels(ratioPixels);
+                ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
+                double r = this.hsiImage.getUI().getHSIView().getMedianRadius();
+                rfilter.rank(tempProc, r, rfilter.MEDIAN);
+                
+                medPixels = (float[]) tempProc.getPixels();
+                internalRatio.getProcessor().setPixels(medPixels);
+            }
+
+            if (!medianize && internalRatio != null) {
+                internalRatio.getProcessor().setPixels(ratioPixels);
+            }
+
             for(int offset = 0 ; offset < numPixels.length && fThread != null ; offset++ ) {
                 
                 int numValue =  (int) ( numPixels[offset] ) ;
@@ -193,8 +244,10 @@ public class HSIProcessor implements Runnable {
             
                 if( numValue > numThreshold && denValue > denThreshold ){
             
+                    //original
+                    //float ratio = hsiProps.getRatioScaleFactor()*((float)numValue / (float)denValue );
+                    float ratio = medPixels[offset];
                     
-                    float ratio = hsiProps.getRatioScaleFactor()*((float)numValue / (float)denValue );
                     int numOut = (int)(numGain * (float)( numValue - (int)numMin )) ;
                     int denOut = (int)(denGain * (float)( denValue - (int)denMin )) ;
 

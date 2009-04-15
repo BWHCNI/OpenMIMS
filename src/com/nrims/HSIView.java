@@ -33,8 +33,8 @@ public class HSIView extends JPanel {
         initComponents();
         jSpinner1.setModel(new SpinnerNumberModel(1.0, 0.001, 65535.0, 1));
         jSpinner2.setModel(new SpinnerNumberModel(0.0, 0.0, 65535.0, 1));
-        jSpinner3.setModel(new SpinnerNumberModel(3, 1, 65535, 1));
-        jSpinner4.setModel(new SpinnerNumberModel(3, 1, 65535, 1));
+        jSpinner3.setModel(new SpinnerNumberModel(3, 0, 65535, 1));
+        jSpinner4.setModel(new SpinnerNumberModel(3, 0, 65535, 1));
         jList1.setModel(listModel);
         jList1.setCellRenderer(new MyCellRenderer(this.ui));
               
@@ -459,17 +459,27 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     ui.setMedianFilterRatios(this.jRadioButton2.isSelected());
     
     ui.recomputeAllRatio(props);
+    ui.recomputeAllHSI(props);
     MimsPlus[] ratioimages = ui.getOpenRatioImages();
-    for(int i = 0; i < ratioimages.length; i++) {
-        ui.autocontrastRatioImage(ratioimages[i]);
+    if (this.jRadioButton2.isSelected()) {
+        for (int i = 0; i < ratioimages.length; i++) {
+            //pretending the medianized ratio is a "mass" image
+            ui.autocontrastMassImage(ratioimages[i]);
+        }
+    } else {
+        for (int i = 0; i < ratioimages.length; i++) {
+            ui.autocontrastRatioImage(ratioimages[i]);
+        }
     }
 }//GEN-LAST:event_jRadioButton2ActionPerformed
 
 private void jSpinner5StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner5StateChanged
     ui.recomputeAllRatio(props);
+    ui.recomputeAllHSI(props);
     MimsPlus[] ratioimages = ui.getOpenRatioImages();
-    for (int i = 0; i < ratioimages.length; i++) {       
-       ui.autocontrastRatioImage(ratioimages[i]);        
+    for (int i = 0; i < ratioimages.length; i++) {
+        //pretending the medianized ratio is a "mass" image
+       ui.autocontrastMassImage(ratioimages[i]);
     }
     
 }//GEN-LAST:event_jSpinner5StateChanged

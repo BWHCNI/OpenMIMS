@@ -665,7 +665,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             return foo;
         }
     }
-    
+
+    public MimsPlus getInternalRatio() {
+        return this.ratioMims;
+    }
+
     public void addListener( MimsUpdateListener inListener ) {
          fStateListeners.add(MimsUpdateListener.class, inListener );
     }
