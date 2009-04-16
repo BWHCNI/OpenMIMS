@@ -274,21 +274,21 @@ public class MimsRoiControl extends javax.swing.JPanel {
     }
     
     public void updateHistogram(double[] pixelvalues, String label, boolean forceupdate) {
-        if(pixelvalues == null) {
-            return;
-        } else if (pixelvalues.length == 0) {
-            return;
-        }
-        if (forceupdate || histogramUpdatejCheckBox.isSelected()) {
-            HistogramDataset dataset = new HistogramDataset();
+       if(pixelvalues == null) {
+          return;
+       } else if (pixelvalues.length == 0) {
+          return;
+       }
+       if (forceupdate || histogramUpdatejCheckBox.isSelected()) {
+          HistogramDataset dataset = new HistogramDataset();
 
-            dataset.addSeries(label, pixelvalues, 100);
+          dataset.addSeries(label, pixelvalues, 100);
 
-            org.jfree.chart.plot.XYPlot plot = (XYPlot) chart.getPlot();
-            plot.setDataset(dataset);
+          org.jfree.chart.plot.XYPlot plot = (XYPlot) chart.getPlot();
+          plot.setDataset(dataset);
 
-            chart.fireChartChanged();
-        }
+          chart.fireChartChanged();
+       }
     }
     
     private void jTextField1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyPressed
@@ -368,6 +368,14 @@ private void profilejButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
  
 }//GEN-LAST:event_profilejButtonActionPerformed
+
+public Measure getMeasure(){
+   return measure;
+}
+
+public boolean append(){
+   return jCheckBox4.isSelected();
+}
 
 public void setROIsSynchedAcrossPlanes(boolean setSynched) {
    jCheckBox5.setSelected(setSynched);

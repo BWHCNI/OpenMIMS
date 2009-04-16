@@ -53,7 +53,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     private com.nrims.data.Opener image = null;
     private String savedpath = "";
     boolean previouslySaved = false;
-
+    Measure scratch;
+    
     public MimsRoiManager(UI ui, com.nrims.data.Opener im) {
         super("MIMS ROI Manager");
 
@@ -958,7 +959,29 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         String name = savedpath.substring(savedpath.lastIndexOf("/")+1, savedpath.length());
         this.setTitle("MIMS ROI Manager: "+name);
     }
+    
     boolean measure() {
+               
+       Measure measure = ui.getRoiControl().getMeasure(); 
+       if (scratch == null) scratch = new Measure(ui);       
+       scratch.setOptionsTheSame(measure);
+               
+        // If not appending reset the data in the table
+        if (ui.getRoiControl().append()) {
+           scratch.setResize(false);            
+        } else {
+           scratch.reset();
+           scratch.setResize(true); 
+        }
+       
+        MimsPlus[] imp = new MimsPlus[1];
+        imp[0] = (MimsPlus)getImage();
+        scratch.generateRoiTable(imp, true);
+        
+        return true;
+    }
+    
+    boolean measure_old() {
         ImagePlus imp = getImage();
         if (imp == null) {
             return false;
