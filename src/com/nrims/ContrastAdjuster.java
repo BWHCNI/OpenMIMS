@@ -273,25 +273,32 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	}
 
         // TODO fix this.
-	public synchronized  void actionPerformed(ActionEvent e) {
-                JButton b = (JButton)e.getSource();
-		if (b==null) return;
-                if (b==resetB && imp.getMimsType() == MimsPlus.RATIO_IMAGE) {                                      
-                   ui.autocontrastRatioImage(imp);    
-                   update(imp);
-                   return;
-                }
-                else if (b==resetB && imp.getMimsType() != MimsPlus.RATIO_IMAGE)
-			doReset = true;
-		else if (b==autoB)
-			doAutoAdjust = true;
-		else if (b==setB)
-			doSet = true;
-		else if (b==applyB)
-			doApplyLut = true;
-		notify();
-	}
-	
+   public synchronized void actionPerformed(ActionEvent e) {
+      JButton b = (JButton) e.getSource();
+      if (b == null) return;
+      
+      if (b == autoB) {
+         if (imp.getMimsType() == MimsPlus.RATIO_IMAGE && !ui.getHSIView().isMedianFilterSelected()) {
+            ui.autocontrastNRIMS(imp);
+            update(imp);
+            return;
+         } else if (imp.getMimsType() == MimsPlus.HSI_IMAGE && !ui.getHSIView().isMedianFilterSelected()) {
+            ui.autocontrastNRIMS(imp);
+            update(imp);
+            return;
+         } else {
+            doAutoAdjust = true;           
+         }
+      } else if (b == resetB) {
+         doReset = true;
+      } else if (b == setB) {
+         doSet = true;
+      } else if (b == applyB) {
+         doApplyLut = true;
+      }
+      notify();      
+   }      
+  
 	ImageProcessor setup(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		if (roi!=null) roi.endPaste();

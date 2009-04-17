@@ -439,7 +439,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
           enablePosSpinners();
           disableSizeSpinners();
           java.awt.Rectangle rect = roi.getBoundingRect();   
-          xPosSpinner.setValue(rect.x);
+          xPosSpinner.setValue(rect.x); 
           yPosSpinner.setValue(rect.y); 
        } else if (roiType == Roi.LINE || roiType == Roi.POLYLINE || roiType == Roi.FREELINE) {
            enablePosSpinners();

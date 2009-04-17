@@ -456,30 +456,31 @@ public class HSIView extends JPanel {
     }//GEN-LAST:event_jButton2ActionPerformed
 
 private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
-    ui.setMedianFilterRatios(this.jRadioButton2.isSelected());
+   ui.setMedianFilterRatios(jRadioButton2.isSelected());
     
-    ui.recomputeAllRatio(props);
-    ui.recomputeAllHSI(props);
-    MimsPlus[] ratioimages = ui.getOpenRatioImages();
-    if (this.jRadioButton2.isSelected()) {
-        for (int i = 0; i < ratioimages.length; i++) {
-            //pretending the medianized ratio is a "mass" image
-            ui.autocontrastMassImage(ratioimages[i]);
-        }
-    } else {
-        for (int i = 0; i < ratioimages.length; i++) {
-            ui.autocontrastRatioImage(ratioimages[i]);
-        }
-    }
+   ui.recomputeAllRatio(props);
+   ui.recomputeAllHSI();
+   MimsPlus[] ratioimages = ui.getOpenRatioImages();   
+       for (int i = 0; i < ratioimages.length; i++) {           
+           ui.autoContrastImage(ratioimages[i]);
+       }        
+       MimsPlus[] hsiimages = ui.getOpenHSIImages();
+       for (int i = 0; i < hsiimages.length; i++) {
+          ui.autoContrastImage(hsiimages[i]);
+       }
+
 }//GEN-LAST:event_jRadioButton2ActionPerformed
 
 private void jSpinner5StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner5StateChanged
     ui.recomputeAllRatio(props);
-    ui.recomputeAllHSI(props);
+    ui.recomputeAllHSI();
     MimsPlus[] ratioimages = ui.getOpenRatioImages();
-    for (int i = 0; i < ratioimages.length; i++) {
-        //pretending the medianized ratio is a "mass" image
-       ui.autocontrastMassImage(ratioimages[i]);
+    for (int i = 0; i < ratioimages.length; i++) {       
+       ui.autoContrastImage(ratioimages[i]);
+    }
+    MimsPlus[] hsiimages = ui.getOpenHSIImages();
+    for (int i = 0; i < hsiimages.length; i++) {       
+       ui.autoContrastImage(hsiimages[i]);
     }
     
 }//GEN-LAST:event_jSpinner5StateChanged
@@ -522,7 +523,7 @@ private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
       update(false);
       computeRatio();
       MimsPlus[] ratioimages = ui.getOpenRatioImages();
-      ui.autocontrastRatioImage(ratioimages[ratioimages.length-1]);
+      ui.autoContrastImage(ratioimages[ratioimages.length-1]);
    }   
 }//GEN-LAST:event_jButton4ActionPerformed
 
@@ -551,7 +552,7 @@ public void resetRatioSpinners(HSIProps argprop) {
     double max = argprop.getMaxRatio();
 }
 
-private synchronized void update(boolean bUpdateUI) {
+public synchronized void update(boolean bUpdateUI) {
         if(ui == null) {
             return;
         } else if(bUpdating) {
@@ -671,6 +672,10 @@ private synchronized void update(boolean bUpdateUI) {
     public void setHSIProps(HSIProps props) {
         this.props.setProps(props);
         update(true);
+    }
+    
+    public boolean isMedianFilterSelected(){
+       return jRadioButton2.isSelected();
     }
 
     

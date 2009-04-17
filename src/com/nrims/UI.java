@@ -184,7 +184,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }); // end FileDrop.Listener
 
         
-        //??? todo: add if to open file chooser or not based of preference setting        
+        //??? todo: add if to open file chooser or not based of preference setting  
         if (fileName == null) {
             this.loadMIMSFile();
         } else {
@@ -755,16 +755,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 openRatio[i].updateAndDraw();
             
         }
+        cbControl.updateHistogram();
 
     }
 
-    public void recomputeAllHSI(HSIProps props) {
+    public void recomputeAllHSI() {
         MimsPlus[] openHSI = this.getOpenHSIImages();
-        for (int i = 0; i < openHSI.length; i++) {
-            
+        for (int i = 0; i < openHSI.length; i++) {            
                 computeHSI(hsiImages[i].getHSIProps());
-                openHSI[i].updateAndDraw();
-            
+                openHSI[i].updateAndDraw();            
         }
     }
 
@@ -855,7 +854,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             mp.addListener(this);
             mp.show();
             if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {
-                this.autocontrastMassImage(mp);
+                this.autoContrastImage(mp);
             }
             mp.updateAndDraw();
 
@@ -964,18 +963,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         } catch (Exception x) {
             IJ.log(x.toString());
             updateStatus("Failed computing HSI image");
-        }
-        
-        // DANGER DANGER DANGER DANGER DANGER DANGER
-        if (this.medianFilterRatios) {
-            Roi temproi = mp.getRoi();
-            mp.killRoi();
-            ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
-            double r = this.hsiControl.getMedianRadius();
-            rfilter.rank(mp.getProcessor(), r, rfilter.MEDIAN);
-            rfilter = null;
-            mp.setRoi(temproi);
-        }
+        }        
 
         if (bShow) {
             while (mp.getHSIProcessor().isRunning()) {
@@ -1373,30 +1361,23 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     public void autocontrastAllImages() {       
-       // All mass images      
+       // All mass images             
        MimsPlus mp[] = getOpenMassImages();
         for (int i = 0; i < mp.length; i++) {
             if (mp[i].getAutoContrastAdjust())
-               autocontrastMassImage(mp[i]);
+               autoContrastImage(mp[i]);
         }
         
         // All ratio images
         MimsPlus rp[] = getOpenRatioImages();
         for (int i = 0; i < rp.length; i++) {
            if (rp[i].getAutoContrastAdjust())
-              autocontrastRatioImage(rp[i]);
+              autoContrastImage(rp[i]);
         }                
-    }
+    }   
     
-    // Calls the default ImageJ autocontrast (reset).
-    public void autocontrastMassImage(MimsPlus img) {     
-       ContrastAdjuster ca = new ContrastAdjuster(img);
-       ca.doReset = true;
-       ca.doUpdate(img);             
-    }
-    
-    // Custom contrasting code for ratio images.
-   public void autocontrastRatioImage(MimsPlus img) {
+   // Custom contrasting code for ratio images.
+   public void autocontrastNRIMS(MimsPlus img) {
       
       // Get the current image statistics.
       ImageStatistics imgStats = img.getStatistics();
@@ -1408,6 +1389,20 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       
       // Generate new image.
       computeRatio(props, true);            
+   }
+   
+   public void autoContrastImage(MimsPlus img) {
+                  
+      // Only use our custom autocontrasting when dealing 
+      // with a ratio or HSI image and NOT medianizing.
+      if (img.getMimsType() == MimsPlus.RATIO_IMAGE && !hsiControl.isMedianFilterSelected())
+         autocontrastNRIMS(img);
+      else if (img.getMimsType() == MimsPlus.HSI_IMAGE && !hsiControl.isMedianFilterSelected()) {
+         if (hsiControl.getRatioRange()) 
+            hsiControl.update(true);
+      }
+      else
+         cbControl.getContrastAdjuster().autoAdjust(img, img.getProcessor());                                     
    }
 
     public void restoreMims() {

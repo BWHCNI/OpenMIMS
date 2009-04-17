@@ -80,6 +80,11 @@ public class MimsCBControl extends javax.swing.JPanel {
    public boolean autoContrastRadioButtonIsSelected(){   
       return jRadioButton1.isSelected();
    }
+   
+   public ContrastAdjuster getContrastAdjuster(){
+      return contrastAdjuster1;
+   }
+   
    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
    private void initComponents() {
 
@@ -208,10 +213,7 @@ private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
    
    // If setting to true, do autocontrasting.
    if (jRadioButton1.isSelected()) {
-      if (imp.getMimsType() == MimsPlus.MASS_IMAGE)
-         ui.autocontrastMassImage(imp);
-      if (imp.getMimsType() == MimsPlus.RATIO_IMAGE)
-         ui.autocontrastRatioImage(imp);
+         ui.autoContrastImage(imp);
    }
    
    updateHistogram();
