@@ -317,8 +317,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
         if (jCheckBox5.isSelected()) {
             measure.generateStackTable();
         } else {
-            measure.generateRoiTable();
-        //ij.WindowManager.getFrame(measure.getName()).setSize(450, 300);
+            measure.generateRoiTable();        
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 

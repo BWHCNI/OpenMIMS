@@ -960,7 +960,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         this.setTitle("MIMS ROI Manager: "+name);
     }
     
-    boolean measure() {
+    void measure() {
                
        Measure measure = ui.getRoiControl().getMeasure(); 
        if (scratch == null) scratch = new Measure(ui);       
@@ -976,9 +976,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
        
         MimsPlus[] imp = new MimsPlus[1];
         imp[0] = (MimsPlus)getImage();
-        scratch.generateRoiTable(imp, true);
-        
-        return true;
+        if (imp[0].getMimsType() == MimsPlus.MASS_IMAGE || imp[0].getMimsType() == MimsPlus.RATIO_IMAGE)
+           scratch.generateRoiTable(imp, true);       
     }
     
     boolean measure_old() {

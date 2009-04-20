@@ -271,7 +271,7 @@ public class Measure {
     // that are NOT synched across all slices.
     // The results table for Rois which are synched across
     // all slices of a mass image has a different format. Possibly merge later...
-    public void generateRoiTable(MimsPlus[] images, boolean currentImageSliceOnly) {       
+    public void generateRoiTable(MimsPlus[] images, boolean currentImageSliceOnly) {
        
        // return if no images;       
        if (images.length == 0) 

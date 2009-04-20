@@ -747,16 +747,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
     }
 
-    public void recomputeAllRatio(HSIProps props) {
+    public void recomputeAllRatio() {
         MimsPlus[] openRatio = this.getOpenRatioImages();
-        for (int i = 0; i < openRatio.length; i++) {
-            
-                computeRatio(props, true);
-                openRatio[i].updateAndDraw();
-            
-        }
+        for (int i = 0; i < openRatio.length; i++) {            
+                computeRatio(openRatio[i].getHSIProps(), true);
+                openRatio[i].updateAndDraw();            
+        }      
         cbControl.updateHistogram();
-
     }
 
     public void recomputeAllHSI() {
@@ -764,7 +761,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         for (int i = 0; i < openHSI.length; i++) {            
                 computeHSI(hsiImages[i].getHSIProps());
                 openHSI[i].updateAndDraw();            
-        }
+        }        
     }
 
     public synchronized boolean computeSum(MimsPlus mImage) {
@@ -1395,14 +1392,24 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                   
       // Only use our custom autocontrasting when dealing 
       // with a ratio or HSI image and NOT medianizing.
-      if (img.getMimsType() == MimsPlus.RATIO_IMAGE && !hsiControl.isMedianFilterSelected())
+      if (img.getMimsType() == MimsPlus.RATIO_IMAGE && !hsiControl.isMedianFilterSelected()) {
          autocontrastNRIMS(img);
-      else if (img.getMimsType() == MimsPlus.HSI_IMAGE && !hsiControl.isMedianFilterSelected()) {
+      } else if (img.getMimsType() == MimsPlus.HSI_IMAGE && !hsiControl.isMedianFilterSelected()) {
          if (hsiControl.getRatioRange()) 
             hsiControl.update(true);
+      } else {                         
+         
+         cbControl.updateHistogram();
+         ContrastAdjuster ca = cbControl.getContrastAdjuster();
+         ca.doReset = true;
+         ca.doUpdate();
+         
+         ca.doAutoAdjust = true;
+         ca.doUpdate();
+         cbControl.updateHistogram();
+         
+         
       }
-      else
-         cbControl.getContrastAdjuster().autoAdjust(img, img.getProcessor());                                     
    }
 
     public void restoreMims() {

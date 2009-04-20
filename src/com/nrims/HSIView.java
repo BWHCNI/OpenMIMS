@@ -458,10 +458,10 @@ public class HSIView extends JPanel {
 private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
    ui.setMedianFilterRatios(jRadioButton2.isSelected());
     
-   ui.recomputeAllRatio(props);
+   ui.recomputeAllRatio();
    ui.recomputeAllHSI();
    MimsPlus[] ratioimages = ui.getOpenRatioImages();   
-       for (int i = 0; i < ratioimages.length; i++) {           
+       for (int i = 0; i < ratioimages.length; i++) {
            ui.autoContrastImage(ratioimages[i]);
        }        
        MimsPlus[] hsiimages = ui.getOpenHSIImages();
@@ -472,10 +472,12 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_jRadioButton2ActionPerformed
 
 private void jSpinner5StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner5StateChanged
-    ui.recomputeAllRatio(props);
-    ui.recomputeAllHSI();
+    if (jRadioButton2.isSelected()){
+       ui.recomputeAllRatio();
+       ui.recomputeAllHSI();
+    }
     MimsPlus[] ratioimages = ui.getOpenRatioImages();
-    for (int i = 0; i < ratioimages.length; i++) {       
+    for (int i = 0; i < ratioimages.length; i++) {   
        ui.autoContrastImage(ratioimages[i]);
     }
     MimsPlus[] hsiimages = ui.getOpenHSIImages();

@@ -47,7 +47,7 @@ public class MimsCBControl extends javax.swing.JPanel {
       jLabel4.setText( (new Double(max)).toString() );
       
    }
-   
+                 
    // set the windowlist jComboBox
    public void setWindowlistCombobox(String title){
       if (windows.containsKey(title)) {
@@ -214,9 +214,7 @@ private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
    // If setting to true, do autocontrasting.
    if (jRadioButton1.isSelected()) {
          ui.autoContrastImage(imp);
-   }
-   
-   updateHistogram();
+   }     
 }//GEN-LAST:event_jRadioButton1ActionPerformed
 
 private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
