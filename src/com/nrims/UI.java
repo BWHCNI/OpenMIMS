@@ -764,11 +764,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }        
     }
 
-    public synchronized boolean computeSum(MimsPlus mImage) {
+    public MimsPlus computeSum(MimsPlus mImage, boolean show) {
         boolean fail = true;
 
         if (mImage == null) {
-            return false;
+            return null;
         }
 
         int width = mImage.getWidth();
@@ -779,13 +779,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         short[] tempPixels = new short[templength];
 
         int startSlice = mImage.getCurrentSlice();
-
+        this.bUpdating = true;
         if (mImage.getMimsType() == MimsPlus.MASS_IMAGE) {
             for (int i = 1; i <= mImage.getImageStackSize(); i++) {
                 mImage.setSlice(i);
                 tempPixels = (short[]) mImage.getProcessor().getPixels();
                 for (int j = 0; j < sumPixels.length; j++) {
-                    sumPixels[j] += tempPixels[j];
+                    sumPixels[j] += ((int) ( tempPixels[j] & 0xffff) );
                 }
             }
             mImage.setSlice(startSlice);
@@ -828,13 +828,14 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             fail = false;
         }
-
+        this.bUpdating = false;
+        
         if (!fail) {
             MimsPlus mp = new MimsPlus(this, width, height, sumPixels, sumName);
 
-            boolean bShow = (mp == null);
-            // ??????
-            // find a slot to save it
+            if(show==false) return mp;
+
+            // if showing find a slot to save it
 
             boolean bFound = false;
             for (int i = 0; i < maxMasses * 2 && !bFound; i++) {
@@ -856,10 +857,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             mp.updateAndDraw();
 
             cbControl.addWindowtoList(mp);
-            bShow = true;
-            return true;
+            return mp;
         } else {
-            return false;
+            return null;
         }
     }
 
@@ -1529,10 +1529,10 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
     }
     for (int i = 0; i < openmass.length; i++) {
-        this.computeSum(openmass[i]);
+        this.computeSum(openmass[i], true);
     }
     for (int i = 0; i < openratio.length; i++) {
-        this.computeSum(openratio[i]);
+        this.computeSum(openratio[i], true);
     }
 }//GEN-LAST:event_sumAllMenuItemActionPerformed
 
@@ -1973,6 +1973,17 @@ public void updateLineProfile(double[] newdata, String name, int width) {
         return null;
     }
 
+    public MimsPlus[] getSumImages() {
+        return sumImages;
+    }
+
+    public MimsPlus getSumImage(int i) {
+        if (i >= 0 && i < maxMasses) {
+            return sumImages[i];
+        }
+        return null;
+    }
+
     // Returns only the open mass images as an array.
     public MimsPlus[] getOpenMassImages() {
         int i, nOpen = 0;
@@ -2181,7 +2192,7 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     public void setActiveMimsPlus(MimsPlus mp) {
         for (int i = 0; i < maxMasses; i++) {
             if (mp == hsiImages[i]) {
-                hsiControl.setHSIProps(hsiImages[i].getHSIProps());
+                if(hsiImages[i].getHSIProps()!=null) { hsiControl.setHSIProps(hsiImages[i].getHSIProps()); }
             }
         }
     }

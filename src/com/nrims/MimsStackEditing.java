@@ -27,6 +27,10 @@ public class MimsStackEditing extends javax.swing.JPanel {
         imagestacks = new ImageStack[numberMasses];
 
         resetImageStacks();
+
+        //TODO
+        //disable compress button cause it doesn't work
+//        this.compressButton.setEnabled(false);
     }
 
     public void resetImageStacks() {
@@ -398,6 +402,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
         jLabel4 = new javax.swing.JLabel();
         saveActionButton = new javax.swing.JButton();
         sumButton = new javax.swing.JButton();
+        compressButton = new javax.swing.JButton();
+        compressTextField = new javax.swing.JTextField();
 
         concatButton.setText("Concatenate");
         concatButton.addActionListener(new java.awt.event.ActionListener() {
@@ -486,6 +492,13 @@ public class MimsStackEditing extends javax.swing.JPanel {
             }
         });
 
+        compressButton.setText("Compress");
+        compressButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compressButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -532,9 +545,15 @@ public class MimsStackEditing extends javax.swing.JPanel {
                         .addGap(51, 51, 51))
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(autoTrackButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(untrackButton)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(compressButton)
+                                .addGap(18, 18, 18)
+                                .addComponent(compressTextField))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(autoTrackButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(untrackButton)))
                         .addContainerGap(146, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -582,6 +601,12 @@ public class MimsStackEditing extends javax.swing.JPanel {
                             .addComponent(autoTrackButton))
                         .addGap(31, 31, 31)))
                 .addGap(36, 36, 36))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(197, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(compressButton)
+                    .addComponent(compressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(111, 111, 111))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -949,8 +974,20 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     String name = WindowManager.getCurrentImage().getTitle();
 
-    ui.computeSum(ui.getImageByName(name));
+    ui.computeSum(ui.getImageByName(name), true);
 }//GEN-LAST:event_sumButtonActionPerformed
+
+private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
+    // TODO add your handling code here:
+
+    String comptext = this.compressTextField.getText();
+    int blocksize = Integer.parseInt(comptext);
+    int size = this.images[0].getNSlices();
+    int num = (int)java.lang.Math.floor(size/blocksize);
+    for(int i=0; i< num; i++) {
+        compressPlanes(i+1,blocksize+i);
+    }
+}//GEN-LAST:event_compressButtonActionPerformed
 
 
 
@@ -1087,6 +1124,8 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton autoTrackButton;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JButton compressButton;
+    private javax.swing.JTextField compressTextField;
     private javax.swing.JButton concatButton;
     private javax.swing.JButton deleteListButton;
     private javax.swing.JTextField deleteListTextField;

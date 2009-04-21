@@ -26,7 +26,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     static final int SUM_IMAGE = 4 ;
     
     MimsPlus ratioMims;
-    
+
+    MimsPlus numeratorSum;
+    MimsPlus denominatorSum;
+
     /** Creates a new instance of mimsPlus */
     public MimsPlus() {
         super();
@@ -129,6 +132,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                // showing it. This is useful for getting data associated 
                // with line plot medianization.             
                ratioMims = ui.computeRatio(props, false);
+
+               //TODO fix me
+               if(!props.getDynamic()) {
+                   this.initializeHSISum(props);
+               }
+
             }
             else {
                float [] fPixels = new float[image.getWidth()*image.getHeight()];
@@ -666,8 +675,87 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
     }
 
+    public void initializeHSISum(HSIProps props) {
+        numeratorSum = ui.computeSum(ui.getMassImage(props.getNumMass()), false);
+        denominatorSum = ui.computeSum(ui.getMassImage(props.getDenMass()), false);
+    }
+
+        //copied and modified from ui.computeSum()
+        public synchronized float[] returnSum() {
+        boolean fail = true;
+
+        int templength = this.getProcessor().getPixelCount();
+        float[] sumPixels = new float[templength];
+        short[] tempPixels = new short[templength];
+
+        int startSlice = this.getCurrentSlice();
+
+        if (this.getMimsType() == MimsPlus.MASS_IMAGE) {
+            for (int i = 1; i <= this.getImageStackSize(); i++) {
+                this.setSlice(i);
+                tempPixels = (short[]) this.getProcessor().getPixels();
+                for (int j = 0; j < sumPixels.length; j++) {
+                    sumPixels[j] += tempPixels[j];
+                }
+            }
+            this.setSlice(startSlice);
+            fail = false;
+        }
+
+        if (this.getMimsType() == MimsPlus.RATIO_IMAGE) {
+            int numMass = this.getNumMass();
+            int denMass = this.getDenMass();
+            MimsPlus nImage = ui.getMassImage(numMass);
+            MimsPlus dImage = ui.getMassImage(denMass);
+            float[] numPixels = new float[templength];
+            float[] denPixels = new float[templength];
+
+            startSlice = nImage.getCurrentSlice();
+
+            for (int i = 1; i <= nImage.getImageStackSize(); i++) {
+                nImage.setSlice(i);
+                tempPixels = (short[]) nImage.getProcessor().getPixels();
+                for (int j = 0; j < numPixels.length; j++) {
+                    numPixels[j] += tempPixels[j];
+                }
+            }
+            for (int i = 1; i <= dImage.getImageStackSize(); i++) {
+                dImage.setSlice(i);
+                tempPixels = (short[]) dImage.getProcessor().getPixels();
+                for (int j = 0; j < denPixels.length; j++) {
+                    denPixels[j] += tempPixels[j];
+                }
+            }
+            for (int i = 0; i < sumPixels.length; i++) {
+                if (denPixels[i] != 0) {
+                    sumPixels[i] = ui.getRatioScaleFactor() * (numPixels[i] / denPixels[i]);
+                } else {
+                    sumPixels[i] = 0;
+                }
+            }
+
+            nImage.setSlice(startSlice);
+
+            fail = false;
+        }
+
+        if (!fail) {
+            return sumPixels;
+        } else {
+            return null;
+        }
+    }
+
     public MimsPlus getInternalRatio() {
         return this.ratioMims;
+    }
+
+    public MimsPlus getNumeratorSum() {
+        return this.numeratorSum;
+    }
+
+    public MimsPlus getDenominatorSum() {
+        return this.denominatorSum;
     }
 
     public void addListener( MimsUpdateListener inListener ) {

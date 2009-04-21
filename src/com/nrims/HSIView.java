@@ -79,6 +79,7 @@ public class HSIView extends JPanel {
         jButton4 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        hsiSumRadioButton = new javax.swing.JRadioButton();
 
         jTextField1.setText("jTextField1");
 
@@ -189,7 +190,7 @@ public class HSIView extends JPanel {
             }
         });
 
-        rgbMinjSlider.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
+        rgbMinjSlider.setFont(new java.awt.Font("Dialog", 0, 10));
         rgbMinjSlider.setMajorTickSpacing(50);
         rgbMinjSlider.setMaximum(255);
         rgbMinjSlider.setPaintLabels(true);
@@ -231,6 +232,13 @@ public class HSIView extends JPanel {
             }
         });
 
+        hsiSumRadioButton.setText("Use Sum");
+        hsiSumRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hsiSumRadioButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -254,7 +262,7 @@ public class HSIView extends JPanel {
                                 .add(jComboBox4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(rgbMaxjSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 300, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(rgbMinjSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 300, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(194, Short.MAX_VALUE))
+                        .addContainerGap(239, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 175, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -262,7 +270,7 @@ public class HSIView extends JPanel {
                             .add(jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(jButton5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap(303, Short.MAX_VALUE))
+                        .addContainerGap(348, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
@@ -295,9 +303,12 @@ public class HSIView extends JPanel {
                                 .add(jSpinner5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(27, 27, 27)))
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jButton1)
+                            .add(layout.createSequentialGroup()
+                                .add(jButton1)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(hsiSumRadioButton))
                             .add(jButton2))
-                        .add(106, 106, 106))))
+                        .add(62, 62, 62))))
         );
 
         layout.linkSize(new java.awt.Component[] {jSpinner1, jSpinner2, jSpinner3, jSpinner4}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -319,7 +330,9 @@ public class HSIView extends JPanel {
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(jRadioButton2)
                         .add(jSpinner5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jButton1))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jButton1)
+                        .add(hsiSumRadioButton)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jLabel6)
@@ -428,6 +441,7 @@ public class HSIView extends JPanel {
             int denomator = new Integer(label.substring(label.indexOf(":") + 1, label.length())).intValue();
             props.setNumMass(numerator);
             props.setDenMass(denomator);
+            props.setDynamic(!this.hsiSumRadioButton.isSelected());
             update(false);
             displayHSI();
         }
@@ -457,18 +471,17 @@ public class HSIView extends JPanel {
 
 private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
    ui.setMedianFilterRatios(jRadioButton2.isSelected());
-    
+
    ui.recomputeAllRatio();
    ui.recomputeAllHSI();
-   MimsPlus[] ratioimages = ui.getOpenRatioImages();   
+   MimsPlus[] ratioimages = ui.getOpenRatioImages();
        for (int i = 0; i < ratioimages.length; i++) {
            ui.autoContrastImage(ratioimages[i]);
-       }        
+       }
        MimsPlus[] hsiimages = ui.getOpenHSIImages();
        for (int i = 0; i < hsiimages.length; i++) {
           ui.autoContrastImage(hsiimages[i]);
        }
-
 }//GEN-LAST:event_jRadioButton2ActionPerformed
 
 private void jSpinner5StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner5StateChanged
@@ -477,11 +490,11 @@ private void jSpinner5StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIR
        ui.recomputeAllHSI();
     }
     MimsPlus[] ratioimages = ui.getOpenRatioImages();
-    for (int i = 0; i < ratioimages.length; i++) {   
+    for (int i = 0; i < ratioimages.length; i++) {
        ui.autoContrastImage(ratioimages[i]);
     }
     MimsPlus[] hsiimages = ui.getOpenHSIImages();
-    for (int i = 0; i < hsiimages.length; i++) {       
+    for (int i = 0; i < hsiimages.length; i++) {
        ui.autoContrastImage(hsiimages[i]);
     }
     
@@ -516,17 +529,17 @@ private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
    Object[] idx = jList1.getSelectedValues();
    
    // Generate images
-   for (int i = 0; i < idx.length; i++){
-      String label = (String)idx[i];      
-      int numerator = new Integer(label.substring(0, label.indexOf(":"))).intValue();
-      int denomator = new Integer(label.substring(label.indexOf(":")+1, label.length())).intValue();
-      props.setNumMass(numerator);
-      props.setDenMass(denomator);
-      update(false);
-      computeRatio();
-      MimsPlus[] ratioimages = ui.getOpenRatioImages();
-      ui.autoContrastImage(ratioimages[ratioimages.length-1]);
-   }   
+    for (int i = 0; i < idx.length; i++) {
+        String label = (String) idx[i];
+        int numerator = new Integer(label.substring(0, label.indexOf(":"))).intValue();
+        int denomator = new Integer(label.substring(label.indexOf(":") + 1, label.length())).intValue();
+        props.setNumMass(numerator);
+        props.setDenMass(denomator);
+        update(false);
+        computeRatio();
+        MimsPlus[] ratioimages = ui.getOpenRatioImages();
+        ui.autoContrastImage(ratioimages[ratioimages.length - 1]);
+    }
 }//GEN-LAST:event_jButton4ActionPerformed
 
 private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
@@ -544,6 +557,13 @@ private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
       listModel.removeElementAt(index[i]);
    }
 }//GEN-LAST:event_jButton3ActionPerformed
+
+private void hsiSumRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hsiSumRadioButtonActionPerformed
+    if(this.bUpdating) return;
+
+    props.setDynamic(!this.hsiSumRadioButton.isSelected());
+    update(false);
+}//GEN-LAST:event_hsiSumRadioButtonActionPerformed
 
 public double getMedianRadius() {
     return new Double(this.jSpinner5.getValue().toString());
@@ -570,6 +590,7 @@ public synchronized void update(boolean bUpdateUI) {
             rgbMinjSlider.setValue(props.getMinRGB());
             jComboBox3.setSelectedIndex(props.getTransparency());
             jComboBox4.setSelectedIndex(props.getLabelMethod());
+            hsiSumRadioButton.setSelected(!props.getDynamic());
         }
         
         jButton1.setEnabled(props.getNumMass() != props.getDenMass());
@@ -675,13 +696,13 @@ public synchronized void update(boolean bUpdateUI) {
         this.props.setProps(props);
         update(true);
     }
-    
-    public boolean isMedianFilterSelected(){
-       return jRadioButton2.isSelected();
+
+    public boolean isMedianFilterSelected() {
+        return jRadioButton2.isSelected();
     }
 
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton hsiSumRadioButton;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;

@@ -28,6 +28,7 @@ public class HSIProps implements java.io.Serializable {
         transparency = 0 ;
         label = 0 ;
         ratioScaleFactor = 10000;
+        dynamic = true;
     }
     public void setNumMass(int n) { numMass = n ; }
     public int getNumMass() { return numMass ; }
@@ -51,7 +52,8 @@ public class HSIProps implements java.io.Serializable {
     public int getLabelMethod() { return label ; }
     public void setRatioScaleFactor(int s) { this.ratioScaleFactor = s; }
     public int getRatioScaleFactor() { return this.ratioScaleFactor; }
-
+    public void setDynamic(boolean dyn) { this.dynamic = dyn; }
+    public boolean getDynamic() { return this.dynamic; }
     /**
      * Set this class' properties from another class
      */
@@ -66,11 +68,13 @@ public class HSIProps implements java.io.Serializable {
         minRGB = props.getMinRGB();
         transparency = props.getTransparency();
         label = props.getLabelMethod();
+        dynamic = props.getDynamic();
     }
    
     /**
      * Sets the HSI props passed as an argument to this class properties 
      */
+    //Why is this getter setting?
     public void getProps(HSIProps props) {
         props.setNumMass(numMass);
         props.setDenMass(denMass);
@@ -82,6 +86,7 @@ public class HSIProps implements java.io.Serializable {
         props.setMinRGB(minRGB);
         props.setTransparency(transparency);
         props.setLabelMethod(label);
+        props.setDynamic(dynamic);
     }
     
     public HSIProps clone() {
@@ -101,7 +106,8 @@ public class HSIProps implements java.io.Serializable {
             &&  props.getMaxRGB() == maxRGB
             &&  props.getMinRGB() == minRGB
             &&  props.getTransparency() == transparency
-            &&  props.getLabelMethod() == label ;
+            &&  props.getLabelMethod() == label
+            && props.getDynamic() == dynamic;
     }
     
     private int numMass ;
@@ -115,4 +121,5 @@ public class HSIProps implements java.io.Serializable {
     private int transparency ;
     private int label ;
     private int ratioScaleFactor;
+    private boolean dynamic;
 }
