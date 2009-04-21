@@ -67,6 +67,12 @@ public class ContrastAdjuster extends JPanel implements Runnable,
            this.imp = imp;
            this.updatehist = false;           
         }
+        
+        public ContrastAdjuster(MimsPlus imp, UI ui) {
+           this(ui);
+           this.imp = imp;
+           this.updatehist = false;           
+        }
          
         public ContrastAdjuster(UI ui) {          
 	   this.ui = ui;	

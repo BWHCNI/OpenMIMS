@@ -73,7 +73,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private boolean bUpdating = false;    
     private boolean currentlyOpeningImages = false;
     private boolean bCloseOldWindows = true;
-    private boolean autoContrastMass = true;
     private boolean medianFilterRatios = false;
     private boolean[] bOpenMass = new boolean[maxMasses];
             
@@ -1345,10 +1344,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
     }
     
-    public void setAutoContrastMass(boolean set) {
-        this.autoContrastMass = set;
-    }
-    
     public void setMedianFilterRatios(boolean set) {
         this.medianFilterRatios = set;
     }
@@ -1390,25 +1385,30 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
    
    public void autoContrastImage(MimsPlus img) {
                   
-      // Only use our custom autocontrasting when dealing 
-      // with a ratio or HSI image and NOT medianizing.
+      // Use Collins autocontrasting code for ratio images (and NOT medianizing).
       if (img.getMimsType() == MimsPlus.RATIO_IMAGE && !hsiControl.isMedianFilterSelected()) {
          autocontrastNRIMS(img);
-      } else if (img.getMimsType() == MimsPlus.HSI_IMAGE && !hsiControl.isMedianFilterSelected()) {
+      } 
+      
+      // Use Collins code for HSI images (and NOT medianizing). 
+      else if (img.getMimsType() == MimsPlus.HSI_IMAGE && !hsiControl.isMedianFilterSelected()) {
          if (hsiControl.getRatioRange()) 
             hsiControl.update(true);
-      } else {                         
+      } 
+      
+      // Anything else use imageJ autocontrasting. Have to reset everytime BEFORE
+      // autoadjusting because imageJ autoadjust is iterative and would give
+      // a different result everytime if reset was not done first.
+      else {                     
+         ContrastAdjuster ca = new ContrastAdjuster(img, this);
          
-         cbControl.updateHistogram();
-         ContrastAdjuster ca = cbControl.getContrastAdjuster();
+         // same as hitting reset button.
          ca.doReset = true;
-         ca.doUpdate();
+         ca.doUpdate(img);                           
          
+         // same as hitting auto button.
          ca.doAutoAdjust = true;
-         ca.doUpdate();
-         cbControl.updateHistogram();
-         
-         
+         ca.doUpdate(img);                           
       }
    }
 
