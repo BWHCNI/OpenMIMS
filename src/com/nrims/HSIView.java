@@ -478,10 +478,7 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
        for (int i = 0; i < ratioimages.length; i++) {
            ui.autoContrastImage(ratioimages[i]);
        }
-       MimsPlus[] hsiimages = ui.getOpenHSIImages();
-       for (int i = 0; i < hsiimages.length; i++) {
-          ui.autoContrastImage(hsiimages[i]);
-       }
+       
 }//GEN-LAST:event_jRadioButton2ActionPerformed
 
 private void jSpinner5StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner5StateChanged
@@ -493,10 +490,7 @@ private void jSpinner5StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIR
     for (int i = 0; i < ratioimages.length; i++) {
        ui.autoContrastImage(ratioimages[i]);
     }
-    MimsPlus[] hsiimages = ui.getOpenHSIImages();
-    for (int i = 0; i < hsiimages.length; i++) {
-       ui.autoContrastImage(hsiimages[i]);
-    }
+    
     
 }//GEN-LAST:event_jSpinner5StateChanged
 
