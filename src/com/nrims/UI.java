@@ -1420,7 +1420,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       // autoadjusting because imageJ autoadjust is iterative and would give
       // a different result everytime if reset was not done first.
       else {                     
-         ContrastAdjuster ca = new ContrastAdjuster(img, this);
+         ContrastAdjuster ca = new ContrastAdjuster(img);
          
          // same as hitting reset button.
          ca.doReset = true;
@@ -1430,6 +1430,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
          ca.doAutoAdjust = true;
          ca.doUpdate(img);                           
       }
+      
    }
 
     public void restoreMims() {

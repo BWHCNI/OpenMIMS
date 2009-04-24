@@ -9,6 +9,7 @@ import ij.plugin.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
+import java.util.Calendar;
 
 /** This plugin implements the Brightness/Contrast, Window/level and
 	Color Balance commands, all in the Image/Adjust sub-menu. It 
@@ -722,8 +723,12 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		else
 			ip.setThreshold(0, max, ImageProcessor.NO_LUT_UPDATE);
 	}
+        
+        void autoAdjust(ImagePlus imp, ImageProcessor ip) {
+           autoAdjust(imp, ip, true);
+        }
 
-	void autoAdjust(ImagePlus imp, ImageProcessor ip) {
+	void autoAdjust(ImagePlus imp, ImageProcessor ip, boolean updatescroll) {
  		if (RGBImage)
 			ip.reset();
 		Calibration cal = imp.getCalibration();
@@ -768,7 +773,8 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 			reset(imp, ip);
 			return;
 		}
-		updateScrollBars(null, false);
+		if (updatescroll) 
+                   updateScrollBars(null, false);
 		//if (roi!=null) { ???
 		//	ImageProcessor mask = roi.getMask();
 		//	if (mask!=null)
@@ -887,7 +893,10 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 
 	// Separate thread that does the potentially time-consuming processing 
 	public void run() {
+           x++;
+           int i=x;
 		while (!done) {
+                   System.out.println(Calendar.getInstance().getTimeInMillis());
 			synchronized(this) {
 				try {wait();}
 				catch(InterruptedException e) {}
@@ -983,7 +992,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 				reset(imp, ip);
 				if (Recorder.record) Recorder.record("resetMinAndMax");
 				break;
-			case AUTO: autoAdjust(imp, ip); break;
+			case AUTO: autoAdjust(imp, ip, false); break;
 			case SET: if (windowLevel) setWindowLevel(imp, ip); else setMinAndMax(imp, ip); break;
 			case APPLY: apply(imp, ip); break;
 			case MIN: adjustMin(imp, ip, minvalue); break;

@@ -478,6 +478,7 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
        for (int i = 0; i < ratioimages.length; i++) {
            ui.autoContrastImage(ratioimages[i]);
        }
+   ui.getCBControl().updateHistogram();
        
 }//GEN-LAST:event_jRadioButton2ActionPerformed
 
