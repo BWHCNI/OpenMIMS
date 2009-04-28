@@ -892,11 +892,8 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		BRIGHTNESS=7, CONTRAST=8, UPDATE=9;
 
 	// Separate thread that does the potentially time-consuming processing 
-	public void run() {
-           x++;
-           int i=x;
-		while (!done) {
-                   System.out.println(Calendar.getInstance().getTimeInMillis());
+	public void run() {                      
+		while (!done) {                   
 			synchronized(this) {
 				try {wait();}
 				catch(InterruptedException e) {}

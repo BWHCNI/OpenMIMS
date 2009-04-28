@@ -78,11 +78,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private boolean medianFilterRatios = false;
     private boolean[] bOpenMass = new boolean[maxMasses];
             
-    private String lastFolder = null;
-    private String actionFileName = "action.txt"; 
-    private String HSIprefix = "HSIimage";
-    private String HSIextension = ".hsi"; 
-    
+    private String lastFolder = null;    
+    private String actionFileName = "action.txt";         
+    private String ratioExtension = ".ratio";     
+    private String hsiExtension = ".hsi";     
+    private String sumExtension = ".sum"; 
+    private String ratioPrefix = "RATIO_image";
+    private String hsiPrefix = "HSI_image";
+    private String sumPrefix = "SUM_image";
+            
     private HashMap openers = new HashMap();
     
     private MimsPlus[] massImages = new MimsPlus[maxMasses];
@@ -764,17 +768,22 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 computeHSI(hsiImages[i].getHSIProps());
                 openHSI[i].updateAndDraw();            
         }        
+    }        
+    
+    public void computeSum(String parentImageName){
+       MimsPlus mp = getImageByName(parentImageName);
+       computeSum(mp, true);
     }
 
     public MimsPlus computeSum(MimsPlus mImage, boolean show) {
         boolean fail = true;
-
+        
         if (mImage == null) {
             return null;
         }
 
         int width = mImage.getWidth();
-        int height = mImage.getHeight();
+        int height = mImage.getHeight();        
         String sumName = "Sum : " + mImage.getShortTitle();
         int templength = mImage.getProcessor().getPixelCount();
         double[] sumPixels = new double[templength];
@@ -834,6 +843,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
         if (!fail) {
             MimsPlus mp = new MimsPlus(this, width, height, sumPixels, sumName);
+            mp.setParentImageName(mImage.getTitle());
 
             if(show==false) return mp;
 
@@ -1565,7 +1575,7 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     message += "http://www.nrims.hms.harvard.edu/\n";
     message += "\nDeveloped by:\n Doug Benson, Collin Poczatek\n ";
     message += "Boris Epstein, Philip Gormanns\n Stephan Reckow, ";
-    message += "Rob Gonzales, Zeke Kauffman.";
+    message += "Rob Gonzales, Zeke Kaufman.";
     message += "\n\nOpenMIMS uses or depends upon:\n";
     message += " TurboReg:  http://bigwww.epfl.ch/thevenaz/turboreg/\n";
     message += " jFreeChart:  http://www.jfree.org/jfreechart/\n";
@@ -1662,6 +1672,7 @@ private void saveSession(java.awt.event.ActionEvent evt) {
    JFileChooser fc = new JFileChooser();
    fc.setFileFilter(new MIMSFileFilter("zip"));   
    int returnVal = fc.showSaveDialog(this);   
+   setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
    String zipName;
    if (returnVal == JFileChooser.APPROVE_OPTION)
       zipName = fc.getSelectedFile().getAbsolutePath();
@@ -1671,10 +1682,8 @@ private void saveSession(java.awt.event.ActionEvent evt) {
    if (!(zipName.endsWith(".zip") || zipName.endsWith(".ZIP"))) {
       zipName = zipName + ".zip";
    }
-   
-   try {      
-     
-      setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+         
+   try {                 
       
       // Creates the zip file.
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipName));
@@ -1718,16 +1727,44 @@ private void saveSession(java.awt.event.ActionEvent evt) {
          out.flush();
       }      
       
+      // Save the ratio images
+      MimsPlus ratio[] = this.getOpenRatioImages();
+      if (ratio.length > 0){
+         ObjectOutputStream obj_out = null;
+         for (int i = 0; i < ratio.length; i++) {
+            HSIProps hsiprops = ratio[i].getHSIProps();
+            String label = ratioPrefix + i + ratioExtension;
+            zos.putNextEntry(new ZipEntry(label));
+            obj_out = new ObjectOutputStream(zos);
+            obj_out.writeObject(hsiprops);
+            zos.closeEntry();
+         }
+      }
+      
       // Save the HSI images      
       MimsPlus hsi[] = this.getOpenHSIImages();
       if (hsi.length > 0) {
          ObjectOutputStream obj_out = null;
          for (int i = 0; i < hsi.length; i++) {
             HSIProps hsiprops = hsi[i].getHSIProps();
-            String label = HSIprefix + i + HSIextension;
+            String label = hsiPrefix + i + hsiExtension;
             zos.putNextEntry(new ZipEntry(label));
             obj_out = new ObjectOutputStream(zos);
             obj_out.writeObject(hsiprops);
+            zos.closeEntry();
+         }
+      }
+      
+      // Save the Sum images      
+      MimsPlus sum[] = this.getOpenSumImages();
+      if (hsi.length > 0) {
+         ObjectOutputStream obj_out = null;
+         for (int i = 0; i < sum.length; i++) {
+            String parentName = sum[i].getParentImageName();
+            String label = sumPrefix + i + sumExtension;
+            zos.putNextEntry(new ZipEntry(label));
+            obj_out = new ObjectOutputStream(zos);
+            obj_out.writeObject(parentName);
             zos.closeEntry();
          }
          obj_out.close();
@@ -1743,7 +1780,10 @@ private void saveSession(java.awt.event.ActionEvent evt) {
 
 // Loads a previous session.
 private void openSession(ActionEvent ae) {                                           
-                         
+                
+           // instaitate some variables.
+           int trueIndex = 1;                                         
+           ArrayList<Integer> deleteList = new ArrayList<Integer>(); 
            bUpdating = true;
            
            // User gets Zip file containg all .im files, action file, ROI files and HSIs. 
@@ -1767,8 +1807,7 @@ private void openSession(ActionEvent ae) {
               ZipFile zipFile = new ZipFile(selectedFile);
               ZipEntry zipEntry = zipFile.getEntry(actionFileName);
               if (zipEntry == null) {
-                 JOptionPane.showMessageDialog(this, "Zip file does not contain " + actionFileName, "Error", JOptionPane.ERROR_MESSAGE);           
-                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                 JOptionPane.showMessageDialog(this, "Zip file does not contain " + actionFileName, "Error", JOptionPane.ERROR_MESSAGE);
                  return;
               }                 
               InputStream input = zipFile.getInputStream(zipEntry);
@@ -1802,7 +1841,6 @@ private void openSession(ActionEvent ae) {
                  zipEntry = zipFile.getEntry(fileName);
                  if (zipEntry == null) {
                     System.out.println("Zip file does not contain " + fileName);
-                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     return;
                  }
                  
@@ -1810,7 +1848,6 @@ private void openSession(ActionEvent ae) {
                  File imageFile = extractFromZipfile(zipFile, zipEntry, null);              
                  if (imageFile == null || !imageFile.exists()) {
                     System.out.println("Unable to extract " + fileName + " from " + zipFile.getName());
-                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     return;
                  }
                  
@@ -1830,11 +1867,7 @@ private void openSession(ActionEvent ae) {
                  }
                  
                  firstImage = false;                 
-              }              
-              
-              // instaitate some variables.
-              int trueIndex = 1;                                         
-              ArrayList<Integer> deleteList = new ArrayList<Integer>();                  
+              }                                             
               
               // Loop over the action row list and perform actions.
               for (int i = 0; i < actionRowList.size(); i++) {
@@ -1864,17 +1897,25 @@ private void openSession(ActionEvent ae) {
               rm.deleteAll();
               rm.openZip(selectedFile.getAbsolutePath());
               if (rm.getAllIndexes().length > 0)
-                 rm.showFrame();
+                 rm.showFrame();              
                             
               // Load HSI images.              
               FileInputStream fis = new FileInputStream(selectedFile);
               ZipInputStream zis = new ZipInputStream(fis);
               zipEntry = null;        
               while((zipEntry = zis.getNextEntry()) != null ) {
-                 if (zipEntry.getName().endsWith(HSIextension)) {
+                 if (zipEntry.getName().endsWith(hsiExtension)) {
                     ObjectInputStream ois = new ObjectInputStream(zis);
                     HSIProps hsiprops = (HSIProps)ois.readObject();                    
                     computeHSI(hsiprops);
+                 } else if (zipEntry.getName().endsWith(ratioExtension)) {
+                    ObjectInputStream ois = new ObjectInputStream(zis);
+                    HSIProps hsiprops = (HSIProps)ois.readObject();                    
+                    computeRatio(hsiprops, true);
+                 } else if (zipEntry.getName().endsWith(sumExtension)) {
+                    ObjectInputStream ois = new ObjectInputStream(zis);
+                    String parentName = (String)ois.readObject();                    
+                    computeSum(parentName);
                  }                                  
               }        
               zis.close();                           

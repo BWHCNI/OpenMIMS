@@ -1,16 +1,12 @@
 package com.nrims;
 import ij.IJ ;
-import ij.ImagePlus;
-import ij.WindowManager;
 import ij.gui.* ;
-//import ij.process.*;
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent ;
 import java.awt.event.WindowListener ;
 import java.awt.event.MouseListener ;
 import java.awt.event.MouseMotionListener ;
 import java.awt.event.MouseEvent ;
-import java.util.Calendar;
 import javax.swing.event.EventListenerList;
 /**
  * extends ImagePlus with methods to synchronize display of multiple stacks
@@ -26,7 +22,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     static final int SUM_IMAGE = 4 ;
     
     MimsPlus ratioMims;
-
     MimsPlus numeratorSum;
     MimsPlus denominatorSum;
 
@@ -85,6 +80,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         } catch (Exception x) { IJ.log(x.toString());}
     }
     
+    // This contructor is used for making SUM images.
     public MimsPlus(UI ui,int width, int height, double[] pixels, String name) {
            super();
            this.ui=ui;
@@ -814,6 +810,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
     public void setHSIProcessor( HSIProcessor processor ) { this.hsiProcessor = processor ; }
     public HSIProcessor getHSIProcessor() { return hsiProcessor ; }
+       
+    public void setParentImageName(String name) { this.parentImageName = name; }
+    public String getParentImageName() { return parentImageName ; }    
     
     public void setAutoContrastAdjust( boolean auto ) { this.autoAdjustContrast = auto ; }
     public boolean getAutoContrastAdjust() { return autoAdjustContrast ; }
@@ -822,6 +821,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public void setIsStack(boolean isS) { bIsStack = isS; }
     public UI getUI() { return ui ; }
     
+    private String parentImageName = null;
     private boolean allowClose =true;
     private boolean bIgnoreClose = false ;
     boolean bMoving = false;
