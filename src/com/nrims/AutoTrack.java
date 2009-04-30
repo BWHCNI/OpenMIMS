@@ -52,11 +52,7 @@ package com.nrims;
 // ImageJ
 import ij.IJ;
 import ij.ImagePlus;
-import ij.WindowManager;
-import ij.gui.GUI;
-import ij.gui.GenericDialog;
 import ij.io.FileSaver;
-import ij.plugin.PlugIn;
 import ij.process.Blitter;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
@@ -64,29 +60,13 @@ import ij.process.FloatProcessor;
 import ij.process.ImageConverter;
 import ij.process.ShortProcessor;
 
-//I don't want these...
-
-import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Dialog;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Insets;
-import java.awt.Label;
-import java.awt.Panel;
-import java.awt.TextArea;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.IndexColorModel;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- *
  * @author cpoczatek
  */
-
-//not the prettiest code...
 
 public class AutoTrack {
 
@@ -106,7 +86,6 @@ public class AutoTrack {
 	}
 
 	final int transformation = 0;
-
         
 	final int width = imp.getWidth();
 	final int height = imp.getHeight();

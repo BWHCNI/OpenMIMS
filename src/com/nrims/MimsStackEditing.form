@@ -26,10 +26,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="rawExportButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="displayActionButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="displayActionButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="196" max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" groupAlignment="0" attributes="0">
@@ -132,18 +129,12 @@
                   </Group>
               </Group>
               <EmptySpace pref="37" max="32767" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="rawExportButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="displayActionButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="untrackButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="autoTrackButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
-                  </Group>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="displayActionButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="untrackButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="autoTrackButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="67" max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace pref="197" max="32767" attributes="0"/>
@@ -180,14 +171,6 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteListButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="rawExportButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Raw Export"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rawExportButtonActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JLabel" name="trueIndexLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="True Index: 999   Display Index: 999"/>
@@ -219,7 +202,7 @@
     <Component class="javax.swing.JSpinner" name="translateXSpinner">
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-          <SpinnerModel initial="0" maximum="9999" minimum="-9999" numberType="java.lang.Integer" stepSize="1" type="number"/>
+          <SpinnerModel initial="0.0" maximum="999.0" minimum="-999.0" numberType="java.lang.Double" stepSize="0.01" type="number"/>
         </Property>
       </Properties>
       <Events>
@@ -239,7 +222,7 @@
     <Component class="javax.swing.JSpinner" name="translateYSpinner">
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-          <SpinnerModel initial="0" maximum="9999" minimum="-9999" numberType="java.lang.Integer" stepSize="1" type="number"/>
+          <SpinnerModel initial="0.0" maximum="999.0" minimum="-999.0" numberType="java.lang.Double" stepSize="0.01" type="number"/>
         </Property>
       </Properties>
       <Events>

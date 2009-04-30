@@ -15,6 +15,7 @@ import ij.gui.Roi;
 import ij.gui.ImageWindow;
 import ij.gui.ImageCanvas;
 import ij.io.RoiEncoder;
+import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 
 import java.awt.Cursor;
@@ -289,6 +290,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         try {
             loadMIMSFile(fileName);
         } catch (NullPointerException e) {
+            e.printStackTrace();
             System.err.println("A NullPointerException should not have occurred in loadMIMSFile.  This indicates that the fileName returned by the JFileChooser was null.");
         }
     }
@@ -1014,6 +1016,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             int nSlice = evt.getSlice();
             for (int i = 0; i < mp.length; i++) {
                massImages[i].setSlice(nSlice);                    
+               ImageProcessor ip = massImages[i].getProcessor();
+               int x = 0;
             }                                                    
                             
             // Update HSI image slice.

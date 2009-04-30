@@ -2,9 +2,7 @@ package com.nrims;
 
 import com.nrims.data.Opener;
 import ij.*;
-import java.io.*;
 import java.util.ArrayList;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 /**
@@ -66,17 +64,17 @@ public class MimsStackEditing extends javax.swing.JPanel {
         this.ui.mimsAction.dropPlane(plane);
     }
 
-    public void XShiftSlice(int plane, int xval) {
+    public void XShiftSlice(int plane, double xval) {
         for (int k = 0; k <= (numberMasses - 1); k++) {
-            this.images[k].getProcessor().translate(xval, 0, true);
+            this.images[k].getProcessor().translate(xval, 0.0);
             images[k].updateAndDraw();
         }
         ui.mimsAction.setShiftX(plane, xval);
     }
 
-    public void YShiftSlice(int plane, int yval) {
+    public void YShiftSlice(int plane, double yval) {
         for (int k = 0; k <= (numberMasses - 1); k++) {
-            this.images[k].getProcessor().translate(0, yval, true);
+            this.images[k].getProcessor().translate(0.0, yval);
             images[k].updateAndDraw();
         }
         ui.mimsAction.setShiftY(plane, yval);
@@ -235,9 +233,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
             tempstacks[i] = null;
         }
 
-        // disable certain functions
-        //setConcatGUI(true);
-
         ui.addToOpenerList(tempui.getOpener().getImageFile().getName(), tempui.getOpener());
         ui.setUpdating(false);
     }
@@ -248,48 +243,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     public boolean sameSpotSize(Opener im, Opener ij) {
         return ((im.getPixelWidth() == ij.getPixelWidth()) && (im.getPixelHeight() == ij.getPixelHeight()));
-    }
-
-    public void rawExport(String path) {
-        try {
-            new java.io.File(path).mkdir();
-            String[] names = image.getMassNames();
-
-            for (int i = 0; i < numberMasses; i++) {
-                new java.io.File(path + names[i] + "/").mkdir();
-            }
-
-            FileWriter fstream = new FileWriter(path + "header.txt");
-            BufferedWriter output = new BufferedWriter(fstream);
-            output.write(ui.getImageHeader(this.image));
-            output.close();
-
-            for (int i = 0; i < numberMasses; i++) {
-                String temppath = path + names[i] + "/";
-                int numslices = this.image.nImages();
-                for (int j = 1; j <= numslices; j++) {
-                    fstream = new FileWriter(temppath + j + ".txt");
-                    output = new BufferedWriter(fstream);
-                    int[][] pixels = this.imagestacks[i].getProcessor(j).getIntArray();
-
-                    for (int k = 0; k < pixels.length; k++) {
-                        for (int s = 0; s < pixels[k].length - 1; s++) {
-                            output.write(pixels[k][s] + ", ");
-                        }
-                        output.write(pixels[k][pixels[k].length - 1] + "");
-                        output.write("\n");
-                    }
-                    output.flush();
-                    fstream.flush();
-                    fstream.close();
-                }
-            }
-
-        } catch (Exception e) {
-            ij.IJ.log("Error: " + e.getMessage());
-        }
-
-
     }
 
     public ArrayList<Integer> parseList(String liststr, int lb, int ub) {
@@ -387,7 +340,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
       jLabel5 = new javax.swing.JLabel();
       deleteListTextField = new javax.swing.JTextField();
       deleteListButton = new javax.swing.JButton();
-      rawExportButton = new javax.swing.JButton();
       trueIndexLabel = new javax.swing.JLabel();
       reinsertButton = new javax.swing.JButton();
       jLabel1 = new javax.swing.JLabel();
@@ -420,13 +372,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
          }
       });
 
-      rawExportButton.setText("Raw Export");
-      rawExportButton.addActionListener(new java.awt.event.ActionListener() {
-         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            rawExportButtonActionPerformed(evt);
-         }
-      });
-
       trueIndexLabel.setText("True Index: 999   Display Index: 999");
 
       reinsertButton.setText("Reinsert");
@@ -445,7 +390,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
          }
       });
 
-      translateXSpinner.setModel(new javax.swing.SpinnerNumberModel(0, -9999, 9999, 1));
+      translateXSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0d, -999.0d, 999.0d, 0.01d));
       translateXSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
          public void stateChanged(javax.swing.event.ChangeEvent evt) {
             translateXSpinnerStateChanged(evt);
@@ -456,7 +401,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
       jLabel3.setText("Translate Y");
 
-      translateYSpinner.setModel(new javax.swing.SpinnerNumberModel(0, -9999, 9999, 1));
+      translateYSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0d, -999.0d, 999.0d, 0.01d));
       translateYSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
          public void stateChanged(javax.swing.event.ChangeEvent evt) {
             translateYSpinnerStateChanged(evt);
@@ -499,9 +444,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
             .addContainerGap()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                .addGroup(layout.createSequentialGroup()
-                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                     .addComponent(rawExportButton)
-                     .addComponent(displayActionButton))
+                  .addComponent(displayActionButton)
                   .addGap(196, 196, 196))
                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                   .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -580,15 +523,11 @@ public class MimsStackEditing extends javax.swing.JPanel {
                      .addComponent(translateYSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                      .addComponent(concatButton))))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-               .addComponent(rawExportButton)
-               .addGroup(layout.createSequentialGroup()
-                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                     .addComponent(displayActionButton)
-                     .addComponent(untrackButton)
-                     .addComponent(autoTrackButton))
-                  .addGap(31, 31, 31)))
-            .addGap(36, 36, 36))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+               .addComponent(displayActionButton)
+               .addComponent(untrackButton)
+               .addComponent(autoTrackButton))
+            .addGap(67, 67, 67))
          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
             .addContainerGap(197, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -662,24 +601,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
         ij.WindowManager.repaintImageWindows();
 }//GEN-LAST:event_concatButtonActionPerformed
 
-    private void rawExportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rawExportButtonActionPerformed
-        // TODO add your handling code here:
-        final javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
-        fc.setDialogTitle("Export");
-        fc.setApproveButtonText("Export");
-        fc.setFileSelectionMode(fc.DIRECTORIES_ONLY);
-
-        int returnVal = fc.showOpenDialog(this);
-
-        if (returnVal == javax.swing.JFileChooser.APPROVE_OPTION) {
-            String path = fc.getSelectedFile().getAbsolutePath() + "/" + this.image.getName() + "_raw/";
-            rawExport(path);
-            ui.getmimsLog().Log("File Exported To: " + path);
-        } else {
-            ui.getmimsLog().Log("Export Canceled");
-        }
-}//GEN-LAST:event_rawExportButtonActionPerformed
-
     private void reinsertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reinsertButtonActionPerformed
         // TODO add your handling code here:
         int current = images[0].getCurrentSlice();
@@ -718,14 +639,14 @@ public class MimsStackEditing extends javax.swing.JPanel {
         // TODO add your handling code here:
         int plane = images[0].getCurrentSlice();
 
-        int xval = (Integer) translateXSpinner.getValue();
-        int yval = (Integer) translateYSpinner.getValue();
+        double xval = (Double) translateXSpinner.getValue();
+        double yval = (Double) translateYSpinner.getValue();
 
-        int actx = ui.mimsAction.getXShift(plane);
-        int acty = ui.mimsAction.getYShift(plane);
+        double actx = ui.mimsAction.getXShift(plane);
+        double acty = ui.mimsAction.getYShift(plane);
 
-        int deltax = xval - actx;
-        int deltay = yval - acty;
+        double deltax = xval - actx;
+        double deltay = yval - acty;
 
         boolean redraw = ((deltax * actx < 0) || (deltay * acty < 0));
 
@@ -747,14 +668,14 @@ public class MimsStackEditing extends javax.swing.JPanel {
         // TODO add your handling code here:
         int plane = images[0].getCurrentSlice();
 
-        int xval = (Integer) translateXSpinner.getValue();
-        int yval = (Integer) translateYSpinner.getValue();
+        double xval = (Double) translateXSpinner.getValue();
+        double yval = (Double) translateYSpinner.getValue();
 
-        int actx = ui.mimsAction.getXShift(plane);
-        int acty = ui.mimsAction.getYShift(plane);
+        double actx = ui.mimsAction.getXShift(plane);
+        double acty = ui.mimsAction.getYShift(plane);
 
-        int deltax = xval - actx;
-        int deltay = yval - acty;
+        double deltax = xval - actx;
+        double deltay = yval - acty;
 
         boolean redraw = ((deltax * actx < 0) || (deltay * acty < 0));
 
@@ -774,28 +695,23 @@ public class MimsStackEditing extends javax.swing.JPanel {
     }//GEN-LAST:event_translateYSpinnerStateChanged
 
     private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoTrackButtonActionPerformed
-        //ugly....
 
         ImagePlus tempImage = WindowManager.getCurrentImage();
         ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
         int startPlane = images[0].getCurrentSlice();
         ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
-        //not setting roi's to deselect, simply deselecting from list
-        //doesn't work
-        //ui.getRoiManager().select(-1);
-        String massname = tempImage.getTitle();
+        String massname = tempImage.getTitle();               
 
-
-        for (int i = 1; i <= images[0].getStackSize(); i++) {
+           for (int i = 1; i <= images[0].getStackSize(); i++) {            
             images[0].setSlice(i);
             tempImage = WindowManager.getCurrentImage();
             tempProcessor = tempImage.getProcessor();
             tempStack.addSlice(tempImage.getTitle(), tempProcessor);
-        }
-
+           }
+        
 
         tempImage.setSlice(0);
-        ImagePlus img = new ij.ImagePlus("", tempStack);
+        ImagePlus img = new ij.ImagePlus("", tempStack);        
 
         //the waiting
         if (img == null) {
@@ -810,26 +726,17 @@ public class MimsStackEditing extends javax.swing.JPanel {
             throw new NullPointerException("translations is null: AutoTrack has failed.");
         }
 
-        int xval, yval;
-        int actx = 0;
-        int acty = 0;
-
-        int deltax = 0;
-        int deltay = 0;
+        double xval, yval;
         int plane;
-
-        boolean redraw;
-
-        for (int i = 0; i < translations.length; i++) {
+        for (int i = 0; i < translations.length; i++) {           
             plane = i + 1;
             //possible loss of precision...
             //notice the negative....
-            xval = (-1) * (int) java.lang.Math.round(translations[i][0]);
-            yval = (-1) * (int) java.lang.Math.round(translations[i][1]);
+            xval = (-1.0) * translations[i][0];
+            yval = (-1.0) * translations[i][1];
             images[0].setSlice(plane);
             this.XShiftSlice(i + 1, xval);
             this.YShiftSlice(i + 1, yval);
-
         }
 
         //clean up
@@ -847,14 +754,14 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     private void untrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_untrackButtonActionPerformed
         // TODO add your handling code here:
-        int xval = 0;
-        int yval = 0;
+        double xval = 0.0;
+        double yval = 0.0;
 
-        int actx = 0;
-        int acty = 0;
+        double actx = 0.0;
+        double acty = 0.0;
 
-        int deltax = 0;
-        int deltay = 0;
+        double deltax = 0.0;
+        double deltay = 0.0;
 
         boolean redraw;
 
@@ -889,7 +796,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
 }//GEN-LAST:event_untrackButtonActionPerformed
 
 private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumButtonActionPerformed
-// TODO add your handling code here:
 
     String name = WindowManager.getCurrentImage().getTitle();
 
@@ -897,7 +803,6 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_sumButtonActionPerformed
 
 private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
-    // TODO add your handling code here:
 
     String comptext = this.compressTextField.getText();
     int blocksize = Integer.parseInt(comptext);
@@ -999,15 +904,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 System.err.println("Error re-reading plane " + restoreIndex);
                 System.err.println(e.toString());
                 e.printStackTrace();
-            }
-            
-        //pritnt entire actionlist
-        //test this.ui.mimsAction.dropPlane(2);
-        //this.ui.mimsAction.printAction();
-
-        //for(int i=1; i<=10; i++) {
-        //    System.out.println("vect: " + (i-1) + " pl: " + i + " dr: " + ui.mimsAction.isDropped(i) + " disp: " + ui.mimsAction.displayIndex(i) );
-        //}
+            }           
         }
         ui.getmimsAction().resetAction(ui, image);
         this.holdupdate = false;
@@ -1015,15 +912,13 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
     protected void resetSpinners() {
         if (this.images != null && (!holdupdate) && (images[0] != null) && (!ui.isUpdating())) {
-            //System.out.println("resetspinners ");
             holdupdate = true;
             int plane = images[0].getCurrentSlice();
-            int xval = ui.mimsAction.getXShift(plane);
-            int yval = ui.mimsAction.getYShift(plane);
+            double xval = ui.mimsAction.getXShift(plane);
+            double yval = ui.mimsAction.getYShift(plane);
             this.translateXSpinner.setValue(xval);
             this.translateYSpinner.setValue(yval);
             holdupdate = false;
-        //System.out.println("resetspinners "+ foo++);
         }
     }
 
@@ -1055,7 +950,6 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
    private javax.swing.JLabel jLabel4;
    private javax.swing.JLabel jLabel5;
    private javax.swing.JSeparator jSeparator1;
-   private javax.swing.JButton rawExportButton;
    private javax.swing.JButton reinsertButton;
    private javax.swing.JTextField reinsertListTextField;
    private javax.swing.JButton sumButton;
