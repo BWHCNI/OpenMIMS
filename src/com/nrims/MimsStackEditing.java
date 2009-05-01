@@ -804,6 +804,15 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
 private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
 
+    ij.gui.GenericDialog dialog = new ij.gui.GenericDialog("WARNING");
+    dialog.addStringField("The feature is in beta!", "");
+    dialog.addStringField("The feature is not undoable!", "");
+    dialog.addStringField("The feature is not saveable!", "");
+    dialog.showDialog();
+    if (dialog.wasCanceled()) {
+        return;
+    }
+
     String comptext = this.compressTextField.getText();
     int blocksize = Integer.parseInt(comptext);
     int size = this.images[0].getNSlices();
