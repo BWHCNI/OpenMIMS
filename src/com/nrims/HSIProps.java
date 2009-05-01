@@ -29,6 +29,9 @@ public class HSIProps implements java.io.Serializable {
         label = 0 ;
         ratioScaleFactor = 10000;
         dynamic = true;
+        transform = false;  //TODO testing only
+        referenceRatio = (float)37/(float)10000;
+        backgroundRatio = (float)129/(float)10000;
     }
     public void setNumMass(int n) { numMass = n ; }
     public int getNumMass() { return numMass ; }
@@ -52,8 +55,18 @@ public class HSIProps implements java.io.Serializable {
     public int getLabelMethod() { return label ; }
     public void setRatioScaleFactor(int s) { this.ratioScaleFactor = s; }
     public int getRatioScaleFactor() { return this.ratioScaleFactor; }
+
     public void setDynamic(boolean dyn) { this.dynamic = dyn; }
     public boolean getDynamic() { return this.dynamic; }
+
+    public void setTransform(boolean trans) { this.transform = trans; }
+    public boolean getTransform() { return this.transform; }
+
+    public void setReferenceRatio(float ref) { this.referenceRatio = ref; }
+    public float getReferenceRatio() { return this.referenceRatio; }
+
+    public void setBackgroundRatio(float bg) { this.backgroundRatio = bg; }
+    public float getBackgroundRatio() { return this.backgroundRatio; }
     /**
      * Set this class' properties from another class
      */
@@ -69,6 +82,9 @@ public class HSIProps implements java.io.Serializable {
         transparency = props.getTransparency();
         label = props.getLabelMethod();
         dynamic = props.getDynamic();
+        transform = props.getTransform();
+        referenceRatio = props.getReferenceRatio();
+        backgroundRatio = props.getBackgroundRatio();
     }
    
     /**
@@ -87,6 +103,9 @@ public class HSIProps implements java.io.Serializable {
         props.setTransparency(transparency);
         props.setLabelMethod(label);
         props.setDynamic(dynamic);
+        props.setTransform(transform);
+        props.setReferenceRatio(referenceRatio);
+        props.setBackgroundRatio(backgroundRatio);
     }
     
     public HSIProps clone() {
@@ -107,7 +126,10 @@ public class HSIProps implements java.io.Serializable {
             &&  props.getMinRGB() == minRGB
             &&  props.getTransparency() == transparency
             &&  props.getLabelMethod() == label
-            && props.getDynamic() == dynamic;
+            && props.getDynamic() == dynamic
+            && props.getTransform() == transform
+            && props.getReferenceRatio() == referenceRatio
+            && props.getBackgroundRatio() == backgroundRatio;
     }
     
     private int numMass ;
@@ -122,4 +144,7 @@ public class HSIProps implements java.io.Serializable {
     private int label ;
     private int ratioScaleFactor;
     private boolean dynamic;
+    private boolean transform;
+    private float referenceRatio;
+    private float backgroundRatio;
 }

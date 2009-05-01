@@ -255,7 +255,7 @@ public class HSIProcessor implements Runnable {
             int showLabels = hsiProps.getLabelMethod() ;
             
             if(maxRatio <= 0.0) maxRatio = 1.0 ;
-            float rScale = 65535.0F / (float)maxRatio ;
+            double rScale = 65535.0 / (maxRatio -minRatio);
             int numThreshold = hsiProps.getMinNum() ;
             int denThreshold = hsiProps.getMinDen() ;
             int transparency = hsiProps.getTransparency() ;
@@ -285,7 +285,7 @@ public class HSIProcessor implements Runnable {
                 }
             }
 
-            float[] medPixels = ratioPixels;
+            float[] transformedPixels = ratioPixels;
             if (medianize && internalRatio != null) {
                 ij.process.FloatProcessor tempProc = new ij.process.FloatProcessor(internalRatio.getProcessor().getWidth(),internalRatio.getProcessor().getHeight()); //change
                 tempProc.setPixels(ratioPixels);
@@ -293,12 +293,17 @@ public class HSIProcessor implements Runnable {
                 double r = this.hsiImage.getUI().getHSIView().getMedianRadius();
                 rfilter.rank(tempProc, r, rfilter.MEDIAN);
                 
-                medPixels = (float[]) tempProc.getPixels();
-                internalRatio.getProcessor().setPixels(medPixels);
+                transformedPixels = (float[]) tempProc.getPixels();
+                internalRatio.getProcessor().setPixels(transformedPixels);
             }
 
             if (!medianize && internalRatio != null) {
                 internalRatio.getProcessor().setPixels(ratioPixels);
+            }
+
+            //if using non-ratio values, ie percent turnover
+            if(hsiProps.getTransform()) {
+                transformedPixels = this.turnoverTransform(transformedPixels, hsiProps.getReferenceRatio(), hsiProps.getBackgroundRatio(), hsiProps.getRatioScaleFactor());
             }
 
             for(int offset = 0 ; offset < numPixels.length && fThread != null ; offset++ ) {
@@ -311,7 +316,7 @@ public class HSIProcessor implements Runnable {
             
                     //original
                     //float ratio = hsiProps.getRatioScaleFactor()*((float)numValue / (float)denValue );
-                    float ratio = medPixels[offset];
+                    float ratio = transformedPixels[offset];
                     
                     int numOut = (int)(numGain * (float)( numValue - (int)numMin )) ;
                     int denOut = (int)(denGain * (float)( denValue - (int)denMin )) ;
@@ -356,7 +361,7 @@ public class HSIProcessor implements Runnable {
                             else if(iratio > 65535) iratio = 65535 ;                           
                         }
                         else iratio = 65535 ;
-                    }
+                    } else iratio = 0;
                     
                     r = (int)(rTable[iratio] * outValue ) << 16 ;
                     g = (int)(gTable[iratio] * outValue ) << 8  ;
@@ -377,9 +382,34 @@ public class HSIProcessor implements Runnable {
                     return ;
                 }
             }
-  
+            //Scale bar colors
             if( numPixels.length != hsiPixels.length ) {
 
+                double dScale = 65535.0F;
+                double dRatio = 0.0;;
+                double dDelta = ( dScale )
+                                / (double) hsiImage.getWidth() ;
+
+                for( int x=0 ; x<hsiImage.getWidth() ; x++ )
+                {
+                    int iratio = (int)dRatio ;
+                    if(iratio<0) { iratio=0; } else if(iratio>65535) { iratio = 65535; }
+                    int r = (int)(rTable[iratio] * 255.0 )  ;
+                    int g = (int)(gTable[iratio] * 255.0 )  ;
+                    int b = (int)(bTable[iratio] * 255.0 )  ;
+
+                    dRatio += dDelta ;
+
+                    int offset, y ;
+                    for(offset = numPixels.length + x, y = 0 ;
+                            y < 16 ;
+                            y++, offset += hsiImage.getWidth() )
+                    {
+                            hsiPixels[offset] = ((r&0xff)<<16) + ((g&0xff)<<8) + (b&0xff) ;
+                    }
+                /* ORIGINAL, but incorrect?
+                 * Why was this trying to do anything?
+                 * The scale bar should never change, just the labels
                 double dScale = 65535.0F / maxRatio ;
                 double dRatio = minRatio ;
                 double dDelta = ( maxRatio - minRatio ) 
@@ -401,6 +431,7 @@ public class HSIProcessor implements Runnable {
                     {
                             hsiPixels[offset] = ((r&0xff)<<16) + ((g&0xff)<<8) + (b&0xff) ;
                     }
+                    */
                 }
 
                 if(showLabels > 1) 	// Add the labels..
@@ -505,5 +536,23 @@ public class HSIProcessor implements Runnable {
                 bTable[i] = rgb[2] ;
         }
         return new float[][]{rTable,gTable,bTable};
+    }
+
+    public float[] turnoverTransform(float[] ratiopixels, float ref, float bg, int sf) {
+        float[] tpixels = new float[ratiopixels.length];
+        for(int i =0; i< tpixels.length; i++) {
+            tpixels[i] = turnoverTransform(ratiopixels[i], ref, bg, sf);
+        }
+        return tpixels;
+    }
+
+    public float turnoverTransform(float ratio, float ref, float bg, int sf) {
+        float output=0;
+        if(bg==ref) return output;
+        float runscaled = ratio/sf;
+        
+        output = ( (runscaled-bg) / (ref-bg) )*( (1+ref) / (1+runscaled) );
+        output = output * sf;
+        return output;
     }
 }

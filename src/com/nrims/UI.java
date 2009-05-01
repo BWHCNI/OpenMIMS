@@ -896,6 +896,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     public synchronized boolean computeHSI(HSIProps props) {
         int i;
+        if(props==null) return false;
         int hsiIndex = getHSIImageIndex(props);
         MimsPlus num = massImages[props.getNumMass()];
         if (num == null) {
@@ -1022,12 +1023,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                             
             // Update HSI image slice.
             for (int i = 0; i < hsi.length; i++) {                   
-               computeHSI(hsiImages[i].getHSIProps());
+               if(hsiImages[i]!=null) { computeHSI(hsiImages[i].getHSIProps()); }
             }
             
             // Update ratio images.
             for (int i = 0; i < rp.length; i++) {                                                                     
-               computeRatio(ratioImages[i].getHSIProps(), true);               
+              if(ratioImages[i]!=null) { computeRatio(ratioImages[i].getHSIProps(), true); }
             }                            
                 
             autocontrastAllImages();
