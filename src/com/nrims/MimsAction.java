@@ -10,11 +10,12 @@ import java.util.HashMap;
 
 public class MimsAction implements Cloneable {
     
-    private double[][] xyTranslationList;
-    private int[] sliceNumber;
-    private int[] droppedList;
-    private int[] imageIndex;
-    private String[] imageList;
+    private ArrayList<double[]> xyTranslationList;
+    private ArrayList<Integer> sliceNumber;
+    private ArrayList<Integer> droppedList;
+    private ArrayList<Integer> imageIndex;
+    private ArrayList<String> imageList;
+    double zeros[] = {0.0, 0.0};
 
     public MimsAction(UI ui, Opener im) {
         resetAction(ui, im);
@@ -23,28 +24,27 @@ public class MimsAction implements Cloneable {
     public void resetAction(UI ui, Opener im) {                    
                                      
         // Size of the stack.
-        int size = ui.getMassImage(0).getNSlices();
+        int size = ui.getMassImage(0).getNSlices();        
         
         // Set size of member variables.
-        xyTranslationList = new double[size][2];
-        sliceNumber = new int[size];
-        droppedList = new int[size];
-        imageIndex  = new int[size];
-        imageList = new String[size];
+        xyTranslationList = new ArrayList<double[]>();
+        sliceNumber = new ArrayList<Integer>();
+        droppedList = new ArrayList<Integer>();
+        imageIndex = new ArrayList<Integer>();
+        imageList = new ArrayList<String>();
         
         // Initialize member variables.
         for (int i = 0; i < size; i++) {
-           sliceNumber[i] = i+1;
-           xyTranslationList[i][0] = 0.0;
-           xyTranslationList[i][1] = 0.0;
-           droppedList[i] = 0;
-           imageIndex[i] = i;            
-           imageList[i] = im.getImageFile().getName();
+           sliceNumber.add(i+1);           
+           xyTranslationList.add(zeros);           
+           droppedList.add(0);
+           imageIndex.add(i);            
+           imageList.add(im.getImageFile().getName());
         }
     }
 
     public void addPlanes(boolean pre, int n, Opener op) {
-        int origSize = sliceNumber.length;
+        int origSize = sliceNumber.size();
         int startIndex;
         if (pre) {
             startIndex = 0;
@@ -55,71 +55,73 @@ public class MimsAction implements Cloneable {
         // Add planes to the action-ArrayList.
         int openerPlaneNum = 0;
         for (int i = startIndex; i < n + startIndex; i++) {           
-           sliceNumber[i] = i+1;
-           xyTranslationList[i][0] = 0.0;
-           xyTranslationList[i][1] = 0.0;
-           droppedList[i] = 0;
-           imageIndex[i] = openerPlaneNum;            
-           imageList[i] = op.getImageFile().getName();
+           sliceNumber.add(i, i+1);
+           xyTranslationList.add(i, zeros);           
+           droppedList.add(i, 0);
+           imageIndex.add(i, openerPlaneNum);            
+           imageList.add(i, op.getImageFile().getName());
            openerPlaneNum++;
         }
 
         // renumber original planes, if new ones were prepended
         if (pre) {
             for (int i = origSize; i < origSize + n; i++) {
-               sliceNumber[i] = i+1;                
+               sliceNumber.set(i, i+1);                
             }
         }        
     }
 
     public String getActionRow(int plane) {
         int idx = plane-1;
-        return "p:" + sliceNumber[idx] + 
-               "\t" + roundTwoDecimals(xyTranslationList[idx][0]) + 
-               "\t" + roundTwoDecimals(xyTranslationList[idx][1]) + 
-               "\t" + droppedList[idx] + 
-               "\t" + imageIndex[idx] + 
-               "\t" + imageList[idx];
+        return "p:" + sliceNumber.get(idx) + 
+               "\t" + roundTwoDecimals((Double)(xyTranslationList.get(idx)[0])) + 
+               "\t" + roundTwoDecimals((Double)(xyTranslationList.get(idx)[1])) +
+               "\t" + droppedList.get(idx) + 
+               "\t" + imageIndex.get(idx) + 
+               "\t" + imageList.get(idx);
     }
 
     public int getSize() {
-        return this.imageList.length;
+        return this.imageList.size();
     }
 
     public void dropPlane(int displayIndex) {
         int index = trueIndex(displayIndex);
-        droppedList[index - 1] = 1;
+        droppedList.set(index - 1, 1);
     }
 
     public void undropPlane(int trueIndex) {
-        droppedList[trueIndex - 1] = 0;
+        droppedList.set(trueIndex - 1, 0);
     }
 
     public void setShiftX(int plane, double offset) {
         int tplane = this.trueIndex(plane);
-        xyTranslationList[tplane-1][0] = offset;                    
+        double y = getXShift(plane);
+        double xy[] = {offset, y};
+        xyTranslationList.set(tplane-1, xy);                    
     }
 
     public void setShiftY(int plane, double offset) {
         int tplane = this.trueIndex(plane);
-        xyTranslationList[tplane-1][1] = offset;              
-    }
+        double x = getXShift(plane);
+        double xy[] = {x, offset};
+        xyTranslationList.set(tplane-1, xy);    }
 
     public double getXShift(int plane) {
         int tplane = this.trueIndex(plane);
-        return xyTranslationList[tplane-1][0];
+        return (Double)(xyTranslationList.get(tplane-1)[0]);
     }
 
     public double getYShift(int plane) {
         int tplane = this.trueIndex(plane);
-        return xyTranslationList[tplane-1][1];
+        return (Double)(xyTranslationList.get(tplane-1)[1]);
     }
 
     public int trueIndex(int dispIndex) {
         int index = 0;
         int zeros = 0;
         while (zeros < dispIndex) {
-            if (droppedList[index] == 0) {
+            if (droppedList.get(index) == 0) {
                 zeros++;
             }
             index++;
@@ -131,12 +133,12 @@ public class MimsAction implements Cloneable {
         int zeros = 0;
         int i = 0;
         while (i < tIndex) {
-            if (droppedList[i] == 0) {
+            if (droppedList.get(i) == 0) {
                 zeros++;
             }
             i++;
         }
-        if (droppedList[tIndex - 1] == 0) {
+        if (droppedList.get(tIndex - 1) == 0) {
             return zeros;
         } else {
             return zeros + 1;
@@ -144,19 +146,22 @@ public class MimsAction implements Cloneable {
     }
 
     public int isDropped(int tIndex) {
-        return (droppedList[tIndex - 1]);
+        return (droppedList.get(tIndex - 1));
     }
 
     public String[] getImageList(){
-       return imageList;
+       String imageListString[] = new String[imageList.size()];
+       for (int i=0; i<imageListString.length; i++)
+          imageListString[i] = imageList.get(i);
+       return imageListString;
     }
     
     public int getOpenerIndex(int plane) {       
-       return imageIndex[plane];       
+       return imageIndex.get(plane);       
     }
     
     public String getOpenerName(int plane) {
-       return imageList[plane];
+       return imageList.get(plane);
     }
     
     @Override
@@ -172,7 +177,7 @@ public class MimsAction implements Cloneable {
     public boolean writeAction(String filename) {
         BufferedWriter bw = null;       
         
-        if (sliceNumber.length != imageList.length){
+        if (sliceNumber.size() != imageList.size()){
            System.out.println("internal decrepancy between image list and action list.");
            return false;
         }
@@ -181,7 +186,7 @@ public class MimsAction implements Cloneable {
             bw = new BufferedWriter(new FileWriter(filename));
 
             // write image state
-            for (int i = 1; i <= sliceNumber.length; i++) {
+            for (int i = 1; i <= sliceNumber.size(); i++) {
                 bw.append(getActionRow(i));
                 bw.newLine();
             }
@@ -204,8 +209,8 @@ public class MimsAction implements Cloneable {
 
    void setSliceImage(int plane, String file) {
         int tplane = trueIndex(plane);
-        if (!imageList[tplane - 1].equals(file)) {
-            imageList[tplane - 1] = file;
+        if (!imageList.get(tplane - 1).equals(file)) {
+            imageList.set(tplane - 1, file);
         }   
    }
    

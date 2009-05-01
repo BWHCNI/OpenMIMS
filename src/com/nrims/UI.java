@@ -471,6 +471,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             this.mimsTomography.resetImageNamesList();
             this.mimsStackEditing.resetSpinners();
             
+            openers.clear();
             String fName = (new File(fileName)).getName();     
             openers.put(fName, image);            
             
