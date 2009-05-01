@@ -198,7 +198,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         } else {
             if(new File(fileName).isDirectory()) {
                 System.out.println("fileName: "+fileName);
-                loadMIMSFile();
+                loadMIMSFileDir(fileName);
             } else {
                 this.loadMIMSFile(fileName);
             }
@@ -273,6 +273,36 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * Causes a dialog to open that allows a user to choose an image file.
      */
     //changed to public...
+    public synchronized void loadMIMSFileDir(String filename) {
+        javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
+
+        if(filename!=null && (new File(filename).isDirectory() ) ) {
+            fc.setCurrentDirectory(new java.io.File(filename));
+        }
+
+        MIMSFileFilter filter = new MIMSFileFilter("im");
+        fc.setFileFilter(filter);
+        fc.setPreferredSize(new java.awt.Dimension(650, 500));
+
+        if (lastFolder != null) {
+            fc.setCurrentDirectory(new java.io.File(lastFolder));
+        }
+
+        if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
+            return;
+        }
+        lastFolder = fc.getSelectedFile().getParent();
+        setIJDefaultDir(lastFolder);
+
+        String fileName = fc.getSelectedFile().getPath();
+        try {
+            loadMIMSFile(fileName);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            System.err.println("A NullPointerException should not have occurred in loadMIMSFile.  This indicates that the fileName returned by the JFileChooser was null.");
+        }
+    }
+
     public synchronized void loadMIMSFile() {
         javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
         MIMSFileFilter filter = new MIMSFileFilter("im");
@@ -281,11 +311,18 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         if (lastFolder != null) {
             fc.setCurrentDirectory(new java.io.File(lastFolder));
+        } else {
+            String ijDir = new ij.io.OpenDialog("", "asdf").getDefaultDirectory();
+            fc.setCurrentDirectory(new java.io.File(ijDir));
         }
+
+
         if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
             return;
         }
         lastFolder = fc.getSelectedFile().getParent();
+        setIJDefaultDir(lastFolder);
+
         String fileName = fc.getSelectedFile().getPath();
         try {
             loadMIMSFile(fileName);
@@ -1580,7 +1617,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }//GEN-LAST:event_jTabbedPane1StateChanged
 
 private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
-    System.exit(0);
+    //System.exit(0);
+    //TODO doesn't actually close...
+    this.close();
 }//GEN-LAST:event_exitMenuItemActionPerformed
 
 private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumAllMenuItemActionPerformed
@@ -1705,6 +1744,11 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
 
       // Let user select name and location of zip file.
       JFileChooser fc = new JFileChooser();
+
+       if (lastFolder != null) {
+            fc.setCurrentDirectory(new java.io.File(lastFolder));
+        }
+
       fc.setFileFilter(new MIMSFileFilter("zip"));
       int returnVal = fc.showSaveDialog(this);
       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1717,6 +1761,9 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
       if (!(zipName.endsWith(".zip") || zipName.endsWith(".ZIP"))) {
          zipName = zipName + ".zip";
       }
+
+      lastFolder = fc.getSelectedFile().getParent();
+        setIJDefaultDir(lastFolder);
 
       try {
 
@@ -1823,11 +1870,19 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
 
       // User gets Zip file containg all .im files, action file, ROI files and HSIs. 
       JFileChooser fc = new JFileChooser();
+
+       if (lastFolder != null) {
+            fc.setCurrentDirectory(new java.io.File(lastFolder));
+        }
+
       fc.setFileFilter(new MIMSFileFilter("zip"));
       fc.setPreferredSize(new java.awt.Dimension(650, 500));
       if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
          return;
       }
+
+      lastFolder = fc.getSelectedFile().getParent();
+      setIJDefaultDir(lastFolder);
 
       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -1986,13 +2041,17 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
    // Save action file.
    private void saveAction(java.awt.event.ActionEvent evt) {
-      String defaultPath = image.getImageFile().getParent().toString() + System.getProperty("file.separator") + actionFileName;
-      JFileChooser fc = new JFileChooser(defaultPath);
-      fc.setSelectedFile(new File(defaultPath));
+      //String defaultPath = image.getImageFile().getParent().toString() + System.getProperty("file.separator") + actionFileName;
+       String defaultPath = lastFolder;
+      JFileChooser fc = new JFileChooser(lastFolder);
+      fc.setSelectedFile(new File(lastFolder));
       while (true) {
          if (fc.showSaveDialog(this) == JFileChooser.CANCEL_OPTION) {
             break;
          }
+         lastFolder = fc.getSelectedFile().getParent();
+        setIJDefaultDir(lastFolder);
+
          setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
          String actionFilePath = fc.getSelectedFile().getPath();
          String actionFile = fc.getSelectedFile().getName();
@@ -2017,6 +2076,11 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
       // User gets action file.
       JFileChooser fc = new JFileChooser();
+
+       if (lastFolder != null) {
+            fc.setCurrentDirectory(new java.io.File(lastFolder));
+        }
+
       fc.setPreferredSize(new java.awt.Dimension(650, 500));
       if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
          return;
@@ -2028,6 +2092,10 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
       bUpdating = true;
 
       File actionFile = fc.getSelectedFile();
+
+      lastFolder = fc.getSelectedFile().getParent();
+      setIJDefaultDir(lastFolder);
+
       try {
 
          BufferedReader br = new BufferedReader(new FileReader(actionFile));
@@ -2453,7 +2521,17 @@ public void updateLineProfile(double[] newdata, String name, int width) {
         this.ratioScaleFactor = s;
         return this.ratioScaleFactor;
     }
-    
+
+    public String getLastFolder() {
+        return lastFolder;
+    }
+
+    public void setIJDefaultDir(String dir) {
+        ij.io.OpenDialog temp = new ij.io.OpenDialog("", "fubar");
+        temp.setDefaultDirectory(dir);
+        temp = null;
+    }
+
     @Override
     public void run(String cmd) {
         if (cmd.equalsIgnoreCase("open")) {
