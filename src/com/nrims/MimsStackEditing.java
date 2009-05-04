@@ -2,6 +2,7 @@ package com.nrims;
 
 import com.nrims.data.Opener;
 import ij.*;
+import java.awt.Cursor;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
@@ -696,60 +697,65 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoTrackButtonActionPerformed
 
-        ImagePlus tempImage = WindowManager.getCurrentImage();
-        ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
-        int startPlane = images[0].getCurrentSlice();
-        ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
-        String massname = tempImage.getTitle();               
+       try {
+          setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+          ImagePlus tempImage = WindowManager.getCurrentImage();
+          ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
+          int startPlane = images[0].getCurrentSlice();
+          ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
+          String massname = tempImage.getTitle();
 
-           for (int i = 1; i <= images[0].getStackSize(); i++) {            
-            images[0].setSlice(i);
-            tempImage = WindowManager.getCurrentImage();
-            tempProcessor = tempImage.getProcessor();
-            tempStack.addSlice(tempImage.getTitle(), tempProcessor);
-           }
-        
+          for (int i = 1; i <= images[0].getStackSize(); i++) {
+             images[0].setSlice(i);
+             tempImage = WindowManager.getCurrentImage();
+             tempProcessor = tempImage.getProcessor();
+             tempStack.addSlice(tempImage.getTitle(), tempProcessor);
+          }
 
-        tempImage.setSlice(0);
-        ImagePlus img = new ij.ImagePlus("", tempStack);        
 
-        //the waiting
-        if (img == null) {
-            System.err.println("The img is null; aborting.");
-        } else if (ui == null) {
-            System.err.println("The UI is null; aborting.");
-        }
-        AutoTrack temptrack = new AutoTrack(ui);
-        double[][] translations = temptrack.track(img);
+          tempImage.setSlice(0);
+          ImagePlus img = new ij.ImagePlus("", tempStack);
 
-        if (translations == null) {
-            throw new NullPointerException("translations is null: AutoTrack has failed.");
-        }
+          //the waiting
+          if (img == null) {
+             System.err.println("The img is null; aborting.");
+          } else if (ui == null) {
+             System.err.println("The UI is null; aborting.");
+          }
+          AutoTrack temptrack = new AutoTrack(ui);
+          double[][] translations = temptrack.track(img);
 
-        double xval, yval;
-        int plane;
-        for (int i = 0; i < translations.length; i++) {           
-            plane = i + 1;
-            //possible loss of precision...
-            //notice the negative....
-            xval = (-1.0) * translations[i][0];
-            yval = (-1.0) * translations[i][1];
-            images[0].setSlice(plane);
-            this.XShiftSlice(i + 1, xval);
-            this.YShiftSlice(i + 1, yval);
-        }
+          if (translations == null) {
+             throw new NullPointerException("translations is null: AutoTrack has failed.");
+          }
 
-        //clean up
-        images[0].setSlice(startPlane);
-        tempImage = null;
-        tempProcessor = null;
-        tempStack = null;
-        img.close();
-        img = null;
-        if (!this.reinsertButton.isEnabled()) {
-            autoTrackButton.setEnabled(false);
-        }
-        ui.getmimsLog().Log("Autotracked on the " + massname + " images.");
+          double xval, yval;
+          int plane;
+          for (int i = 0; i < translations.length; i++) {
+             plane = i + 1;
+             //possible loss of precision...
+             //notice the negative....
+             xval = (-1.0) * translations[i][0];
+             yval = (-1.0) * translations[i][1];
+             images[0].setSlice(plane);
+             this.XShiftSlice(i + 1, xval);
+             this.YShiftSlice(i + 1, yval);
+          }
+
+          //clean up
+          images[0].setSlice(startPlane);
+          tempImage = null;
+          tempProcessor = null;
+          tempStack = null;
+          img.close();
+          img = null;
+          if (!this.reinsertButton.isEnabled()) {
+             autoTrackButton.setEnabled(false);
+          }
+          ui.getmimsLog().Log("Autotracked on the " + massname + " images.");
+       } finally {
+          setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+       }
 }//GEN-LAST:event_autoTrackButtonActionPerformed
 
     private void untrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_untrackButtonActionPerformed

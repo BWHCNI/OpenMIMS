@@ -1972,8 +1972,8 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
             }
 
             // Set the XShift, YShift, dropped val, and image name for this slice.
-            mimsStackEditing.XShiftSlice(displayIndex, Integer.parseInt(actionRowString[1]));
-            mimsStackEditing.YShiftSlice(displayIndex, Integer.parseInt(actionRowString[2]));
+            mimsStackEditing.XShiftSlice(displayIndex, Double.parseDouble(actionRowString[1]));
+            mimsStackEditing.YShiftSlice(displayIndex, Double.parseDouble(actionRowString[2]));
             if (Integer.parseInt(actionRowString[3]) == 1) 
                deleteList.add(trueIndex);            
             mimsAction.setSliceImage(displayIndex, new String(actionRowString[5]));
@@ -2164,8 +2164,8 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
             }
 
             // Set the XShift, YShift, dropped val, and image name for this slice.
-            mimsStackEditing.XShiftSlice(displayIndex, Integer.parseInt(actionRowString[1]));
-            mimsStackEditing.YShiftSlice(displayIndex, Integer.parseInt(actionRowString[2]));
+            mimsStackEditing.XShiftSlice(displayIndex, Double.parseDouble(actionRowString[1]));
+            mimsStackEditing.YShiftSlice(displayIndex, Double.parseDouble(actionRowString[2]));
             if (Integer.parseInt(actionRowString[3]) == 1) {
                deleteList.add(trueIndex);
             }
