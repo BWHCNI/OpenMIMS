@@ -73,20 +73,65 @@ public class MimsJFreeChart {
         tempframe.setVisible(true);
     }
     
+    // This method will generate a set of plots for a given set of: rois, stats, images.
     public XYDataset getDataset(Roi[] rois, String title, String[] stats, int[] masses, int min, int max) {
-        
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        rp = ui.getOpenRatioImages();
-        for(int k=0; k<masses.length; k++) {
-            for(int i=0; i<rois.length; i++) {
-                for(int j=0; j<stats.length; j++) {
-                    dataset.addSeries(getSeriesData(rois[i], stats[j], masses[k], min, max));
-                }
+
+      // Initialize some variables
+      XYSeriesCollection dataset = new XYSeriesCollection();
+      rp = ui.getOpenRatioImages();
+      XYSeries series[][][] = new XYSeries[rois.length][masses.length][stats.length];
+      String seriesname[][][] = new String[rois.length][masses.length][stats.length];
+      ImageStatistics tempstats = null;
+
+      // begin looping
+      for (int i = 0; i < rois.length; i++) {
+         for (int ii = min; ii <= max; ii++) {
+            images[0].setSlice(ii);
+            for (int j = 0; j < masses.length; j++) {
+               for (int k = 0; k < stats.length; k++) {
+
+                  // Generate a name for the dataset.  
+                  if (seriesname[i][j][k] == null) {
+                     if (masses[j] < numberMasses) {
+                        images[masses[j]].setRoi(rois[i]);
+                        seriesname[i][j][k] = images[masses[j]].getShortTitle();
+                        seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + "\n" + rois[i].getName();
+                     } else {
+                        images[0].setRoi(rois[i]);
+                        seriesname[i][j][k] = rp[masses[j] - numberMasses].getShortTitle();
+                        seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + "\n" + rois[i].getName();
+                     }
+                  }
+
+                  // Get the data.
+                  if (masses[j] < numberMasses) {                     
+                     tempstats = images[masses[j]].getStatistics();
+                  } else {                     
+                     tempstats = rp[masses[j] - numberMasses].getStatistics();
+                  }
+
+                  // Add data to the series.
+                  if (series[i][j][k] == null) {
+                     series[i][j][k] = new XYSeries(seriesname[i][j][k]);
+                  }
+                  series[i][j][k].add(ii, getSingleStat(tempstats, stats[k]));
+                  
+               } // End of Stats
+            } // End of Masses
+         } // End of Slice
+      } // End of Rois
+
+      // Populate the final data structure.
+      for (int i = 0; i < rois.length; i++) {
+         for (int j = 0; j < masses.length; j++) {
+            for (int k = 0; k < stats.length; k++) {
+               dataset.addSeries(series[i][j][k]);
             }
-        }
-        
-        return dataset;
-    }
+         }
+      }
+
+      return dataset;
+   }
     
         
     
@@ -121,42 +166,6 @@ public class MimsJFreeChart {
         // OPTIONAL CUSTOMISATION COMPLETED.
         
         return chart;
-    }
-    
-    public XYSeries getSeriesData(ij.gui.Roi roi, String statname, int mass, int min, int max) {
-        
-        String seriesname = ""; 
-        if(roi!=null)
-            if(mass<numberMasses) {
-                images[mass].setRoi(roi);
-                seriesname = images[mass].getShortTitle();
-                seriesname = seriesname+" "+statname+"\n"+roi.getName();
-            } else {
-                images[0].setRoi(roi);
-                seriesname = rp[mass-numberMasses].getShortTitle();
-                seriesname = seriesname+" "+statname+"\n"+roi.getName();
-            }
-        
-        
-        XYSeries series = new XYSeries(seriesname);
-        ImageStatistics tempstats = null;       
-        
-        if(mass<numberMasses) {
-            for(int i=min; i<=max; i++) {
-                images[mass].setSlice(i);               
-                tempstats = images[mass].getStatistics();
-                series.add(i, getSingleStat(tempstats, statname));
-            }
-        } else {
-            for(int i=min; i<=max; i++) {
-                images[0].setSlice(i);
-                System.out.println("rp.length="+rp.length);
-                tempstats = rp[mass-numberMasses].getStatistics();
-                series.add(i, getSingleStat(tempstats, statname));
-            }
-        }
-        
-        return series;
     }
     
     public double getSingleStat(ImageStatistics stats, String statname) {
