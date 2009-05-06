@@ -3,6 +3,7 @@ package com.nrims;
 import com.nrims.data.Opener;
 import ij.*;
 import java.awt.Cursor;
+import java.io.File;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
@@ -752,8 +753,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
           if (!this.reinsertButton.isEnabled()) {
              autoTrackButton.setEnabled(false);
           }
-          ui.getmimsLog().Log("Autotracked on the " + massname + " images.");
-       } finally {
+          File backupFile = ui.getmimsAction().writeAction(new File(System.getProperty("java.io.tmpdir"), ui.actionFileName));          
+          ui.getmimsLog().Log("Autotracked on the " + massname + " images. Backup action file saved to "+backupFile);          
+       } finally {          
           setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
        }
 }//GEN-LAST:event_autoTrackButtonActionPerformed

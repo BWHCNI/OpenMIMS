@@ -51,6 +51,7 @@ import javax.swing.JOptionPane;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -80,14 +81,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private boolean medianFilterRatios = false;
     private boolean[] bOpenMass = new boolean[maxMasses];
             
-    private String lastFolder = null;    
-    private String actionFileName = "action.txt";         
+    private String lastFolder = null;        
+    public  String actionFileName = "action.txt";         
     private String ratioExtension = ".ratio";     
     private String hsiExtension = ".hsi";     
     private String sumExtension = ".sum"; 
     private String ratioPrefix = "RATIO_image";
     private String hsiPrefix = "HSI_image";
     private String sumPrefix = "SUM_image";
+    
             
     private HashMap openers = new HashMap();
     
@@ -1148,6 +1150,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.mimsStackEditing.resetTrueIndexLabel();
         this.mimsStackEditing.resetSpinners();
     }
+
+   // This method returns the name of the main image file without the extension.
+   private String getImageFilePrefix() {
+      String filename = image.getImageFile().getName().toString();
+      String prefix = filename.substring(0, filename.lastIndexOf("."));
+      return prefix;
+   }
     
    private void initComponentsCustom() {
 
@@ -1738,6 +1747,7 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
    // Saves a session.
    private void saveSession(java.awt.event.ActionEvent evt) {
 
+      // Initialize variables.
       byte[] buf = new byte[1024];
       byte[] newline = (new String("\n")).getBytes();
       int len;
@@ -1745,9 +1755,9 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
       // Let user select name and location of zip file.
       JFileChooser fc = new JFileChooser();
 
-       if (lastFolder != null) {
-            fc.setCurrentDirectory(new java.io.File(lastFolder));
-        }
+      if (lastFolder != null) {
+         fc.setCurrentDirectory(new java.io.File(lastFolder));
+      }
 
       fc.setFileFilter(new MIMSFileFilter("zip"));
       int returnVal = fc.showSaveDialog(this);
@@ -1786,7 +1796,8 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
          }
 
          // Save the action file to zip.
-         zos.putNextEntry(new ZipEntry(actionFileName));
+         String prefix = getImageFilePrefix();
+         zos.putNextEntry(new ZipEntry(prefix+"_"+actionFileName));
          for (int i = 1; i <= mimsAction.getSize(); i++) {
             byte[] b = mimsAction.getActionRow(i).getBytes();
             zos.write(b);
@@ -1839,7 +1850,7 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
 
          // Save the Sum images      
          MimsPlus sum[] = this.getOpenSumImages();
-         if (hsi.length > 0) {
+         if (sum.length > 0) {
             ObjectOutputStream obj_out = null;
             for (int i = 0; i < sum.length; i++) {
                String parentName = sum[i].getParentImageName();
@@ -1867,35 +1878,38 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
       int trueIndex = 1;
       ArrayList<Integer> deleteList = new ArrayList<Integer>();
       bUpdating = true;
+      ZipEntry zipEntry = null;
 
       // User gets Zip file containg all .im files, action file, ROI files and HSIs. 
       JFileChooser fc = new JFileChooser();
-
        if (lastFolder != null) {
             fc.setCurrentDirectory(new java.io.File(lastFolder));
         }
-
       fc.setFileFilter(new MIMSFileFilter("zip"));
       fc.setPreferredSize(new java.awt.Dimension(650, 500));
       if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
          return;
       }
-
       lastFolder = fc.getSelectedFile().getParent();
       setIJDefaultDir(lastFolder);
 
+      // Set the wait cursor and start opening session.
       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-      currentlyOpeningImages = true;
       File selectedFile = fc.getSelectedFile();
+      currentlyOpeningImages = true;
 
       // Begin process of reading zip file contents
       // and extracting files if necessary.
       try {
 
-         // Read action file straight from zip.
+         // Find, then read action file straight from zip.
          ZipFile zipFile = new ZipFile(selectedFile);
-         ZipEntry zipEntry = zipFile.getEntry(actionFileName);
+         Enumeration zipEntries = zipFile.entries();
+         while (zipEntries.hasMoreElements()) {
+            zipEntry = (ZipEntry) zipEntries.nextElement();
+            if (zipEntry.getName().endsWith(actionFileName))    
+               break;
+         }         
          if (zipEntry == null) {
             JOptionPane.showMessageDialog(this, "Zip file does not contain " + actionFileName, "Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -2040,31 +2054,41 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 }//GEN-LAST:event_genStackMenuItemActionPerformed
 
    // Save action file.
-   private void saveAction(java.awt.event.ActionEvent evt) {
-      //String defaultPath = image.getImageFile().getParent().toString() + System.getProperty("file.separator") + actionFileName;
-       String defaultPath = lastFolder;
+   private void saveAction(java.awt.event.ActionEvent evt) {      
+      saveAction();
+   }
+ 
+   // Method for saving action file and writing backup action files.
+   public void saveAction() {
+
+      // Initialize variables.
+      File selectedFile = null;
+
+      // Query user where to save action file.
       JFileChooser fc = new JFileChooser(lastFolder);
       fc.setSelectedFile(new File(lastFolder));
       while (true) {
          if (fc.showSaveDialog(this) == JFileChooser.CANCEL_OPTION) {
-            break;
+            return;
          }
-         lastFolder = fc.getSelectedFile().getParent();
-        setIJDefaultDir(lastFolder);
+         selectedFile = fc.getSelectedFile();
 
-         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-         String actionFilePath = fc.getSelectedFile().getPath();
-         String actionFile = fc.getSelectedFile().getName();
-         if (new File(actionFilePath).exists()) {
+         // Update ImageJs the 'lastFolder' variable.
+         lastFolder = selectedFile.getParent();
+         setIJDefaultDir(lastFolder);
+
+         // Check for overwriting any existing file.
+         String actionFile = selectedFile.getName();
+         if (selectedFile.exists()) {
             String[] options = {"Overwrite", "Cancel"};
             int value = JOptionPane.showOptionDialog(this, "File \"" + actionFile + "\" already exists!", null,
                     JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[1]);
             if (value == JOptionPane.NO_OPTION) {
-               continue;
+               return;
             }
 
          }
-         getmimsAction().writeAction(actionFilePath);
+         getmimsAction().writeAction(selectedFile);
          break;
       }
    }

@@ -2,6 +2,7 @@ package com.nrims;
 
 import com.nrims.data.Opener;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -174,16 +175,18 @@ public class MimsAction implements Cloneable {
         }
     }
 
-    public boolean writeAction(String filename) {
-        BufferedWriter bw = null;       
+    public File writeAction(File file) {
+       
+        // initialize variable.
+        BufferedWriter bw = null;      
         
         if (sliceNumber.size() != imageList.size()){
            System.out.println("internal decrepancy between image list and action list.");
-           return false;
+           return null;
         }
         
         try {
-            bw = new BufferedWriter(new FileWriter(filename));
+            bw = new BufferedWriter(new FileWriter(file));
 
             // write image state
             for (int i = 1; i <= sliceNumber.size(); i++) {
@@ -191,17 +194,17 @@ public class MimsAction implements Cloneable {
                 bw.newLine();
             }
             bw.close();
-            return true;
+            return file.getAbsoluteFile();
         } catch (IOException e) {
             System.out.println(e.getStackTrace().toString());
-            return false;
+            return null;
         } finally {
             if (bw != null) {
                 try {
                     bw.close();
                 } catch (IOException e) {
                     // Ignore.
-                    return false;
+                    return null;
                 }
             }
         }
