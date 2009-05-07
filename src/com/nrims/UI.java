@@ -27,6 +27,7 @@ import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import java.io.BufferedInputStream;
@@ -81,7 +82,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private boolean medianFilterRatios = false;
     private boolean[] bOpenMass = new boolean[maxMasses];
             
-    private String lastFolder = null;        
+    private String lastFolder = null;      
+    public  File   tempActionFile;
+    public  String tempActionFileString = "action.TMP";
     public  String actionFileName = "action.txt";         
     private String ratioExtension = ".ratio";     
     private String hsiExtension = ".hsi";     
@@ -206,11 +209,14 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
         }
         
+        // custom listener to delete tempaction file.
+        addWindowListener(new java.awt.event.WindowAdapter() {
+           public void windowClosing(WindowEvent winEvt) {
+              deleteTempActionFile(); 
+              close();
+           }
+        });        
     }
-
-   void medianizeHSIImage(MimsPlus mimsPlus) {
-      
-   }
 
     /**
      * Closes the current image and its associated set of windows if the mode is set to close open windows.
@@ -1152,10 +1158,26 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
    // This method returns the name of the main image file without the extension.
-   private String getImageFilePrefix() {
+   public String getImageFilePrefix() {
       String filename = image.getImageFile().getName().toString();
       String prefix = filename.substring(0, filename.lastIndexOf("."));
       return prefix;
+   }
+   
+   // Save a temporary backup of the action file.
+   public File saveTempActionFile(){
+      String tempBackupFileName = getImageFilePrefix() + "_" + tempActionFileString;
+      tempActionFile = new File(image.getImageFile().getParent(), tempBackupFileName);
+      getmimsAction().writeAction(tempActionFile);          
+      return tempActionFile;
+   }
+   
+   // Delete the temporary backup action file.
+   public void deleteTempActionFile(){
+      if (tempActionFile != null){
+         if (tempActionFile.exists())
+            tempActionFile.delete();
+      }
    }
     
    private void initComponentsCustom() {
@@ -1628,6 +1650,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
     //System.exit(0);
     //TODO doesn't actually close...
+    deleteTempActionFile();
     this.close();
 }//GEN-LAST:event_exitMenuItemActionPerformed
 
@@ -2053,13 +2076,8 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
 }//GEN-LAST:event_genStackMenuItemActionPerformed
 
-   // Save action file.
-   private void saveAction(java.awt.event.ActionEvent evt) {      
-      saveAction();
-   }
- 
    // Method for saving action file and writing backup action files.
-   public void saveAction() {
+   public void saveAction(java.awt.event.ActionEvent evt) {
 
       // Initialize variables.
       File selectedFile = null;
@@ -2089,6 +2107,7 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
          }
          getmimsAction().writeAction(selectedFile);
+         deleteTempActionFile();
          break;
       }
    }
