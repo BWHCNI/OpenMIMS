@@ -2,10 +2,23 @@ package com.nrims;
 
 import com.nrims.data.Opener;
 import ij.*;
+import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 
 /**
  *
@@ -14,7 +27,7 @@ import javax.swing.JOptionPane;
 public class MimsStackEditing extends javax.swing.JPanel {
 
     public static final long serialVersionUID = 1;
-
+    
     public MimsStackEditing(UI ui, Opener im) {
 
         initComponents();
@@ -27,10 +40,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
         imagestacks = new ImageStack[numberMasses];
 
         resetImageStacks();
-
-        //TODO
-        //disable compress button cause it doesn't work
-//        this.compressButton.setEnabled(false);
     }
 
     public void resetImageStacks() {
@@ -246,7 +255,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
     public boolean sameSpotSize(Opener im, Opener ij) {
         return ((im.getPixelWidth() == ij.getPixelWidth()) && (im.getPixelHeight() == ij.getPixelHeight()));
     }
-
+    
     public ArrayList<Integer> parseList(String liststr, int lb, int ub) {
         ArrayList<Integer> deletelist = new ArrayList<Integer>();
         ArrayList<Integer> checklist = new ArrayList<Integer>();
@@ -327,6 +336,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
     private MimsPlus[] images = null;
     private ImageStack[] imagestacks = null;
     private boolean holdupdate = false;
+    public AutoTrackManager atManager;
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -540,7 +550,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
    }// </editor-fold>//GEN-END:initComponents
 
     private void deleteListButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteListButtonActionPerformed
-// TODO add your handling code here:
 
         String liststr = deleteListTextField.getText();
         ArrayList<Integer> checklist = parseList(liststr, 1, images[0].getStackSize());
@@ -555,7 +564,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         this.resetSpinners();
         deleteListTextField.setText("");
 }//GEN-LAST:event_deleteListButtonActionPerformed
-
+      
     private void concatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_concatButtonActionPerformed
         UI tempUi = new UI(ui.getImageDir()); //loadMims here
         Opener tempImage = tempUi.getOpener();
@@ -696,8 +705,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_translateYSpinnerStateChanged
 
-    private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoTrackButtonActionPerformed
-
+    private void autoTrack(){
        try {
           setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
           ImagePlus tempImage = WindowManager.getCurrentImage();
@@ -759,9 +767,17 @@ public class MimsStackEditing extends javax.swing.JPanel {
           ui.getmimsLog().Log("Autotracked on the " + massname + " images. Backup action file saved to "+backup.getAbsolutePath());          
        } finally {          
           setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-       }
-}//GEN-LAST:event_autoTrackButtonActionPerformed
+       }       
+    }
+       
+    private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoTrackButtonActionPerformed
 
+       if (atManager == null) {
+            atManager = new AutoTrackManager();
+        }
+        atManager.showFrame();              
+}//GEN-LAST:event_autoTrackButtonActionPerformed
+   
     private void untrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_untrackButtonActionPerformed
         // TODO add your handling code here:
         double xval = 0.0;
@@ -977,4 +993,135 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
    private javax.swing.JLabel trueIndexLabel;
    private javax.swing.JButton untrackButton;
    // End of variables declaration//GEN-END:variables
+
+   
+private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionListener{
+   
+   Frame instance;
+   ButtonGroup buttonGroup = new ButtonGroup();
+   JTextField txtField = new JTextField();
+   JRadioButton all;
+   JRadioButton some;
+   JButton cancelButton;
+   JButton okButton;            
+   
+   public AutoTrackManager(){
+      super("Auto Track Manager");        
+      
+      if (instance != null) {
+         instance.toFront();
+         return;
+      }
+      instance = this;
+      
+      // Setup radiobutton panel.
+      JPanel jPanel = new JPanel();
+      jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
+      
+      // Radio buttons.
+      all  = new JRadioButton("Autotrack all images.");
+      all.setActionCommand("All");
+      all.addActionListener(this);            
+      
+      some = new JRadioButton("Autotrack subset of images. (eg: 2,4,8-25,45...)");            
+      some.setActionCommand("Subset");                                                     
+      some.addActionListener(this);
+      
+      buttonGroup.add(all);
+      buttonGroup.add(some);      
+      
+      // Add to container.
+      jPanel.add(all);
+      jPanel.add(Box.createRigidArea(new Dimension(0,10)));
+      jPanel.add(some);   
+      jPanel.add(Box.createRigidArea(new Dimension(0,10)));
+      jPanel.add(txtField);
+      jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+      
+      // Set up "OK" and "Cancel" buttons.      
+      JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));            
+      cancelButton = new JButton("Cancel");   
+      cancelButton.setActionCommand("Cancel");
+      cancelButton.addActionListener(this);
+      okButton = new JButton("OK");           
+      okButton.setActionCommand("OK");
+      okButton.addActionListener(this);
+      buttonPanel.add(cancelButton);
+      buttonPanel.add(okButton);
+      
+      // Add elements.
+      setLayout(new BorderLayout());            
+      add(jPanel, BorderLayout.PAGE_START);
+      add(buttonPanel, BorderLayout.PAGE_END);            
+      setSize(new Dimension(375, 175)); 
+  
+   }
+   
+   // Gray out textfield when "All" images radio button selected.
+    public void actionPerformed(ActionEvent e) {
+       if (e.getActionCommand().equals("Subset"))
+          txtField.setEditable(true);       
+       else if (e.getActionCommand().equals("All"))   
+          txtField.setEditable(false); 
+       else if (e.getActionCommand().equals("Cancel"))
+          closeWindow();
+       else if (e.getActionCommand().equals("OK")) {
+                    
+          // Planes to be used for autotracking
+          ArrayList<Integer> includeList = parseList(txtField.getText(), 1, ui.mimsAction.getSize());
+          
+          // Planes NOT to be used for autotracking
+          ArrayList<Integer> excludeList = getInverseList(includeList, 1, ui.mimsAction.getSize());
+          
+          // Drop planes not to be used in autotracking
+          removeSliceList(excludeList);
+                              
+          // Auto track.
+          autoTrack();
+          
+          // Reinsert dropped planes.  
+          for (int i = 0; i < excludeList.size(); i++) {
+             insertSlice(excludeList.get(i));
+          }
+                           
+       }
+          
+    }
+   
+    // Show the frame.
+    public void showFrame() {
+        setLocation(400, 400);
+        setVisible(true);
+        toFront();
+        setExtendedState(NORMAL);
+    }
+    
+    public void closeWindow() {
+      super.close();
+      instance = null;
+      this.setVisible(false);       
+   }
+    
+    // Returns a reference to the MimsRatioManager
+    // or null if it is not open.
+    public AutoTrackManager getInstance() {
+        return (AutoTrackManager)instance;
+    }
+    
+    // Returns all numbers between min and max NOT in listA.
+    public ArrayList<Integer> getInverseList(ArrayList<Integer> listA, int min, int max){
+       ArrayList<Integer> listB = new ArrayList<Integer>();
+       
+       for (int i=min; i <= max; i++) {
+          if (!listA.contains(i))
+             listB.add(i);          
+       }
+       
+       return listB;
+    }
+        
 }
+
+}
+
+
