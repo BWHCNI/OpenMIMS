@@ -1,8 +1,9 @@
+package com.nrims;
 
 //do not define as part of com.nrims
 
 /*
- * NRIMS.java
+ * NRIMS_Plugin.java
  *
  * Created on May 1, 2006, 12:34 PM
  *
@@ -17,12 +18,12 @@
 
 import ij.plugin.PlugIn ;
 
-public class NRIMS implements PlugIn {
+public class NRIMS_Plugin implements PlugIn {
     
-    /** Creates a new instance of NRIMS Analysis Module */
+    /** Creates a new instance of NRIMS_Plugin Analysis Module */
     
     //must be puclic
-    public NRIMS() {
+    public NRIMS_Plugin() {
         System.out.println("NRIMS constructor");
         if(ui == null) ui = new com.nrims.UI(null);
     }
