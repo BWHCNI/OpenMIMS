@@ -313,19 +313,21 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     public synchronized void loadMIMSFile() {
         javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
-        MIMSFileFilter filter = new MIMSFileFilter("im");
-        fc.setFileFilter(filter);
+        MIMSFileFilter ffilter = new MIMSFileFilter("im");
+        fc.setFileFilter(ffilter);
         fc.setPreferredSize(new java.awt.Dimension(650, 500));
 
         if (lastFolder != null) {
             fc.setCurrentDirectory(new java.io.File(lastFolder));
         } else {
             String ijDir = new ij.io.OpenDialog("", "asdf").getDefaultDirectory();
-            fc.setCurrentDirectory(new java.io.File(ijDir));
+            if(ijDir != null && !(ijDir.equalsIgnoreCase("")) )
+                fc.setCurrentDirectory(new java.io.File(ijDir));
         }
 
 
         if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
+            lastFolder = fc.getCurrentDirectory().getAbsolutePath();
             return;
         }
         lastFolder = fc.getSelectedFile().getParent();
@@ -1782,7 +1784,9 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
          fc.setCurrentDirectory(new java.io.File(lastFolder));
       }
 
-      fc.setFileFilter(new MIMSFileFilter("zip"));
+      MIMSFileFilter ffilter = new MIMSFileFilter("zip");
+      ffilter.setDescription("MIMS Session");
+      fc.setFileFilter(ffilter);
       int returnVal = fc.showSaveDialog(this);
       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       String zipName;
@@ -1908,7 +1912,9 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
        if (lastFolder != null) {
             fc.setCurrentDirectory(new java.io.File(lastFolder));
         }
-      fc.setFileFilter(new MIMSFileFilter("zip"));
+      MIMSFileFilter ffilter = new MIMSFileFilter("zip");
+      ffilter.setDescription("MIMS Session");
+      fc.setFileFilter(ffilter);
       fc.setPreferredSize(new java.awt.Dimension(650, 500));
       if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
          return;
@@ -2085,6 +2091,12 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
       // Query user where to save action file.
       JFileChooser fc = new JFileChooser(lastFolder);
       fc.setSelectedFile(new File(lastFolder));
+
+      MIMSFileFilter ffilter = new MIMSFileFilter("txt");
+      ffilter.addExtension("act");
+      ffilter.setDescription("MIMS Action");
+      fc.setFileFilter(ffilter);
+
       while (true) {
          if (fc.showSaveDialog(this) == JFileChooser.CANCEL_OPTION) {
             return;
@@ -2125,6 +2137,10 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
         }
 
       fc.setPreferredSize(new java.awt.Dimension(650, 500));
+      MIMSFileFilter ffilter = new MIMSFileFilter("txt");
+      ffilter.addExtension("act");
+      ffilter.setDescription("MIMS Action");
+      fc.setFileFilter(ffilter);
       if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
          return;
       }
