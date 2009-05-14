@@ -10,17 +10,44 @@ import ij.WindowManager;
 import ij.plugin.LutLoader;
 import ij.process.ImageProcessor;
 import java.util.Hashtable;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYBarPainter;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.data.statistics.HistogramDataset;
 
-/* @author zkaufman */
 public class MimsCBControl extends javax.swing.JPanel {
    
    Hashtable windows = new Hashtable();
-   UI ui;
-
+   UI ui;   
+   private JFreeChart chart;
+   private ChartPanel chartPanel;
+   
     public MimsCBControl(UI ui) {
-       this.ui = ui;
+       this.ui = ui;       
        initComponents();   
-       //jComboBox2.setMaximumRowCount(jComboBox2.getItemCount());
+       setupHistogram();
+    }
+    
+    private void setupHistogram() {
+
+        // Create chart using the ChartFactory.
+        chart = ChartFactory.createHistogram("", null, null, null, PlotOrientation.VERTICAL, true, true, false);
+        chart.setBackgroundPaint(this.getBackground());
+        
+        // Set the renderer.
+        XYPlot plot = (XYPlot) chart.getPlot();                                       
+        XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
+        renderer.setDrawBarOutline(false);
+        renderer.setShadowVisible(false);
+        renderer.setBarPainter(new StandardXYBarPainter());
+
+        chartPanel = new ChartPanel(chart);
+        chartPanel.setSize(400, 245); 
+        jPanel1.add(chartPanel);
     }
     
    // Call this method whenever you want to update the histogram.
@@ -41,11 +68,41 @@ public class MimsCBControl extends javax.swing.JPanel {
       ImageProcessor ip = imp.getProcessor();
       if (ip == null) return;
       
-      // Update the histogram for the image in that window.
-      contrastAdjuster1.update(imp);
-      double max = contrastAdjuster1.plot.defaultMax;
-      jLabel4.setText( (new Double(max)).toString() );
+      // Update the sliders.
+      contrastAdjuster1.update(imp);                              
+
+      // Get Pixel values.
+      int i = 0;
+      int width = imp.getWidth();
+      int height = imp.getHeight();
+      int nbins = 256;
+      double[] pixels = new double[width * height];
+      double pixelVal, maxVal = 0.0;
+      for (int x = 0; x < width; x++) {
+         for (int y = 0; y < height; y++) {
+            pixelVal = ip.getPixelValue(x, y);
+            pixels[i] = pixelVal;
+            if (maxVal < pixelVal) {
+               maxVal = pixelVal;
+            }
+            i++;
+         }
+      }
+
+      // return if no data avaialable
+      if (pixels == null)
+         return;      
+      if (pixels.length == 0)
+         return;
       
+      // Setup histogram.
+      HistogramDataset dataset = new HistogramDataset();
+      dataset.addSeries("", pixels, nbins);            
+      org.jfree.chart.plot.XYPlot plot = (XYPlot) chart.getPlot();
+      plot.setDataset(dataset);
+      plot.getDomainAxis().setRange(0, maxVal);
+      plot.setDomainGridlinesVisible(false);
+      chart.fireChartChanged();      
    }
                  
    // set the windowlist jComboBox
@@ -93,10 +150,9 @@ public class MimsCBControl extends javax.swing.JPanel {
       jComboBox1 = new javax.swing.JComboBox();
       jLabel2 = new javax.swing.JLabel();
       jRadioButton1 = new javax.swing.JRadioButton();
-      jLabel3 = new javax.swing.JLabel();
-      jLabel4 = new javax.swing.JLabel();
       jComboBox2 = new javax.swing.JComboBox();
       jLabel5 = new javax.swing.JLabel();
+      jPanel1 = new javax.swing.JPanel();
 
       jLabel1.setText("Contrast / Brightness");
 
@@ -115,10 +171,6 @@ public class MimsCBControl extends javax.swing.JPanel {
          }
       });
 
-      jLabel3.setText("0");
-
-      jLabel4.setText("max");
-
       jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Grays", "Fire", "Ice", "Spectrum", "3-3-2 RGB", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Red/Green", "Invert LUT" }));
       jComboBox2.addActionListener(new java.awt.event.ActionListener() {
          public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -128,38 +180,45 @@ public class MimsCBControl extends javax.swing.JPanel {
 
       jLabel5.setText("Lookup Table :");
 
+      jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+      javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+      jPanel1.setLayout(jPanel1Layout);
+      jPanel1Layout.setHorizontalGroup(
+         jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+         .addGap(0, 302, Short.MAX_VALUE)
+      );
+      jPanel1Layout.setVerticalGroup(
+         jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+         .addGap(0, 203, Short.MAX_VALUE)
+      );
+
       javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
       this.setLayout(layout);
       layout.setHorizontalGroup(
          layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
          .addGroup(layout.createSequentialGroup()
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                .addGroup(layout.createSequentialGroup()
                   .addGap(81, 81, 81)
                   .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                     .addComponent(contrastAdjuster1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                     .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE)
                      .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                           .addGroup(layout.createSequentialGroup()
-                              .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                 .addGroup(layout.createSequentialGroup()
-                                    .addGap(12, 12, 12)
-                                    .addComponent(jLabel3))
-                                 .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE))
-                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                              .addComponent(jLabel4))
-                           .addGroup(layout.createSequentialGroup()
-                              .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                              .addComponent(jRadioButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(39, 39, 39)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                           .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
-                           .addComponent(jLabel5)))))
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jRadioButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                  .addGap(83, 83, 83)
+                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                     .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                     .addComponent(jLabel5)))
                .addGroup(layout.createSequentialGroup()
-                  .addGap(152, 152, 152)
-                  .addComponent(jLabel1)))
-            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                  .addGap(57, 57, 57)
+                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                     .addComponent(contrastAdjuster1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                     .addComponent(jLabel1))
+                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                  .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addContainerGap())
       );
       layout.setVerticalGroup(
          layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -167,12 +226,10 @@ public class MimsCBControl extends javax.swing.JPanel {
             .addGap(28, 28, 28)
             .addComponent(jLabel1)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(contrastAdjuster1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-               .addComponent(jLabel3)
-               .addComponent(jLabel4))
-            .addGap(12, 12, 12)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+               .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+               .addComponent(contrastAdjuster1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGap(33, 33, 33)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                .addComponent(jLabel2)
                .addComponent(jRadioButton1)
@@ -253,9 +310,8 @@ private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
    private javax.swing.JComboBox jComboBox2;
    private javax.swing.JLabel jLabel1;
    private javax.swing.JLabel jLabel2;
-   private javax.swing.JLabel jLabel3;
-   private javax.swing.JLabel jLabel4;
    private javax.swing.JLabel jLabel5;
+   private javax.swing.JPanel jPanel1;
    private javax.swing.JRadioButton jRadioButton1;
    // End of variables declaration//GEN-END:variables
 }

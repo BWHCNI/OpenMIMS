@@ -244,11 +244,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
     private void setupHistogram() {
         // Create arbitrary dataset
         HistogramDataset dataset = new HistogramDataset();
-        double[] values = new double[100];
-        for (int i = 0; i < 100; i++) {
-            values[i] = 10*i;
-        }
-        dataset.addSeries("H1", values, 100);
+
         // Create chart using the ChartFactory
         chart = ChartFactory.createHistogram(
                 "",
@@ -259,6 +255,7 @@ public class MimsRoiControl extends javax.swing.JPanel {
                 true,
                 true,
                 false);
+        chart.setBackgroundPaint(this.getBackground());
         
         XYPlot plot = (XYPlot) chart.getPlot();
         

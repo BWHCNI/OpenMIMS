@@ -67,14 +67,14 @@ public class ContrastAdjuster extends JPanel implements Runnable,
         public ContrastAdjuster(MimsPlus imp){
            this.imp = imp;
            this.updatehist = false;           
-        }
+        }        
         
         public ContrastAdjuster(MimsPlus imp, UI ui) {
            this(ui);
            this.imp = imp;
            this.updatehist = false;           
-        }
-         
+	}
+        
         public ContrastAdjuster(UI ui) {          
 	   this.ui = ui;	
            ij = IJ.getInstance();
@@ -90,9 +90,6 @@ public class ContrastAdjuster extends JPanel implements Runnable,
                 c.anchor = GridBagConstraints.PAGE_START;
 		c.insets = new Insets(2, 10, 10, 30);
 		gridbag.setConstraints(plot, c);
-		add(plot);
-		plot.addKeyListener(ij);		
-		// min and max labels
                 c.anchor = GridBagConstraints.CENTER;
 		c.gridheight = 1;
                 c.gridx = 1;
@@ -222,9 +219,9 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		thread = new Thread(this, "ContrastAdjuster");
 		//thread.setPriority(thread.getPriority()-1);
 		thread.start();
-		setup();
-	}
-		
+		setup();           
+        }
+        
 	void addBalanceChoices() {
 		//ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null && imp.isComposite()) {
@@ -352,8 +349,8 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 			IJ.log("defaultMin: " + defaultMin);
 			IJ.log("defaultMax: " + defaultMax);
 		}
-		plot.defaultMin = defaultMin;
-		plot.defaultMax = defaultMax;
+		//plot.defaultMin = defaultMin;
+		//plot.defaultMax = defaultMax;
 		//plot.histogram = null;
 		int valueRange = (int)(defaultMax-defaultMin);
 		int newSliderRange = valueRange;
@@ -405,9 +402,9 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	}
 
 	void updatePlot() {
-		plot.min = min;
-		plot.max = max;
-		plot.repaint();
+		//plot.min = min;
+		//plot.max = max;
+		//plot.repaint();
 	}
 	
 	void updateLabels(ImagePlus imp) {
@@ -549,8 +546,8 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 			imp.resetDisplayRange();
 			defaultMin = imp.getDisplayRangeMin();
 			defaultMax = imp.getDisplayRangeMax();
-			plot.defaultMin = defaultMin;
-			plot.defaultMax = defaultMax;
+			//plot.defaultMin = defaultMin;
+			//plot.defaultMax = defaultMax;
 		}
 		min = defaultMin;
 		max = defaultMax;
@@ -570,8 +567,8 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 			imp.resetDisplayRange();
 			defaultMin = imp.getDisplayRangeMin();
 			defaultMax = imp.getDisplayRangeMax();
-			plot.defaultMin = defaultMin;
-			plot.defaultMax = defaultMax;
+			//plot.defaultMin = defaultMin;
+			//plot.defaultMax = defaultMax;
 		}
 		min = defaultMin;
 		max = defaultMax;
@@ -604,7 +601,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		Color color = Color.gray;
 		if (imp.isComposite() && !(balance&&channels==7))
 			color = ((CompositeImage)imp).getChannelColor();
-		plot.setHistogram(stats, color);
+		//plot.setHistogram(stats, color);
 	}
 
 	void apply(ImagePlus imp, ImageProcessor ip) {
