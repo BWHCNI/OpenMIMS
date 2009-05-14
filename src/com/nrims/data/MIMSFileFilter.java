@@ -92,7 +92,7 @@ public class MIMSFileFilter extends FileFilter {
     }
 
 
-    private void addExtension(String extension) {
+    public void addExtension(String extension) {
 	if(filters == null) {
 	    filters = new Hashtable(5);
 	}
@@ -132,7 +132,7 @@ public class MIMSFileFilter extends FileFilter {
      * @see setExtensionListInDescription
      * @see isExtensionListInDescription
      */
-    private void setDescription(String description) {
+    public void setDescription(String description) {
 	this.description = description;
 	fullDescription = null;
     }
