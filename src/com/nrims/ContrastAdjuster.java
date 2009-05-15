@@ -31,7 +31,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	int sliderRange = 256;
 	boolean doAutoAdjust,doReset,doSet,doApplyLut;
 	
-	Panel panel, tPanel;
+	JPanel panel, tPanel;
 	JButton autoB, resetB, setB, applyB;
 	int previousImageID;
 	int previousType;
@@ -44,7 +44,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	int contrast, brightness;
 	boolean RGBImage;
 	JScrollBar minSlider, maxSlider, contrastSlider, brightnessSlider;
-	JLabel minLabel, maxLabel, windowLabel, levelLabel;
+	Label minLabel, maxLabel, windowLabel, levelLabel;
 	boolean done;
 	int autoThreshold;
 	GridBagLayout gridbag;
@@ -94,15 +94,15 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		c.gridheight = 1;
                 c.gridx = 1;
 		if (!windowLevel) {
-			panel = new Panel();
+			panel = new JPanel();
 			c.gridy = y++;
 			c.insets = new Insets(0, 10, 0, 10);
 			gridbag.setConstraints(panel, c);
 			panel.setLayout(new BorderLayout());
-			minLabel = new JLabel("      ", Label.LEFT);
+			minLabel = new Label("      ", Label.LEFT);
 			minLabel.setFont(monoFont);
 			panel.add("West", minLabel);
-			maxLabel = new JLabel("      " , Label.RIGHT);
+			maxLabel = new Label("      " , Label.RIGHT);
 			maxLabel.setFont(monoFont);
 			panel.add("East", maxLabel);
                         c.ipadx = 75;                        
@@ -150,7 +150,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		brightnessSlider.setUnitIncrement(1);
 		brightnessSlider.setFocusable(false);
 		if (windowLevel)
-			addLabel("Level: ", levelLabel=new JLabel("        "));
+			addLabel("Level: ", levelLabel=new Label("        "));
 		else
 			addLabel("Brightness", null);
 			
@@ -167,7 +167,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 			contrastSlider.setUnitIncrement(1);
 			contrastSlider.setFocusable(false);
 			if (windowLevel)
-				addLabel("Window: ", windowLabel=new JLabel("        "));
+				addLabel("Window: ", windowLabel=new Label("        "));
 			else
 				addLabel("Contrast", null);
 		}
@@ -187,7 +187,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 	
 		// buttons
 		int trim = IJ.isMacOSX()?20:0;
-		panel = new Panel();
+		panel = new JPanel();
 		panel.setLayout(new GridLayout(0,2, 0, 0));
 		autoB = new JButton("Auto");
 		autoB.addActionListener(this);
@@ -233,9 +233,9 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		}
 	}
 
-	void addLabel(String text, JLabel label2) {
+	void addLabel(String text, Label label2) {
 		if (label2==null&&IJ.isMacOSX()) text += "    ";
-		panel = new Panel();
+		panel = new JPanel();
 		c.gridy = y++;
 		int bottomInset = IJ.isMacOSX() && IJ.isJava14()?4:0;
 		c.insets = new Insets(0, 10, bottomInset, 0);
@@ -246,7 +246,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		panel.add(label);
 		if (label2!=null) {
 			//label2.setFont(monoFont);
-			label2.setAlignmentX(JLabel.LEFT);
+			label2.setAlignment(JLabel.LEFT);
 			panel.add(label2);
 		}
 		add(panel);
@@ -428,7 +428,7 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 			levelLabel.setText(IJ.d2s(level, digits));
 		} else {
 			minLabel.setText(IJ.d2s(min, digits));
-			maxLabel.setText(IJ.d2s(max, digits));
+                        maxLabel.setText(IJ.d2s(max, digits));
 		}
 	}
 

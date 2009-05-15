@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -705,7 +706,16 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_translateYSpinnerStateChanged
 
-    private void autoTrack(){
+    private void autoTrack() {
+       int length = images[0].getStackSize();
+       ArrayList<Integer> includeList = new ArrayList<Integer>();
+       for (int i = 0; i < length; i++) {
+          includeList.add(i, i+1);          
+       }
+       autoTrack(includeList);
+    }
+    
+    private void autoTrack(ArrayList<Integer> includeList){
        try {
           setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
           ImagePlus tempImage = WindowManager.getCurrentImage();
@@ -713,9 +723,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
           int startPlane = images[0].getCurrentSlice();
           ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
           String massname = tempImage.getTitle();
-
-          for (int i = 1; i <= images[0].getStackSize(); i++) {
-             images[0].setSlice(i);
+          
+          for (int i = 0; i < includeList.size(); i++) {             
+             images[0].setSlice(includeList.get(i));
              tempImage = WindowManager.getCurrentImage();
              tempProcessor = tempImage.getProcessor();
              tempStack.addSlice(tempImage.getTitle(), tempProcessor);
@@ -741,14 +751,14 @@ public class MimsStackEditing extends javax.swing.JPanel {
           double xval, yval;
           int plane;
           for (int i = 0; i < translations.length; i++) {
-             plane = i + 1;
+             plane = includeList.get(i);
              //possible loss of precision...
              //notice the negative....
              xval = (-1.0) * translations[i][0];
              yval = (-1.0) * translations[i][1];
              images[0].setSlice(plane);
-             this.XShiftSlice(i + 1, xval);
-             this.YShiftSlice(i + 1, yval);
+             this.XShiftSlice(plane, xval);
+             this.YShiftSlice(plane, yval);
           }
 
           //clean up
@@ -1022,10 +1032,12 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
       all  = new JRadioButton("Autotrack all images.");
       all.setActionCommand("All");
       all.addActionListener(this);            
+      all.setSelected(true);
       
       some = new JRadioButton("Autotrack subset of images. (eg: 2,4,8-25,45...)");            
-      some.setActionCommand("Subset");                                                     
+      some.setActionCommand("Subset");                                                   
       some.addActionListener(this);
+      txtField.setEditable(false);
       
       buttonGroup.add(all);
       buttonGroup.add(some);      
@@ -1065,25 +1077,16 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
           txtField.setEditable(false); 
        else if (e.getActionCommand().equals("Cancel"))
           closeWindow();
-       else if (e.getActionCommand().equals("OK")) {
-                    
-          // Planes to be used for autotracking
-          ArrayList<Integer> includeList = parseList(txtField.getText(), 1, ui.mimsAction.getSize());
-          
-          // Planes NOT to be used for autotracking
-          ArrayList<Integer> excludeList = getInverseList(includeList, 1, ui.mimsAction.getSize());
-          
-          // Drop planes not to be used in autotracking
-          removeSliceList(excludeList);
-                              
-          // Auto track.
-          autoTrack();
-          
-          // Reinsert dropped planes.  
-          for (int i = 0; i < excludeList.size(); i++) {
-             insertSlice(excludeList.get(i));
-          }
-                           
+       else if (e.getActionCommand().equals("OK")) {                   
+          // Planes to be used for autotracking.
+          if (getSelection(buttonGroup).getActionCommand().equals("Subset")) {                       
+             ArrayList<Integer> includeList = parseList(txtField.getText(), 1, ui.mimsAction.getSize());
+             if (includeList.size()!=0)                              
+                autoTrack(includeList);             
+          } else {
+             autoTrack();                        
+          }     
+          closeWindow();
        }
           
     }
@@ -1120,8 +1123,18 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
        return listB;
     }
         
+    // This method returns the selected radio button in a button group
+    public JRadioButton getSelection(ButtonGroup group) {
+        for (Enumeration e=group.getElements(); e.hasMoreElements(); ) {
+            JRadioButton b = (JRadioButton)e.nextElement();
+            if (b.getModel() == group.getSelection()) {
+                return b;
+            }
+        }
+        return null;
+    }
+    
 }
 
 }
-
 

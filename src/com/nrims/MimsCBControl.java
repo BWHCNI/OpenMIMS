@@ -28,7 +28,9 @@ public class MimsCBControl extends javax.swing.JPanel {
    
     public MimsCBControl(UI ui) {
        this.ui = ui;       
-       initComponents();   
+       initComponents();
+       jLabel1.setText("");
+       jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder());
        setupHistogram();
     }
     
@@ -46,7 +48,7 @@ public class MimsCBControl extends javax.swing.JPanel {
         renderer.setBarPainter(new StandardXYBarPainter());
 
         chartPanel = new ChartPanel(chart);
-        chartPanel.setSize(400, 245); 
+        chartPanel.setSize(400, 260); 
         jPanel1.add(chartPanel);
     }
     
