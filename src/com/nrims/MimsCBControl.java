@@ -54,7 +54,11 @@ public class MimsCBControl extends javax.swing.JPanel {
     
    // Call this method whenever you want to update the histogram.
    // Histogram updates to reflect title selected in combobox.
-   public void updateHistogram(){      
+   public void updateHistogram(){ 
+      
+      // Dont bother updating histogram if tab not even visible.
+      if (!this.isVisible())
+         return;       
       
       // Initialize imp variable.
       MimsPlus imp = null;   

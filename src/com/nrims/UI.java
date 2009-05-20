@@ -64,6 +64,8 @@ import java.util.zip.ZipOutputStream;
 /* 
  * The main user interface of the NRIMS ImageJ plugin.
  */
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListener {
 
     public static final long serialVersionUID = 1;
@@ -512,6 +514,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 mimsData.setMimsImage(image);
                 hsiControl.updateImage();                
             }
+            
+            jTabbedPane1.addChangeListener(new ChangeListener() {
+               public void stateChanged(ChangeEvent e){
+                  int selected = jTabbedPane1.getSelectedIndex();
+                  if (selected == 2) {
+                     cbControl.updateHistogram();
+                  } 
+               }
+            });
 
             this.mimsLog.Log("\n\nNew image: " + image.getName() + "\n" + getImageHeader(image));
             this.mimsTomography.resetBounds();

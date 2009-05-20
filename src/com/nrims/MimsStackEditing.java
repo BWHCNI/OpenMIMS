@@ -702,7 +702,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
             }
             ui.mimsAction.setShiftX(plane, xval);
             ui.mimsAction.setShiftY(plane, yval);
-        //System.out.println("ychanged "+ foo++);
         }
     }//GEN-LAST:event_translateYSpinnerStateChanged
 
@@ -730,7 +729,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
              tempProcessor = tempImage.getProcessor();
              tempStack.addSlice(tempImage.getTitle(), tempProcessor);
           }
-
 
           tempImage.setSlice(0);
           ImagePlus img = new ij.ImagePlus("", tempStack);
