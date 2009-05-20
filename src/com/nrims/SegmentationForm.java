@@ -694,7 +694,7 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
             // get the color value for each pixel according to its assigned class
             pixels[i] = classColors[classification[i]];
         }
-        mimsUi.openSeg(pixels, "Segmentation result", mimsUi.getOpener().getHeight(), mimsUi.getOpener().getWidth());
+        mimsUi.openSeg(pixels, "Segmentation result:", mimsUi.getOpener().getHeight(), mimsUi.getOpener().getWidth());
     }//GEN-LAST:event_displayButtonActionPerformed
 
     private void roiButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roiButtonActionPerformed

@@ -1683,7 +1683,7 @@ private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     message += "for Imaging Mass Spectrometry.\n";
     message += "http://www.nrims.hms.harvard.edu/\n";
     message += "\nDeveloped by:\n Doug Benson, Collin Poczatek\n ";
-    message += "Boris Epstein, Philip Gormanns\n Stephan Reckow, ";
+    message += "Boris Epstein, Philipp Gormanns\n Stefan Reckow, ";
     message += "Rob Gonzales, Zeke Kaufman.";
     message += "\n\nOpenMIMS uses or depends upon:\n";
     message += " TurboReg:  http://bigwww.epfl.ch/thevenaz/turboreg/\n";

@@ -240,7 +240,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         String tempstring = this.getTitle();
         int colonindex = tempstring.indexOf(":");
         //System.out.println("asdf="+tempstring.substring(0, colonindex-1));
-        return tempstring.substring(0, colonindex-1);
+        if(colonindex>0) return tempstring.substring(0, colonindex-1);
+        else return "";
     }
     
     public String getRoundedTitle() {
