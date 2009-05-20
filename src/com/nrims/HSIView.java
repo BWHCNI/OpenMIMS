@@ -613,10 +613,19 @@ public synchronized void update(boolean bUpdateUI) {
         // Get all the mass names.
         String [] massNames = image.getMassNames();
                 
-        // Populate the list.
-        for(int i=1; i < massNames.length; i++, i++) {
-           listModel.addElement(i+":"+(i-1));                 
-        }
+        // Maximum difference between atomic weight
+        // to appear by defualt on the ratio list.
+        double maxDiff = 1.5;
+        
+        // Populate the list.        
+        for(int i=massNames.length-1; i >= 1; i--) { 
+           Double d1 = new Double(massNames[i]);
+           for(int j=i-1; j >= 0; j--) {
+              Double d2 = new Double(massNames[j]);
+              if (Math.abs(d2-d1) <= maxDiff)
+                 listModel.addElement(i+":"+j);                 
+           }           
+        }        
         
         // Clear selection by default
         jList1.clearSelection();

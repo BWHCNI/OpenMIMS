@@ -46,15 +46,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 image.getHeight(),
                 image.getPixels(index),
                 null);
-            String title = "m" + image.getMassName(index) + " : " + image.getName();
+            massNumber = new Double(image.getMassName(index));
+            String title = "m" + massNumber + " : " + image.getName();
             setProcessor(title, ip);
             getProcessor().setMinAndMax(0, 65535); // default display range
             fStateListeners = new EventListenerList() ;
             setProperty("Info", srcImage.getInfo());
-            //added, was only set in appendImage(), only called
-            //for multi-plane images
-            bIgnoreClose = true;
-            //------
+            bIgnoreClose = true;            
         } catch (Exception x) { IJ.log(x.toString());}
     }
     
@@ -820,7 +818,16 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     
     public boolean isStack() { return bIsStack ; }
     public void setIsStack(boolean isS) { bIsStack = isS; }
+    
+    public double getMassNumber() {return massNumber;}
+    public double getDenomMassNumber() {return denomMassNumber;}
+    public double getNumerMassNumber() {return numerMassNumber;}
+    
     public UI getUI() { return ui ; }
+        
+    public double massNumber;
+    public double denomMassNumber;
+    public double numerMassNumber;
     
     private String parentImageName = null;
     private boolean allowClose =true;

@@ -901,6 +901,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             fail = false;
         }
+        
         this.bUpdating = false;
         
         if (!fail) {
@@ -925,6 +926,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             mp.addListener(this);
             mp.show();
+            if (mImage.getMimsType() == MimsPlus.MASS_IMAGE) {
+               int y = 0;
+               //mp.setParentMassValue(mImage.get)
+            }
             if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {
                 this.autoContrastImage(mp);
             }
@@ -1642,9 +1647,53 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void openMIMSImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMIMSImageMenuItemActionPerformed
+       
+       // Get HSIProps for all open ratio images.
+       MimsPlus[] rto = getOpenRatioImages();
+       HSIProps[] rto_props = new HSIProps[rto.length]; 
+       for (int i=0; i<rto.length; i++){
+          rto_props[i] = rto[i].getHSIProps();
+       }
+       
+       // Get HSIProps for all open hsi images.     
+       MimsPlus[] hsi = getOpenHSIImages();
+       HSIProps[] hsi_props = new HSIProps[hsi.length];
+       for (int i=0; i<hsi.length; i++){
+          hsi_props[i] = hsi[i].getHSIProps();
+       }
+       
+       // Need to do something with mass images.       
+       //MimsPlus[] sum = getOpenSumImages();
+       //String[] sum_title = new String[sum.length];
+       //for (int i=0; i<sum.length; i++){
+       //   MimsPlus y = sum[i];
+       //   sum_title[i] = sum[i].getParentImageName();
+       //}
+              
        loadMIMSFile();
+       
+       restoreState(rto_props, hsi_props);                     
 }//GEN-LAST:event_openMIMSImageMenuItemActionPerformed
 
+    public void restoreState( HSIProps[] rto_props,  HSIProps[] hsi_props){
+       
+       // Generate ratio images.
+       for (int i=0; i<rto_props.length; i++){
+          computeRatio(rto_props[i], true);
+       }
+       
+       // Generate hsi images.
+       for (int i=0; i<hsi_props.length; i++){
+          computeHSI(hsi_props[i]);
+       }
+              
+       // Generate sum images.
+       //for (int i=0; i<sum_title.length; i++){
+       //   computeSum(sum_title[i]);       
+       //}
+       
+    }
+    
     private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
         //tab focus changed
         //reset tomography info
