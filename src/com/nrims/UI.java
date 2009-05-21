@@ -836,7 +836,58 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        MimsPlus mp = getImageByName(parentImageName);
        computeSum(mp, true);
     }
-
+    
+    public void computeSum(SumProps sumProps) {
+       
+       // fraction for which we consider masses to be equals. (0.01 = 1%)       
+       double tolerance = 0.01;                            
+       int num_idx = -1;
+       int den_idx = -1;
+       MimsPlus mp = null;       
+       
+       // Generates a new sum image from a mass image.
+       if (sumProps.getSumType() == SumProps.MASS_IMAGE) {
+          for (int i = 0; i < massImages.length; i++) {
+             mp = massImages[i];
+             if (mp == null) continue;
+             
+             // If the difference between the masses for the parentMass of the old sum image 
+             // and the new mass image is than 1%, treat as same and generate a new sum image. 
+             if (Math.abs(sumProps.getParentMass()-mp.getMassNumber()) < tolerance*sumProps.getParentMass()) 
+                computeSum(mp, true);             
+          }             
+       } 
+       // Generates a new sum image from a ratio image.
+       else if (sumProps.getSumType() == SumProps.RATIO_IMAGE)
+          for (int i = 0; i < massImages.length; i++) {
+             mp = massImages[i];
+             if (mp == null) continue;                          
+             
+             // Difference between current mass values and those in SumProps.
+             double num_diff = Math.abs(sumProps.getNumMass()-mp.getMassNumber());
+             double den_diff = Math.abs(sumProps.getDenMass()-mp.getMassNumber());
+             
+             // If difference is less than 1% assign it to numerator (or denominator).
+             if (num_diff < tolerance*sumProps.getNumMass())
+                num_idx = i;
+             else if (den_diff < tolerance*sumProps.getDenMass())
+                den_idx = i;
+             else 
+                continue;
+             
+             // If suitable numerator and denominator mass images are found,
+             // assign those indexes to a props object, generate an invisible 
+             // ratio image, and then generate a sum image from that ratio image.
+             if (num_idx > -1 && den_idx > -1) {
+                HSIProps props = new HSIProps();
+                props.setNumMass(num_idx);
+                props.setDenMass(den_idx);        
+                MimsPlus rp = computeRatio(props, false);
+                computeSum(rp, true);                           
+             }                
+          }          
+    }
+    
     public MimsPlus computeSum(MimsPlus mImage, boolean show) {
         boolean fail = true;
         
@@ -844,16 +895,19 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             return null;
         }
 
+        
         int width = mImage.getWidth();
         int height = mImage.getHeight();        
         String sumName = "Sum : " + mImage.getShortTitle();
         int templength = mImage.getProcessor().getPixelCount();
         double[] sumPixels = new double[templength];
         short[] tempPixels = new short[templength];
+        SumProps sumProps = null;
 
         int startSlice = mImage.getCurrentSlice();
         this.bUpdating = true;
         if (mImage.getMimsType() == MimsPlus.MASS_IMAGE) {
+            sumProps = new SumProps(mImage.getMassNumber());
             for (int i = 1; i <= mImage.getImageStackSize(); i++) {
                 mImage.setSlice(i);
                 tempPixels = (short[]) mImage.getProcessor().getPixels();
@@ -866,6 +920,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
 
         if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {
+            sumProps = new SumProps(mImage.getNumerMassNumber(), mImage.getDenomMassNumber());
             int numMass = mImage.getNumMass();
             int denMass = mImage.getDenMass();
             MimsPlus nImage = massImages[numMass];
@@ -906,7 +961,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
         if (!fail) {
             MimsPlus mp = new MimsPlus(this, width, height, sumPixels, sumName);
-            mp.setParentImageName(mImage.getTitle());
+            mp.setSumProps(sumProps);
 
             if(show==false) return mp;
 
@@ -926,11 +981,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             mp.addListener(this);
             mp.show();
-            if (mImage.getMimsType() == MimsPlus.MASS_IMAGE) {
-               int y = 0;
-               //mp.setParentMassValue(mImage.get)
-            }
-            if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {
+            if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {               
                 this.autoContrastImage(mp);
             }
             mp.updateAndDraw();
@@ -1662,20 +1713,21 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
           hsi_props[i] = hsi[i].getHSIProps();
        }
        
-       // Need to do something with mass images.       
-       //MimsPlus[] sum = getOpenSumImages();
-       //String[] sum_title = new String[sum.length];
-       //for (int i=0; i<sum.length; i++){
-       //   MimsPlus y = sum[i];
-       //   sum_title[i] = sum[i].getParentImageName();
-       //}
-              
+       // Get SumProps for all open sum images.    
+       MimsPlus[] sum = getOpenSumImages();
+       SumProps[] sum_props = new SumProps[sum.length];
+       for (int i=0; i<sum.length; i++){
+          sum_props[i] = sum[i].getSumProps();          
+       }
+             
+       // Load the new file.
        loadMIMSFile();
        
-       restoreState(rto_props, hsi_props);                     
+       // Generate all images that were previously open.
+       restoreState(rto_props, hsi_props, sum_props);                     
 }//GEN-LAST:event_openMIMSImageMenuItemActionPerformed
 
-    public void restoreState( HSIProps[] rto_props,  HSIProps[] hsi_props){
+    public void restoreState( HSIProps[] rto_props,  HSIProps[] hsi_props, SumProps[] sum_props){
        
        // Generate ratio images.
        for (int i=0; i<rto_props.length; i++){
@@ -1688,9 +1740,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        }
               
        // Generate sum images.
-       //for (int i=0; i<sum_title.length; i++){
-       //   computeSum(sum_title[i]);       
-       //}
+       for (int i=0; i<sum_props.length; i++){
+          computeSum(sum_props[i]);       
+       }
        
     }
     
@@ -2186,16 +2238,16 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
    // Open action file.
    private void openAction(java.awt.event.ActionEvent evt) {
+      
+      // initialize variables
       int trueIndex = 1;
       ArrayList<Integer> deleteList = new ArrayList<Integer>();
 
-      // User gets action file.
+      // Open JFileChooser and allow user to select action file.
       JFileChooser fc = new JFileChooser();
-
-       if (lastFolder != null) {
-            fc.setCurrentDirectory(new java.io.File(lastFolder));
-        }
-
+      if (lastFolder != null) {
+         fc.setCurrentDirectory(new java.io.File(lastFolder));
+      }
       fc.setPreferredSize(new java.awt.Dimension(650, 500));
       MIMSFileFilter ffilter = new MIMSFileFilter("txt");
       ffilter.addExtension("act");
@@ -2204,14 +2256,36 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
       if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
          return;
       }
-
       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+      
+      // Get all open images so we can regenerate them with new data.
+      
+      // Get HSIProps for all open ratio images.
+       MimsPlus[] rto = getOpenRatioImages();
+       HSIProps[] rto_props = new HSIProps[rto.length]; 
+       for (int i=0; i<rto.length; i++){
+          rto_props[i] = rto[i].getHSIProps();
+       }
+       
+       // Get HSIProps for all open hsi images.     
+       MimsPlus[] hsi = getOpenHSIImages();
+       HSIProps[] hsi_props = new HSIProps[hsi.length];
+       for (int i=0; i<hsi.length; i++){
+          hsi_props[i] = hsi[i].getHSIProps();
+       }
+       
+       // Get SumProps for all open hsi images.    
+       MimsPlus[] sum = getOpenSumImages();
+       SumProps[] sum_props = new SumProps[sum.length];
+       for (int i=0; i<sum.length; i++){
+          sum_props[i] = sum[i].getSumProps();          
+       }             
+       // done with getting all open images.
 
+      // more variable assignment and initialization.
       currentlyOpeningImages = true;
       bUpdating = true;
-
       File actionFile = fc.getSelectedFile();
-
       lastFolder = fc.getSelectedFile().getParent();
       setIJDefaultDir(lastFolder);
 
@@ -2298,6 +2372,8 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
       } catch (Exception e) {
          e.printStackTrace();
       }
+      
+      restoreState(rto_props, hsi_props, sum_props); 
 
       // Set all images to the first slice.
       for (int j = 0; j < image.nMasses(); j++) {
@@ -2435,7 +2511,7 @@ public void updateLineProfile(double[] newdata, String name, int width) {
         if (nOpen == 0) {
             return mp;
         }
-        for (i = 0        , nOpen = 0; i < maxMasses; i++) {
+        for (i = 0 , nOpen = 0; i < maxMasses; i++) {
             if (ratioImages[i] != null) {
                 mp[nOpen++] = ratioImages[i];
             }

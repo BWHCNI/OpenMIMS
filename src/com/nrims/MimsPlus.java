@@ -11,7 +11,6 @@ import javax.swing.event.EventListenerList;
 /**
  * extends ImagePlus with methods to synchronize display of multiple stacks
  * and drawing ROIs in each windows
- * 
  */
 public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListener, MouseMotionListener {
     
@@ -31,12 +30,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         fStateListeners = new EventListenerList() ;
     }
     
+    // Use for mass images.
     public MimsPlus(com.nrims.data.Opener image, int index ) {
         super();
         srcImage = image ;
         ui = srcImage.getUI();
         nMass = index ;
         nType = MASS_IMAGE ;
+        massNumber = new Double(image.getMassName(index));
         
         try {
             image.setMassIndex(index);
@@ -49,31 +50,26 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             massNumber = new Double(image.getMassName(index));
             String title = "m" + massNumber + " : " + image.getName();
             setProcessor(title, ip);
-            getProcessor().setMinAndMax(0, 65535); // default display range
+            getProcessor().setMinAndMax(0, 65535);
             fStateListeners = new EventListenerList() ;
             setProperty("Info", srcImage.getInfo());
             bIgnoreClose = true;            
         } catch (Exception x) { IJ.log(x.toString());}
     }
     
+    // Use for segmented images.
     public MimsPlus(UI ui,int width, int height, int[] pixels, String name) {
         super();
         this.ui=ui;
-           // srcImage = image ;
-           //ui = srcImage.getUI();
-          // nMass = -1;
         nType = SEG_IMAGE ;
            
         try {
-           // image.setMassIndex(0);
-           // image.setStackIndex(0);
             ij.process.ImageProcessor ipp = new ij.process.ColorProcessor(
                 width,
                 height,
                 pixels);
         
             setProcessor(name, ipp);
-          //     getProcessor().setMinAndMax(0, 65535); // default display range
             fStateListeners = new EventListenerList() ;
         } catch (Exception x) { IJ.log(x.toString());}
     }
@@ -90,8 +86,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                setProcessor(title, ipp);
                fStateListeners = new EventListenerList() ;
         } catch (Exception x) { IJ.log(x.toString());}
-    }
+    }    
     
+    // Use for ratio and hsi images.
     public MimsPlus( com.nrims.data.Opener image, HSIProps props, boolean bIsHSI ) {
         super();
         try {
@@ -105,6 +102,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
            String info = "";
            nRatioNum = props.getNumMass() ;
            nRatioDen = props.getDenMass() ;
+           numerMassNumber = new Double(image.getMassName(numIndex));
+           denomMassNumber = new Double(image.getMassName(denIndex));
            
            if(bIsHSI) {
                int height = image.getHeight() ;
@@ -237,7 +236,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public String getShortTitle() {
         String tempstring = this.getTitle();
         int colonindex = tempstring.indexOf(":");
-        //System.out.println("asdf="+tempstring.substring(0, colonindex-1));
         if(colonindex>0) return tempstring.substring(0, colonindex-1);
         else return "";
     }
@@ -809,6 +807,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
     public void setHSIProcessor( HSIProcessor processor ) { this.hsiProcessor = processor ; }
     public HSIProcessor getHSIProcessor() { return hsiProcessor ; }
+    
+    public void setSumProps(SumProps props) { this.sumProps = props; }
+    public SumProps getSumProps() { return sumProps; }
        
     public void setParentImageName(String name) { this.parentImageName = name; }
     public String getParentImageName() { return parentImageName ; }    
@@ -827,15 +828,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         
     public double massNumber;
     public double denomMassNumber;
-    public double numerMassNumber;
-    
+    public double numerMassNumber; 
+    public SumProps sumProps = null;
     private String parentImageName = null;
     private boolean allowClose =true;
     private boolean bIgnoreClose = false ;
     boolean bMoving = false;
     boolean autoAdjustContrast = false;
     static boolean bStateChanging = false ;
-    private boolean bWindowListenerInstalled = false ;
     private int nMass = 0 ;
     private int nType = 0 ;
     private int nRatioNum = 0 ;

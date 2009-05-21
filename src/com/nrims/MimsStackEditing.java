@@ -1077,13 +1077,18 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
           closeWindow();
        else if (e.getActionCommand().equals("OK")) {                   
           // Planes to be used for autotracking.
-          if (getSelection(buttonGroup).getActionCommand().equals("Subset")) {                       
-             ArrayList<Integer> includeList = parseList(txtField.getText(), 1, ui.mimsAction.getSize());
-             if (includeList.size()!=0)                              
-                autoTrack(includeList);             
-          } else {
-             autoTrack();                        
-          }     
+          try {
+             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));          
+             if (getSelection(buttonGroup).getActionCommand().equals("Subset")) {                       
+                ArrayList<Integer> includeList = parseList(txtField.getText(), 1, ui.mimsAction.getSize());
+                if (includeList.size()!=0)                                            
+                   autoTrack(includeList);                                                
+                } else {             
+                   autoTrack();                        
+                }
+             } finally {
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));           
+             }          
           closeWindow();
        }
           
