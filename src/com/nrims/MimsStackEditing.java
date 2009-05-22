@@ -96,8 +96,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
         int restoreIndex = ui.mimsAction.trueIndex(plane);
         try {
            
-            int openerIndex = ui.mimsAction.getOpenerIndex(plane - 1);
-            String openerName = ui.mimsAction.getOpenerName(plane - 1);
+            int openerIndex = ui.mimsAction.getOpenerIndex(restoreIndex - 1);
+            String openerName = ui.mimsAction.getOpenerName(restoreIndex - 1);
             Opener op = ui.getFromOpenerList(openerName);
             
             op.setStackIndex(openerIndex);
