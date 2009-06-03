@@ -1160,6 +1160,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
             }
             for (i = 0; bNotFound && i < maxMasses; i++) {
+                if (sumImages[i] == evt.getSource()) {
+                    sumImages[i].removeListener(this);
+                    sumImages[i] = null;
+                    bNotFound = false;
+                }
+            }
+            for (i = 0; bNotFound && i < maxMasses; i++) {
                 if (hsiImages[i] == evt.getSource()) {
                     hsiImages[i].removeListener(this);
                     hsiImages[i] = null;
