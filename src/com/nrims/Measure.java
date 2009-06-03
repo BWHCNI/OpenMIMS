@@ -447,10 +447,11 @@ public class Measure {
                 // Set the rois to the images.
                 if (rois.length > 0) {
                    images[i].setRoi(rois[r]);
-                }
+                }                            
                 
-                // Generate Roi statistics and put in table.                
-                ImageStatistics is = images[i].getStatistics();                        
+                // To get a valid median value, we have to do this...                
+                ImageStatistics is = ImageStatistics.getStatistics(images[i].getProcessor(), ImageStatistics.MEDIAN, images[i].getCalibration());
+                
                 ncol = addResults(is, i, rois.length > 0 ? rois[r] : null, n+1, ncol);
              }
           }

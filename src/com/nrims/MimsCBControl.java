@@ -9,6 +9,7 @@ package com.nrims;
 import ij.WindowManager;
 import ij.plugin.LutLoader;
 import ij.process.ImageProcessor;
+import java.awt.Dimension;
 import java.util.Hashtable;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -30,6 +31,8 @@ public class MimsCBControl extends javax.swing.JPanel {
        this.ui = ui;       
        initComponents();
        jLabel1.setText("");
+       Dimension d = new Dimension(350, 200);
+       jPanel1.setMinimumSize(d); jPanel1.setPreferredSize(d); jPanel1.setMaximumSize(d);
        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder());
        setupHistogram();
     }
@@ -39,6 +42,7 @@ public class MimsCBControl extends javax.swing.JPanel {
         // Create chart using the ChartFactory.
         chart = ChartFactory.createHistogram("", null, null, null, PlotOrientation.VERTICAL, true, true, false);
         chart.setBackgroundPaint(this.getBackground());
+        chart.removeLegend();
         
         // Set the renderer.
         XYPlot plot = (XYPlot) chart.getPlot();                                       
@@ -48,7 +52,7 @@ public class MimsCBControl extends javax.swing.JPanel {
         renderer.setBarPainter(new StandardXYBarPainter());
 
         chartPanel = new ChartPanel(chart);
-        chartPanel.setSize(400, 260); 
+        chartPanel.setSize(350, 225); 
         jPanel1.add(chartPanel);
     }
     
