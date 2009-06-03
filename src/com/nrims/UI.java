@@ -177,24 +177,41 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
         IJ.showProgress(1.0);
 
-        this.mimsDrop = new FileDrop(null, this.mainTextField, /*dragBorder,*/ new FileDrop.Listener() {
+        this.mimsDrop = new FileDrop(null, this.mainTextField, new FileDrop.Listener() {
+           public void filesDropped(File[] files) {
+                 
+              // Make sure only 1 file was dragged and its a *.im file.
+              if (files.length > 1) return;                
+              if (!files[0].getAbsolutePath().endsWith(".im")) return;
+                
+              // Get HSIProps for all open ratio images.                
+              MimsPlus[] rto = getOpenRatioImages();
+              HSIProps[] rto_props = new HSIProps[rto.length];
+              for (int i = 0; i < rto.length; i++) {
+                 rto_props[i] = rto[i].getHSIProps();
+              }
 
-            public void filesDropped(java.io.File[] files) {
-                try {
-                    for (int i = 0; i < files.length; i++) {
-                        System.out.println("Dropped: " + files[i].getCanonicalPath());
-                    }   // end for: through each dropped file
-                    String lastfile = files[files.length - 1].getCanonicalPath();
-                    if (lastfile.endsWith(".im")) {
-                        System.out.println("Opening last file: " + lastfile);
-                        loadMIMSFile(lastfile);
-                    //todo: mimsLog not cleared
-                    }
-                } // end try
-                catch (java.io.IOException e) {
-                }
-            }   // end filesDropped
-        }); // end FileDrop.Listener
+              // Get HSIProps for all open hsi images.     
+              MimsPlus[] hsi = getOpenHSIImages();
+              HSIProps[] hsi_props = new HSIProps[hsi.length];
+              for (int i = 0; i < hsi.length; i++) {
+                 hsi_props[i] = hsi[i].getHSIProps();
+              }
+
+              // Get SumProps for all open sum images.    
+              MimsPlus[] sum = getOpenSumImages();
+              SumProps[] sum_props = new SumProps[sum.length];
+              for (int i = 0; i < sum.length; i++) {
+                 sum_props[i] = sum[i].getSumProps();
+              }
+
+              // Load the new file.     
+              loadMIMSFile(files[0].getAbsolutePath());
+
+              // Generate all images that were previously open.
+              restoreState(rto_props, hsi_props, sum_props);             
+           }
+       });
 
         
         //??? todo: add if to open file chooser or not based of preference setting  
@@ -742,19 +759,19 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
         //End danger
         
-        if (show) {
+        if (show) {                      
             mp.show();
+            
+           // Set window location.
+           int xloc = props.getXWindowLocation();
+           int yloc = props.getYWindowLocation();           
+           if (xloc > -1 & yloc > -1)
+              mp.getWindow().setLocation(xloc, yloc);
+            
             mp.updateAndDraw();
-            //System.out.println("calibrated:  "+mp.getCalibration().calibrated());
             ij.measure.Calibration cal = new ij.measure.Calibration(mp);
-            //cal.setFunction(dt, arg1, title)
-            //cal.setFunction(ij.measure.Calibration.STRAIGHT_LINE, [0.0,0.05], "");
             mp.setCalibration(cal);
-
-        //mp.updateAndRepaintWindow();  //changed from updateAndDraw
-        //jMenuItem2ActionPerformed(null);    //tile
         } else {
-            //System.out.println("calibrated:  "+mp.getCalibration().calibrated());
             mp.updateAndRepaintWindow();
         }
 
@@ -835,6 +852,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        computeSum(mp, true);
     }
     
+    public MimsPlus computeSum(MimsPlus mImage, boolean show){
+       MimsPlus mp = computeSum(mImage, show, -1, -1);
+       return mp;
+    }
+    
     public void computeSum(SumProps sumProps) {
        
        // fraction for which we consider masses to be equals. (0.01 = 1%)       
@@ -852,7 +874,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
              // If the difference between the masses for the parentMass of the old sum image 
              // and the new mass image is than 1%, treat as same and generate a new sum image. 
              if (Math.abs(sumProps.getParentMass()-mp.getMassNumber()) < tolerance*sumProps.getParentMass()) 
-                computeSum(mp, true);             
+                computeSum(mp, true, sumProps.getXWindowLocation(), sumProps.getYWindowLocation());             
           }             
        } 
        // Generates a new sum image from a ratio image.
@@ -881,18 +903,17 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 props.setNumMass(num_idx);
                 props.setDenMass(den_idx);        
                 MimsPlus rp = computeRatio(props, false);
-                computeSum(rp, true);                           
+                computeSum(rp, true, sumProps.getXWindowLocation(), sumProps.getYWindowLocation());                           
              }                
           }          
     }
     
-    public MimsPlus computeSum(MimsPlus mImage, boolean show) {
+    public MimsPlus computeSum(MimsPlus mImage, boolean show, int xloc, int yloc) {
         boolean fail = true;
         
         if (mImage == null) {
             return null;
         }
-
         
         int width = mImage.getWidth();
         int height = mImage.getHeight();        
@@ -979,6 +1000,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             mp.addListener(this);
             mp.show();
+            
+            // Set window location.                  
+            if (xloc > -1 & yloc > -1)
+               mp.getWindow().setLocation(xloc, yloc);
+            
             if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {               
                 this.autoContrastImage(mp);
             }
@@ -1098,8 +1124,14 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 } catch (InterruptedException x) {
                 }
             }
-            mp.show();
-        //jMenuItem2ActionPerformed(null);    //tile screws up plots, why call menu?        
+                       
+           mp.show();                
+           
+           // Set window location.
+           int xloc = props.getXWindowLocation();
+           int yloc = props.getYWindowLocation();           
+           if (xloc > -1 & yloc > -1)
+              mp.getWindow().setLocation(xloc, yloc);
         }
 
         updateStatus("Ready");

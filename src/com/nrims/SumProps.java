@@ -4,9 +4,11 @@ public class SumProps implements java.io.Serializable {
       
    static final int MASS_IMAGE = 0;
    static final int RATIO_IMAGE = 1;
-   
+      
    double numMass, denMass, parentMass;
    private int sumType;
+   private int xloc = -1;
+   private int yloc = -1;
     
     // Use for Mass Images.
     public SumProps(double mass) {
@@ -21,6 +23,12 @@ public class SumProps implements java.io.Serializable {
        this.sumType = RATIO_IMAGE;
     }
     
+    // Window parameters.
+    public void setXWindowLocation(int x) { xloc = x; }
+    public int getXWindowLocation() { return xloc; }    
+    public void setYWindowLocation(int y) { yloc = y; }
+    public int getYWindowLocation() { return yloc; }
+        
     // The mass number of the Numerator in the Ratio Image used to generate the sum image.
     public void setNumMass(double d) { numMass = d; }
     public double getNumMass() { return numMass; }

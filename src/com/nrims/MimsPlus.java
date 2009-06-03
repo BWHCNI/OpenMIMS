@@ -201,32 +201,43 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public int getMimsMassIndex() { return nMass ; }
     public int getMimsType() { return nType ; }
 
+    public SumProps getSumProps() {
+       
+        // Set window location parameters.
+        sumProps.setXWindowLocation(this.getWindow().getX());
+        sumProps.setYWindowLocation(this.getWindow().getY());
+        
+        return sumProps;               
+    } 
+    
     public HSIProps getHSIProps() { 
-        if(nType == HSI_IMAGE) {
-            if( getHSIProcessor() != null ) {
-                return getHSIProcessor().getProps();
-            }
-        }
-        else if(nType == RATIO_IMAGE) {
-            if( getHSIProcessor() != null ) {
-                return getHSIProcessor().getProps();
-            }
-            else {
-                HSIProps props = new HSIProps() ;
-                props.setNumMass(nRatioNum);
-                props.setDenMass(nRatioDen);
+        HSIProps props = new HSIProps();
+        
+        if ( getHSIProcessor() != null ) 
+           props = getHSIProcessor().getProps();            
+        else
+           props = new HSIProps();
+        
+        if(nType == RATIO_IMAGE) {          
+           
+           // If ratio, set numerator and denominator masses.
+           props.setNumMass(nRatioNum);
+           props.setDenMass(nRatioDen);
                 
-                // Unlikee an HSIimage, the props of a ratio image 
-                // CAN NOT be changed. Therefore we get the default values
-                // and overwrite the minRatio and maxRatio with the current 
-                // min and max used by ImageJ to render the image.                                 
-                props.setMaxRatio(this.getProcessor().getMax());
-                props.setMinRatio(this.getProcessor().getMin());
-                
-                return props ;
-            }
-        }
-        return null ; 
+           // Unlikee an HSIimage, the props of a ratio image 
+           // CAN NOT be changed. Therefore we get the default values
+           // and overwrite the minRatio and maxRatio with the current 
+           // min and max used by ImageJ to render the image.                                 
+           props.setMaxRatio(this.getProcessor().getMax());
+           props.setMinRatio(this.getProcessor().getMin());
+                              
+        }       
+        
+        // Set window location parameters.
+        props.setXWindowLocation(this.getWindow().getX());
+        props.setYWindowLocation(this.getWindow().getY());
+        
+        return props; 
     }
     
     public int getNumMass() { return nRatioNum ; }
@@ -275,7 +286,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             }
             getWindow().addWindowListener(this);
             getWindow().getCanvas().addMouseListener(this);
-            getWindow().getCanvas().addMouseMotionListener(this);
+            getWindow().getCanvas().addMouseMotionListener(this);            
             if(ui.getDebug()) {
                 ui.updateStatus("mimsPlus::show() addWindowListener " + getWindow().toString());
             }
@@ -809,7 +820,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public HSIProcessor getHSIProcessor() { return hsiProcessor ; }
     
     public void setSumProps(SumProps props) { this.sumProps = props; }
-    public SumProps getSumProps() { return sumProps; }
        
     public void setParentImageName(String name) { this.parentImageName = name; }
     public String getParentImageName() { return parentImageName ; }    

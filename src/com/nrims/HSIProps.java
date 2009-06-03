@@ -9,10 +9,6 @@
 
 package com.nrims;
 
-/**
- *
- * @author Douglas Benson
- */
 public class HSIProps implements java.io.Serializable {
     
     /** Creates a new instance of HSIProps */
@@ -29,9 +25,11 @@ public class HSIProps implements java.io.Serializable {
         label = 0 ;
         ratioScaleFactor = 10000;
         dynamic = true;
-        transform = false;  //TODO testing only
+        transform = false;
         referenceRatio = (float)37/(float)10000;
         backgroundRatio = (float)129/(float)10000;
+        xloc = -1;
+        yloc = -1;
     }
     public void setNumMass(int n) { numMass = n ; }
     public int getNumMass() { return numMass ; }
@@ -55,6 +53,10 @@ public class HSIProps implements java.io.Serializable {
     public int getLabelMethod() { return label ; }
     public void setRatioScaleFactor(int s) { this.ratioScaleFactor = s; }
     public int getRatioScaleFactor() { return this.ratioScaleFactor; }
+    public void setXWindowLocation(int x) { this.xloc = x; }
+    public int getXWindowLocation() { return this.xloc; }
+    public void setYWindowLocation(int y) { this.yloc = y; }
+    public int getYWindowLocation() { return this.yloc; }    
 
     public void setDynamic(boolean dyn) { this.dynamic = dyn; }
     public boolean getDynamic() { return this.dynamic; }
@@ -85,6 +87,8 @@ public class HSIProps implements java.io.Serializable {
         transform = props.getTransform();
         referenceRatio = props.getReferenceRatio();
         backgroundRatio = props.getBackgroundRatio();
+        xloc = props.getXWindowLocation();
+        yloc = props.getYWindowLocation();
     }
    
     /**
@@ -106,6 +110,8 @@ public class HSIProps implements java.io.Serializable {
         props.setTransform(transform);
         props.setReferenceRatio(referenceRatio);
         props.setBackgroundRatio(backgroundRatio);
+        props.setXWindowLocation(xloc);
+        props.setYWindowLocation(yloc);
     }
     
     public HSIProps clone() {
@@ -126,10 +132,10 @@ public class HSIProps implements java.io.Serializable {
             &&  props.getMinRGB() == minRGB
             &&  props.getTransparency() == transparency
             &&  props.getLabelMethod() == label
-            && props.getDynamic() == dynamic
-            && props.getTransform() == transform
-            && props.getReferenceRatio() == referenceRatio
-            && props.getBackgroundRatio() == backgroundRatio;
+            &&  props.getDynamic() == dynamic
+            &&  props.getTransform() == transform
+            &&  props.getReferenceRatio() == referenceRatio
+            &&  props.getBackgroundRatio() == backgroundRatio;
     }
     
     private int numMass ;
@@ -147,4 +153,5 @@ public class HSIProps implements java.io.Serializable {
     private boolean transform;
     private float referenceRatio;
     private float backgroundRatio;
+    private int xloc, yloc;
 }
