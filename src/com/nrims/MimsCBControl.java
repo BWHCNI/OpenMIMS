@@ -9,16 +9,19 @@ package com.nrims;
 import ij.WindowManager;
 import ij.plugin.LutLoader;
 import ij.process.ImageProcessor;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Hashtable;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYPolygonAnnotation;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.statistics.HistogramDataset;
+import org.jfree.ui.Layer;
 
 public class MimsCBControl extends javax.swing.JPanel {
    
@@ -26,6 +29,7 @@ public class MimsCBControl extends javax.swing.JPanel {
    UI ui;   
    private JFreeChart chart;
    private ChartPanel chartPanel;
+   XYPolygonAnnotation a;
    
     public MimsCBControl(UI ui) {
        this.ui = ui;       
@@ -50,7 +54,7 @@ public class MimsCBControl extends javax.swing.JPanel {
         renderer.setDrawBarOutline(false);
         renderer.setShadowVisible(false);
         renderer.setBarPainter(new StandardXYBarPainter());
-
+        
         chartPanel = new ChartPanel(chart);
         chartPanel.setSize(350, 225); 
         jPanel1.add(chartPanel);
@@ -104,15 +108,45 @@ public class MimsCBControl extends javax.swing.JPanel {
          return;      
       if (pixels.length == 0)
          return;
+            
       
-      // Setup histogram.
+      // Setup and plot histogram.
       HistogramDataset dataset = new HistogramDataset();
       dataset.addSeries("", pixels, nbins);            
       org.jfree.chart.plot.XYPlot plot = (XYPlot) chart.getPlot();
-      plot.setDataset(dataset);
+      plot.setDataset(dataset);                 
+      
+      // Show contrast window.
+      updateContrastWindow();
+      
+      // Final plot adjustmetns.
       plot.getDomainAxis().setRange(0, maxVal);
-      plot.setDomainGridlinesVisible(false);
-      chart.fireChartChanged();      
+      plot.setDomainGridlinesVisible(false);                 
+      chart.fireChartChanged();     
+   }
+   
+   // Update the contrast window range displayed.
+   public void updateContrastWindow(){
+      
+      org.jfree.chart.plot.XYPlot plot = (XYPlot) chart.getPlot();
+      
+      // Polygon bounds.
+      int x1 = (new Double(contrastAdjuster1.min)).intValue();
+      int x2 = (new Double(contrastAdjuster1.min)).intValue();   
+      int x3 = (new Double(contrastAdjuster1.max)).intValue();
+      int x4 = (new Double(contrastAdjuster1.max)).intValue();    
+      
+      int y1 = -1;
+      int y2 = (new Double(plot.getRangeAxis().getUpperBound())).intValue()+1;
+      int y3 = (new Double(plot.getRangeAxis().getUpperBound())).intValue()+1;
+      int y4 = -1;     
+      
+      // Displays polygon.
+      a = new XYPolygonAnnotation(new double[] {x1, y1, x2, y2, x3, y3, x4, y4}, 
+              null, new Color(100, 100, 155, 70), new Color(200, 200, 255, 100));            
+      XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
+      renderer.removeAnnotations();
+      renderer.addAnnotation(a, Layer.BACKGROUND);          
    }
                  
    // set the windowlist jComboBox

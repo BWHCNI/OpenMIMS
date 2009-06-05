@@ -115,7 +115,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                    image.getWidth(),
                    height,
                    rgbPixels);
-               title = "HSI m" + srcImage.getMassName(numIndex)+":m"+ srcImage.getMassName(denIndex) + " : " + title;
+               title = "HSI : m" + srcImage.getMassName(numIndex)+"/m"+ srcImage.getMassName(denIndex) + " : " + title;
                setProcessor(title, ip);
                getProcessor().setMinAndMax(0, 255); // default display range
                fStateListeners = new EventListenerList() ;

@@ -917,7 +917,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
         int width = mImage.getWidth();
         int height = mImage.getHeight();        
-        String sumName = "Sum : " + mImage.getShortTitle();
+        String sumName = "Sum : " + mImage.getShortTitle() + " : " + image.getName();
         int templength = mImage.getProcessor().getPixelCount();
         double[] sumPixels = new double[templength];
         short[] tempPixels = new short[templength];
@@ -1234,6 +1234,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 for (i = 0; i < segImages.length; i++) {
                     if (segImages[i] != mp && segImages[i] != null) {
                         segImages[i].setRoi(evt.getRoi());
+                    }
+                }
+                for (i = 0; i < sumImages.length; i++) {
+                    if (sumImages[i] != mp && sumImages[i] != null) {
+                        sumImages[i].setRoi(evt.getRoi());
                     }
                 }
             }
