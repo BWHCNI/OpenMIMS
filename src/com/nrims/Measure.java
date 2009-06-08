@@ -155,7 +155,8 @@ public class Measure {
         return images;
     }
 
-    private int addResults(ij.process.ImageStatistics is, int n, Roi roi, int nSlice, int ncol) {
+    private int addResults(MimsPlus image, int n, Roi roi, int nSlice, int ncol) {
+       ImageStatistics is = image.getStatistics();
         for (int i = 0; i < bMeasure.length; i++) {
             if (bMeasure[i]) {
                 if (!bMeasurePerImage[i] && n > 0) {
@@ -220,6 +221,7 @@ public class Measure {
                             rTable.addValue(ncol++, is.pixelCount * is.mean);
                             break;
                         case ResultsTable.MEDIAN:
+                            is = ImageStatistics.getStatistics(image.getProcessor(), ImageStatistics.MEDIAN, image.getCalibration());
                             rTable.addValue(ncol++, is.median);
                             break;
                         case ResultsTable.SKEWNESS:
@@ -348,9 +350,8 @@ public class Measure {
                    images[i].setRoi(rois[r]);
                 }
                                
-                // Generate Roi statistics and put in table.            
-                ImageStatistics is = images[i].getStatistics();
-                ncol = addResults(is, i, rois.length > 0 ? rois[r] : null, n, ncol);
+                // Put results in table.            
+                ncol = addResults(images[i], i, rois.length > 0 ? rois[r] : null, n, ncol);
              }             
              
              String slicelabel = images[0].getStack().getShortSliceLabel(nSlices);
@@ -443,16 +444,20 @@ public class Measure {
                 if (images[i].getMimsType() == MimsPlus.MASS_IMAGE) {
                    images[i].setSlice(n + 1);
                 }
-                
+                                                                
                 // Set the rois to the images.
                 if (rois.length > 0) {
+                   
+                   // If its a line roi we skip, otherwise line roi stats will be for entire image.
+                   if (rois[r].isLine()) {
+                      continue;   
+                   }
+                   
                    images[i].setRoi(rois[r]);
-                }                            
-                
-                // To get a valid median value, we have to do this...                
-                ImageStatistics is = ImageStatistics.getStatistics(images[i].getProcessor(), ImageStatistics.MEDIAN, images[i].getCalibration());
-                
-                ncol = addResults(is, i, rois.length > 0 ? rois[r] : null, n+1, ncol);
+                } 
+                                  
+                // Put results in table.
+                ncol = addResults(images[i], i, rois.length > 0 ? rois[r] : null, n+1, ncol);
              }
           }
        }
@@ -464,7 +469,6 @@ public class Measure {
         }
     }
     
-    ///God damn it
     public void measureSums() {
         MimsPlus[] mSumImages = ui.getOpenSumImages();
         
@@ -499,72 +503,44 @@ public class Measure {
             nrois = 1;
         }
 
-        //all of this just to generate column headers...
+        // Generate column headers.
         for (int r = 1; r <= nrois; r++) {
-
             for (int m = 0; m < bMeasure.length; m++) {
-
                 if (bMeasure[m]) {
                     String hd = measureNames[m];
-
                     if (nrois > 1) {
                         hd += "_r" + r;
                     }
                     if (ncol == currentMaxColumns - 2) {
-
                         rTable.addColumns();
                         currentMaxColumns = currentMaxColumns * 2;
                     }
                     rTable.setHeading(ncol++, hd);
-
-
                 }
             }
-
-        }
-        //end headers
-
-        int mOptions = 0;
-        for (int m = 0; m < bMeasure.length; m++) {
-            if (bMeasure[m]) {
-                mOptions |= (1 << m);
-            }
-        }
-
-
-        ncol = 0;
-        rTable.incrementCounter();
-        int start = rTable.getCounter();
+        }      
         
+        // Fill in table values.
         for (int i = 0; i < mSumImages.length; i++) {
+            rTable.incrementCounter();
             ncol = 0;
             for (int r = 0; r < nrois; r++) {
                 if (rois.length > 0) {
                     mSumImages[i].setRoi(rois[r]);
                 }
                 if (mSumImages[i].getProcessor() != null) {
-                    ImageStatistics is =
-                            ij.process.ImageStatistics.getStatistics(
-                            mSumImages[i].getProcessor(),
-                            mOptions,
-                            mSumImages[i].getCalibration());
-                    ncol = addResults(is, 0, rois.length > 0 ? rois[r] : null, 1, ncol);
+                    ncol = addResults(mSumImages[i], 0, rois.length > 0 ? rois[r] : null, 1, ncol);
                 }
-            }
-            rTable.incrementCounter();
-        }
-        int end = rTable.getCounter();
-        System.out.println("end: "+end);
-        //set row labels
-        int i = mSumImages.length-1;
-        for (int j = end-1; i >= 0; j--) {
-            String label = ui.getOpener().getName()+" ";
-            label += mSumImages[i].getTitle();
-            
-            rTable.setLabel(label, j-1);
-            i--;
+            }            
         }
 
+        // Set row labels.
+        for (int j = 0; j < rTable.getCounter(); j++) {
+            String label = ui.getOpener().getName()+" "+mSumImages[j].getTitle();
+            rTable.setLabel(label, j);
+        }
+
+        // Show table.
         rTable.show(fileName);
         if (setsize) {
             resizeWindow(new java.awt.Dimension(500, 450));
@@ -576,7 +552,6 @@ public class Measure {
     }
     
     void resizeWindow(java.awt.Dimension dim) {
-        //java.lang.String title = "";
         java.awt.Frame tempframe = ij.WindowManager.getFrame(fileName);
 
         if (tempframe != null) {
@@ -591,11 +566,9 @@ public class Measure {
         "X", "Y", "XM", "YM", "Perim.", "BX", "BY", "Width", "Height", "Major", "Minor", "Angle",
         "Circ.", "Feret", "IntDen", "Median", "Skew", "Kurt", "%Area", "Slice"
     };
-    private boolean bStack = true;
     private boolean bHasLabels = false;
     private boolean bMeasureRatios = true;
     private boolean setsize;
-    //must fix should not be 8... was 6
     private boolean bMass[] = new boolean[8];
     private boolean bMeasure[] = new boolean[ij.measure.ResultsTable.SLICE + 1];
     private boolean bMeasurePerImage[] = new boolean[ij.measure.ResultsTable.SLICE + 1];

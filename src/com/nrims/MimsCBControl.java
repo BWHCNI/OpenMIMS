@@ -9,6 +9,7 @@ package com.nrims;
 import ij.WindowManager;
 import ij.plugin.LutLoader;
 import ij.process.ImageProcessor;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Hashtable;
@@ -130,20 +131,20 @@ public class MimsCBControl extends javax.swing.JPanel {
       
       org.jfree.chart.plot.XYPlot plot = (XYPlot) chart.getPlot();
       
-      // Polygon bounds.
-      int x1 = (new Double(contrastAdjuster1.min)).intValue();
-      int x2 = (new Double(contrastAdjuster1.min)).intValue();   
-      int x3 = (new Double(contrastAdjuster1.max)).intValue();
-      int x4 = (new Double(contrastAdjuster1.max)).intValue();    
+      // Polygon bounds.      
+      double x1 = contrastAdjuster1.min;
+      double x2 = contrastAdjuster1.min;   
+      double x3 = contrastAdjuster1.max;
+      double x4 = contrastAdjuster1.max;    
       
-      int y1 = -1;
-      int y2 = (new Double(plot.getRangeAxis().getUpperBound())).intValue()+1;
-      int y3 = (new Double(plot.getRangeAxis().getUpperBound())).intValue()+1;
-      int y4 = -1;     
+      double y1 = -10.0;
+      double y2 = plot.getRangeAxis().getUpperBound()+10.0;
+      double y3 = plot.getRangeAxis().getUpperBound()+10.0;
+      double y4 = -10.0;     
       
       // Displays polygon.
       a = new XYPolygonAnnotation(new double[] {x1, y1, x2, y2, x3, y3, x4, y4}, 
-              null, new Color(100, 100, 155, 70), new Color(200, 200, 255, 100));            
+              new BasicStroke(1), new Color(0,0,0), new Color(200, 200, 255, 100));      
       XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
       renderer.removeAnnotations();
       renderer.addAnnotation(a, Layer.BACKGROUND);          
