@@ -852,11 +852,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        computeSum(mp, true);
     }
     
-    public MimsPlus computeSum(MimsPlus mImage, boolean show){
-       MimsPlus mp = computeSum(mImage, show, -1, -1);
-       return mp;
-    }
-    
     public void computeSum(SumProps sumProps) {
        
        // fraction for which we consider masses to be equals. (0.01 = 1%)       
@@ -873,8 +868,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
              
              // If the difference between the masses for the parentMass of the old sum image 
              // and the new mass image is than 1%, treat as same and generate a new sum image. 
-             if (Math.abs(sumProps.getParentMass()-mp.getMassNumber()) < tolerance*sumProps.getParentMass()) 
-                computeSum(mp, true, sumProps.getXWindowLocation(), sumProps.getYWindowLocation());             
+             if (Math.abs(sumProps.getParentMass()-mp.getMassNumber()) < tolerance*sumProps.getParentMass()) {
+                MimsPlus sp = computeSum(mp, true); 
+                sp.getWindow().setLocation(sumProps.getXWindowLocation(), sumProps.getYWindowLocation());             
+             }
           }             
        } 
        // Generates a new sum image from a ratio image.
@@ -903,12 +900,23 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 props.setNumMass(num_idx);
                 props.setDenMass(den_idx);        
                 MimsPlus rp = computeRatio(props, false);
-                computeSum(rp, true, sumProps.getXWindowLocation(), sumProps.getYWindowLocation());                           
+                MimsPlus sp = computeSum(rp, true);
+                sp.getWindow().setLocation(sumProps.getXWindowLocation(), sumProps.getYWindowLocation());                           
              }                
           }          
     }
     
-    public MimsPlus computeSum(MimsPlus mImage, boolean show, int xloc, int yloc) {
+    public MimsPlus computeSum(MimsPlus mImage, boolean show) {
+       
+       ArrayList<Integer> sumlist = new ArrayList<Integer>();
+       for (int i = 1; i <= mimsAction.getSize(); i++) {
+          sumlist.add(i);
+       }
+       return computeSum(mImage, show, sumlist);
+       
+    }
+    
+    public MimsPlus computeSum(MimsPlus mImage, boolean show, ArrayList<Integer> sumlist) {
         boolean fail = true;
         
         if (mImage == null) {
@@ -927,8 +935,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.bUpdating = true;
         if (mImage.getMimsType() == MimsPlus.MASS_IMAGE) {
             sumProps = new SumProps(mImage.getMassNumber());
-            for (int i = 1; i <= mImage.getImageStackSize(); i++) {
-                mImage.setSlice(i);
+            for (int i = 0; i < sumlist.size(); i++) {
+                mImage.setSlice(sumlist.get(i));
                 tempPixels = (short[]) mImage.getProcessor().getPixels();
                 for (int j = 0; j < sumPixels.length; j++) {
                     sumPixels[j] += ((int) ( tempPixels[j] & 0xffff) );
@@ -949,15 +957,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             startSlice = nImage.getCurrentSlice();
 
-            for (int i = 1; i <= nImage.getImageStackSize(); i++) {
-                nImage.setSlice(i);
+            for (int i = 0; i < sumlist.size(); i++) {
+                nImage.setSlice(sumlist.get(i));
                 tempPixels = (short[]) nImage.getProcessor().getPixels();
                 for (int j = 0; j < numPixels.length; j++) {
                     numPixels[j] += tempPixels[j];
                 }
             }
-            for (int i = 1; i <= dImage.getImageStackSize(); i++) {
-                dImage.setSlice(i);
+            for (int i = 0; i < sumlist.size(); i++) {
+                nImage.setSlice(sumlist.get(i));
                 tempPixels = (short[]) dImage.getProcessor().getPixels();
                 for (int j = 0; j < denPixels.length; j++) {
                     denPixels[j] += tempPixels[j];
@@ -1000,11 +1008,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             mp.addListener(this);
             mp.show();
-            
-            // Set window location.                  
-            if (xloc > -1 & yloc > -1)
-               mp.getWindow().setLocation(xloc, yloc);
-            
+                        
             if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {               
                 this.autoContrastImage(mp);
             }
@@ -1161,9 +1165,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             // Set mass images.
             int nSlice = evt.getSlice();
             for (int i = 0; i < mp.length; i++) {
-               massImages[i].setSlice(nSlice);                    
-               ImageProcessor ip = massImages[i].getProcessor();
-               int x = 0;
+               massImages[i].setSlice(nSlice);                  
             }                                                    
                             
             // Update HSI image slice.
@@ -1254,10 +1256,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
 
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_ROI_MOVED) {
-            ij.gui.Roi roi = evt.getRoi();
             MimsRoiManager rm = getRoiManager();
             rm.move();
-            int x = 0;
         }
 
         bUpdating = false;

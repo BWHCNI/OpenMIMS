@@ -318,7 +318,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
 
         } catch (Exception e) {
-            ij.IJ.error("List Error", "Exception, malformed delete list.");
+            ij.IJ.error("List Error", "Exception, malformed list.");
             badlist = true;
         }
 
@@ -368,6 +368,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
       sumButton = new javax.swing.JButton();
       compressButton = new javax.swing.JButton();
       compressTextField = new javax.swing.JTextField();
+      sumTextField = new javax.swing.JTextField();
 
       concatButton.setText("Concatenate");
       concatButton.addActionListener(new java.awt.event.ActionListener() {
@@ -457,96 +458,111 @@ public class MimsStackEditing extends javax.swing.JPanel {
             .addContainerGap()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                .addGroup(layout.createSequentialGroup()
-                  .addComponent(displayActionButton)
-                  .addGap(196, 196, 196))
-               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                  .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(deleteListTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel5)
-                        .addComponent(deleteListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(trueIndexLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))
-                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                  .addGroup(layout.createSequentialGroup()
-                     .addComponent(jLabel1)
-                     .addGap(16, 16, 16))
-                  .addComponent(reinsertListTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
-                  .addComponent(reinsertButton)))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-               .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                   .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                      .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(jLabel4))
-                     .addComponent(concatButton)
-                     .addComponent(sumButton))
-                  .addGap(57, 57, 57)
-                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel2))
-                     .addComponent(translateYSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
-                     .addComponent(translateXSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE))
-                  .addGap(51, 51, 51))
-               .addGroup(layout.createSequentialGroup()
-                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(reinsertListTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(reinsertButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(87, 87, 87))
+                     .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                           .addComponent(deleteListTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                           .addComponent(jLabel5)
+                           .addComponent(deleteListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                           .addComponent(trueIndexLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                  .addGap(12, 12, 12)
+                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                      .addGroup(layout.createSequentialGroup()
                         .addComponent(compressButton)
-                        .addGap(18, 18, 18)
-                        .addComponent(compressTextField))
+                        .addGap(1, 1, 1))
+                     .addComponent(sumButton, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                      .addGroup(layout.createSequentialGroup()
-                        .addComponent(autoTrackButton)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                           .addComponent(jLabel2)
+                           .addComponent(translateYSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(8, 8, 8)))
+                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                     .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 232, Short.MAX_VALUE)
+                        .addComponent(jLabel4)
+                        .addGap(23, 23, 23))
+                     .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(translateXSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(untrackButton)))
-                  .addContainerGap(149, Short.MAX_VALUE))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                           .addComponent(sumTextField, javax.swing.GroupLayout.Alignment.LEADING)
+                           .addComponent(compressTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
+                        .addContainerGap())
+                     .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                        .addContainerGap())))
+               .addGroup(layout.createSequentialGroup()
+                  .addComponent(displayActionButton)
+                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                  .addComponent(concatButton)
+                  .addGap(77, 77, 77)
+                  .addComponent(autoTrackButton)
+                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                  .addComponent(untrackButton)
+                  .addContainerGap())))
       );
       layout.setVerticalGroup(
          layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
          .addGroup(layout.createSequentialGroup()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                .addGroup(layout.createSequentialGroup()
-                  .addGap(24, 24, 24)
+                  .addGap(53, 53, 53)
                   .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                     .addComponent(trueIndexLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                     .addComponent(jLabel4))
+                     .addComponent(jLabel3)
+                     .addComponent(jLabel2))
+                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                     .addComponent(translateXSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                     .addComponent(translateYSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
+               .addGroup(layout.createSequentialGroup()
+                  .addGap(25, 25, 25)
+                  .addComponent(trueIndexLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
                   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                   .addComponent(jLabel5)
                   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                   .addComponent(deleteListTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                  .addComponent(deleteListButton)
-                  .addGap(18, 18, 18)
+                  .addComponent(deleteListButton))
+               .addGroup(layout.createSequentialGroup()
+                  .addGap(50, 50, 50)
+                  .addComponent(jLabel4)))
+            .addGap(50, 50, 50)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+               .addGroup(layout.createSequentialGroup()
+                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                     .addComponent(compressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                     .addComponent(compressButton))
+                  .addGap(20, 20, 20)
+                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                     .addComponent(sumButton)
+                     .addComponent(sumTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+               .addGroup(layout.createSequentialGroup()
                   .addComponent(jLabel1)
                   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                   .addComponent(reinsertListTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                  .addComponent(reinsertButton))
-               .addGroup(layout.createSequentialGroup()
-                  .addContainerGap()
-                  .addComponent(jLabel2)
-                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                     .addComponent(translateXSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                     .addComponent(sumButton))
-                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                  .addComponent(jLabel3)
-                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                     .addComponent(translateYSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                     .addComponent(concatButton))))
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                  .addComponent(reinsertButton)))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 73, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                .addComponent(displayActionButton)
-               .addComponent(untrackButton)
-               .addComponent(autoTrackButton))
-            .addGap(67, 67, 67))
-         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addContainerGap(197, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-               .addComponent(compressButton)
-               .addComponent(compressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGap(111, 111, 111))
+               .addComponent(concatButton)
+               .addComponent(autoTrackButton)
+               .addComponent(untrackButton))
+            .addContainerGap())
       );
    }// </editor-fold>//GEN-END:initComponents
 
@@ -832,8 +848,15 @@ public class MimsStackEditing extends javax.swing.JPanel {
 private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumButtonActionPerformed
 
     String name = WindowManager.getCurrentImage().getTitle();
-
-    ui.computeSum(ui.getImageByName(name), true);
+    String sumTextFieldString = sumTextField.getText().trim();
+    if (sumTextFieldString.isEmpty())
+       ui.computeSum(ui.getImageByName(name), true);
+    else {
+       ArrayList<Integer> sumlist = parseList(sumTextFieldString, 1, ui.mimsAction.getSize());
+       if (sumlist.size()==0) return;
+       ui.computeSum(ui.getImageByName(name), true, sumlist);
+    }
+    
 }//GEN-LAST:event_sumButtonActionPerformed
 
 private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
@@ -884,7 +907,6 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         
         //check to see if pixel values fit in 16bit image
         for (int mindex = 0; mindex < nmasses; mindex++) {
-
             double max = 0;
             for (int i = 0; i < sumPixels[mindex].length; i++) {
                 max = java.lang.Math.max(max, sumPixels[mindex][i]);
@@ -925,8 +947,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 images[mindex].setIsStack(false);
             }
             images[mindex].updateAndDraw();
-        }
-        
+        }                                
     }
 
     protected void restoreAllPlanes() {
@@ -939,7 +960,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                     image.readPixels(i);  //really "bad" don't use????
                     images[i].setSlice(restoreIndex);
                     images[i].getProcessor().setPixels(image.getPixels(i));
-                    images[i].updateAndDraw();
+                    images[i].updateAndDraw();                    
                 }
                 images[0].setSlice(currentPlane);
 
@@ -996,6 +1017,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
    private javax.swing.JButton reinsertButton;
    private javax.swing.JTextField reinsertListTextField;
    private javax.swing.JButton sumButton;
+   private javax.swing.JTextField sumTextField;
    private javax.swing.JSpinner translateXSpinner;
    private javax.swing.JSpinner translateYSpinner;
    private javax.swing.JLabel trueIndexLabel;
