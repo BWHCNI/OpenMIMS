@@ -770,7 +770,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
              //notice the negative....
              xval = (-1.0) * translations[i][0];
              yval = (-1.0) * translations[i][1];
-             images[0].setSlice(plane);
+             //images[0].setSlice(plane);
              this.XShiftSlice(plane, xval);
              this.YShiftSlice(plane, yval);
           }

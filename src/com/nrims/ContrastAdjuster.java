@@ -213,7 +213,6 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 		
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
 		//pack();
-		Point loc = Prefs.getLocation(LOC_KEY);
 		show();
 
 		thread = new Thread(this, "ContrastAdjuster");

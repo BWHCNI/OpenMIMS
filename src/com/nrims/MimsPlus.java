@@ -526,14 +526,15 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             if(roi.contains(mX, mY) || linecheck) {
                if (ui.getSyncROIsAcrossPlanes() || ui.getRoiManager().getSliceNumber(key.toString()) == slice) {
                   insideRoi = true;
-                  ij.process.ImageStatistics stats = this.getStatistics();
-
+                                    
                   // Update message.
-                  if(this.getMimsType()==this.HSI_IMAGE) {
-                      msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
+                  ij.process.ImageStatistics stats;                 
+                  if(this.getMimsType()==HSI_IMAGE) {
+                     stats = ratioMims.getStatistics();                   
                   } else {
-                      msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
+                     stats = this.getStatistics();
                   }
+                  msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
                   
                   // Set Roi to yellow.
                   if(ui.activeRoi != roi){                   

@@ -15,7 +15,6 @@ import ij.gui.Roi;
 import ij.gui.ImageWindow;
 import ij.gui.ImageCanvas;
 import ij.io.RoiEncoder;
-import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 
 import java.awt.Cursor;
@@ -84,7 +83,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             
     private String lastFolder = null;      
     public  File   tempActionFile;
-    public  String tempActionFileString = "action.TMP";
+    public  String tempActionFileString = ".act";
     public  String actionFileName = "action.txt";         
     private String ratioExtension = ".ratio";     
     private String hsiExtension = ".hsi";     
@@ -116,124 +115,160 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     
     protected MimsLineProfile lineProfile;
     protected MimsAction mimsAction = null;
-    protected Roi activeRoi;
+    protected Roi activeRoi;    
     
     // fileName name of the .im image file to be opened.
     public UI(String fileName) {
-        super("NRIMS Analysis Module");
+      super("NRIMS Analysis Module");
 
-        System.out.println("Ui constructor");
-        System.out.println(System.getProperty("java.version")+" : "+System.getProperty("java.vendor"));
-        
-        // Set look and feel to native OS
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            SwingUtilities.updateComponentTreeUI(this);
-        } catch (Exception e) {
-            IJ.log("Error setting native Look and Feel:\n" + e.toString());
-        }
+      System.out.println("Ui constructor");
+      System.out.println(System.getProperty("java.version") + " : " + System.getProperty("java.vendor"));
 
-        initComponents();
-        initComponentsCustom();
+      // Set look and feel to native OS
+      try {
+         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+         SwingUtilities.updateComponentTreeUI(this);
+      } catch (Exception e) {
+         IJ.log("Error setting native Look and Feel:\n" + e.toString());
+      }
 
-        ijapp = IJ.getInstance();
-        if (ijapp == null || (ijapp != null && !ijapp.isShowing())) {
-            ijapp = new ij.ImageJ(null);
-            setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        }
+      initComponents();
+      initComponentsCustom();
 
-        if (image == null) {
-            for (int i = 0; i < maxMasses; i++) {
-                massImages[i] = null;
-                ratioImages[i] = null;
-                hsiImages[i] = null;
-                segImages[i] = null;
+      ijapp = IJ.getInstance();
+      if (ijapp == null || (ijapp != null && !ijapp.isShowing())) {
+         ijapp = new ij.ImageJ(null);
+         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+      }
+
+      if (image == null) {
+         for (int i = 0; i < maxMasses; i++) {
+            massImages[i] = null;
+            ratioImages[i] = null;
+            hsiImages[i] = null;
+            segImages[i] = null;
+         }
+         for (int i = 0; i < 2 * maxMasses; i++) {
+            sumImages[i] = null;
+         }
+      }
+
+      int xloc, yloc = 150;
+      if (ijapp != null) {
+         xloc = ijapp.getX();
+         if (xloc + ijapp.getWidth() + this.getPreferredSize().width + 10 < Toolkit.getDefaultToolkit().getScreenSize().width) {
+            xloc += ijapp.getWidth() + 10;
+            yloc = ijapp.getY();
+         } else {
+            yloc = ijapp.getY() + ijapp.getHeight() + 10;
+         }
+      } else {
+         int screenwidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+         xloc = (int) (screenwidth > 832 ? screenwidth * 0.8 : screenwidth * 0.9);
+         xloc -= this.getPreferredSize().width + 10;
+      }
+
+      this.setLocation(xloc, yloc);
+      ij.WindowManager.addWindow(this);
+
+      if (bDebug) {
+         IJ.log("open UI ok...");
+      }
+      IJ.showProgress(1.0);
+
+      this.mimsDrop = new FileDrop(null, this.mainTextField, new FileDrop.Listener() {
+         public void filesDropped(File[] files) {
+
+            // Make sure only 1 file was dragged and its a *.im file.
+            if (files.length > 1) return;
+            if (!files[0].getAbsolutePath().endsWith(".im")) return;                           
+            
+            // Get HSIProps for all open ratio images. 
+            MimsPlus[] rto = getOpenRatioImages();
+            HSIProps[] rto_props = new HSIProps[rto.length];
+            for (int i = 0; i < rto.length; i++) {
+               rto_props[i] = rto[i].getHSIProps();
             }
-            for (int i = 0; i < 2 * maxMasses; i++) {
-                sumImages[i] = null;
+
+            // Get HSIProps for all open hsi images.     
+            MimsPlus[] hsi = getOpenHSIImages();
+            HSIProps[] hsi_props = new HSIProps[hsi.length];
+            for (int i = 0; i < hsi.length; i++) {
+               hsi_props[i] = hsi[i].getHSIProps();
             }
-        }
 
-        int xloc, yloc = 150;
-        if (ijapp != null) {
-            xloc = ijapp.getX();
-            if (xloc + ijapp.getWidth() + this.getPreferredSize().width + 10 < Toolkit.getDefaultToolkit().getScreenSize().width) {
-                xloc += ijapp.getWidth() + 10;
-                yloc = ijapp.getY();
-            } else {
-                yloc = ijapp.getY() + ijapp.getHeight() + 10;
+            // Get SumProps for all open sum images.    
+            MimsPlus[] sum = getOpenSumImages();
+            SumProps[] sum_props = new SumProps[sum.length];
+            for (int i = 0; i < sum.length; i++) {
+               sum_props[i] = sum[i].getSumProps();
             }
-        } else {
-            int screenwidth = Toolkit.getDefaultToolkit().getScreenSize().width;
-            xloc = (int) (screenwidth > 832 ? screenwidth * 0.8 : screenwidth * 0.9);
-            xloc -= this.getPreferredSize().width + 10;
-        }
 
-        this.setLocation(xloc, yloc);
-        ij.WindowManager.addWindow(this);
+            // Load the new file.     
+            loadMIMSFile(files[0].getAbsolutePath());
 
-        if (bDebug) {
-            IJ.log("open UI ok...");
-        }
-        IJ.showProgress(1.0);
+            // Generate all images that were previously open.
+            restoreState(rto_props, hsi_props, sum_props);
+         }
+      });
 
-        this.mimsDrop = new FileDrop(null, this.mainTextField, new FileDrop.Listener() {
-           public void filesDropped(File[] files) {
-                 
-              // Make sure only 1 file was dragged and its a *.im file.
-              if (files.length > 1) return;                
-              if (!files[0].getAbsolutePath().endsWith(".im")) return;
-                
-              // Get HSIProps for all open ratio images.                
-              MimsPlus[] rto = getOpenRatioImages();
-              HSIProps[] rto_props = new HSIProps[rto.length];
-              for (int i = 0; i < rto.length; i++) {
-                 rto_props[i] = rto[i].getHSIProps();
-              }
 
-              // Get HSIProps for all open hsi images.     
-              MimsPlus[] hsi = getOpenHSIImages();
-              HSIProps[] hsi_props = new HSIProps[hsi.length];
-              for (int i = 0; i < hsi.length; i++) {
-                 hsi_props[i] = hsi[i].getHSIProps();
-              }
+      //??? todo: add if to open file chooser or not based of preference setting  
+      if (fileName == null) {
 
-              // Get SumProps for all open sum images.    
-              MimsPlus[] sum = getOpenSumImages();
-              SumProps[] sum_props = new SumProps[sum.length];
-              for (int i = 0; i < sum.length; i++) {
-                 sum_props[i] = sum[i].getSumProps();
-              }
+         // Create a file chooser.
+         javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
+         fc.setPreferredSize(new java.awt.Dimension(650, 500));
 
-              // Load the new file.     
-              loadMIMSFile(files[0].getAbsolutePath());
-
-              // Generate all images that were previously open.
-              restoreState(rto_props, hsi_props, sum_props);             
-           }
-       });
-
-        
-        //??? todo: add if to open file chooser or not based of preference setting  
-        if (fileName == null) {
-            this.loadMIMSFile();
-        } else {
-            if(new File(fileName).isDirectory()) {
-                System.out.println("fileName: "+fileName);
-                loadMIMSFileDir(fileName);
-            } else {
-                this.loadMIMSFile(fileName);
+         // Set its default directory.
+         if (lastFolder != null) {
+            fc.setCurrentDirectory(new java.io.File(lastFolder));
+         } else {
+            String ijDir = new ij.io.OpenDialog("", "asdf").getDefaultDirectory();
+            if (ijDir != null && !(ijDir.equalsIgnoreCase(""))) {
+               fc.setCurrentDirectory(new java.io.File(ijDir));
             }
-        }
-        
-        // custom listener to delete tempaction file.
-        addWindowListener(new java.awt.event.WindowAdapter() {
-           public void windowClosing(WindowEvent winEvt) {
-              deleteTempActionFile(); 
-              close();
-           }
-        });        
-    }
+         }
+
+         if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
+            return;
+         }
+
+         // Update default directory.
+         lastFolder = fc.getSelectedFile().getParent();
+         setIJDefaultDir(lastFolder);
+
+         //Get the selected file
+         File selectedFile = fc.getSelectedFile();
+
+         // If file does not end in .im assume action file.
+         if (selectedFile.getAbsolutePath().endsWith(".im")) {
+            loadMIMSFile(selectedFile.getAbsolutePath());
+         } else {
+            try {
+               openAction(selectedFile);
+            } catch (Exception e) {
+               System.out.println("Malformed action file.");
+            }
+         }
+
+      } else {
+         if (new File(fileName).isDirectory()) {
+            System.out.println("fileName: " + fileName);
+            loadMIMSFileDir(fileName);
+         } else {
+            this.loadMIMSFile(fileName);
+         }
+      }
+
+      // custom listener to delete tempaction file.
+      addWindowListener(new java.awt.event.WindowAdapter() {
+         public void windowClosing(WindowEvent winEvt) {
+            deleteTempActionFile();
+            close();
+         }
+      });
+   }
 
     /**
      * Closes the current image and its associated set of windows if the mode is set to close open windows.
@@ -1277,7 +1312,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
    
    // Save a temporary backup of the action file.
    public File saveTempActionFile(){
-      String tempBackupFileName = getImageFilePrefix() + "_" + tempActionFileString;
+      String tempBackupFileName = getImageFilePrefix() + tempActionFileString;
       tempActionFile = new File(image.getImageFile().getParent(), tempBackupFileName);
       getmimsAction().writeAction(tempActionFile);          
       return tempActionFile;
@@ -1297,7 +1332,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
          public void actionPerformed(java.awt.event.ActionEvent evt) {
             try {
-               openAction(evt);
+               openActionEvent(evt);
             } finally {
                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
@@ -1342,6 +1377,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
    private void initComponents() {
 
+      jMenuItem9 = new javax.swing.JMenuItem();
       jTabbedPane1 = new javax.swing.JTabbedPane();
       jPanel1 = new javax.swing.JPanel();
       mainTextField = new javax.swing.JTextField();
@@ -1355,6 +1391,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       jMenuItem6 = new javax.swing.JMenuItem();
       jMenuItem7 = new javax.swing.JMenuItem();
       jSeparator1 = new javax.swing.JSeparator();
+      jMenuItem8 = new javax.swing.JMenuItem();
+      jMenuItem9 = new javax.swing.JMenuItem();
+      jSeparator7 = new javax.swing.JSeparator();
       aboutMenuItem = new javax.swing.JMenuItem();
       jSeparator2 = new javax.swing.JSeparator();
       exitMenuItem = new javax.swing.JMenuItem();
@@ -1373,6 +1412,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       closeAllSumMenuItem = new javax.swing.JMenuItem();
       jSeparator4 = new javax.swing.JSeparator();
       genStackMenuItem = new javax.swing.JMenuItem();
+
+      jMenuItem9.setText("Export all images");
+      fileMenu.add(jMenuItem9);
 
       setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
       setTitle("NRIMS Analysis Module");
@@ -1432,6 +1474,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       jMenuItem7.setText("Open Session");
       fileMenu.add(jMenuItem7);
       fileMenu.add(jSeparator1);
+
+      jMenuItem8.setText("Export current image");
+      fileMenu.add(jMenuItem8);
+
+      jMenuItem9.setText("Export all images");
+      fileMenu.add(jMenuItem9);
+      fileMenu.add(jSeparator7);
 
       aboutMenuItem.setText("About OpenMIMS");
       aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1722,16 +1771,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
-        ij.gui.GenericDialog gd = new ij.gui.GenericDialog("Preferences");
-        gd.addCheckbox("Close existing image when opening", bCloseOldWindows);
-        gd.addCheckbox("Debug", bDebug);
-        gd.addNumericField("Ratio Scale Factor", ratioScaleFactor, 0);
-        gd.showDialog();
-        if (gd.wasCanceled()) {
-            return;
-        }
-        bCloseOldWindows = gd.getNextBoolean();
-        bDebug = gd.getNextBoolean();
+      
+       PrefFrame pf = new PrefFrame();
+       pf.showFrame();
+        
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
@@ -1806,7 +1849,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
     //System.exit(0);
     //TODO doesn't actually close...
-    deleteTempActionFile();
+    //deleteTempActionFile();
     this.close();
 }//GEN-LAST:event_exitMenuItemActionPerformed
 
@@ -2279,12 +2322,8 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
    }
 
    // Open action file.
-   private void openAction(java.awt.event.ActionEvent evt) {
+   private void openActionEvent(java.awt.event.ActionEvent evt) {
       
-      // initialize variables
-      int trueIndex = 1;
-      ArrayList<Integer> deleteList = new ArrayList<Integer>();
-
       // Open JFileChooser and allow user to select action file.
       JFileChooser fc = new JFileChooser();
       if (lastFolder != null) {
@@ -2298,8 +2337,21 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
       if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
          return;
       }
+            
+      File actionFile = fc.getSelectedFile();
+      lastFolder = fc.getSelectedFile().getParent();
+      setIJDefaultDir(lastFolder);
       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       
+      openAction(actionFile);
+   }
+      
+   public void openAction(File actionFile) {   
+            
+      // initialize variables
+      int trueIndex = 1;
+      ArrayList<Integer> deleteList = new ArrayList<Integer>();
+                              
       // Get all open images so we can regenerate them with new data.
       
       // Get HSIProps for all open ratio images.
@@ -2326,10 +2378,7 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
       // more variable assignment and initialization.
       currentlyOpeningImages = true;
-      bUpdating = true;
-      File actionFile = fc.getSelectedFile();
-      lastFolder = fc.getSelectedFile().getParent();
-      setIJDefaultDir(lastFolder);
+      bUpdating = true;      
 
       try {
 
@@ -2411,9 +2460,7 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
          mimsStackEditing.removeSliceList(deleteList);
 
       // TODO we need more refined Exception checking here
-      } catch (Exception e) {
-         e.printStackTrace();
-      }
+      } catch (Exception e) {}
       
       restoreState(rto_props, hsi_props, sum_props); 
 
@@ -2826,6 +2873,8 @@ public void updateLineProfile(double[] newdata, String name, int width) {
    private javax.swing.JMenuItem jMenuItem5;
    private javax.swing.JMenuItem jMenuItem6;
    private javax.swing.JMenuItem jMenuItem7;
+   private javax.swing.JMenuItem jMenuItem8;
+   private javax.swing.JMenuItem jMenuItem9;
    private javax.swing.JPanel jPanel1;
    private javax.swing.JSeparator jSeparator1;
    private javax.swing.JSeparator jSeparator2;
@@ -2833,6 +2882,7 @@ public void updateLineProfile(double[] newdata, String name, int width) {
    private javax.swing.JSeparator jSeparator4;
    private javax.swing.JSeparator jSeparator5;
    private javax.swing.JSeparator jSeparator6;
+   private javax.swing.JSeparator jSeparator7;
    private javax.swing.JTabbedPane jTabbedPane1;
    private javax.swing.JTextField mainTextField;
    private javax.swing.JMenuItem openNewMenuItem;
