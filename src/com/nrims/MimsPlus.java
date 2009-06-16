@@ -127,7 +127,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                ratioMims = ui.computeRatio(props, false);
 
                //TODO fix me
-               if(!props.getDynamic()) {
+               if(props.getIsSum()) {
                    this.initializeHSISum(props);
                }
 
@@ -681,8 +681,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
 
     public void initializeHSISum(HSIProps props) {
-        numeratorSum = ui.computeSum(ui.getMassImage(props.getNumMass()), false);
-        denominatorSum = ui.computeSum(ui.getMassImage(props.getDenMass()), false);
+          numeratorSum = ui.computeSum(ui.getMassImage(props.getNumMass()), false);
+          denominatorSum = ui.computeSum(ui.getMassImage(props.getDenMass()), false);        
     }
 
         //copied and modified from ui.computeSum()
@@ -762,7 +762,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public MimsPlus getDenominatorSum() {
         return this.denominatorSum;
     }
-
+    
     public void addListener( MimsUpdateListener inListener ) {
          fStateListeners.add(MimsUpdateListener.class, inListener );
     }

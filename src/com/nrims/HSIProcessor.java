@@ -9,23 +9,10 @@
 
 package com.nrims;
 
-import ij.plugin.* ;
 import ij.* ;
-import ij.io.* ;
-import ij.io.FileInfo ;
-import ij.gui.* ;
-import ij.process.* ;
-import ij.measure.Calibration ;
-
 import java.awt.* ;
-import java.awt.event.* ;
-import java.io.*;
-import javax.swing.*;
-import javax.swing.JTextArea;
-/**
- *
- * @author Douglas Benson
- */
+import java.util.ArrayList;
+
 public class HSIProcessor implements Runnable {
     
     /**
@@ -66,7 +53,9 @@ public class HSIProcessor implements Runnable {
     private int denSlice = 1 ;
 
     private boolean medianize;
-    private boolean dynamic = true;
+    private boolean isSum = false;
+    private boolean isWindow = false;
+    private int windowSize = 0;
 
     private float[] fixedNumPixels = null;
     private float[] fixedDenPixels = null;
@@ -77,8 +66,11 @@ public class HSIProcessor implements Runnable {
         MimsPlus numerator = hsiImage.getUI().getMassImage(props.getNumMass());
         MimsPlus denominator = hsiImage.getUI().getMassImage(props.getDenMass());
         if(numerator == null || denominator == null) return ;
-        this.dynamic = props.getDynamic();
-         if(!dynamic&&( hsiImage.getNumeratorSum()==null || hsiImage.getDenominatorSum()==null)) {
+        isSum = props.getIsSum();
+        isWindow = props.getIsWindow();
+        windowSize = props.getWindowSize();
+        
+        if(isSum&&( hsiImage.getNumeratorSum()==null || hsiImage.getDenominatorSum()==null)) {
                     hsiImage.initializeHSISum(props);
         }
         // Need to catch cases where the props are the same but the slice changed
@@ -132,18 +124,21 @@ public class HSIProcessor implements Runnable {
     
     public void run( ) {
         
+       // initialize stuff.
         MimsPlus numerator = null , denominator = null ;
+        MimsPlus [] ml = hsiImage.getUI().getMassImages() ;
         
         try {
             if( hsiImage == null ) { fThread = null ; return ; }
         
+            // Thread stuff.
             while( hsiImage.lockSilently() == false ) {
                 if(fThread == null || fThread.interrupted()) {
                     return ;
                 }
             }
             
-            MimsPlus [] ml = hsiImage.getUI().getMassImages() ;
+            // Get numerator information.            
             numerator = ml[hsiProps.getNumMass()];
             if( numerator == null ) { 
                 fThread = null ;
@@ -151,6 +146,7 @@ public class HSIProcessor implements Runnable {
                 return ;
             }
 
+            // Get denominator information.
             denominator = ml[hsiProps.getDenMass()];
             if( denominator == null ) { 
                 fThread = null ;
@@ -158,6 +154,7 @@ public class HSIProcessor implements Runnable {
                 return ;
             }
             
+            // More threading stuff...
             while( numerator.lockSilently() == false ){
                 if(fThread == null || fThread.interrupted()) {
                     hsiImage.unlock();
@@ -172,56 +169,71 @@ public class HSIProcessor implements Runnable {
                 }
             }
 
-            //short is signed +- 32k
-            //this is stupid
+            // Get numerator and denominator pixels.
             short[] tempnumPixels = (short[]) numerator.getProcessor().getPixels();
             short[] tempdenPixels = (short[]) denominator.getProcessor().getPixels();
-
+            
+            // Convert from shorts to floats.
             float[] numPixels = new float[tempnumPixels.length];
             float[] denPixels = new float[tempdenPixels.length];
-
             for(int i = 0; i<numPixels.length; i++) numPixels[i] =  tempnumPixels[i] & 0xffff ;
             for(int i = 0; i<denPixels.length; i++) denPixels[i] =  tempdenPixels[i] & 0xffff ;
 
+            // initializing...
             float fixedNumMax = 0;
             float fixedNumMin = java.lang.Float.MAX_VALUE;
             float fixedDenMax = 0;
             float fixedDenMin = java.lang.Float.MAX_VALUE;
-            if(!dynamic) {
+            
+            // If sum image, get data. No need to update later because it is static.
+            if (isSum || isWindow) {
+            
+            if(isSum && (fixedNumPixels == null || fixedDenPixels == null)) {                                                                                                                 
+               // Get the numerator sum and denominator sum. Only need to do this once.
+               fixedNumPixels = (float[]) hsiImage.getNumeratorSum().getProcessor().getPixels();
+               fixedDenPixels = (float[]) hsiImage.getDenominatorSum().getProcessor().getPixels();                
+            }
+                
+            // Window need updating.
+            if (isWindow) {
+               try {                         
+                       
+               // The numerator sum and denominator sum for each update.
+               UI ui = hsiImage.getUI();                       
+               int currentSlice = ui.getMassImage(0).getCurrentSlice();
+               //windowSize = hsiProps.getWindowSize();
+               int lb = currentSlice - windowSize;
+               int ub = currentSlice + windowSize;
+               ArrayList<Integer> list = new ArrayList<Integer>();
+               for (int i = lb; i <= ub; i++){
+                  list.add(i);
+               }
+               fixedNumPixels = (float[]) ui.computeSum(ui.getMassImage(hsiProps.getNumMass()), false, list).getProcessor().getPixels();
+               fixedDenPixels = (float[]) ui.computeSum(ui.getMassImage(hsiProps.getDenMass()), false, list).getProcessor().getPixels();                                        
 
-               // if(hsiImage.getNumeratorSum()==null || hsiImage.getDenominatorSum()==null) {
-                 //   hsiImage.initializeHSISum(hsiProps);
-               // }
-
-                if (!dynamic && (fixedNumPixels == null || fixedDenPixels == null)) {
-                    try {
-
-                        this.fixedNumPixels = (float[]) hsiImage.getNumeratorSum().getProcessor().getPixels();
-                        this.fixedDenPixels = (float[]) hsiImage.getDenominatorSum().getProcessor().getPixels();
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                //need to scale and cast to short for transparency etc...
-                for(int i = 0; i< fixedNumPixels.length; i++) {
-                    if (fixedNumPixels[i]>fixedNumMax) fixedNumMax = fixedNumPixels[i];
-                    if (fixedNumPixels[i]<fixedNumMin) fixedNumMin = fixedNumPixels[i];
-                }
-                for(int i = 0; i< fixedDenPixels.length; i++) {
-                    if (fixedDenPixels[i]>fixedDenMax) fixedDenMax = fixedDenPixels[i];
-                    if (fixedDenPixels[i]<fixedDenMin) fixedDenMin = fixedDenPixels[i];
-                }
-
-                for(int i = 0; i< fixedNumPixels.length; i++) {
-                    numPixels[i] = fixedNumPixels[i];
-                }
-                for(int i = 0; i< fixedNumPixels.length; i++) {
-                    denPixels[i] = fixedDenPixels[i];
-                }
-    
+               } catch (Exception e) {
+                  e.printStackTrace();
+               }   
+             }
+            
+            //need to scale and cast to short for transparency etc...
+            for(int i = 0; i< fixedNumPixels.length; i++) {
+                if (fixedNumPixels[i]>fixedNumMax) fixedNumMax = fixedNumPixels[i];
+                if (fixedNumPixels[i]<fixedNumMin) fixedNumMin = fixedNumPixels[i];
+            }
+            for(int i = 0; i< fixedDenPixels.length; i++) {
+                if (fixedDenPixels[i]>fixedDenMax) fixedDenMax = fixedDenPixels[i];
+                if (fixedDenPixels[i]<fixedDenMin) fixedDenMin = fixedDenPixels[i];
             }
 
+            for(int i = 0; i< fixedNumPixels.length; i++) {
+                numPixels[i] = fixedNumPixels[i];
+            }
+            for(int i = 0; i< fixedNumPixels.length; i++) {
+                denPixels[i] = fixedDenPixels[i];
+            }                
+
+            }
 
             int [] hsiPixels = (int []) hsiImage.getProcessor().getPixels() ;
             int rgbMax = hsiProps.getMaxRGB() ;
@@ -231,7 +243,7 @@ public class HSIProcessor implements Runnable {
 
             double numMax;
             double numMin;
-            if(dynamic) {
+            if(!isSum) {
                 numMax = numerator.getProcessor().getMax() ;
                 numMin = numerator.getProcessor().getMin() ;
             } else {
@@ -242,7 +254,7 @@ public class HSIProcessor implements Runnable {
 
             double denMax;
             double denMin;
-            if(dynamic) {
+            if(!isSum) {
                 denMax = denominator.getProcessor().getMax() ;
                 denMin = denominator.getProcessor().getMin() ;
             } else {
@@ -260,25 +272,23 @@ public class HSIProcessor implements Runnable {
             int denThreshold = hsiProps.getMinDen() ;
             int transparency = hsiProps.getTransparency() ;
 
-            //TODO
-            //attempt at medianization, need to make better...
-
             float ratioPixels[] = new float[numPixels.length];
             MimsPlus internalRatio = this.hsiImage.getInternalRatio();
 
             //not the right way to do this
-             if (dynamic) {
+             if (isSum || isWindow) {
                 for (int i = 0; i < ratioPixels.length; i++) {
                     if (denPixels[i] != 0) {
-                        ratioPixels[i] = hsiProps.getRatioScaleFactor() * ((float) numPixels[i]) / ((float) denPixels[i]);
+                       ratioPixels[i] = hsiProps.getRatioScaleFactor() * ( fixedNumPixels[i]) / (fixedDenPixels[i]);
+                        
                     } else {
                         ratioPixels[i] = 0;
                     }
                 }
-            }else {
+            } else {
                 for (int i = 0; i < ratioPixels.length; i++) {
                     if (denPixels[i] != 0) {
-                        ratioPixels[i] = hsiProps.getRatioScaleFactor() * ( fixedNumPixels[i]) / (fixedDenPixels[i]);
+                        ratioPixels[i] = hsiProps.getRatioScaleFactor() * ((float) numPixels[i]) / ((float) denPixels[i]);
                     } else {
                         ratioPixels[i] = 0;
                     }

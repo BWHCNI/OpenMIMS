@@ -24,7 +24,9 @@ public class HSIProps implements java.io.Serializable {
         transparency = 0 ;
         label = 0 ;
         ratioScaleFactor = 10000;
-        dynamic = true;
+        isSum = false;
+        isWindow = false;
+        windowSize = 0;
         transform = false;
         referenceRatio = (float)37/(float)10000;
         backgroundRatio = (float)129/(float)10000;
@@ -57,10 +59,14 @@ public class HSIProps implements java.io.Serializable {
     public int getXWindowLocation() { return this.xloc; }
     public void setYWindowLocation(int y) { this.yloc = y; }
     public int getYWindowLocation() { return this.yloc; }    
-
-    public void setDynamic(boolean dyn) { this.dynamic = dyn; }
-    public boolean getDynamic() { return this.dynamic; }
-
+    public void setIsWindow(boolean isWindow) {this.isWindow = isWindow; }
+    public boolean getIsWindow() { return this.isWindow; }
+    public void setWindowSize(int size) { this.windowSize = size; }
+    public int getWindowSize() { return this.windowSize; }
+    
+    public void setIsSum(boolean isSum) { this.isSum = isSum; }
+    public boolean getIsSum() { return this.isSum; }
+    
     public void setTransform(boolean trans) { this.transform = trans; }
     public boolean getTransform() { return this.transform; }
 
@@ -83,7 +89,9 @@ public class HSIProps implements java.io.Serializable {
         minRGB = props.getMinRGB();
         transparency = props.getTransparency();
         label = props.getLabelMethod();
-        dynamic = props.getDynamic();
+        isSum = props.getIsSum();
+        isWindow = props.getIsWindow();
+        windowSize = props.getWindowSize();
         transform = props.getTransform();
         referenceRatio = props.getReferenceRatio();
         backgroundRatio = props.getBackgroundRatio();
@@ -106,7 +114,9 @@ public class HSIProps implements java.io.Serializable {
         props.setMinRGB(minRGB);
         props.setTransparency(transparency);
         props.setLabelMethod(label);
-        props.setDynamic(dynamic);
+        props.setIsSum(isSum);
+        props.setIsWindow(isWindow);
+        props.setWindowSize(windowSize);
         props.setTransform(transform);
         props.setReferenceRatio(referenceRatio);
         props.setBackgroundRatio(backgroundRatio);
@@ -132,7 +142,7 @@ public class HSIProps implements java.io.Serializable {
             &&  props.getMinRGB() == minRGB
             &&  props.getTransparency() == transparency
             &&  props.getLabelMethod() == label
-            &&  props.getDynamic() == dynamic
+            &&  props.getIsSum() == isSum
             &&  props.getTransform() == transform
             &&  props.getReferenceRatio() == referenceRatio
             &&  props.getBackgroundRatio() == backgroundRatio;
@@ -149,7 +159,9 @@ public class HSIProps implements java.io.Serializable {
     private int transparency ;
     private int label ;
     private int ratioScaleFactor;
-    private boolean dynamic;
+    private int windowSize;
+    private boolean isSum;
+    private boolean isWindow;
     private boolean transform;
     private float referenceRatio;
     private float backgroundRatio;

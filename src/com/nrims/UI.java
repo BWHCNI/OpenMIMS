@@ -957,7 +957,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         if (mImage == null) {
             return null;
         }
-        
+                    
         int width = mImage.getWidth();
         int height = mImage.getHeight();        
         String sumName = "Sum : " + mImage.getShortTitle() + " : " + image.getName();
@@ -967,17 +967,18 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         SumProps sumProps = null;
 
         int startSlice = mImage.getCurrentSlice();
-        this.bUpdating = true;
-        if (mImage.getMimsType() == MimsPlus.MASS_IMAGE) {
-            sumProps = new SumProps(mImage.getMassNumber());
+        bUpdating = true;        
+        
+        if (mImage.getMimsType() == MimsPlus.MASS_IMAGE) {                                                         
+            sumProps = new SumProps(mImage.getMassNumber());            
+            Object[] o = mImage.getStack().getImageArray();
             for (int i = 0; i < sumlist.size(); i++) {
-                mImage.setSlice(sumlist.get(i));
-                tempPixels = (short[]) mImage.getProcessor().getPixels();
-                for (int j = 0; j < sumPixels.length; j++) {
+                if (sumlist.get(i) < 1 || sumlist.get(i) > mImage.getNSlices()) continue;                
+                tempPixels = (short[])o[sumlist.get(i)-1];
+                for (int j = 0; j < sumPixels.length; j++) {                 
                     sumPixels[j] += ((int) ( tempPixels[j] & 0xffff) );
                 }
-            }
-            mImage.setSlice(startSlice);
+            }            
             fail = false;
         }
 
@@ -987,21 +988,22 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             int denMass = mImage.getDenMass();
             MimsPlus nImage = massImages[numMass];
             MimsPlus dImage = massImages[denMass];
+            Object[] no = nImage.getStack().getImageArray();
+            Object[] doo = dImage.getStack().getImageArray();
+            
             double[] numPixels = new double[templength];
             double[] denPixels = new double[templength];
 
-            startSlice = nImage.getCurrentSlice();
-
             for (int i = 0; i < sumlist.size(); i++) {
-                nImage.setSlice(sumlist.get(i));
-                tempPixels = (short[]) nImage.getProcessor().getPixels();
+                //nImage.setSlice(sumlist.get(i));
+                tempPixels = (short[])no[sumlist.get(i)-1];
                 for (int j = 0; j < numPixels.length; j++) {
                     numPixels[j] += tempPixels[j];
                 }
             }
             for (int i = 0; i < sumlist.size(); i++) {
-                nImage.setSlice(sumlist.get(i));
-                tempPixels = (short[]) dImage.getProcessor().getPixels();
+                //nImage.setSlice(sumlist.get(i));
+                tempPixels = (short[])doo[sumlist.get(i)-1];
                 for (int j = 0; j < denPixels.length; j++) {
                     denPixels[j] += tempPixels[j];
                 }
@@ -1014,11 +1016,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
             }
 
-            nImage.setSlice(startSlice);
-
             fail = false;
         }
-        
+        mImage.setSlice(startSlice);
         this.bUpdating = false;
         
         if (!fail) {
