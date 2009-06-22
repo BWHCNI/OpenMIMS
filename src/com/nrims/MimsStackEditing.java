@@ -770,7 +770,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
              //notice the negative....
              xval = (-1.0) * translations[i][0];
              yval = (-1.0) * translations[i][1];
-             //images[0].setSlice(plane);
+
+             //TODO fix this, shouldn't need to call setSlice
+             images[0].setSlice(plane);
              this.XShiftSlice(plane, xval);
              this.YShiftSlice(plane, yval);
           }
@@ -871,12 +873,20 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
 
     String comptext = this.compressTextField.getText();
-    int blocksize = Integer.parseInt(comptext);
+   int blocksize = 0;
+    try {
+       blocksize = Integer.parseInt(comptext);
+   } catch(Exception e) {
+       ij.IJ.error("Invalid compress value.");
+       this.compressTextField.setText("");
+       return;
+   }
     int size = this.images[0].getNSlices();
     int num = (int)java.lang.Math.floor(size/blocksize);
     for(int i=0; i< num; i++) {
         compressPlanes(i+1,blocksize+i);
     }
+    this.compressTextField.setText("");
 }//GEN-LAST:event_compressButtonActionPerformed
 
 
