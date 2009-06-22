@@ -69,6 +69,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     
     private int maxMasses = 8;
     private int ratioScaleFactor = 10000;
+    private double medianFilterRadius = 1;
     
     private boolean bDebug = false;    
     private boolean bSyncStack = true;
@@ -230,6 +231,14 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
          }
 
+
+          MIMSFileFilter filter = new MIMSFileFilter("im");
+          filter.addExtension("txt");
+          filter.addExtension("act");
+          //TODO: add session support
+          //filter.addExtension("zip");
+          fc.setFileFilter(filter);
+
          if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
             return;
          }
@@ -244,7 +253,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
          // If file does not end in .im assume action file.
          if (selectedFile.getAbsolutePath().endsWith(".im")) {
             loadMIMSFile(selectedFile.getAbsolutePath());
-         } else {
+         } else if (selectedFile.getAbsolutePath().endsWith(".act") || selectedFile.getAbsolutePath().endsWith(".txt")){
             try {
                openAction(selectedFile);
             } catch (Exception e) {
@@ -531,6 +540,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 mimsStackEditing = new MimsStackEditing(this, image);
                 mimsTomography = new MimsTomography(this, image);
                 mimsAction = new MimsAction(this, image);
+                //TODO: throws an exception when opening an image with 2 masses
                 segmentation = new SegmentationForm(this);
 
                 jTabbedPane1.setComponentAt(0, mimsData);
@@ -551,6 +561,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 mimsStackEditing = new MimsStackEditing(this, image);
                 mimsTomography = new MimsTomography(this, image);
                 mimsAction = new MimsAction(this, image);
+                //TODO: throws an exception when opening an image with 2 masses
                 segmentation = new SegmentationForm(this);
                 jTabbedPane1.setComponentAt(0, mimsData);
                 jTabbedPane1.setTitleAt(0, "MIMS Data");
@@ -781,19 +792,31 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         mp.getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
         
         //DANGER DANGER DANGER DANGER DANGER DANGER
-        if (this.medianFilterRatios) {
+        if (this.getMedianFilterRatios()) {
             Roi temproi = mp.getRoi();
             mp.killRoi();
             ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
-            double r = this.hsiControl.getMedianRadius();
+            double r = this.getMedianFilterRadius();
+            rfilter.rank(mp.getProcessor(), r, rfilter.MEDIAN);
+            rfilter = null;
+            mp.setRoi(temproi);
+        }
+        /* Moved median bool and radius to ui to make global for all ratios
+         * not sure this is right....
+        if (props.getIsMedianized()) {
+            Roi temproi = mp.getRoi();
+            mp.killRoi();
+            ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
+            double r = props.getMedianRadius();
             //System.out.println("r: " + r);
             rfilter.rank(mp.getProcessor(), r, rfilter.MEDIAN);
             rfilter = null;
             mp.setRoi(temproi);
         }
-        
+        */
         //End danger
-        
+
+
         if (show) {                      
             mp.show();
             
@@ -867,7 +890,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     public void recomputeAllRatio() {
         MimsPlus[] openRatio = this.getOpenRatioImages();
-        for (int i = 0; i < openRatio.length; i++) {            
+        for (int i = 0; i < openRatio.length; i++) {
+            //median radius is global 
                 computeRatio(openRatio[i].getHSIProps(), true);
                 openRatio[i].updateAndDraw();            
         }      
@@ -1072,6 +1096,17 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         return -1;
     }
 
+//unused ???
+    /*
+    public void resetMedianAllHSI(boolean b) {
+        MimsPlus[] openhsi = this.getOpenHSIImages();
+        for(int i =0; i < openhsi.length; i++) {
+            openhsi[i].setIsMedianized(b);
+        }
+
+    }
+*/
+
     public synchronized boolean computeHSI(HSIProps props) {
         int i;
         if(props==null) return false;
@@ -1204,7 +1239,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }                                                    
                             
             // Update HSI image slice.
-            for (int i = 0; i < hsi.length; i++) {                   
+            for (int i = 0; i < hsi.length; i++) {
+                if(hsiImages[i]!=null) { hsiImages[i].recomputeInternalImages(); }
                if(hsiImages[i]!=null) { computeHSI(hsiImages[i].getHSIProps()); }
             }
             
@@ -1766,6 +1802,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.mimsStackEditing.resetImageStacks();
         this.mimsStackEditing.restoreAllPlanes();
         ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
+        wo.run("tile");
         //this.getmimsStackEditing().setConcatGUI(false);
         this.mimsLog.Log("File restored.");
     }//GEN-LAST:event_jMenuItem4ActionPerformed
@@ -2551,6 +2588,17 @@ public void updateLineProfile(double[] newdata, String name, int width) {
         return null;
     }
 
+    public MimsPlus[] getHSIImages() {
+        return hsiImages;
+    }
+
+    public MimsPlus getHSIImage(int i) {
+        if (i >= 0 && i < maxMasses) {
+            return hsiImages[i];
+        }
+        return null;
+    }
+
     public MimsPlus getRatioImage(int i) {
         if (i >= 0 && i < maxMasses) {
             return ratioImages[i];
@@ -2804,6 +2852,15 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     public int setRatioScaleFactor(int s) {
         this.ratioScaleFactor = s;
         return this.ratioScaleFactor;
+    }
+
+    public double getMedianFilterRadius() {
+        return this.medianFilterRadius;
+    }
+
+    public double setMedianFilterRadius(double r) {
+        this.medianFilterRadius = r;
+        return this.medianFilterRadius;
     }
 
     public String getLastFolder() {

@@ -27,9 +27,14 @@ public class HSIProps implements java.io.Serializable {
         isSum = false;
         isWindow = false;
         windowSize = 0;
+        isMedianized = false;
+        medianRadius = 0;
+
+        //TODO: this is for testing and should be fixed
         transform = false;
         referenceRatio = (float)37/(float)10000;
         backgroundRatio = (float)129/(float)10000;
+        //--------
         xloc = -1;
         yloc = -1;
     }
@@ -66,7 +71,13 @@ public class HSIProps implements java.io.Serializable {
     
     public void setIsSum(boolean isSum) { this.isSum = isSum; }
     public boolean getIsSum() { return this.isSum; }
-    
+
+    public void setIsMedianized(boolean ismed) { this.isMedianized = ismed; }
+    public boolean getIsMedianized() { return this.isMedianized; }
+
+    public void setMedianRadius(double r) { this.medianRadius= r; }
+    public double getMedianRadius() { return this.medianRadius; }
+
     public void setTransform(boolean trans) { this.transform = trans; }
     public boolean getTransform() { return this.transform; }
 
@@ -92,9 +103,13 @@ public class HSIProps implements java.io.Serializable {
         isSum = props.getIsSum();
         isWindow = props.getIsWindow();
         windowSize = props.getWindowSize();
+        isMedianized = props.getIsMedianized();
+        medianRadius = props.getMedianRadius();
+        //TODO: this is for testing and should be fixed
         transform = props.getTransform();
         referenceRatio = props.getReferenceRatio();
         backgroundRatio = props.getBackgroundRatio();
+        //-------
         xloc = props.getXWindowLocation();
         yloc = props.getYWindowLocation();
     }
@@ -117,9 +132,13 @@ public class HSIProps implements java.io.Serializable {
         props.setIsSum(isSum);
         props.setIsWindow(isWindow);
         props.setWindowSize(windowSize);
+        props.setIsMedianized(isMedianized);
+        props.setMedianRadius(medianRadius);
+        //TODO: this is for testing and should be fixed
         props.setTransform(transform);
         props.setReferenceRatio(referenceRatio);
         props.setBackgroundRatio(backgroundRatio);
+        //-----
         props.setXWindowLocation(xloc);
         props.setYWindowLocation(yloc);
     }
@@ -146,6 +165,7 @@ public class HSIProps implements java.io.Serializable {
             &&  props.getTransform() == transform
             &&  props.getReferenceRatio() == referenceRatio
             &&  props.getBackgroundRatio() == backgroundRatio;
+           //TODO: the three above are for testing and should be fixed
     }
     
     private int numMass ;
@@ -162,6 +182,8 @@ public class HSIProps implements java.io.Serializable {
     private int windowSize;
     private boolean isSum;
     private boolean isWindow;
+    private boolean isMedianized;
+    private double medianRadius;
     private boolean transform;
     private float referenceRatio;
     private float backgroundRatio;
