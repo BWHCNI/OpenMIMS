@@ -29,8 +29,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     MimsPlus internalNumerator;
     MimsPlus internalDenominator;
 
-    boolean isMedianized = false;
-
     /** Creates a new instance of mimsPlus */
     public MimsPlus() {
         super();
@@ -252,9 +250,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
 
     public float[] medianizeInternalRatio(double radius) {
-        if ( (this.getMimsType() != this.HSI_IMAGE) || (!this.getHSIProps().getIsMedianized())) {
-            return null;
-        }
+        //if ( (this.getMimsType() != this.HSI_IMAGE) || (!this.getHSIProps().getIsMedianized())) {
+         //   return null;
+        //}
 
         if( this.internalRatio != null ) {
 
@@ -266,10 +264,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
         //should never hit
         return null;
-    }
-
-    public void setIsMedianized(boolean b) {
-        this.isMedianized = b;
     }
 
     @Override
@@ -791,8 +785,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             this.internalRatio.setProcessor("", tempProc);
         }
         //medianize internalRatio if needed
-        if( props.getIsMedianized()) {
-            this.medianizeInternalRatio(props.getMedianRadius());
+        if( ui.getMedianFilterRatios()) {
+            this.medianizeInternalRatio(ui.getMedianFilterRadius());
         }
 
         this.internalNumerator.ui = this.ui;

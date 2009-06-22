@@ -792,11 +792,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         mp.getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
         
         //DANGER DANGER DANGER DANGER DANGER DANGER
-        if (this.getMedianFilterRatios()) {
+        if (getMedianFilterRatios()) {
             Roi temproi = mp.getRoi();
             mp.killRoi();
             ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
-            double r = this.getMedianFilterRadius();
+            double r = getMedianFilterRadius();
             rfilter.rank(mp.getProcessor(), r, rfilter.MEDIAN);
             rfilter = null;
             mp.setRoi(temproi);
@@ -891,7 +891,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public void recomputeAllRatio() {
         MimsPlus[] openRatio = this.getOpenRatioImages();
         for (int i = 0; i < openRatio.length; i++) {
-            //median radius is global 
+            //median radius is global
                 computeRatio(openRatio[i].getHSIProps(), true);
                 openRatio[i].updateAndDraw();            
         }      
@@ -900,7 +900,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     public void recomputeAllHSI() {
         MimsPlus[] openHSI = this.getOpenHSIImages();
-        for (int i = 0; i < openHSI.length; i++) {            
+        for (int i = 0; i < openHSI.length; i++) {
                 computeHSI(hsiImages[i].getHSIProps());
                 openHSI[i].updateAndDraw();            
         }        
@@ -1110,6 +1110,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public synchronized boolean computeHSI(HSIProps props) {
         int i;
         if(props==null) return false;
+        if(medianFilterRatios) {
+           props.setIsMedianized(medianFilterRatios);
+           props.setMedianRadius(medianFilterRadius);
+        }
         int hsiIndex = getHSIImageIndex(props);
         MimsPlus num = massImages[props.getNumMass()];
         if (num == null) {
@@ -1241,7 +1245,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             // Update HSI image slice.
             for (int i = 0; i < hsi.length; i++) {
                 if(hsiImages[i]!=null) { hsiImages[i].recomputeInternalImages(); }
-               if(hsiImages[i]!=null) { computeHSI(hsiImages[i].getHSIProps()); }
+                if(hsiImages[i]!=null) { computeHSI(hsiImages[i].getHSIProps()); }
             }
             
             // Update ratio images.
@@ -1675,7 +1679,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
     
     public void setMedianFilterRatios(boolean set) {
-        this.medianFilterRatios = set;
+        medianFilterRatios = set;
     }
 
     public boolean getMedianFilterRatios() {

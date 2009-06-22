@@ -503,72 +503,48 @@ public class HSIView extends JPanel {
         if (this.bUpdating) {
             return;
         }
+
+        // Get button and spinner values.
         boolean med = medianFilterjButton.isSelected();
-        props.setIsMedianized(med);
         double r = new Double(medianRadiusjSpinner.getValue().toString());
+
+        // Update local props object.
+        props.setIsMedianized(med);
         props.setMedianRadius(r);
 
-        //TODO: fix?
-        //median radius is global for all ratio images???
+        // Set values in ui.
         ui.setMedianFilterRatios(med);
         ui.setMedianFilterRadius(r);
+
+        // Recompute all ratio images.
         ui.recomputeAllRatio();
-        /*
-        //TODO? move to another method?
+
+        // Recompute all hsi images.
         MimsPlus[] hsiImages = ui.getOpenHSIImages();
         for( int i = 0; i< hsiImages.length; i++) {
-        hsiImages[i].recomputeInternalImages();
+           hsiImages[i].recomputeInternalImages();
         }
-
-
-        ui.recomputeAllRatio();
-        ui.recomputeAllHSI();
-        MimsPlus[] ratioimages = ui.getOpenRatioImages();
-        for (int i = 0; i < ratioimages.length; i++) {
-        ui.autoContrastImage(ratioimages[i]);
-        }
-        ui.getCBControl().updateHistogram();
-         */
-        //updateInternalImages();
-        update(false);
-        updateInternalImages();
-        displayHSI();
+        ui.recomputeAllHSI();       
 }//GEN-LAST:event_medianFilterjButtonActionPerformed
 
     private void medianRadiusjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_medianRadiusjSpinnerStateChanged
-        if(this.bUpdating) return;
-        
-        if (medianFilterjButton.isSelected()) {
-            double r = new Double(medianRadiusjSpinner.getValue().toString());
-            props.setMedianRadius(r);
-            //TODO: fix?
-            //median radius is global for all ratio images???
-            ui.setMedianFilterRadius(r);
+        if (this.bUpdating) return;
+        if (!medianFilterjButton.isSelected()) return;
 
-            update(false);
-            updateInternalImages();
-            displayHSI();
-            /*
-            ui.resetMedianAllHSI(false);
-            double r = new Double(medianRadiusjSpinner.getValue().toString());
-            props.setMedianRadius(r);
+        // Get radius value.
+        double r = new Double(medianRadiusjSpinner.getValue().toString());
 
-            //TODO? move to another method?
-            //TODO this should break
-            MimsPlus[] hsiImages = ui.getOpenHSIImages();
-            for (int i = 0; i < hsiImages.length; i++) {
-                hsiImages[i].recomputeInternalImages();
-            }
-            ui.recomputeAllRatio();
-            ui.recomputeAllHSI();
-             */
+        // Set local props object and ui field.
+        props.setMedianRadius(r);
+        ui.setMedianFilterRadius(r);
+
+        // Recompute all hsi and ratio images.
+        MimsPlus[] hsiImages = ui.getOpenHSIImages();
+        for (int i = 0; i < hsiImages.length; i++) {
+            hsiImages[i].recomputeInternalImages();
         }
-
-
-    MimsPlus[] ratioimages = ui.getOpenRatioImages();
-    for (int i = 0; i < ratioimages.length; i++) {
-       ui.autoContrastImage(ratioimages[i]);
-    }        
+        ui.recomputeAllRatio();
+        ui.recomputeAllHSI();
 }//GEN-LAST:event_medianRadiusjSpinnerStateChanged
 
 private void rgbMinjSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rgbMinjSliderStateChanged
