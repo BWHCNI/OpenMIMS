@@ -157,7 +157,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       int xloc, yloc = 150;
       if (ijapp != null) {
          xloc = ijapp.getX();
-         if (xloc + ijapp.getWidth() + this.getPreferredSize().width + 10 < Toolkit.getDefaultToolkit().getScreenSize().width) {
+         if (xloc + ijapp.getWidth() + this.getPreferredSize().width + 10 <
+                 Toolkit.getDefaultToolkit().getScreenSize().width) {
             xloc += ijapp.getWidth() + 10;
             yloc = ijapp.getY();
          } else {
@@ -368,7 +369,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             loadMIMSFile(fileName);
         } catch (NullPointerException e) {
             e.printStackTrace();
-            System.err.println("A NullPointerException should not have occurred in loadMIMSFile.  This indicates that the fileName returned by the JFileChooser was null.");
+            System.err.println("A NullPointerException should not have occurred in loadMIMSFile.  " +
+                    "This indicates that the fileName returned by the JFileChooser was null.");
         }
     }
 
@@ -399,7 +401,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             loadMIMSFile(fileName);
         } catch (NullPointerException e) {
             e.printStackTrace();
-            System.err.println("A NullPointerException should not have occurred in loadMIMSFile.  This indicates that the fileName returned by the JFileChooser was null.");
+            System.err.println("A NullPointerException should not have occurred in loadMIMSFile.  " +
+                    "This indicates that the fileName returned by the JFileChooser was null.");
         }
     }
 
@@ -1169,14 +1172,14 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             return false;
         }
 
-        updateStatus("Computing HSI image..");
+        //updateStatus("Computing HSI image..");
 
         try {
             mp.getHSIProcessor().setProps(props);
         } catch (Exception x) {
             IJ.log(x.toString());
             updateStatus("Failed computing HSI image");
-        }        
+        }
 
         if (bShow) {
             while (mp.getHSIProcessor().isRunning()) {
@@ -1195,8 +1198,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
               mp.getWindow().setLocation(xloc, yloc);
         }
 
-        updateStatus("Ready");
-
+        //updateStatus("Ready");
         return true;
     }
 
@@ -1224,21 +1226,21 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             for (int i = 0; i < mp.length; i++) {
                massImages[i].setSlice(nSlice);                  
             }                                                    
-                            
+
             // Update HSI image slice.
-            for (int i = 0; i < hsi.length; i++) {
+            for (int i = 0; i < hsi.length; i++) {                
                 if(hsiImages[i]!=null) { hsiImages[i].recomputeInternalImages(); }
                 if(hsiImages[i]!=null) { computeHSI(hsiImages[i].getHSIProps()); }
             }
-            
+
             // Update ratio images.
             for (int i = 0; i < rp.length; i++) {                                                                     
               if(ratioImages[i]!=null) { computeRatio(ratioImages[i].getHSIProps(), true); }
             }                            
-                
+
             autocontrastAllImages();
             cbControl.updateHistogram();
-            
+
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_IMAGE_CLOSED) {
             // If an image was closed by a window event,
             // dispose the corresponding reference.            
@@ -2162,7 +2164,8 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
                break;
          }         
          if (zipEntry == null) {
-            JOptionPane.showMessageDialog(this, "Zip file does not contain " + actionFileName, "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Zip file does not contain " + actionFileName,
+                    "Error", JOptionPane.ERROR_MESSAGE);
             return;
          }
          InputStream input = zipFile.getInputStream(zipEntry);
