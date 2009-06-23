@@ -209,7 +209,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             loadMIMSFile(files[0].getAbsolutePath());
 
             // Generate all images that were previously open.
-            restoreState(rto_props, hsi_props, sum_props);
+            //restoreState(rto_props, hsi_props, sum_props);
          }
       });
 
@@ -771,8 +771,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         short[] nPixels = (short[]) num.getProcessor().getPixels();
         short[] dPixels = (short[]) den.getProcessor().getPixels();
 
-        int nt = props.getMinNum();
-        int dt = props.getMinDen();
         float rMax = 0.0f;
         float rMin = 1000000.0f;
         for (i = 0; i < rPixels.length; i++) {
@@ -801,21 +799,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             rfilter = null;
             mp.setRoi(temproi);
         }
-        /* Moved median bool and radius to ui to make global for all ratios
-         * not sure this is right....
-        if (props.getIsMedianized()) {
-            Roi temproi = mp.getRoi();
-            mp.killRoi();
-            ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
-            double r = props.getMedianRadius();
-            //System.out.println("r: " + r);
-            rfilter.rank(mp.getProcessor(), r, rfilter.MEDIAN);
-            rfilter = null;
-            mp.setRoi(temproi);
-        }
-        */
-        //End danger
-
 
         if (show) {                      
             mp.show();
@@ -1850,7 +1833,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        loadMIMSFile();
        
        // Generate all images that were previously open.
-       restoreState(rto_props, hsi_props, sum_props);                     
+       //restoreState(rto_props, hsi_props, sum_props);
 }//GEN-LAST:event_openMIMSImageMenuItemActionPerformed
 
     public void restoreState( HSIProps[] rto_props,  HSIProps[] hsi_props, SumProps[] sum_props){
@@ -1863,6 +1846,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        // Generate hsi images.
        for (int i=0; i<hsi_props.length; i++){
           computeHSI(hsi_props[i]);
+          hsiControl.updateInternalImages();
        }
               
        // Generate sum images.
@@ -2503,7 +2487,7 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
       // TODO we need more refined Exception checking here
       } catch (Exception e) {}
       
-      restoreState(rto_props, hsi_props, sum_props); 
+      //restoreState(rto_props, hsi_props, sum_props);
 
       // Set all images to the first slice.
       for (int j = 0; j < image.nMasses(); j++) {
