@@ -1229,6 +1229,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             // Update HSI image slice.
             for (int i = 0; i < hsi.length; i++) {                
+                //System.out.println("recomputeInternalImages from mimsStateChange called");
                 if(hsiImages[i]!=null) { hsiImages[i].recomputeInternalImages(); }
                 if(hsiImages[i]!=null) { computeHSI(hsiImages[i].getHSIProps()); }
             }
@@ -2007,6 +2008,9 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
       if (lastFolder != null) {
          fc.setCurrentDirectory(new java.io.File(lastFolder));
       }
+      String fname = this.getImageFilePrefix();
+      fname = fname + ".zip";
+      fc.setSelectedFile(new File(fname));
 
       MIMSFileFilter ffilter = new MIMSFileFilter("zip");
       ffilter.setDescription("MIMS Session");
@@ -2315,7 +2319,9 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
       // Query user where to save action file.
       JFileChooser fc = new JFileChooser(lastFolder);
-      fc.setSelectedFile(new File(lastFolder));
+      String fname = this.getImageFilePrefix();
+      fname = fname + ".act";
+      fc.setSelectedFile(new File(fname));
 
       MIMSFileFilter ffilter = new MIMSFileFilter("txt");
       ffilter.addExtension("act");
