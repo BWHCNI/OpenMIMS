@@ -868,9 +868,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
        
     private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoTrackButtonActionPerformed
 
-       if (atManager == null) {
-            atManager = new AutoTrackManager();
-        }
+        atManager = new AutoTrackManager();
         atManager.showFrame();              
 }//GEN-LAST:event_autoTrackButtonActionPerformed
    
@@ -956,6 +954,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     for(int i=0; i< num; i++) {
         compressPlanes(i+1,blocksize+i);
     }
+    ui.autocontrastAllImages();
     this.compressTextField.setText("");
 }//GEN-LAST:event_compressButtonActionPerformed
 
@@ -1151,9 +1150,9 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
       sub.setSelected(false);
 
       norm = new JRadioButton("Normalize tracking image");
-      norm.setSelected(true);
+      norm.setSelected(false);
       eq = new JRadioButton("Equalize tracking image");
-      eq.setSelected(true);
+      eq.setSelected(false);
 
       buttonGroup.add(all);
       buttonGroup.add(some);      
