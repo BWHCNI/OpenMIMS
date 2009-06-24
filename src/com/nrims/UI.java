@@ -1836,7 +1836,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        loadMIMSFile();
        
        // Generate all images that were previously open.
-       //restoreState(rto_props, hsi_props, sum_props);
+       restoreState(rto_props, hsi_props, sum_props);
 }//GEN-LAST:event_openMIMSImageMenuItemActionPerformed
 
     public void restoreState( HSIProps[] rto_props,  HSIProps[] hsi_props, SumProps[] sum_props){
@@ -1851,7 +1851,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
           computeHSI(hsi_props[i]);
           hsiControl.updateInternalImages();
        }
-              
+       
+       MimsPlus[] openhsi = this.getOpenHSIImages();
+       for (int i=0; i<openhsi.length; i++){
+          openhsi[i].recomputeInternalImages();
+       }
+
        // Generate sum images.
        for (int i=0; i<sum_props.length; i++){
           computeSum(sum_props[i]);       
