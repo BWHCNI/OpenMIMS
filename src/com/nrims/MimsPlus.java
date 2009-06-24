@@ -484,7 +484,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         else {
             msg += " = ";
         }
-        if(this.nType == HSI_IMAGE) {
+        if(this.nType == HSI_IMAGE && (this.internalDenominator!=null && this.internalNumerator!=null) ) {
             /*
             int n = getHSIProps().getNumMass();
             int d = getHSIProps().getDenMass();
@@ -562,7 +562,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                                     
                   // Update message.
                   ij.process.ImageStatistics stats;                 
-                  if(this.getMimsType()==HSI_IMAGE) {
+                  if(this.getMimsType()==HSI_IMAGE && internalRatio!=null) {
                       internalRatio.setRoi(roi);
                      stats = internalRatio.getStatistics();
                       internalRatio.killRoi();
@@ -738,19 +738,20 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         java.util.ArrayList<Integer> list = new java.util.ArrayList<Integer>();
         int windowSize = props.getWindowSize();
         int currentplane = parentNum.getSlice();               
-        if (!props.getIsSum() && !props.getIsWindow()) {
-            list.add(currentplane);
-        } else if (props.getIsSum()) {
-            for(int i = 1; i<=parentNum.getNSlices(); i++) {
-                list.add(i);
+            if (!props.getIsSum() && !props.getIsWindow()) {
+                list.add(currentplane);
+
+            } else if (props.getIsSum()) {
+                for (int i = 1; i <= parentNum.getNSlices(); i++) {
+                    list.add(i);
+                }
+            } else if (props.getIsWindow()) {
+                int lb = currentplane - windowSize;
+                int ub = currentplane + windowSize;
+                for (int i = lb; i <= ub; i++) {
+                    list.add(i);
+                }
             }
-        } else if (props.getIsWindow()) {
-            int lb = currentplane - windowSize;
-            int ub = currentplane + windowSize;
-            for (int i = lb; i <= ub; i++) {
-                list.add(i);
-            }
-        }
 
         // Compute the sum of the numerator and denominator mass images.
         this.internalNumerator = ui.computeSum(parentNum, false, list);
@@ -800,7 +801,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         this.internalNumerator.ui = this.ui;
         this.internalDenominator.ui = this.ui;
         this.internalRatio.ui = this.ui;
-    }
+        }
 
 
         //copied and modified from ui.computeSum()

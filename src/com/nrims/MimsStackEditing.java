@@ -2,11 +2,15 @@ package com.nrims;
 
 import com.nrims.data.Opener;
 import ij.*;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -20,6 +24,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.JLabel;
 
 /**
  *
@@ -78,6 +83,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     public void XShiftSlice(int plane, double xval) {
         for (int k = 0; k <= (numberMasses - 1); k++) {
+            //make sure there is no roi
+            this.images[k].killRoi();
             this.images[k].getProcessor().translate(xval, 0.0);
             images[k].updateAndDraw();
         }
@@ -86,6 +93,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     public void YShiftSlice(int plane, double yval) {
         for (int k = 0; k <= (numberMasses - 1); k++) {
+            //make sure there is no roi
+            this.images[k].killRoi();
             this.images[k].getProcessor().translate(0.0, yval);
             images[k].updateAndDraw();
         }
@@ -721,34 +730,93 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_translateYSpinnerStateChanged
 
-    private void autoTrack() {
+    private void autoTrack(String options) {
        int length = images[0].getStackSize();
        ArrayList<Integer> includeList = new ArrayList<Integer>();
        for (int i = 0; i < length; i++) {
           includeList.add(i, i+1);          
        }
-       autoTrack(includeList);
+       autoTrack(includeList, options);
     }
     
-    private void autoTrack(ArrayList<Integer> includeList){
+    private void autoTrack(ArrayList<Integer> includeList, String options){
        try {
           setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
           ImagePlus tempImage = WindowManager.getCurrentImage();
-          ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
+
+          //ij.plugin.filter.Duplicater dup = new ij.plugin.filter.Duplicater();
+          //ImagePlus imgcopy = dup.duplicateStack(tempImage, "copy");
+
           int startPlane = images[0].getCurrentSlice();
-          ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
           String massname = tempImage.getTitle();
           
+          
+          ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
+          ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
+                    
           for (int i = 0; i < includeList.size(); i++) {             
              images[0].setSlice(includeList.get(i));
-             tempImage = WindowManager.getCurrentImage();
+             //tempImage = WindowManager.getCurrentImage();
              tempProcessor = tempImage.getProcessor();
              tempStack.addSlice(tempImage.getTitle(), tempProcessor);
           }
 
           tempImage.setSlice(0);
-          ImagePlus img = new ij.ImagePlus("", tempStack);
 
+
+
+
+
+          ImagePlus img = new ij.ImagePlus("img", tempStack);
+          String optionmsg = "";
+
+          //TODO: clean up messy weirdness... sometime...
+
+          //Comment in to show autotracking stack
+          //comment out close() below
+          //img.show();
+          //img.updateAndDraw();
+
+          ij.process.StackProcessor stackproc = new ij.process.StackProcessor(tempStack, tempProcessor);
+           if (options.contains("roi")) {
+               MimsRoiManager roimanager = ui.getRoiManager();
+
+               if (roimanager == null) { return; }
+               ij.gui.Roi roi = roimanager.getRoi();
+               if (roi == null) { return; }
+
+               int width = roi.getBoundingRect().width;
+               int height = roi.getBoundingRect().height;
+               int x = roi.getBoundingRect().x;
+               int y = roi.getBoundingRect().y;
+
+               img.getProcessor().setRoi(roi);
+
+               img.setStack("cropped", stackproc.crop(x, y, width, height));
+
+               img.killRoi();
+               optionmsg += "Subregion " + roi.getName() + " ";
+           } else {
+              img.setStack("cropped", stackproc.crop(0, 0, img.getProcessor().getWidth(), img.getProcessor().getHeight()));
+           }
+
+
+          //Enhance tracking image contrast
+
+          if(options.contains("normalize") || options.contains("equalize")) {
+              WindowManager.setTempCurrentImage(img);
+              
+              System.out.println(IJ.getImage().getTitle());
+              
+              String tmpstring = "";
+              if(options.contains("normalize")) { tmpstring += "normalize "; }
+              if(options.contains("equalize")) { tmpstring += "equalize "; }
+              IJ.run("Enhance Contrast", "saturated=0.5 " + tmpstring + " normalize_all");
+
+              System.out.println(IJ.getImage().getTitle());
+              //System.out.println(WindowManager.getCurrentImage().getTitle());
+          }
+          
           //the waiting
           if (img == null) {
              System.err.println("The img is null; aborting.");
@@ -779,9 +847,11 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
           //clean up
           images[0].setSlice(startPlane);
-          tempImage = null;
-          tempProcessor = null;
-          tempStack = null;
+          //tempImage = null;
+          //tempProcessor = null;
+          //tempStack = null;
+
+          //comment out for testing
           img.close();
           img = null;
           if (!this.reinsertButton.isEnabled()) {
@@ -790,7 +860,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
           
           // Save a backup action file incase of crash.
           File backup = ui.saveTempActionFile();
-          ui.getmimsLog().Log("Autotracked on the " + massname + " images. Backup action file saved to "+backup.getAbsolutePath());          
+          ui.getmimsLog().Log("Autotracked on the " + massname + " images. \n" + optionmsg + "\nBackup action file saved to "+backup.getAbsolutePath());
        } finally {          
           setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
        }       
@@ -1042,11 +1112,14 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
    JTextField txtField = new JTextField();
    JRadioButton all;
    JRadioButton some;
+   JRadioButton sub;
+   JRadioButton norm;
+   JRadioButton eq;
    JButton cancelButton;
    JButton okButton;            
    
    public AutoTrackManager(){
-      super("Auto Track Manager");        
+      super("Auto Track Manager");
       
       if (instance != null) {
          instance.toFront();
@@ -1057,7 +1130,12 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
       // Setup radiobutton panel.
       JPanel jPanel = new JPanel();
       jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
-      
+
+      String imagename = WindowManager.getCurrentImage().getTitle();
+      JLabel label = new JLabel("Image:   "+imagename);
+      jPanel.add(label);
+      jPanel.add(Box.createRigidArea(new Dimension(0,10)));
+
       // Radio buttons.
       all  = new JRadioButton("Autotrack all images.");
       all.setActionCommand("All");
@@ -1068,10 +1146,19 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
       some.setActionCommand("Subset");                                                   
       some.addActionListener(this);
       txtField.setEditable(false);
-      
+
+      sub = new JRadioButton("Use subregion (Roi)");
+      sub.setSelected(false);
+
+      norm = new JRadioButton("Normalize tracking image");
+      norm.setSelected(true);
+      eq = new JRadioButton("Equalize tracking image");
+      eq.setSelected(true);
+
       buttonGroup.add(all);
       buttonGroup.add(some);      
-      
+     
+
       // Add to container.
       jPanel.add(all);
       jPanel.add(Box.createRigidArea(new Dimension(0,10)));
@@ -1079,6 +1166,13 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
       jPanel.add(Box.createRigidArea(new Dimension(0,10)));
       jPanel.add(txtField);
       jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+      jPanel.add(Box.createRigidArea(new Dimension(0,10)));
+      jPanel.add(sub);
+      jPanel.add(Box.createRigidArea(new Dimension(0,10)));
+      jPanel.add(norm);
+      jPanel.add(Box.createRigidArea(new Dimension(0,10)));
+      jPanel.add(eq);
+      jPanel.add(Box.createRigidArea(new Dimension(0,10)));
       
       // Set up "OK" and "Cancel" buttons.      
       JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));            
@@ -1095,7 +1189,7 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
       setLayout(new BorderLayout());            
       add(jPanel, BorderLayout.PAGE_START);
       add(buttonPanel, BorderLayout.PAGE_END);            
-      setSize(new Dimension(375, 175)); 
+      setSize(new Dimension(375, 300));
   
    }
    
@@ -1110,15 +1204,50 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
        else if (e.getActionCommand().equals("OK")) {                   
           // Planes to be used for autotracking.
           try {
-             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));          
-             if (getSelection(buttonGroup).getActionCommand().equals("Subset")) {                       
-                ArrayList<Integer> includeList = parseList(txtField.getText(), 1, ui.mimsAction.getSize());
-                if (includeList.size()!=0)                                            
-                   autoTrack(includeList);                                                
-                } else {             
-                   autoTrack();                        
-                }
-             } finally {
+             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+             String options = " ";
+             if (sub.isSelected()) {
+                 options += "roi ";
+             }
+
+              //check for roi
+              if (options.contains("roi")) {
+                  MimsRoiManager roimanager = ui.getRoiManager();
+                  if (roimanager == null) {
+                      ij.IJ.error("Error", "No ROI selected.");
+                      return;
+                  }
+                  ij.gui.Roi roi = roimanager.getRoi();
+                  if (roi == null) {
+                      ij.IJ.error("Error", "No ROI selected.");
+                      return;
+                  }
+              }
+
+             if (norm.isSelected()) {
+                 options += "normailize ";
+             }
+             if (eq.isSelected()) {
+                 options += "equalize ";
+             }
+
+              java.util.Date start = new java.util.Date();
+
+              if (getSelection(buttonGroup).getActionCommand().equals("Subset")) {
+                  ArrayList<Integer> includeList = parseList(txtField.getText(), 1, ui.mimsAction.getSize());
+                  if (includeList.size() != 0) {
+                      autoTrack(includeList, options);
+                  }
+              } else {
+                  autoTrack(options);
+              }
+
+              java.util.Date end = new java.util.Date();
+              System.out.println("Start time (ms): " + start.getTime());
+              System.out.println("End time (ms): " + end.getTime());
+              System.out.println("Time (ms): " + (end.getTime() - start.getTime() ));
+              
+          } finally {
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));           
              }          
           closeWindow();

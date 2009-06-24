@@ -1129,6 +1129,18 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
     }
 
+    public Roi getRoi() {
+        int[] indexes = jlist.getSelectedIndices();
+
+        if (indexes.length == 0) {
+            return null;
+        }
+
+        String label = listModel.get(indexes[0]).toString();
+        Roi roi = (Roi) rois.get(label);
+        return roi;
+    }
+
     void updatePlots(boolean force) {
         MimsPlus imp;
         try{
