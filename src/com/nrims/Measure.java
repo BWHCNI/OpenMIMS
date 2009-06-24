@@ -4,6 +4,7 @@ import ij.IJ;
 import ij.measure.ResultsTable;
 import ij.process.ImageStatistics;
 import ij.gui.*;
+import java.awt.Rectangle;
 
 /**
  * Display results from selected masses for all rois in the MimsRoiManager
@@ -156,7 +157,9 @@ public class Measure {
     }
 
     private int addResults(MimsPlus image, int n, Roi roi, int nSlice, int ncol) {
+       Rectangle r = roi.getBounds();
        ImageStatistics is = image.getStatistics();
+       ImageStatistics is2 = ImageStatistics.getStatistics(image.getProcessor(), ImageStatistics.MEDIAN, image.getCalibration());
         for (int i = 0; i < bMeasure.length; i++) {
             if (bMeasure[i]) {
                 if (!bMeasurePerImage[i] && n > 0) {
@@ -182,10 +185,12 @@ public class Measure {
                             rTable.addValue(ncol++, is.max);
                             break;
                         case ResultsTable.X_CENTROID:
-                            rTable.addValue(ncol++, is.xCentroid);
+                            int xc = r.x + r.width / 2;
+                            rTable.addValue(ncol++, xc);
                             break;
                         case ResultsTable.Y_CENTROID:
-                            rTable.addValue(ncol++, is.yCentroid);
+                            int yc = r.y + r.height / 2;
+                            rTable.addValue(ncol++, yc);
                             break;
                         case ResultsTable.X_CENTER_OF_MASS:
                             rTable.addValue(ncol++, is.xCenterOfMass);
@@ -220,9 +225,8 @@ public class Measure {
                         case ResultsTable.INTEGRATED_DENSITY:
                             rTable.addValue(ncol++, is.pixelCount * is.mean);
                             break;
-                        case ResultsTable.MEDIAN:
-                            is = ImageStatistics.getStatistics(image.getProcessor(), ImageStatistics.MEDIAN, image.getCalibration());
-                            rTable.addValue(ncol++, is.median);
+                        case ResultsTable.MEDIAN:                            
+                            rTable.addValue(ncol++, is2.median);
                             break;
                         case ResultsTable.SKEWNESS:
                             rTable.addValue(ncol++, is.skewness);
