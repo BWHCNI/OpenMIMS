@@ -518,9 +518,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             }         
         }
         else if(this.nType == SUM_IMAGE) {
+            float ngl = numeratorSum.getProcessor().getPixelValue(mX, mY);
+            float dgl = denominatorSum.getProcessor().getPixelValue(mX, mY);
             int[] gl = getPixel(mX, mY);
             float s = Float.intBitsToFloat(gl[0]);
-            msg += IJ.d2s(s,0);
+            msg += "S (" + ngl + " / " + dgl + ") = " + IJ.d2s(s,0);
         }
         else {
             MimsPlus[] ml = ui.getOpenMassImages() ;
@@ -881,13 +883,20 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         return this.internalDenominator;
     }
 
-    //TODO: delete
     public MimsPlus getNumeratorSum() {
         return this.numeratorSum;
     }
-    //TODO: delete
+
+    public void setNumeratorSum(MimsPlus mp) {
+        this.numeratorSum = mp;
+    }
+
     public MimsPlus getDenominatorSum() {
         return this.denominatorSum;
+    }
+
+    public void setDenominatorSum(MimsPlus mp) {
+        this.denominatorSum = mp;
     }
     
     public void addListener( MimsUpdateListener inListener ) {

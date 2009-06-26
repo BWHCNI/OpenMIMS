@@ -992,32 +992,20 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             fail = false;
         }
 
+        MimsPlus nImage = null;
+        MimsPlus dImage = null;
         if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {
             sumProps = new SumProps(mImage.getNumerMassNumber(), mImage.getDenomMassNumber());
             int numMass = mImage.getNumMass();
             int denMass = mImage.getDenMass();
-            MimsPlus nImage = massImages[numMass];
-            MimsPlus dImage = massImages[denMass];
-            Object[] no = nImage.getStack().getImageArray();
-            Object[] doo = dImage.getStack().getImageArray();
-            
-            double[] numPixels = new double[templength];
-            double[] denPixels = new double[templength];
 
-            for (int i = 0; i < sumlist.size(); i++) {
-                //nImage.setSlice(sumlist.get(i));
-                tempPixels = (short[])no[sumlist.get(i)-1];
-                for (int j = 0; j < numPixels.length; j++) {
-                    numPixels[j] += tempPixels[j];
-                }
-            }
-            for (int i = 0; i < sumlist.size(); i++) {
-                //nImage.setSlice(sumlist.get(i));
-                tempPixels = (short[])doo[sumlist.get(i)-1];
-                for (int j = 0; j < denPixels.length; j++) {
-                    denPixels[j] += tempPixels[j];
-                }
-            }
+            // Get the sum images of the numerator and denominator.
+            nImage = computeSum(massImages[numMass], false, sumlist);
+            dImage = computeSum(massImages[denMass], false, sumlist);
+            
+            float[] numPixels = (float[]) nImage.getProcessor().getPixels();
+            float[] denPixels = (float[]) dImage.getProcessor().getPixels();
+
             for (int i = 0; i < sumPixels.length; i++) {
                 if (denPixels[i] != 0) {
                     sumPixels[i] = ratioScaleFactor * (numPixels[i] / denPixels[i]);
@@ -1034,6 +1022,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         if (!fail) {
             MimsPlus mp = new MimsPlus(this, width, height, sumPixels, sumName);
             mp.setSumProps(sumProps);
+            mp.setNumeratorSum(nImage);
+            mp.setDenominatorSum(dImage);
 
             if(show==false) return mp;
 
