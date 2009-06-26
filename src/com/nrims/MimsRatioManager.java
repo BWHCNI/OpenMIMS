@@ -95,7 +95,7 @@ public class MimsRatioManager extends PlugInJFrame implements ActionListener {
       add(new JSeparator(JSeparator.HORIZONTAL));           
       add(buttonPanel);
                
-      setSize(new Dimension(250, 275));     
+      setSize(new Dimension(250, 325));
    }      
    
    public void actionPerformed(ActionEvent e) {
