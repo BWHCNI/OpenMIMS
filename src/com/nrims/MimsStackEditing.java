@@ -954,8 +954,17 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     for(int i=0; i< num; i++) {
         compressPlanes(i+1,blocksize+i);
     }
-    ui.autocontrastAllImages();
+
+    int nmasses = image.nMasses();
+    for (int mindex = 0; mindex < nmasses; mindex++) {
+        images[mindex].setSlice(1);
+        images[mindex].updateAndDraw();
+        ui.autoContrastImage(images[mindex]);
+    }
+    //for some reason this doesn't work ???
+    //ui.autocontrastAllImages();
     this.compressTextField.setText("");
+    ui.getmimsLog().Log("Compressed with blocksize: " + blocksize);
 }//GEN-LAST:event_compressButtonActionPerformed
 
 
@@ -970,48 +979,46 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         int nmasses = this.image.nMasses();
         int currentplane = images[0].getSlice();
         int templength = images[0].getProcessor().getPixelCount();
-        double[][] sumPixels = new double[nmasses][templength];
+        float[][] sumPixels = new float[nmasses][templength];
         short[][] tempPixels = new short[nmasses][templength];
-
-        //add up pixel values
-        for (int mindex = 0; mindex < nmasses; mindex++) {
-            for (int i = startplane; i <= endplane; i++) {
-                images[mindex].setSlice(i);
-                tempPixels[mindex] = (short[]) images[mindex].getProcessor().getPixels();
-                for (int j = 0; j < sumPixels[mindex].length; j++) {
-                    sumPixels[mindex][j] += tempPixels[mindex][j];
-                }
-            }
-        }
         
-        //check to see if pixel values fit in 16bit image
+        //Sum the block
+        ArrayList sumlist = new ArrayList<Integer>();
+        for (int i = startplane; i <= endplane; i++) {
+            sumlist.add(i);
+        }
+
+        MimsPlus[] blockSums = new MimsPlus[nmasses];
         for (int mindex = 0; mindex < nmasses; mindex++) {
-            double max = 0;
-            for (int i = 0; i < sumPixels[mindex].length; i++) {
-                max = java.lang.Math.max(max, sumPixels[mindex][i]);
-            }
-            if (max > 65535) {
+            blockSums[mindex] = ui.computeSum(images[mindex], false, sumlist);
+        }
+
+        //Check max
+        for (int mindex = 0; mindex < nmasses; mindex++) {
+            double m = blockSums[mindex].getProcessor().getMax();
+            if (m > 65535) {
                 System.out.println("over limit!");
                 return;
             }
         }
-        
-        //set tempixels to cast sumpixels
-        for (int mindex = 0; mindex < nmasses; mindex++) {
-            for (int i = 0; i < sumPixels[mindex].length; i++) {
-                tempPixels[mindex][i] = (short) sumPixels[mindex][i];
-            }
-        }
+
         //delete unneeded planes and set pixel values
         for (int mindex = 0; mindex < nmasses; mindex++) {
             for (int i = startplane + 1; i <= endplane; i++) {
                 imagestacks[mindex].deleteSlice(startplane+1);
             }
-            //must be in this order, why?
-            this.images[mindex].setSlice(startplane);
-            this.images[mindex].setStack(null, imagestacks[mindex]);
-            this.images[mindex].getProcessor().setPixels(tempPixels[mindex]);
+            sumPixels[mindex] = (float[])blockSums[mindex].getProcessor().getPixels();
 
+            //cast to short, max allready checked
+            for(int j = 0; j < templength; j++) {
+                tempPixels[mindex][j] = (short) sumPixels[mindex][j];
+            }
+
+            //must be in this order, why?
+            images[mindex].setSlice(startplane);
+            images[mindex].setStack(null, imagestacks[mindex]);
+            images[mindex].getProcessor().setPixels(tempPixels[mindex]);
+            
         }
         
         //a little cleanup
@@ -1026,7 +1033,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 images[mindex].setIsStack(false);
             }
             images[mindex].updateAndDraw();
-        }                                
+        }
     }
 
     protected void restoreAllPlanes() {

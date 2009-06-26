@@ -502,7 +502,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             */
             float ngl = internalNumerator.getProcessor().getPixelValue(mX, mY);
             float dgl = internalDenominator.getProcessor().getPixelValue(mX, mY);
-            double ratio = ui.getRatioScaleFactor() * ((double) ngl / (double) dgl);
+            double ratio = internalRatio.getProcessor().getPixelValue(mX, mY);
 
             msg += "S (" + (int)ngl + " / " + (int)dgl + ") = " + IJ.d2s(ratio, 4);
         } 
@@ -513,8 +513,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             if(ml.length > n && ml.length > d && ml[n] != null && ml[d] != null ) {
                 int [] ngl = ml[n].getPixel(mX,mY);
                 int [] dgl = ml[d].getPixel(mX,mY);
-                int [] rgl = getPixel(mX,mY);
-                float r = Float.intBitsToFloat(rgl[0]);
+                float r = this.getProcessor().getPixelValue(mX, mY);
                 msg += "S (" + ngl[0] + " / " + dgl[0] + ") = " + IJ.d2s(r,4);
             }         
         }
