@@ -283,6 +283,9 @@ public class Measure {
        if (images.length == 0) 
           return;
 
+       // Get the starting slice.
+       int startSlice = images[0].getCurrentSlice();
+
        // Get the number of slices in stack.
        int nSlices = images[0].getNSlices();
        if (nSlices < 1) 
@@ -378,7 +381,10 @@ public class Measure {
              rTable.addLabel(labelHeader, label);
              }
           }          
-       }               
+       }
+       
+       // Set to original slice.
+       images[0].setSlice(startSlice);
        
        // Done! Show table.
        rTable.show(fileName);
@@ -393,6 +399,10 @@ public class Measure {
         MimsPlus[] images = getMeasureImages();                 
         if (images.length == 0) return;
 
+        // Get the starting slice.
+        int startSlice = images[0].getCurrentSlice();
+        System.out.println(startSlice);
+
         // Get the number of slices in stack.
         int nSlices = images[0].getNSlices();
         if (nSlices < 1) return;            
@@ -401,8 +411,10 @@ public class Measure {
         MimsRoiManager rm = ui.getRoiManager();
         Roi[] rois;
         javax.swing.JList rlist = rm.getList();        
-        if (rm.getROIs().isEmpty()) rois = new Roi[0];           
-        else {
+        if (rm.getROIs().isEmpty()) {
+            System.out.println("No ROIs in image");
+            return;
+        } else {
            int length = rlist.getModel().getSize();
            rois = new Roi[length];
            for (int i = 0; i < length; i++) {
@@ -465,6 +477,9 @@ public class Measure {
              }
           }
        }
+
+       // Set to original slice.
+       images[0].setSlice(startSlice);
 
        // Done! Show table.
        rTable.show(fileName);

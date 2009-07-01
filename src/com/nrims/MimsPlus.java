@@ -132,7 +132,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                ratioMims = ui.computeRatio(props, false);
 
                //TODO fix me
-               if(props.getIsSum()) {
+               if(ui.getIsSum()) {
                    this.initializeHSISum(props);
                }
 
@@ -730,7 +730,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public void recomputeInternalImages() {
 
         // Only to be called on HSI images.
-        if(this.getMimsType() != this.HSI_IMAGE) return;
+        if(nType != HSI_IMAGE && nType != RATIO_IMAGE ) return;
 
         // Get the properties.
         HSIProps props = this.getHSIProps();
@@ -741,16 +741,16 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
         // Setup list for sliding window, entire image, or single plane.
         java.util.ArrayList<Integer> list = new java.util.ArrayList<Integer>();
-        int windowSize = props.getWindowSize();
+        int windowSize = ui.getWindowRange();
         int currentplane = parentNum.getSlice();               
-            if (!props.getIsSum() && !props.getIsWindow()) {
+            if (!ui.getIsSum() && !ui.getIsWindow()) {
                 list.add(currentplane);
 
-            } else if (props.getIsSum()) {
+            } else if (ui.getIsSum()) {
                 for (int i = 1; i <= parentNum.getNSlices(); i++) {
                     list.add(i);
                 }
-            } else if (props.getIsWindow()) {
+            } else if (ui.getIsWindow()) {
                 int lb = currentplane - windowSize;
                 int ub = currentplane + windowSize;
                 for (int i = lb; i <= ub; i++) {
@@ -784,29 +784,29 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
 
         // Do some other stuff.
-        if( this.internalRatio == null ) {
-            this.internalRatio = new MimsPlus();
+        if( internalRatio == null ) {
+            internalRatio = new MimsPlus();
         }
-        if( this.internalRatio.getProcessor() != null ) {
-            this.internalRatio.getProcessor().setPixels(rpixels);
+        if( internalRatio.getProcessor() != null ) {
+            internalRatio.getProcessor().setPixels(rpixels);
         } else {
             int procwidth = internalNumerator.getProcessor().getWidth();
             int procheight = internalNumerator.getProcessor().getHeight();
             ij.process.FloatProcessor tempProc = new ij.process.FloatProcessor(procwidth, procheight);
             tempProc.setPixels(rpixels);
-            this.internalRatio.setProcessor("", tempProc);
+            internalRatio.setProcessor("", tempProc);
         }
 
         // Medianize if needed.
         if(ui.getMedianFilterRatios()) {
-            this.medianizeInternalRatio(ui.getMedianFilterRadius());
+            medianizeInternalRatio(ui.getMedianFilterRadius());
         }
 
         // Other stuff.
-        this.internalNumerator.ui = this.ui;
-        this.internalDenominator.ui = this.ui;
-        this.internalRatio.ui = this.ui;
-        }
+        internalNumerator.ui = ui;
+        internalDenominator.ui = ui;
+        internalRatio.ui = ui;
+    }
 
 
         //copied and modified from ui.computeSum()

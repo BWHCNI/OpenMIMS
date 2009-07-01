@@ -80,6 +80,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private boolean currentlyOpeningImages = false;
     private boolean bCloseOldWindows = true;
     private boolean medianFilterRatios = false;
+    private boolean isSum = false;
+    private boolean isWindow = false;
+    private int     windowRange = -1;
     private boolean[] bOpenMass = new boolean[maxMasses];
             
     private String lastFolder = null;      
@@ -620,12 +623,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     public int getRatioImageIndex(int numIndex, int denIndex) {
-        for (int i = 0; i < maxMasses; i++) {
-            if (ratioImages[i] != null) {
-                if (ratioImages[i].getNumMass() == numIndex && ratioImages[i].getDenMass() == denIndex) {
+        MimsPlus mp[] = getOpenRatioImages();
+        for (int i = 0; i < mp.length; i++) {
+                if (mp[i].getNumMass() == numIndex && mp[i].getDenMass() == denIndex) {
                     return i;
-                }
-            }
+                }            
         }
         return -1;
     }
@@ -692,7 +694,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     public synchronized MimsPlus computeRatio(HSIProps props, boolean show) {
-        int i;
 
         int numIndex = props.getNumMass();
         int denIndex = props.getDenMass();
@@ -707,26 +708,32 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
            ratioIndex = -1;
            mp = new MimsPlus(image, props, false);
         }
-        
-        MimsPlus num = massImages[numIndex];
-        if (num == null) {
-            updateStatus("Error no numerator");
-            return null;
-        }
-        MimsPlus den = massImages[denIndex];
-        if (den == null) {
-            updateStatus("Error no denominator");
-            return null;
-        }
 
-        if (num.getBitDepth() != 16) {
-            updateStatus("Error numerator not 16 bits");
-            return null;
-        }
-        if (den.getBitDepth() != 16) {
-            updateStatus("Error denominator not 16 bits");
-            return null;
-        }
+        // Get the numerator and denominator mass images.
+        MimsPlus parentNum = getMassImage( props.getNumMass() );
+        MimsPlus parentDen = getMassImage( props.getDenMass() );
+
+        // Setup list for sliding window, entire image, or single plane.
+        java.util.ArrayList<Integer> list = new java.util.ArrayList<Integer>();
+        int windowSize = getWindowRange();
+        int currentplane = parentNum.getSlice();
+            if (!getIsSum() && !getIsWindow()) {
+                list.add(currentplane);
+            } else if (getIsSum()) {
+                for (int i = 1; i <= parentNum.getNSlices(); i++) {
+                    list.add(i);
+                }
+            } else if (getIsWindow()) {
+                int lb = currentplane - windowSize;
+                int ub = currentplane + windowSize;
+                for (int i = lb; i <= ub; i++) {
+                    list.add(i);
+                }
+            }
+
+        // Compute the sum of the numerator and denominator mass images.
+        MimsPlus num = computeSum(parentNum, false, list);
+        MimsPlus den = computeSum(parentDen, false, list);        
 
         if (ratioIndex >= 0) {
             mp = ratioImages[ratioIndex];
@@ -749,7 +756,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             } else {
                 // find a slot to save it
                 boolean bFound = false;
-                for (i = 0; i < maxMasses && !bFound; i++) {
+                for (int i = 0; i < maxMasses && !bFound; i++) {
                     if (ratioImages[i] == null) {
                         bFound = true;
                         ratioImages[i] = mp;
@@ -771,12 +778,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
 
         float[] rPixels = (float[]) mp.getProcessor().getPixels();
-        short[] nPixels = (short[]) num.getProcessor().getPixels();
-        short[] dPixels = (short[]) den.getProcessor().getPixels();
+        float[] nPixels = (float[]) num.getProcessor().getPixels();
+        float[] dPixels = (float[]) den.getProcessor().getPixels();
 
         float rMax = 0.0f;
         float rMin = 1000000.0f;
-        for (i = 0; i < rPixels.length; i++) {
+        for (int i = 0; i < rPixels.length; i++) {
             if (nPixels[i] >= 0 && dPixels[i] > 0) {
                 rPixels[i] = ratioScaleFactor * ((float) nPixels[i] / (float) dPixels[i]);
                 if (rPixels[i] > rMax) {
@@ -1072,24 +1079,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         return -1;
     }
 
-//unused ???
-    /*
-    public void resetMedianAllHSI(boolean b) {
-        MimsPlus[] openhsi = this.getOpenHSIImages();
-        for(int i =0; i < openhsi.length; i++) {
-            openhsi[i].setIsMedianized(b);
-        }
-
-    }
-*/
-
     public synchronized boolean computeHSI(HSIProps props) {
-        int i;
         if(props==null) return false;
-        if(medianFilterRatios) {
-           props.setIsMedianized(medianFilterRatios);
-           props.setMedianRadius(medianFilterRadius);
-        }
+
         int hsiIndex = getHSIImageIndex(props);
         MimsPlus num = massImages[props.getNumMass()];
         if (num == null) {
@@ -1110,9 +1102,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             updateStatus("Error denominator not 16 bits");
             return false;
         }
-
-        int numIndex = props.getNumMass();
-        int denIndex = props.getDenMass();
 
         MimsPlus mp = null;
         if (hsiIndex != -1) {
@@ -1140,9 +1129,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         if (mp == null) {
             mp = new MimsPlus(image, props, true);
             mp.setHSIProcessor(new HSIProcessor(mp));
-            // find a slot to save it
             boolean bFound = false;
-            for (i = 0; i < maxMasses && !bFound; i++) {
+            for (int i = 0; i < maxMasses && !bFound; i++) {
                 if (hsiImages[i] == null) {
                     bFound = true;
                     hsiImages[i] = mp;
@@ -1161,8 +1149,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             updateStatus("Error allocating ratio image");
             return false;
         }
-
-        //updateStatus("Computing HSI image..");
 
         try {
             mp.getHSIProcessor().setProps(props);
@@ -1188,7 +1174,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
               mp.getWindow().setLocation(xloc, yloc);
         }
 
-        //updateStatus("Ready");
         return true;
     }
 
@@ -1214,19 +1199,18 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             // Set mass images.
             int nSlice = evt.getSlice();
             for (int i = 0; i < mp.length; i++) {
-               massImages[i].setSlice(nSlice);                  
+               mp[i].setSlice(nSlice);
             }                                                    
 
             // Update HSI image slice.
             for (int i = 0; i < hsi.length; i++) {                
-                //System.out.println("recomputeInternalImages from mimsStateChange called");
-                if(hsiImages[i]!=null) { hsiImages[i].recomputeInternalImages(); }
-                if(hsiImages[i]!=null) { computeHSI(hsiImages[i].getHSIProps()); }
+                hsi[i].recomputeInternalImages();
+                computeHSI(hsi[i].getHSIProps());
             }
 
             // Update ratio images.
             for (int i = 0; i < rp.length; i++) {                                                                     
-              if(ratioImages[i]!=null) { computeRatio(ratioImages[i].getHSIProps(), true); }
+              computeRatio(rp[i].getHSIProps(), true);
             }                            
 
             autocontrastAllImages();
@@ -1652,6 +1636,30 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         if (image != null) {
             restoreMims();
         }
+    }
+
+    public void setIsSum(boolean set) {
+        isSum = set;
+    }
+
+    public boolean getIsSum() {
+        return isSum;
+    }
+
+    public void setIsWindow(boolean set) {
+        isWindow = set;
+    }
+
+    public boolean getIsWindow() {
+        return isWindow;
+    }
+
+    public void setWindowRange(int range) {
+        windowRange = range;
+    }
+
+    public int getWindowRange() {
+        return windowRange;
     }
     
     public void setMedianFilterRatios(boolean set) {
