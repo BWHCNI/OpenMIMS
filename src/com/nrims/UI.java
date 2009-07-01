@@ -213,7 +213,20 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             loadMIMSFile(files[0].getAbsolutePath());
 
             // Generate all images that were previously open.
-            //restoreState(rto_props, hsi_props, sum_props);
+            restoreState(rto_props, hsi_props, sum_props);
+
+            // Keep the HSIView GUI up to date.
+            if (medianFilterRatios) {
+               hsiControl.setIsMedianFiltered(true);
+               hsiControl.setMedianFilterRadius(medianFilterRadius);
+            }
+            if (isSum) {
+               hsiControl.setIsSum(true);
+            }
+            if (isWindow) {
+               hsiControl.setIsWindow(true);
+               hsiControl.setWindowRange(windowRange);
+            }
          }
       });
 
@@ -1835,6 +1848,20 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        
        // Generate all images that were previously open.
        restoreState(rto_props, hsi_props, sum_props);
+
+       // Keep the HSIView GUI up to date.
+       if (medianFilterRatios) {
+           hsiControl.setIsMedianFiltered(true);
+           hsiControl.setMedianFilterRadius(medianFilterRadius);
+       }
+       if (isSum) {
+           hsiControl.setIsSum(true);
+       }
+       if (isWindow) {
+           hsiControl.setIsWindow(true);
+           hsiControl.setWindowRange(windowRange);
+       }
+
 }//GEN-LAST:event_openMIMSImageMenuItemActionPerformed
 
     public void restoreState( HSIProps[] rto_props,  HSIProps[] hsi_props, SumProps[] sum_props){

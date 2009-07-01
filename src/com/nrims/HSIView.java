@@ -811,6 +811,36 @@ public synchronized void update(boolean bUpdateUI) {
         return medianFilterjButton.isSelected();
     }
 
+    public void setIsSum(boolean bool){
+        bUpdating = true ;
+        hsiSumRadioButton.setSelected(bool);
+        bUpdating = false;
+    }
+
+    public void setIsWindow(boolean bool) {
+        bUpdating = true ;
+        hsiWindowRadioButton.setSelected(bool);
+        bUpdating = false;
+    }
+
+    public void setWindowRange(int r) {
+        bUpdating = true ;
+        hsiWindowjSpinner.getModel().setValue(r);
+        bUpdating = false;
+    }
+
+    public void setIsMedianFiltered(boolean bool) {
+        bUpdating = true ;
+        medianFilterjButton.setSelected(bool);
+        bUpdating = false;
+    }
+
+    public void setMedianFilterRadius(double r) {
+        bUpdating = true ;
+        medianRadiusjSpinner.getModel().setValue(r);
+        bUpdating = false;
+    }
+
    // Variables declaration - do not modify//GEN-BEGIN:variables
    private javax.swing.JButton addRatiojButton;
    private javax.swing.JSpinner denThresholdjSpinner;
