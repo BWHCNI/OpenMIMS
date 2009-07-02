@@ -931,104 +931,96 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
 private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
 
-    ij.gui.GenericDialog dialog = new ij.gui.GenericDialog("WARNING");
-    dialog.addStringField("The feature is in beta!", "");
-    dialog.addStringField("The feature is not undoable!", "");
-    dialog.addStringField("The feature is not saveable!", "");
-    dialog.showDialog();
-    if (dialog.wasCanceled()) {
-        return;
-    }
-
-    String comptext = this.compressTextField.getText();
-   int blocksize = 0;
-    try {
-       blocksize = Integer.parseInt(comptext);
+   // Get the block size from the text box.
+   String comptext = compressTextField.getText();
+   int blockSize = 1;
+   try {
+       blockSize = Integer.parseInt(comptext);
    } catch(Exception e) {
        ij.IJ.error("Invalid compress value.");
-       this.compressTextField.setText("");
+       compressTextField.setText("");
        return;
    }
-    int size = this.images[0].getNSlices();
-    int num = (int)java.lang.Math.floor(size/blocksize);
-    for(int i=0; i< num; i++) {
-        compressPlanes(i+1,blocksize+i);
-    }
 
+   // Do the compression.
+   compressPlanes(blockSize);
+
+   // Do some autocontrasting stuff.
     int nmasses = image.nMasses();
     for (int mindex = 0; mindex < nmasses; mindex++) {
         images[mindex].setSlice(1);
         images[mindex].updateAndDraw();
         ui.autoContrastImage(images[mindex]);
     }
-    //for some reason this doesn't work ???
-    //ui.autocontrastAllImages();
-    this.compressTextField.setText("");
-    ui.getmimsLog().Log("Compressed with blocksize: " + blocksize);
+
+    compressTextField.setText("");
+    ui.getmimsLog().Log("Compressed with blocksize: " + blockSize);
 }//GEN-LAST:event_compressButtonActionPerformed
 
 
 
-    private void compressPlanes(int startplane, int endplane) {
-        //do a couple checks
-        if (images[0]==null) return;
-        if ((startplane < 1) || (endplane > this.images[0].getNSlices())) {
-            return;
-        }
-        
-        int nmasses = this.image.nMasses();
+    private void compressPlanes(int blockSize) {
+
+        // initializing stuff.
+        int nmasses = image.nMasses();
         int currentplane = images[0].getSlice();
         int templength = images[0].getProcessor().getPixelCount();
         float[][] sumPixels = new float[nmasses][templength];
-        short[][] tempPixels = new short[nmasses][templength];
-        
-        //Sum the block
-        ArrayList sumlist = new ArrayList<Integer>();
-        for (int i = startplane; i <= endplane; i++) {
-            sumlist.add(i);
+
+        // Set up the stacks.
+        int size = images[0].getNSlices();
+        ImageStack[] is = new ImageStack[nmasses];
+        for (int mindex = 0; mindex < nmasses; mindex++) {
+            ImageStack iss = new ImageStack(images[0].getWidth(), images[0].getHeight());
+            is[mindex] = iss;
         }
 
-        MimsPlus[] blockSums = new MimsPlus[nmasses];
-        for (int mindex = 0; mindex < nmasses; mindex++) {
-            blockSums[mindex] = ui.computeSum(images[mindex], false, sumlist);
-        }
+        // Begin looping over block size.
+        for (int i = 1; i <= size; i = i + blockSize) {
 
-        //Check max
-        for (int mindex = 0; mindex < nmasses; mindex++) {
-            double m = blockSums[mindex].getProcessor().getMax();
-            if (m > 65535) {
-                System.out.println("over limit!");
-                return;
+            // Create a sum list of individual images to be in the block.
+            ArrayList sumlist = new ArrayList<Integer>();
+            for (int j = i; j <= i + blockSize - 1; j++) {
+                if (j > 0 && j <= images[0].getNSlices()) {
+                    sumlist.add(j);
+                }
+            }
+
+            // Generate the sum image for the block.
+            MimsPlus cp;
+            for (int mindex = 0; mindex < nmasses; mindex++) {
+
+                cp = ui.computeSum(images[mindex], false, sumlist);
+
+                // Check for bad data.
+                double m = cp.getProcessor().getMax();
+                if (m > 65535) {
+                    System.out.println("ERROR! over limit of 16 bit processing!");
+                    return;
+                }
+
+                // Build up the stacks
+                sumPixels[mindex] = (float[]) cp.getProcessor().getPixels();
+                short[] t = new short[cp.getProcessor().getPixelCount()];
+                for (int k = 0; k < sumPixels[mindex].length; k++) {
+                    t[k] = (short) sumPixels[mindex][k];
+                }
+                String label = sumlist.get(0) + " - " + sumlist.get(sumlist.size() - 1);
+                is[mindex].addSlice(label, t);
+
             }
         }
 
-        //delete unneeded planes and set pixel values
-        for (int mindex = 0; mindex < nmasses; mindex++) {
-            for (int i = startplane + 1; i <= endplane; i++) {
-                imagestacks[mindex].deleteSlice(startplane+1);
-            }
-            sumPixels[mindex] = (float[])blockSums[mindex].getProcessor().getPixels();
-
-            //cast to short, max allready checked
-            for(int j = 0; j < templength; j++) {
-                tempPixels[mindex][j] = (short) sumPixels[mindex][j];
-            }
-
-            //must be in this order, why?
-            images[mindex].setSlice(startplane);
-            images[mindex].setStack(null, imagestacks[mindex]);
-            images[mindex].getProcessor().setPixels(tempPixels[mindex]);
-            
-        }
-        
         //a little cleanup
         //multiple calls to setSlice are to get image scroll bars triggered right
-        for (int mindex = 0; mindex < this.image.nMasses(); mindex++) {
+        for (int mindex = 0; mindex < image.nMasses(); mindex++) {
+            images[mindex].setStack(null, is[mindex]);
             if (images[mindex].getNSlices() > 1) {
-                //kludgy hack
+                images[mindex].setIsStack(true);
                 images[mindex].setSlice(1);
                 images[mindex].setSlice(images[mindex].getNSlices());
                 images[mindex].setSlice(currentplane);
+
             } else {
                 images[mindex].setIsStack(false);
             }

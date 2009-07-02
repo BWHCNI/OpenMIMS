@@ -1008,7 +1008,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 for (int j = 0; j < sumPixels.length; j++) {                 
                     sumPixels[j] += ((int) ( tempPixels[j] & 0xffff) );
                 }
-            }            
+            }         
             fail = false;
         }
 

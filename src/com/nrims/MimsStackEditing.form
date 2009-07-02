@@ -44,7 +44,7 @@
                                   <Component id="deleteListTextField" alignment="0" min="-2" pref="201" max="-2" attributes="0"/>
                                   <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="deleteListButton" alignment="0" min="-2" pref="79" max="-2" attributes="0"/>
-                                  <Component id="trueIndexLabel" alignment="0" pref="321" max="32767" attributes="0"/>
+                                  <Component id="trueIndexLabel" alignment="0" pref="333" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
