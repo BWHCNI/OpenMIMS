@@ -421,7 +421,25 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       }
     }
     @Override
-    public void mouseClicked(MouseEvent e) {}    
+    public void mouseClicked(MouseEvent e) {
+
+         short[] pix;
+         if (this.nType == HSI_IMAGE) {
+            internalRatio.setRoi(getRoi());
+            pix = (short[])internalRatio.getProcessor().getPixels();
+            internalRatio.killRoi();
+         } else {
+            pix = (short[])getProcessor().getPixels();
+         }
+         if (pix != null) {
+            double[] dpix = new double[pix.length];
+            for (int i = 0; i < pix.length; i++) {
+                dpix[i] = (new Short(pix[i])).doubleValue();
+            }
+            ui.getRoiControl().updateHistogram(dpix, getShortTitle(), true);
+         }
+
+    }
     /**
      * Catch drawing ROIs to enable updating other images with the same ROI
      * @param e MouseEvent
@@ -485,21 +503,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             msg += " = ";
         }
         if(this.nType == HSI_IMAGE && (this.internalDenominator!=null && this.internalNumerator!=null) ) {
-            /*
-            int n = getHSIProps().getNumMass();
-            int d = getHSIProps().getDenMass();
-            MimsPlus [] ml = ui.getMassImages() ;
-            if(ml.length > n && ml.length > d && ml[n] != null && ml[d] != null) {
-                int [] ngl = ml[n].getPixel(mX,mY);
-                int [] dgl = ml[d].getPixel(mX,mY);
-                double ratio = 0.0 ;
-                if( dgl[0] > 0 ) {
-                    ratio = ui.getRatioScaleFactor()*((double) ngl[0] / (double) dgl[0]);
-                }
-                msg += "S (" + ngl[0] + " / " + dgl[0] + ") = " + IJ.d2s(ratio,4);
-
-            }
-            */
             float ngl = internalNumerator.getProcessor().getPixelValue(mX, mY);
             float dgl = internalDenominator.getProcessor().getPixelValue(mX, mY);
             double ratio = internalRatio.getProcessor().getPixelValue(mX, mY);

@@ -159,7 +159,6 @@ public class MimsAction implements Cloneable {
     
     @Override
     public Object clone() {
-        // only a shallow copy is returned!!
         try {
             return super.clone();
         } catch (CloneNotSupportedException e) {
@@ -190,7 +189,6 @@ public class MimsAction implements Cloneable {
                 try {
                     bw.close();
                 } catch (IOException e) {
-                    // Ignore.
                     return null;
                 }
             }
