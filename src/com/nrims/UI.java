@@ -285,15 +285,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
          } else {
             this.loadMIMSFile(fileName);
          }
-      }
-
-      // custom listener to delete tempaction file.
-      addWindowListener(new java.awt.event.WindowAdapter() {
-         public void windowClosing(WindowEvent winEvt) {
-            deleteTempActionFile();
-            close();
-         }
-      });
+      }     
    }
 
     /**
@@ -1646,9 +1638,21 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * restores any closed or modified massImages
      */
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
-        if (image != null) {
-            restoreMims();
+
+        mimsStackEditing.untrack();
+        int currentSlice = massImages[0].getCurrentSlice();
+
+        // concatenate the remaining files.
+        int x = mimsAction.getSize();
+        for (int i = 1; i <= mimsAction.getSize(); i++) {
+           massImages[0].setSlice(i);
+           if (mimsAction.isDropped(i)) mimsStackEditing.insertSlice(i);
         }
+
+        mimsStackEditing.resetTrueIndexLabel();
+        mimsStackEditing.resetSpinners();
+
+        massImages[0].setSlice(currentSlice);
     }
 
     public void setIsSum(boolean set) {

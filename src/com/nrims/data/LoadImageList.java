@@ -132,50 +132,6 @@ public class LoadImageList {
         this.ui.setSyncStack(true);
         } catch(Exception e) { System.out.println(e.toString()); }
     }
-
-    //attempting to import Isee format images
-    public void dumbImport(int series) {
-        //ij.plugin.Raw raw = new ij.plugin.Raw();
-        
-        ij.ImageStack[] teststacks = new ij.ImageStack[series];
-        
-        String arg = ""; 
-        int stackindex;
-        
-        for (int i = 0; i < imageList.size(); i++) {
-            
-            stackindex = i % series;
-            
-            arg = workingDirectory + "/" + imageList.get(i);
-            
-            File f = new File(arg);
-            FileInfo fi = new FileInfo();
-            fi.fileFormat = fi.RAW;
-            fi.fileName = imageList.get(i);
-            fi.directory = workingDirectory;
-
-            //hard coded parameters for images
-            fi.width = 256;
-            fi.height = 256;
-            fi.offset = 512;
-            fi.nImages = 1;
-            fi.gapBetweenImages = 0;
-            fi.intelByteOrder = true;
-            fi.whiteIsZero = false;
-            fi.fileType = FileInfo.GRAY16_UNSIGNED;
-            //open dialog
-            FileOpener fo = new FileOpener(fi);
-            
-            ij.ImagePlus iplus = fo.open(true);
-            ij.process.ImageProcessor p = iplus.getProcessor();
-            
-            teststacks[stackindex].addSlice(fi.fileName, p);
-        }
-        
-        //for(int i=0; i<series; i++) {
-          //  teststacks[i].
-        //}
-    }
     
     public void printList() {
         System.out.println("Working dir: " + workingDirectory);

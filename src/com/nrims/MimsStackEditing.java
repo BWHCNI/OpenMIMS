@@ -127,7 +127,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
         System.out.println("inside insertSlice...");
 
-        if (ui.mimsAction.isDropped(plane) == 0) {
+        if (!ui.mimsAction.isDropped(plane)) {
             System.out.println("already there...");
             return;
         }
@@ -202,13 +202,14 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
 
         //label all slices of original image
-        if (labeloriginal) {
-            for (int mass = 0; mass <= (numberMasses - 1); mass++) {
-                for (int i = 1; i <= imagestacks[mass].getSize(); i++) {
-                    imagestacks[mass].setSliceLabel(images[mass].getTitle(), i);
-                }
-            }
-        }
+        //if (labeloriginal) {
+        //    for (int mass = 0; mass <= (numberMasses - 1); mass++) {
+        //        for (int i = 1; i <= imagestacks[mass].getSize(); i++) {
+        //            imagestacks[mass].setSliceLabel(images[mass].getTitle(), i);
+        //        }
+        //    }
+        //}
+        
         //increase action size
         ui.mimsAction.addPlanes(pre, tempimage[0].getNSlices(), tempImage);
         
@@ -873,7 +874,11 @@ public class MimsStackEditing extends javax.swing.JPanel {
 }//GEN-LAST:event_autoTrackButtonActionPerformed
    
     private void untrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_untrackButtonActionPerformed
-        // TODO add your handling code here:
+        untrack();
+}//GEN-LAST:event_untrackButtonActionPerformed
+
+public void untrack() {
+
         double xval = 0.0;
         double yval = 0.0;
 
@@ -908,12 +913,11 @@ public class MimsStackEditing extends javax.swing.JPanel {
                 }
                 ui.mimsAction.setShiftX(plane, xval);
                 ui.mimsAction.setShiftY(plane, yval);
-            //System.out.println("ychanged "+ foo++);
             }
         }
         autoTrackButton.setEnabled(true);
         ui.getmimsLog().Log("Untracked.");
-}//GEN-LAST:event_untrackButtonActionPerformed
+}
 
 private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumButtonActionPerformed
 

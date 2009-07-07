@@ -7,12 +7,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class MimsAction implements Cloneable {
     
     private ArrayList<double[]> xyTranslationList;
-    private ArrayList<Integer> sliceNumber;
     private ArrayList<Integer> droppedList;
     private ArrayList<Integer> imageIndex;
     private ArrayList<String> imageList;
@@ -29,14 +27,12 @@ public class MimsAction implements Cloneable {
         
         // Set size of member variables.
         xyTranslationList = new ArrayList<double[]>();
-        sliceNumber = new ArrayList<Integer>();
         droppedList = new ArrayList<Integer>();
         imageIndex = new ArrayList<Integer>();
         imageList = new ArrayList<String>();
         
         // Initialize member variables.
-        for (int i = 0; i < size; i++) {
-           sliceNumber.add(i+1);           
+        for (int i = 0; i < size; i++) {         
            xyTranslationList.add(zeros);           
            droppedList.add(0);
            imageIndex.add(i);            
@@ -45,7 +41,7 @@ public class MimsAction implements Cloneable {
     }
 
     public void addPlanes(boolean pre, int n, Opener op) {
-        int origSize = sliceNumber.size();
+        int origSize = imageList.size();
         int startIndex;
         if (pre) {
             startIndex = 0;
@@ -56,25 +52,18 @@ public class MimsAction implements Cloneable {
         // Add planes to the action-ArrayList.
         int openerPlaneNum = 0;
         for (int i = startIndex; i < n + startIndex; i++) {           
-           sliceNumber.add(i, i+1);
            xyTranslationList.add(i, zeros);           
            droppedList.add(i, 0);
            imageIndex.add(i, openerPlaneNum);            
            imageList.add(i, op.getImageFile().getName());
            openerPlaneNum++;
         }
-
-        // renumber original planes, if new ones were prepended
-        if (pre) {
-            for (int i = origSize; i < origSize + n; i++) {
-               sliceNumber.set(i, i+1);                
-            }
-        }        
+       
     }
 
     public String getActionRow(int plane) {
         int idx = plane-1;
-        return "p:" + sliceNumber.get(idx) + 
+        return "p:" + plane +
                "\t" + roundTwoDecimals((Double)(xyTranslationList.get(idx)[0])) + 
                "\t" + roundTwoDecimals((Double)(xyTranslationList.get(idx)[1])) +
                "\t" + droppedList.get(idx) + 
@@ -146,8 +135,11 @@ public class MimsAction implements Cloneable {
         }
     }
 
-    public int isDropped(int tIndex) {
-        return (droppedList.get(tIndex - 1));
+    public boolean isDropped(int tIndex) {
+        if (droppedList.get(tIndex-1) == 1)
+            return true;
+        else
+            return false;
     }
 
     public String[] getImageList(){
@@ -178,18 +170,13 @@ public class MimsAction implements Cloneable {
     public File writeAction(File file) {
        
         // initialize variable.
-        BufferedWriter bw = null;      
-        
-        if (sliceNumber.size() != imageList.size()){
-           System.out.println("internal decrepancy between image list and action list.");
-           return null;
-        }
+        BufferedWriter bw = null;             
         
         try {
             bw = new BufferedWriter(new FileWriter(file));
 
             // write image state
-            for (int i = 1; i <= sliceNumber.size(); i++) {
+            for (int i = 1; i <= imageList.size(); i++) {
                 bw.append(getActionRow(i));
                 bw.newLine();
             }
