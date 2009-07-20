@@ -66,6 +66,7 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
 
     private File file = null;
     private RandomAccessFile in;
+    private long headerOffset;
     private int verbose = 0;
     private int width,  height,  nMasses,  nImages;
     private HeaderImage ihdr;
@@ -93,7 +94,11 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
         
         //String[] test = {"m26test_file-16b-plugin.nrrd", "m27test_file-16b-plugin.nrrd"};
         //String testdir = "/nrims/home3/cpoczatek/test_images/nrrd_test/";
-        imp = load(directory, fnames);
+        if(fnames.length==1) {
+            imp = load(directory, fnames[0]);
+        } else {
+            imp = load(directory, fnames);
+        }
         //imp = load(testdir, test);
 
         System.out.println("imp = "+imp.toString());
@@ -147,7 +152,13 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
 
 
 	    FileOpener fo = new FileOpener(fi);
-	    imp[0] = fo.open(false);
+        long newOffset = 0;
+        headerOffset = fi.longOffset;
+        for (int massindex = 0; massindex < this.nMasses; massindex++) {
+            newOffset = headerOffset + 2 * massindex * (fi.width * fi.height * fi.nImages);
+            fi.longOffset = newOffset;
+            imp[massindex] = fo.open(false);
+        }
 
 		if(imp==null) return null;
 		
@@ -314,7 +325,8 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
 
 			if (noteType.equals("dimension")) {
 				fi.dimension=Integer.valueOf(noteValue).intValue();
-				if(fi.dimension>3) throw new IOException("Nrrd_Reader: Dimension>3 not yet implemented!");
+				//???????? add back dimension check?
+                //if(fi.dimension>3) throw new IOException("Nrrd_Reader: Dimension>3 not yet implemented!");
 			}
 			if (noteType.equals("sizes")) {
 				fi.sizes=new int[fi.dimension];
