@@ -910,7 +910,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     boolean saveMultiple(int[] indexes, String path, boolean bPrompt) {
         Macro.setOptions(null);
         if (path == null || bPrompt) {
-            String defaultname = ui.getOpener().getName();
+            String defaultname = ui.getImageFilePrefix();
             defaultname += "_rois.zip";
             SaveDialog sd = new SaveDialog("Save ROIs...", path,
                     defaultname,

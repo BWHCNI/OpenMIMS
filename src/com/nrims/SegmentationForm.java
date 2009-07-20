@@ -218,12 +218,12 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         desc += "\nIMAGES\n";
         for (int i = 0; i < massImageFeatures.length; i++) {
             if (massImageFeatures[i]) {
-                desc += mimsUi.getOpener().getMassName(i) + "\n";
+                desc += mimsUi.getOpener().getMassNames()[i] + "\n";
             }
         }
         for (int i = 0; i < ratioImageFeatures.length; i++) {
             if (ratioImageFeatures[i]) {
-                desc += mimsUi.getOpener().getMassName(RATIOS[i][0]) + "/" + mimsUi.getOpener().getMassName(RATIOS[i][1]) + "\n";
+                desc += mimsUi.getOpener().getMassNames()[RATIOS[i][0]] + "/" + mimsUi.getOpener().getMassNames()[RATIOS[i][1]] + "\n";
             }
         }
         desc += "\nLOCAL FEATURES\n";

@@ -5,7 +5,7 @@
  */
 
 package com.nrims;
-import com.nrims.data.Opener;
+import com.nrims.data.Mims_Reader;
 /**
  *
  * @author  Douglas Benson
@@ -225,9 +225,10 @@ public class MimsData extends javax.swing.JPanel {
             tempstring = image.getImageFile().getAbsolutePath();
             jLabel9.setText(tempstring);
             
-            tempstring = "" + image.nImages();
+            tempstring = "" + image.getNImages();
             jLabel10.setText(tempstring);
-            
+
+            /*
             tempstring = image.getPosition();
             jLabel11.setText(tempstring);
             
@@ -250,18 +251,19 @@ public class MimsData extends javax.swing.JPanel {
             raster = java.lang.Math.round( ( (float)raster )/1000);
             tempstring = raster + " um";
             jLabel16.setText(tempstring);
+            */
             
-            int i, nMasses = image.nMasses();
+            int i, nMasses = image.getNMasses();
             String massNames = "" + nMasses + " [" ;
             for(i=0;i<nMasses;i++) {
-                massNames += image.getMassName(i);
+                massNames += image.getMassNames()[i];
                 if( i+1 != nMasses ) massNames += ", ";
                 else massNames += "]";
             }
             jLabel18.setText(massNames);
             jLabel22.setText(image.getHeight() +" x " + image.getWidth());
             
-            syncjCheckBox.setEnabled(image.nImages() > 1);
+            syncjCheckBox.setEnabled(image.getNImages() > 1);
         }
     }
     

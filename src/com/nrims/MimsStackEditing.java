@@ -42,7 +42,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         this.image = im;
 
         this.images = ui.getMassImages();
-        numberMasses = image.nMasses();
+        numberMasses = image.getNMasses();
         imagestacks = new ImageStack[numberMasses];
 
         resetImageStacks();
@@ -145,7 +145,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                 Opener op = ui.getFromOpenerList(openerName);
                                 
                 op.setStackIndex(openerIndex);
-                for (int i = 0; i < op.nMasses(); i++) {
+                for (int i = 0; i < op.getNMasses(); i++) {
                     images[i].setSlice(restoreIndex);
                     imagestacks[i].addSlice("", images[i].getProcessor(), restoreIndex);
                     images[i].getProcessor().setPixels(op.getPixels(i));
@@ -165,7 +165,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                 Opener op = ui.getFromOpenerList(openerName);
                 
                 op.setStackIndex(openerIndex);
-                for (int i = 0; i < op.nMasses(); i++) {
+                for (int i = 0; i < op.getNMasses(); i++) {
                     images[i].setSlice(displaysize);
                     imagestacks[i].addSlice("", images[i].getProcessor());
                     images[i].setStack(null, imagestacks[i]);
@@ -195,7 +195,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         MimsPlus[] tempimage = tempui.getMassImages();
         ImageStack[] tempstacks = new ImageStack[numberMasses];
 
-        for (int i = 0; i < image.nMasses(); i++) {
+        for (int i = 0; i < image.getNMasses(); i++) {
             if (images[i] != null) {
                 images[i].setIsStack(true);
             }
@@ -223,14 +223,14 @@ public class MimsStackEditing extends javax.swing.JPanel {
                     imagestacks[mass].addSlice(tempimage[mass].getTitle(), tempstacks[mass].getProcessor(i), 0);
                 }
             }
-            ui.getmimsLog().Log("Concat: " + tempui.getOpener().getName() + " + " + image.getName());
+            ui.getmimsLog().Log("Concat: " + tempui.getImageFilePrefix() + " + " + ui.getImageFilePrefix());
         } else {
             for (int mass = 0; mass <= (numberMasses - 1); mass++) {
                 for (int i = 1; i <= tempstacks[mass].getSize(); i++) {
                     imagestacks[mass].addSlice(tempimage[mass].getTitle(), tempstacks[mass].getProcessor(i));
                 }
             }
-            ui.getmimsLog().Log("Concat: " + image.getName() + " + " + tempui.getOpener().getName());
+            ui.getmimsLog().Log("Concat: " + ui.getImageFilePrefix() + " + " + tempui.getImageFilePrefix());
         }
 
 
@@ -598,11 +598,11 @@ public class MimsStackEditing extends javax.swing.JPanel {
         if (tempImage == null) {
             return; // if the FileChooser dialog was canceled
         }
-        if (ui.getOpener().nMasses() == tempImage.nMasses()) {
+        if (ui.getOpener().getNMasses() == tempImage.getNMasses()) {
             if (sameResolution(image, tempImage)) {
                 if (sameSpotSize(image, tempImage)) {
                     Object[] options = {"Append images", "Prepend images", "Cancel"};
-                    int value = JOptionPane.showOptionDialog(this, tempImage.getName(), "Concatenate",
+                    int value = JOptionPane.showOptionDialog(this, tempUi.getImageFilePrefix(), "Concatenate",
                             JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
                     if (value != JOptionPane.CANCEL_OPTION) {
                         // store action to reapply it after restoring
@@ -950,7 +950,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
    compressPlanes(blockSize);
 
    // Do some autocontrasting stuff.
-    int nmasses = image.nMasses();
+    int nmasses = image.getNMasses();
     for (int mindex = 0; mindex < nmasses; mindex++) {
         images[mindex].setSlice(1);
         images[mindex].updateAndDraw();
@@ -966,7 +966,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private void compressPlanes(int blockSize) {
 
         // initializing stuff.
-        int nmasses = image.nMasses();
+        int nmasses = image.getNMasses();
         int currentplane = images[0].getSlice();
         int templength = images[0].getProcessor().getPixelCount();
         float[][] sumPixels = new float[nmasses][templength];
@@ -1017,7 +1017,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
         //a little cleanup
         //multiple calls to setSlice are to get image scroll bars triggered right
-        for (int mindex = 0; mindex < image.nMasses(); mindex++) {
+        for (int mindex = 0; mindex < image.getNMasses(); mindex++) {
             images[mindex].setStack(null, is[mindex]);
             if (images[mindex].getNSlices() > 1) {
                 images[mindex].setIsStack(true);
@@ -1034,11 +1034,11 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
     protected void restoreAllPlanes() {
         this.holdupdate = true;
-        for (int restoreIndex = 1; restoreIndex <= image.nImages(); restoreIndex++) {
+        for (int restoreIndex = 1; restoreIndex <= image.getNImages(); restoreIndex++) {
             try {
                 int currentPlane = images[0].getCurrentSlice();
                 image.setStackIndex(restoreIndex - 1);
-                for (int i = 0; i < image.nMasses(); i++) {
+                for (int i = 0; i < image.getNMasses(); i++) {
                     image.readPixels(i);  //really "bad" don't use????
                     images[i].setSlice(restoreIndex);
                     images[i].getProcessor().setPixels(image.getPixels(i));

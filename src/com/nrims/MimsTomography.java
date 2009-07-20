@@ -15,13 +15,13 @@ import ij.*;
 public class MimsTomography extends javax.swing.JPanel {
     
     /** Creates new form mimsTomography */
-    public MimsTomography(com.nrims.UI ui, com.nrims.data.Opener im) {
+    public MimsTomography(UI ui, com.nrims.data.Opener im) {
         System.out.println("MimsTomography constructor");
         initComponents();
         this.ui = ui ;
         this.image = im;
         this.images = ui.getMassImages();
-        numberMasses = image.nMasses();
+        numberMasses = image.getNMasses();
         imagestacks = new ImageStack[numberMasses];
         rp = ui.getOpenRatioImages();
                 
@@ -32,8 +32,8 @@ public class MimsTomography extends javax.swing.JPanel {
         tomographyChart = new MimsJFreeChart(ui,im);
         
         //some swing component cleanup, whee...
-        lowerSlider.setMaximum(image.nImages());
-        upperSlider.setMaximum(image.nImages());
+        lowerSlider.setMaximum(image.getNImages());
+        upperSlider.setMaximum(image.getNImages());
         upperSlider.setValue(upperSlider.getMaximum());
         
         lowerSlider.setMajorTickSpacing((int)(lowerSlider.getMaximum()/8)+1);
@@ -232,7 +232,7 @@ public class MimsTomography extends javax.swing.JPanel {
             
             int[] masses = imageJList.getSelectedIndices();
             
-            tomographyChart.creatNewFrame(rois, image.getName(), statnames, masses, lowerSlider.getValue(), upperSlider.getValue());
+            tomographyChart.creatNewFrame(rois, ui.getImageFilePrefix(), statnames, masses, lowerSlider.getValue(), upperSlider.getValue());
                         
         } else {
             ij.IJ.error("Tomography Error", "You must select at least one ROI, statistic, and mass.");
