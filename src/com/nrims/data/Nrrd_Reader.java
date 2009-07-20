@@ -57,6 +57,7 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
 	public final String uint16Types="ushort, unsigned short, unsigned short int, uint16, uint16_t";
 	public final String int32Types="int, signed int, int32, int32_t";
 	public final String uint32Types="uint, unsigned int, uint32, uint32_t";
+    public final String MIMS_mass_numbers="MIMS_mass_numbers";
 	private String notes = "";
 	
 	private boolean detachedHeader=false;
@@ -69,6 +70,7 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
     private long headerOffset;
     private int verbose = 0;
     private int width,  height,  nMasses,  nImages;
+    private String[] massNames;
     private HeaderImage ihdr;
     private DefAnalysis dhdr;
     private TabMass[] tabMass;
@@ -135,8 +137,7 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
             height=fi.height;
             nImages=fi.nImages;
             nMasses=fi.nMasses;
-            //???????
-            
+            massNames=fi.massNames;
 		}
 		catch (IOException e) { 
 			IJ.write("readHeader: "+ e.getMessage()); 
@@ -407,7 +408,12 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
 			if (noteType.equals("encoding")) {
 				if(noteValuelc.equals("gz")) noteValuelc="gzip";
 				fi.encoding=noteValuelc;
-			}	
+			}
+
+            if (thisLine.startsWith(MIMS_mass_numbers)) {
+                int i = noteType.indexOf("=");
+                fi.massNames=noteType.substring(i+1).split(" ");
+            }
 		}
 
 
@@ -503,11 +509,7 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
 
     @Override
     public String[] getMassNames() {
-        String[] names = new String[nMasses];
-        for (int i=0; i<nMasses; i++){
-            names[i] = (new Double(i+1.0)).toString();
-        }
-        return names;
+        return massNames;
     }
 
     @Override
@@ -537,16 +539,6 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
     @Override
     public float getPixelHeight() {
         return (new Float(-1.0)).floatValue();
-    }
-
-    @Override
-    public int getMin(int index) throws IndexOutOfBoundsException, IOException {
-        return (int)imp[index].getProcessor().getMin();
-    }
-
-    @Override
-    public int getMax(int index) throws IndexOutOfBoundsException, IOException {
-        return (int)imp[index].getProcessor().getMax();
     }
 
     @Override

@@ -25,11 +25,6 @@ public interface Opener {
     public float getPixelWidth();
 
     public float getPixelHeight();
-
-    public int getMin(int index) throws IndexOutOfBoundsException, IOException;
-
-    public int getMax(int index) throws IndexOutOfBoundsException, IOException;
-
     
     //Reads the pixel data from the given mass image index for image 'currentIndex'
     public void readPixels(int index) throws IndexOutOfBoundsException, IOException;

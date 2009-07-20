@@ -27,6 +27,7 @@ package com.nrims.data;
 // NB this class can be used to create detached headers for other file types
 // See 
 
+import com.nrims.UI;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -38,12 +39,14 @@ import ij.plugin.PlugIn;
 
 import java.io.*;
 import java.util.Date;
-import java.util.zip.GZIPOutputStream;
-
                           
 public class Nrrd_Writer implements PlugIn {
 
-    public Nrrd_Writer() {}
+    static UI ui;
+    
+    public Nrrd_Writer(UI ui) {
+       this.ui=ui;
+    }
 
 	private static final String plugInName = "Nrrd Writer";
 	private static final String noImages = plugInName+"...\n"+ "No images are open.";
@@ -61,20 +64,11 @@ public class Nrrd_Writer implements PlugIn {
 	String nrrdEncoding="raw";
 	// See http://teem.sourceforge.net/nrrd/format.html#centers
 	static final String defaultNrrdCentering="node";	
-	
-	String setNrrdEncoding(String enc) throws IOException {
-		enc=enc.toLowerCase();
-		if (enc.equals("raw")) nrrdEncoding="raw";
-		else if (enc.equals("gz") || enc.equals("gzip")) nrrdEncoding="gzip";
-		else if (enc.equals("bz2") || enc.equals("bzip2")) throw new IOException("bzip2 encoding not yet supported");
-		else if (enc.equals("txt") || enc.equals("text") || enc.equals("ascii")) throw new IOException("text encoding not yet supported");
-		else if (enc.equals("hex") ) throw new IOException("hex encoding not yet supported");
-		else throw new IOException("Unknown encoding "+enc);
-		return nrrdEncoding;
-	}
 						
 	public void run(String arg) {
-		ImagePlus imp = WindowManager.getCurrentImage();
+		//ImagePlus imp = WindowManager.getCurrentImage();
+        ImagePlus[] imp = ui.getOpenMassImages();
+
 		if (imp == null) {
 			IJ.showMessage(noImages);
 			return;
@@ -82,7 +76,7 @@ public class Nrrd_Writer implements PlugIn {
 
 		String name = arg;
 		if (arg == null || arg.equals("")) {
-			name = imp.getTitle();
+			name = ui.getImageFilePrefix();
 		}
 		
 		SaveDialog sd = new SaveDialog(plugInName+"...", name, ".nrrd");
@@ -92,17 +86,21 @@ public class Nrrd_Writer implements PlugIn {
 		save(imp, directory, file);
 	}
 
-	public void save(ImagePlus imp, String directory, String file) {
+	public void save(ImagePlus[] imp, String directory, String file) {
 		if (imp == null) {
 			IJ.showMessage(noImages);
 			return;
 		}
-		FileInfo fi = imp.getFileInfo();
-        //fi.fileType = FileInfo.GRAY8;
+
+        // Get FileInfo for each image although only the one is rfeally needed for the header.
+		FileInfo[] fi = new FileInfo[ui.getOpener().getNMasses()];
+        for (int i = 0; i < fi.length; i++) {
+            fi[i] = imp[i].getFileInfo();
+        }
 
 		// Make sure that we can save this kind of image
 		if(imgTypeString==null) {
-			imgTypeString=imgType(fi.fileType);
+			imgTypeString=imgType(fi[0].fileType);
 			if (imgTypeString.equals("unsupported")) {
 				IJ.showMessage(supportedTypes);
 				return;
@@ -110,63 +108,55 @@ public class Nrrd_Writer implements PlugIn {
 		}		
 		// Set the fileName stored in the file info record to the
 		// file name that was passed in or chosen in the dialog box
-		fi.fileName=file;
-		fi.directory=directory;
+		fi[0].fileName=file;
+		fi[0].directory=directory;
+
+        // Get calibration for each image.
+        Calibration[] cal = new Calibration[ui.getOpener().getNMasses()];
+        for (int i = 0; i < fi.length; i++) {
+            cal[i] = imp[i].getCalibration();
+        }
 		
 		// Actually write out the image
 		try {
-			writeImage(fi,imp.getCalibration()); 
+			writeImage(fi, cal);
 		} catch (IOException e) {
 			IJ.error("An error occured writing the file.\n \n" + e);
 			IJ.showStatus("");
 		}
 	}
-	void writeImage(FileInfo fi, Calibration cal) throws IOException {
+	void writeImage(FileInfo[] fis, Calibration[] cals) throws IOException {
+
+        FileInfo fi = fis[0];
+        Calibration cal = cals[0];
+
 		FileOutputStream out = new FileOutputStream(new File(fi.directory, fi.fileName));
-		// First write out the full header
+
+        // First write out the full header
 		Writer bw = new BufferedWriter(new OutputStreamWriter(out));
-		// Blank line terminates header
-		bw.write(makeHeader(fi,cal)+"\n");
-		// Flush rather than close
+		bw.write(makeHeader(fi,cal));
+		
+        // Write Mims specific fields.
+        bw.write(getMimsKeyValuePairs()+"\n");
+
+        // Flush rather than close
 		bw.flush();		
 
 		// Then the image data
-		ImageWriter writer = new ImageWriter(fi);
-		if(nrrdEncoding.equals("gzip")) {
-			GZIPOutputStream zStream = new GZIPOutputStream(new BufferedOutputStream( out ));
-			writer.write(zStream);
-			zStream.close();
-		} else {
-			writer.write(out);
-			out.close();
-		}
+		ImageWriter[] writer = new ImageWriter[fis.length];
+        for (int i = 0; i < writer.length; i++) {
+            writer[i] = new ImageWriter(fis[i]);
+            writer[i].write(out);
+        }
+
+        out.close();
+			
 		IJ.showStatus("Saved "+ fi.fileName);
 	}
-
-	public static String makeDetachedHeader(FileInfo fi,Calibration cal, boolean withDataFile) {
-		// this static method can also be used externally to generate 
-		// a basic nrrd detached header
-		// Right now it will only work for single channel images
-		// NB You can add further fields to this basic header but 
-		// You MUST add your own blank line at the end
-		StringWriter out=new StringWriter();
-		out.write(makeHeader(fi,cal));
-		out.write("byte skip: "+(fi.longOffset>0?fi.longOffset:fi.offset)+"\n");
-		if(withDataFile) out.write("data file: "+fi.fileName+"\n");
-		return out.toString();
-	}
 		
-	public static String makeHeader(FileInfo fi,Calibration cal) {
+	public static String makeHeader(FileInfo fi, Calibration cal) {
 		// NB You can add further fields to this basic header but 
 		// You MUST add your own blank line at the end
-
-		// See http://teem.sourceforge.net/nrrd/format.html
-		/* 
-		 * type: uchar
-		 * dimension: 3
-		 * sizes: 3 640 480
-		 * encoding: raw
-		 */
 		StringWriter out=new StringWriter();
 		
 		out.write("NRRD000"+NRRD_VERSION+"\n");
@@ -180,29 +170,63 @@ public class Nrrd_Writer implements PlugIn {
 		if(fi.intelByteOrder) out.write("endian: little\n");
 		else out.write("endian: big\n");
 		
-		int dimension=(fi.nImages==1)?2:3;		
-		
+		int dimension=(fi.nImages==1)?2:3;
+        dimension=4;
+
+        // Diension.
+        // out.write("sizes: "+fi.width+" "+fi.height+" "+fi.nImages+" "+ui.getOpener().getNMasses()+"\n");
 		out.write("dimension: "+dimension+"\n");
-		out.write(dimmedLine("sizes",dimension,fi.width+"",fi.height+"",fi.nImages+""));
-		if(cal!=null)
-			out.write(dimmedLine("spacings",dimension,cal.pixelWidth+"",cal.pixelHeight+"",cal.pixelDepth+""));		
-		// GJ: It's my understanding that ImageJ operates on a 'node' basis
+		
+        // Sizes.
+        //out.write(dimmedLine("sizes",dimension,fi.width+"",fi.height+"",fi.nImages+""));
+        out.write("sizes: "+fi.width+" "+fi.height+" "+fi.nImages+" "+ui.getOpener().getNMasses()+"\n");
+
+        // Kinds.
+        out.write("kinds: space space space list\n");
+
+        // Calibration.
+        if(cal!=null)
+			//out.write(dimmedLine("spacings",dimension,cal.pixelWidth+"",cal.pixelHeight+"",cal.pixelDepth+""));
+            out.write("spacings: "+cal.pixelWidth+" "+cal.pixelHeight+" "+cal.pixelDepth+" NaN\n");
+		
+        // Centers.
+        // GJ: It's my understanding that ImageJ operates on a 'node' basis
 		// See http://teem.sourceforge.net/nrrd/format.html#centers
-		out.write(dimmedLine("centers",dimension,defaultNrrdCentering,defaultNrrdCentering,"node"));		
+		//out.write(dimmedLine("centers",dimension,defaultNrrdCentering,defaultNrrdCentering,"node"));
+        out.write("centers: node node node node\n");
+
+        // Units.
 		String units;
 		if(cal!=null) units=cal.getUnit();
 		else units=fi.unit;
 		if(units.equals("�m")) units="microns";
-		if(!units.equals("")) out.write(dimmedQuotedLine("units",dimension,units,units,units));		
+		//if(!units.equals("")) out.write(dimmedQuotedLine("units",dimension,units,units,units));
+        if(!units.equals("")) out.write("units: \"pixel\" \"pixel\" \"pixel\" \"pixel\"\n");
 
+        // Axis.
 		// Only write axis mins if origin info has at least one non-zero
 		// element
 		if(cal!=null && (cal.xOrigin!=0 || cal.yOrigin!=0 || cal.zOrigin!=0) ) {
 			out.write(dimmedLine("axis mins",dimension,(cal.xOrigin*cal.pixelWidth)+"",
 								 (cal.yOrigin*cal.pixelHeight)+"",(cal.zOrigin*cal.pixelDepth)+""));
-		}
+		}       
+
 		return out.toString();
-	}
+    }
+
+    private String getMimsKeyValuePairs() {
+       StringWriter out=new StringWriter();
+
+       // Write Mims specific key/value pairs.
+
+       // Mass numbers
+       String line = "MIMS_mass_numbers:=";
+       for (int i=0; i<ui.getOpener().getNMasses(); i++)
+          line += ui.getOpener().getMassNames()[i]+" ";
+       out.write(line+"\n");
+
+	   return out.toString();
+    }
 		
 	public static String imgType(int fiType) {
 		switch (fiType) {
@@ -266,15 +290,16 @@ public class Nrrd_Writer implements PlugIn {
 		if(dimension==2) rval=tag+": "+x1+" "+x2+"\n";
 		else if(dimension==3) rval=tag+": "+x1+" "+x2+" "+x3+"\n";
 		return rval;
-	}	
-}
+	}
 
+}
 class NrrdFileInfo extends FileInfo {
 	public int dimension=0;
 	public int[] sizes;
     public int nMasses=1;
 	public String encoding="";
 	public String[] centers=null;
+    public String[] massNames;
 	
 	// Additional compression modes for fi.compression
 	public static final int GZIP = 1001;

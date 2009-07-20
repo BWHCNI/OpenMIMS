@@ -629,35 +629,6 @@ public class Mims_Reader implements Opener {
     }
 
     /**
-     * @param index image mass index.
-     * @return the minimum graylevel in the image at the given index
-     * @throws IndexOutOfBoundsException if the given image mass index is invalid.
-     * @throws IOException if there is an error reading in the image information.
-     */
-    public int getMin(int index) throws IndexOutOfBoundsException, IOException {
-        checkMassIndex(index);
-        if (massImages[index].getPixels() == null) {
-            readPixels(index);
-        }
-        return massImages[index].getMinGL();
-    }
-
-    /**
-     * @param index image mass index.
-     * @return the maximum graylevel in the image at the given index
-     * @throws IndexOutOfBoundsException if the given image mass index is invalid.
-     * @throws IOException if there is an error reading in image data.
-     */
-    public int getMax(int index) throws IndexOutOfBoundsException, IOException {
-        checkMassIndex(index);
-
-        if (massImages[index].getPixels() == null) {
-            readPixels(index);
-        }
-        return massImages[index].getMaxGL();
-    }
-
-    /**
      * @return the current index in a stack or multiple time point series indices are between at zero and nImages() - 1
      */
     public int getStackIndex() {
