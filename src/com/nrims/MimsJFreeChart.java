@@ -40,7 +40,7 @@ public class MimsJFreeChart {
         this.ui = ui ;
         this.image = im;
         this.images = ui.getMassImages();
-        numberMasses = image.nMasses();
+        numberMasses = image.getNMasses();
         imagestacks = new ImageStack[numberMasses];
         rp = ui.getOpenRatioImages();
                 

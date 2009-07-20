@@ -21,7 +21,7 @@ public class Measure {
         rTable = new ij.measure.ResultsTable();
         this.ui = ui;
         reset();
-        int n = ui.getOpener().nMasses();
+        int n = ui.getOpener().getNMasses();
         //System.out.println("nMasses() -> " + n);
         setsize = true;
         for (int i = 0; i < n; i++) {
@@ -56,7 +56,7 @@ public class Measure {
     }
 
     public void setMasses(boolean bUseMass[]) {
-        for (int i = 0; i < ui.getOpener().nMasses() && i < bUseMass.length; i++) {
+        for (int i = 0; i < ui.getOpener().getNMasses() && i < bUseMass.length; i++) {
             bMass[i] = bUseMass[i];
         }
     }
@@ -90,12 +90,12 @@ public class Measure {
 
         ij.gui.GenericDialog gd = new ij.gui.GenericDialog("Source Images..");
 
-        for (int i = 0; i < ui.getOpener().nMasses(); i++) {
+        for (int i = 0; i < ui.getOpener().getNMasses(); i++) {
             MimsPlus mp = ui.getMassImage(i);
             if (mp == null) {
                 bMass[i] = false;
             } else {
-                gd.addCheckbox(ui.getOpener().getMassName(i), bMass[i]);
+                gd.addCheckbox(ui.getOpener().getMassNames()[i], bMass[i]);
             }
         }
 
@@ -106,7 +106,7 @@ public class Measure {
             return;
         }
 
-        for (int i = 0; i < ui.getOpener().nMasses(); i++) {
+        for (int i = 0; i < ui.getOpener().getNMasses(); i++) {
             if (ui.getMassImage(i) != null) {
                 bMass[i] = gd.getNextBoolean();
             } else {
@@ -555,7 +555,7 @@ public class Measure {
 
         // Set row labels.
         for (int j = 0; j < rTable.getCounter(); j++) {
-            String label = ui.getOpener().getName()+" "+mSumImages[j].getTitle();
+            String label = ui.getImageFilePrefix()+" "+mSumImages[j].getTitle();
             rTable.setLabel(label, j);
         }
 

@@ -516,15 +516,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         MimsPlus mp = new MimsPlus(this, image, i);
                         mp.setAllowClose(false);
                         massImages[i] = mp;
-                        double dMin = (double) image.getMin(i);
-                        double dMax = (double) image.getMax(i);
+                        //double dMin = (double) image.getMin(i);
+                        //double dMax = (double) image.getMax(i);
                         if (mp != null) {
-                            massImages[i].getProcessor().setMinAndMax(dMin, dMax);
+                            massImages[i].getProcessor().setMinAndMax(0, 0);
                             massImages[i].getProcessor().setPixels(image.getPixels(i));                            
                         }
                     }
                 }
-
+               
                 if (nImages > 1) {
                     // TODO why are we starting from 1 here?
                     for (int i = 1; i < nImages; i++) {
@@ -1671,7 +1671,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     /**
      * restores any closed or modified massImages
      */
-    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {                                           
 
         mimsStackEditing.untrack();
         int currentSlice = massImages[0].getCurrentSlice();
@@ -2316,7 +2316,7 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 }//GEN-LAST:event_genStackMenuItemActionPerformed
 
 private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem11ActionPerformed
-    Nrrd_Writer nw = new Nrrd_Writer();
+    Nrrd_Writer nw = new Nrrd_Writer(this);
     nw.run("");
 }//GEN-LAST:event_jMenuItem11ActionPerformed
 
