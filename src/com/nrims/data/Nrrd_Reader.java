@@ -67,6 +67,7 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
 
     private File file = null;
     private RandomAccessFile in;
+    private NrrdFileInfo originalFi;
     private long headerOffset;
     private int verbose = 0;
     private int width,  height,  nMasses,  nImages;
@@ -133,11 +134,13 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
 		NrrdFileInfo fi;
 		try {
 			fi=getHeaderInfo(directory, fileName);
+            this.originalFi = (NrrdFileInfo)fi.clone();
             width=fi.width;
             height=fi.height;
             nImages=fi.nImages;
             nMasses=fi.nMasses;
             massNames=fi.massNames;
+
 		}
 		catch (IOException e) { 
 			IJ.write("readHeader: "+ e.getMessage()); 
@@ -154,9 +157,9 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
 
 	    FileOpener fo = new FileOpener(fi);
         long newOffset = 0;
-        headerOffset = fi.longOffset;
+        //headerOffset = fi.longOffset;
         for (int massindex = 0; massindex < this.nMasses; massindex++) {
-            newOffset = headerOffset + 2 * massindex * (fi.width * fi.height * fi.nImages);
+            newOffset = originalFi.longOffset + 2 * massindex * (fi.width * fi.height * fi.nImages);
             fi.longOffset = newOffset;
             imp[massindex] = fo.open(false);
         }
@@ -513,9 +516,9 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
     }
 
     @Override
-    public short[] getPixels(int index) throws IndexOutOfBoundsException, IOException {
+    public short[] getPixels(int massindex) throws IndexOutOfBoundsException, IOException {
         //System.out.println("Nrrd_Reader.getPixels( " + index + " )");
-        ImageProcessor sp = imp[index].getProcessor();
+        /*ImageProcessor sp = imp[massindex].getProcessor();
         int[] pixels = new int[width*height];
         int i=0;
         for (int x = 0; x < width; x++) {
@@ -524,11 +527,25 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
                pixels[i] = sp.getPixel(x, y);
                i++;
             }
-        }
+        }*/
  //the above isn't doing anything
 //???????????
-   
-        return (short[])imp[index].getProcessor().getPixels();
+        System.out.println("Nrrd getPixels- mass: " + massindex + " plane: "+ currentIndex);
+        NrrdFileInfo fi = (NrrdFileInfo)originalFi.clone();
+        long newOffset = 0;
+        newOffset = originalFi.longOffset;  //original header offset
+        newOffset += 2 * massindex * (fi.width * fi.height * fi.nImages);  //offset to correct mass
+        newOffset += currentIndex * 2 * (fi.width * fi.height);  //offset to correct image
+
+        fi.longOffset = newOffset;
+        fi.nImages = 1;
+        FileOpener fo = new FileOpener(fi);
+        ImagePlus tempimp = fo.open(false);
+
+        return (short[])tempimp.getProcessor().getPixels();
+        
+
+        //return (short[])imp[massindex].getProcessor().getPixels();
     }
 
     @Override
@@ -556,8 +573,10 @@ public class Nrrd_Reader extends ImagePlus implements Opener {
         //keeping symetry
         //the +1 is because of ImageStacks stating with index 1 and not 0
         //the same method in Mims_Reader starts with index 0
-        for(int i=0; i< imp.length; i++)
-            imp[i].setSlice(currentIndex+1);
+        //for(int i=0; i< imp.length; i++)
+            //imp[i].setSlice(currentIndex+1);
+        this.currentIndex = currentIndex;
     }
 
-}
+    }
+
