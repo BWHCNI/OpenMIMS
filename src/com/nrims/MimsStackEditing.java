@@ -127,6 +127,23 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
     }
 
+    public void restoreMIMS() {
+        untrack();
+        MimsPlus[] massImages = ui.getMassImages();
+        int currentSlice = massImages[0].getCurrentSlice();
+
+        // concatenate the remaining files.
+        int x = ui.mimsAction.getSize();
+        for (int i = 1; i <= ui.mimsAction.getSize(); i++) {
+           massImages[0].setSlice(i);
+           if (ui.mimsAction.isDropped(i)) insertSlice(i);
+        }
+
+        resetTrueIndexLabel();
+        resetSpinners();
+
+        massImages[0].setSlice(currentSlice);
+    }
     public void insertSlice(int plane) {
 
         System.out.println("inside insertSlice...");
@@ -764,10 +781,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
           tempImage.setSlice(0);
 
-
-
-
-
           ImagePlus img = new ij.ImagePlus("img", tempStack);
           String optionmsg = "";
 
@@ -832,19 +845,40 @@ public class MimsStackEditing extends javax.swing.JPanel {
           }
 
           double xval, yval;
+          double deltax, deltay;
           int plane;
-          for (int i = 0; i < translations.length; i++) {
-             plane = includeList.get(i);
-             //possible loss of precision...
-             //notice the negative....
-             xval = (-1.0) * translations[i][0];
-             yval = (-1.0) * translations[i][1];
+           for (int i = 0; i < translations.length; i++) {
+               plane = includeList.get(i);
+               //possible loss of precision...
+               //notice the negative....
+               deltax = (-1.0) * translations[i][0];
+               deltay = (-1.0) * translations[i][1];
 
-             //TODO fix this, shouldn't need to call setSlice
-             images[0].setSlice(plane);
-             this.XShiftSlice(plane, xval);
-             this.YShiftSlice(plane, yval);
-          }
+               images[0].setSlice(plane);
+               double actx = ui.mimsAction.getXShift(plane);
+               double acty = ui.mimsAction.getYShift(plane);
+
+               boolean redraw = ((deltax * actx < 0) || (deltay * acty < 0));
+
+               if (!holdupdate && (!ui.isUpdating())) {
+                   if (redraw) {
+                       this.restoreSlice(plane);
+                       this.XShiftSlice(plane, actx + deltax);
+                       this.YShiftSlice(plane, acty + deltay);
+                   } else {
+                       this.XShiftSlice(plane, deltax);
+                       this.YShiftSlice(plane, deltay);
+                   }
+                   ui.mimsAction.setShiftX(plane, actx + deltax);
+                   ui.mimsAction.setShiftY(plane, acty + deltay);
+               }
+
+           //TODO fix this, shouldn't need to call setSlice
+           //original
+           //images[0].setSlice(plane);
+           //this.XShiftSlice(plane, xval);
+           //this.YShiftSlice(plane, yval);
+           }
 
           //clean up
           images[0].setSlice(startPlane);
@@ -1034,6 +1068,23 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             }
             images[mindex].updateAndDraw();
         }
+    }
+
+    protected void uncompressAllPlanes() {
+        int actionlength = ui.mimsAction.getSize();
+        double xshift, yshift;
+        //index starting with 1
+        for(int i = 1; i <= actionlength; i++) {
+            if(!ui.mimsAction.isDropped(i)) {
+                this.removeSlice(i);
+                this.restoreSlice(i); //?
+                xshift = ui.mimsAction.getXShift(i);
+                yshift = ui.mimsAction.getYShift(i);
+                this.XShiftSlice(i, xshift);
+                this.YShiftSlice(i, yshift);
+            }
+        }
+
     }
 
     protected void restoreAllPlanes() {

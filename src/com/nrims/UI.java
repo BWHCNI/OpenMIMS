@@ -110,7 +110,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private MimsRoiManager roiManager = null;
     private MimsTomography mimsTomography = null;        
     private HSIView hsiControl = null;
-    private SegmentationForm segmentation = null;    
+    //private SegmentationForm segmentation = null;
     private Opener image = null;
     private ij.ImageJ ijapp = null;
     private FileDrop mimsDrop;    
@@ -571,7 +571,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 mimsTomography = new MimsTomography(this, image);
                 mimsAction = new MimsAction(this, image);
                 //TODO: throws an exception when opening an image with 2 masses
-                segmentation = new SegmentationForm(this);
+                //segmentation = new SegmentationForm(this);
 
                 jTabbedPane1.setComponentAt(0, mimsData);
                 jTabbedPane1.setTitleAt(0, "MIMS Data");
@@ -580,7 +580,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 jTabbedPane1.add("Analysis", roiControl);
                 jTabbedPane1.add("Stack Editing", mimsStackEditing);
                 jTabbedPane1.add("Tomography", mimsTomography);
-                jTabbedPane1.add("Segmentation", segmentation);
+                //jTabbedPane1.add("Segmentation", segmentation);
                 jTabbedPane1.add("MIMS Log", mimsLog);
 
             } else {
@@ -592,7 +592,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 mimsTomography = new MimsTomography(this, image);
                 mimsAction = new MimsAction(this, image);
                 //TODO: throws an exception when opening an image with 2 masses
-                segmentation = new SegmentationForm(this);
+                //segmentation = new SegmentationForm(this);
                 jTabbedPane1.setComponentAt(0, mimsData);
                 jTabbedPane1.setTitleAt(0, "MIMS Data");
                 jTabbedPane1.setComponentAt(1, hsiControl);
@@ -1422,9 +1422,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jMenuItem6 = new javax.swing.JMenuItem();
         jMenuItem7 = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
+        jMenuItem11 = new javax.swing.JMenuItem();
         jMenuItem8 = new javax.swing.JMenuItem();
         jMenuItem10 = new javax.swing.JMenuItem();
-        jMenuItem11 = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JSeparator();
         aboutMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
@@ -1507,13 +1507,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         fileMenu.add(jMenuItem7);
         fileMenu.add(jSeparator1);
 
-      jMenuItem11.setText("Export Stack As Nrrd Format");
-      jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
-         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            jMenuItem11ActionPerformed(evt);
-         }
-      });
-      fileMenu.add(jMenuItem11);
+        jMenuItem11.setText("Save Image (nrrd)");
+        jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem11ActionPerformed(evt);
+            }
+        });
+        fileMenu.add(jMenuItem11);
 
         jMenuItem8.setText("Export current image");
         fileMenu.add(jMenuItem8);
@@ -1682,20 +1682,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      */
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {                                           
 
-        mimsStackEditing.untrack();
-        int currentSlice = massImages[0].getCurrentSlice();
-
-        // concatenate the remaining files.
-        int x = mimsAction.getSize();
-        for (int i = 1; i <= mimsAction.getSize(); i++) {
-           massImages[0].setSlice(i);
-           if (mimsAction.isDropped(i)) mimsStackEditing.insertSlice(i);
-        }
-
-        mimsStackEditing.resetTrueIndexLabel();
-        mimsStackEditing.resetSpinners();
-
-        massImages[0].setSlice(currentSlice);
+        mimsStackEditing.restoreMIMS();
     }
 
     public void setIsSum(boolean set) {
@@ -2324,18 +2311,22 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
 }//GEN-LAST:event_genStackMenuItemActionPerformed
 
-private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem11ActionPerformed
-    Nrrd_Writer nw = new Nrrd_Writer(this);
-    nw.run("");
-}//GEN-LAST:event_jMenuItem11ActionPerformed
-
 private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TestMenuItemActionPerformed
     // TODO add your handling code here:
 
     //MimsPlus img = (MimsPlus) ij.WindowManager.getCurrentImage();
     //System.out.println(img.getTitleFileMass());
 
+    this.mimsStackEditing.uncompressAllPlanes();
+
 }//GEN-LAST:event_TestMenuItemActionPerformed
+
+private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem11ActionPerformed
+    // TODO add your handling code here:
+    Nrrd_Writer nw = new Nrrd_Writer(this);
+    nw.run("");
+
+}//GEN-LAST:event_jMenuItem11ActionPerformed
 
    // Method for saving action file and writing backup action files.
    public void saveAction(java.awt.event.ActionEvent evt) {

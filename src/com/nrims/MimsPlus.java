@@ -271,7 +271,22 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(colonindex>0) return tempstring.substring(0, colonindex-1);
         else return "";
     }
+
+    //get an image title better for saving
+    //DOES NOT WORK YET...
+    public String getTitleFileMass() {
+        String tempstring = this.getTitle();
+        String newname = this.getOpener().getImageFile().getName();
+        
+        //int colonindex = tempstring.indexOf(":");
+        //newname = tempstring.substring(colonindex+1,tempstring.length());
+        
+        newname += "_" + this.getShortTitle().replace("/", "-");
+        System.out.println(newname);
+        return newname;
+    }
     
+    //returns the rounded mass value(s) of an image, eg "26" or "27/26"
     public String getRoundedTitle() {
         if (this.getMimsType() == this.MASS_IMAGE) {
             String tempstring = this.getTitle();
@@ -991,7 +1006,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public double getNumerMassNumber() {return numerMassNumber;}
     
     public UI getUI() { return ui ; }
-        
+
     public double massNumber;
     public double denomMassNumber;
     public double numerMassNumber; 
