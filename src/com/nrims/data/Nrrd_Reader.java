@@ -53,6 +53,7 @@ public class Nrrd_Reader implements Opener {
             System.out.print("Error! Number of masses ("+fi.nMasses+") does not equal " +
                     "number of mass names referenced: "+fi.massNames);
             System.out.println();
+            return;
         }
 
         try {
