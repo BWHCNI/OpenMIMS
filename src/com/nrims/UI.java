@@ -2332,8 +2332,8 @@ private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TestMenuItemActionPerformed
     // TODO add your handling code here:
 
-    MimsPlus img = (MimsPlus) ij.WindowManager.getCurrentImage();
-    System.out.println(img.getTitleFileMass());
+    //MimsPlus img = (MimsPlus) ij.WindowManager.getCurrentImage();
+    //System.out.println(img.getTitleFileMass());
 
 }//GEN-LAST:event_TestMenuItemActionPerformed
 

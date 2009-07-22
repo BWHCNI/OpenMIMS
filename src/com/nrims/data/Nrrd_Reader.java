@@ -34,7 +34,7 @@ public class Nrrd_Reader implements Opener {
 	public final String uint32Types="uint, unsigned int, uint32, uint32_t";
 
     private File file = null;
-    private int currentIndex;
+    private int currentIndex = 0;
     private NrrdFileInfo fi = null;
 
     public Nrrd_Reader(String imageFileName) {
@@ -49,8 +49,11 @@ public class Nrrd_Reader implements Opener {
            fi = getHeaderInfo(imageFileName);
         } catch (IOException io) {System.out.println("Error reading file "+file.getAbsolutePath());}
 
-        // Initialize some local variables.
-        currentIndex = 0;
+        if (fi.nMasses != fi.massNames.length) {
+            System.out.print("Error! Number of masses ("+fi.nMasses+") does not equal " +
+                    "number of mass names referenced: "+fi.massNames);
+            System.out.println();
+        }
 
         try {
            getPixels(0);
@@ -183,8 +186,9 @@ public class Nrrd_Reader implements Opener {
             String value = noteType.substring(k);
             if (value == null) value = "";
 
-            if (thisLine.startsWith(Opener.Mims_mass_numbers))
+            if (thisLine.startsWith(Opener.Mims_mass_numbers)) {               
                 fi.massNames=noteType.substring(i+Opener.Nrrd_seperator.length()).split(" ");
+            }
 
             if (thisLine.startsWith(Opener.Mims_count_time))
                 fi.countTime=value;

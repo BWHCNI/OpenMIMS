@@ -43,19 +43,18 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="deleteListTextField" alignment="0" min="-2" pref="201" max="-2" attributes="0"/>
                                   <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="deleteListButton" alignment="0" min="-2" pref="79" max="-2" attributes="0"/>
                                   <Component id="trueIndexLabel" alignment="0" pref="333" max="32767" attributes="0"/>
+                                  <Component id="deleteListButton" alignment="0" min="-2" pref="93" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="compressButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="sumButton" min="-2" pref="98" max="-2" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="translateXSpinner" alignment="1" min="-2" max="-2" attributes="1"/>
@@ -63,15 +62,15 @@
                               </Group>
                               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="sumButton" alignment="1" max="32767" attributes="1"/>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace pref="232" max="32767" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
                               <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="sumTextField" alignment="0" max="32767" attributes="1"/>
                                   <Component id="compressTextField" alignment="0" pref="143" max="32767" attributes="1"/>
@@ -79,7 +78,6 @@
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="translateYSpinner" alignment="0" min="-2" max="-2" attributes="1"/>
                                   <Component id="jLabel3" alignment="0" pref="231" max="32767" attributes="1"/>
