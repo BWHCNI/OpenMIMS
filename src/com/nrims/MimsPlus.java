@@ -45,7 +45,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         massNumber = new Double(image.getMassNames()[index]);
         
         try {
-            image.setMassIndex(index);
             image.setStackIndex(0);
             ij.process.ImageProcessor ip = new ij.process.ShortProcessor(
                 image.getWidth(),
@@ -195,7 +194,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
         ij.ImageStack stack = getStack();
         srcImage.setStackIndex(nImage);
-        srcImage.setMassIndex(nMass);
         stack.addSlice(null,srcImage.getPixels(nMass));
         setStack(null,stack);
         setSlice(nImage+1);

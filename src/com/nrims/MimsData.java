@@ -227,8 +227,7 @@ public class MimsData extends javax.swing.JPanel {
             
             tempstring = "" + image.getNImages();
             jLabel10.setText(tempstring);
-
-            /*
+            
             tempstring = image.getPosition();
             jLabel11.setText(tempstring);
             
@@ -244,14 +243,13 @@ public class MimsData extends javax.swing.JPanel {
             tempstring = image.getDwellTime() + " ms/px    " + image.getCountTime() + " s/plane";
             jLabel15.setText(tempstring);
             
-            tempstring = Double.toString(image.getDurationD()) + " s";
+            tempstring = image.getDuration() + " s";
             jLabel20.setText(tempstring);
             
             int raster = image.getRaster();
             raster = java.lang.Math.round( ( (float)raster )/1000);
             tempstring = raster + " um";
             jLabel16.setText(tempstring);
-            */
             
             int i, nMasses = image.getNMasses();
             String massNames = "" + nMasses + " [" ;

@@ -446,9 +446,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
                 //need to add checks
                 if (fileNames[0].endsWith(".im")) {
-                   image = new Mims_Reader(this, fileNames[0]);
+                   image = new Mims_Reader(fileNames[0]);
                 } else {
-                   image = new Nrrd_Reader(fileNames);
+                   image = new Nrrd_Reader(fileNames[0]);
                 }
                
             } catch (IOException e) {

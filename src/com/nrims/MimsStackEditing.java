@@ -111,7 +111,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
             op.setStackIndex(openerIndex);
             for (int k = 0; k <= (numberMasses - 1); k++) {
-                op.readPixels(k);
                 images[k].setSlice(plane);
                 /*ImagePlus imp = new ImagePlus();
                 ij.process.ShortProcessor p = new ij.process.ShortProcessor(256, 256);
@@ -1046,7 +1045,6 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 int currentPlane = images[0].getCurrentSlice();
                 image.setStackIndex(restoreIndex - 1);
                 for (int i = 0; i < image.getNMasses(); i++) {
-                    image.readPixels(i);  //really "bad" don't use????
                     images[i].setSlice(restoreIndex);
                     images[i].getProcessor().setPixels(image.getPixels(i));
                     images[i].updateAndDraw();                    
