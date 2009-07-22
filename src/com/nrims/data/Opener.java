@@ -8,6 +8,22 @@ import java.io.*;
 **/
 public interface Opener {
 
+    // Mims specific fields.
+    public static final String Nrrd_seperator = ":=";
+    public static final String Mims_mass_numbers = "Mims_mass_numbers";
+    public static final String Mims_position = "Mims_position";
+    public static final String Mims_date = "Mims_date";
+    public static final String Mims_hour = "Mims_hour";
+    public static final String Mims_user_name = "Mims_user_name";
+    public static final String Mims_sample_name = "Mims_sample_name";
+    public static final String Mims_dwell_time = "Mims_dwell_time";
+    public static final String Mims_count_time = "Mims_count_time";
+    public static final String Mims_duration = "Mims_duration";
+    public static final String Mims_raster = "Mims_raster";
+    public static final String Mims_pixel_width = "Mims_pixel_width";
+    public static final String Mims_pixel_height = "Mims_pixel_height";
+
+    // Worker functions.
     public File getImageFile();
 
     public int getNMasses();
@@ -16,91 +32,28 @@ public interface Opener {
 
     public int getWidth();
 
-    public int getHeight();
-
-    public String[] getMassNames();
+    public int getHeight();   
 
     public short[] getPixels(int index) throws IndexOutOfBoundsException, IOException;
 
     public float getPixelWidth();
 
     public float getPixelHeight();
-    
-    //Reads the pixel data from the given mass image index for image 'currentIndex'
-    public void readPixels(int index) throws IndexOutOfBoundsException, IOException;
-
-    public void setMassIndex(int index);
 
     public void setStackIndex(int currentIndex);
 
-    class MassImage {
+    // Metadata
+    public String getPosition();
+    public String[] getMassNames();
+    public String getSampleDate();
+    public String getSampleHour();
+    public String getUserName();
+    public String getSampleName();
+    public String getDwellTime();
+    public String getCountTime();
+    public String getDuration();
+    public int getRaster();
 
-        private short[] spixels;
-        private TabMass tabMass;
-        private String massName;
-        private int minGL;
-        private int maxGL;
-        private double meanGL;
-        private double sdGL;
-
-        public void setPixels(short[] pixels) {
-            spixels = pixels;
-        }
-
-        public short[] getPixels() {
-            return spixels;
-        }
-        // public void setHistogram (long [] hist) { histogram = hist ; }
-        // public long[]  getHistogram() { return histogram ; }
-
-        public void setTabMass(TabMass tm) {
-            tabMass = tm;
-        }
-
-        public TabMass getTabMass() {
-            return tabMass;
-        }
-
-        public void setName(String name) {
-            massName = name;
-        }
-
-        public String getName() {
-            return massName;
-        }
-
-        public void setMinGL(int gl) {
-            minGL = gl;
-        }
-
-        public int getMinGL() {
-            return minGL;
-        }
-
-        public void setMaxGL(int gl) {
-            maxGL = gl;
-        }
-
-        public int getMaxGL() {
-            return maxGL;
-        }
-
-        public void setMeanGL(double mean) {
-            meanGL = mean;
-        }
-
-        public double getMeanGL() {
-            return meanGL;
-        }
-
-        public void setStdDev(double sd) {
-            sdGL = sd;
-        }
-
-        public double getStdDev() {
-            return sdGL;
-        }
-    }
 
     /**
      * defines a structure for saving the HeaderImage data

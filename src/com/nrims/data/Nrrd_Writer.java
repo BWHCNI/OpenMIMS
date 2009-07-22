@@ -14,41 +14,21 @@ package com.nrims.data;
 // All rights reserved
 // Source code released under Lesser Gnu Public License v2
 
-// v0.1 2007-04-02
-// - First functional version can write single channel image (stack)
-// to raw/gzip encoded monolithic nrrd file
-// - Writes key spatial calibration information	including
-//   spacings, centers, units, axis mins
-
-// TODO
-// - Support for multichannel images, time data
-// - option to write a detached header instead of detached nrrd file
-
-// NB this class can be used to create detached headers for other file types
-// See 
-
 import com.nrims.UI;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.WindowManager;
 import ij.io.FileInfo;
 import ij.io.ImageWriter;
 import ij.io.SaveDialog;
 import ij.measure.Calibration;
 import ij.plugin.PlugIn;
-
 import java.io.*;
 import java.util.Date;
                           
 public class Nrrd_Writer implements PlugIn {
 
-    static UI ui;
-    
-    public Nrrd_Writer(UI ui) {
-       this.ui=ui;
-    }
-
-	private static final String plugInName = "Nrrd Writer";
+    static private UI ui;
+    private static final String plugInName = "Nrrd Writer";
 	private static final String noImages = plugInName+"...\n"+ "No images are open.";
 	private static final String supportedTypes =
 		plugInName+"..." + "Supported types:\n\n" +
@@ -58,27 +38,34 @@ public class Nrrd_Writer implements PlugIn {
 				"(16-bit Grayscale unsigned integer) : UINT\n"+
 				"8-bit Grayscale : BYTE\n"+
 				"8-bit Colour LUT (converted to greyscale): BYTE\n";
-				
-	public static final int NRRD_VERSION = 4;	
-	private String imgTypeString=null;	
-	String nrrdEncoding="raw";
-	// See http://teem.sourceforge.net/nrrd/format.html#centers
-	static final String defaultNrrdCentering="node";	
-						
-	public void run(String arg) {
-		//ImagePlus imp = WindowManager.getCurrentImage();
-        ImagePlus[] imp = ui.getOpenMassImages();
 
+	public static final int NRRD_VERSION = 4;
+	private String imgTypeString=null;
+	String nrrdEncoding="raw";
+	static final String defaultNrrdCentering="node";
+
+    // Constructor.
+    public Nrrd_Writer(UI ui) {
+       this.ui=ui;
+    }
+
+    // Save the open images int the .nrrd file format.
+	public void run(String arg) {
+
+        // Get all mass images.
+        ImagePlus[] imp = ui.getOpenMassImages();
 		if (imp == null) {
 			IJ.showMessage(noImages);
 			return;
 		}
 
+        // Get name.
 		String name = arg;
 		if (arg == null || arg.equals("")) {
 			name = ui.getImageFilePrefix();
 		}
-		
+
+        // Open save dialog box.
 		SaveDialog sd = new SaveDialog(plugInName+"...", name, ".nrrd");
 		String file = sd.getFileName();
 		if (file == null) return;
@@ -86,6 +73,7 @@ public class Nrrd_Writer implements PlugIn {
 		save(imp, directory, file);
 	}
 
+    //
 	public void save(ImagePlus[] imp, String directory, String file) {
 		if (imp == null) {
 			IJ.showMessage(noImages);
@@ -105,17 +93,15 @@ public class Nrrd_Writer implements PlugIn {
 				IJ.showMessage(supportedTypes);
 				return;
 			}
-		}		
+		}
+
 		// Set the fileName stored in the file info record to the
 		// file name that was passed in or chosen in the dialog box
 		fi[0].fileName=file;
 		fi[0].directory=directory;
 
         // Get calibration for each image.
-        Calibration[] cal = new Calibration[ui.getOpener().getNMasses()];
-        for (int i = 0; i < fi.length; i++) {
-            cal[i] = imp[i].getCalibration();
-        }
+        Calibration cal = imp[0].getCalibration();
 		
 		// Actually write out the image
 		try {
@@ -125,16 +111,14 @@ public class Nrrd_Writer implements PlugIn {
 			IJ.showStatus("");
 		}
 	}
-	void writeImage(FileInfo[] fis, Calibration[] cals) throws IOException {
+	void writeImage(FileInfo[] fi, Calibration cal) throws IOException {
 
-        FileInfo fi = fis[0];
-        Calibration cal = cals[0];
-
-		FileOutputStream out = new FileOutputStream(new File(fi.directory, fi.fileName));
+        // Setup output stream.
+		FileOutputStream out = new FileOutputStream(new File(fi[0].directory, fi[0].fileName));
 
         // First write out the full header
 		Writer bw = new BufferedWriter(new OutputStreamWriter(out));
-		bw.write(makeHeader(fi,cal));
+		bw.write(makeHeader(fi[0],cal));
 		
         // Write Mims specific fields.
         bw.write(getMimsKeyValuePairs()+"\n");
@@ -143,15 +127,15 @@ public class Nrrd_Writer implements PlugIn {
 		bw.flush();		
 
 		// Then the image data
-		ImageWriter[] writer = new ImageWriter[fis.length];
+		ImageWriter[] writer = new ImageWriter[fi.length];
         for (int i = 0; i < writer.length; i++) {
-            writer[i] = new ImageWriter(fis[i]);
+            writer[i] = new ImageWriter(fi[i]);
             writer[i].write(out);
         }
 
         out.close();
 			
-		IJ.showStatus("Saved "+ fi.fileName);
+		IJ.showStatus("Saved "+ fi[0].fileName);
 	}
 		
 	public static String makeHeader(FileInfo fi, Calibration cal) {
@@ -162,37 +146,31 @@ public class Nrrd_Writer implements PlugIn {
 		out.write("NRRD000"+NRRD_VERSION+"\n");
 		out.write("# Created by Nrrd_Writer at "+(new Date())+"\n");
 
-		// Fetch and write the data type
+		// Data type.
 		out.write("type: "+imgType(fi.fileType)+"\n");
-		// Fetch and write the encoding
-		out.write("encoding: "+getEncoding(fi)+"\n");
-		
-		if(fi.intelByteOrder) out.write("endian: little\n");
-		else out.write("endian: big\n");
-		
-		int dimension=(fi.nImages==1)?2:3;
-        dimension=4;
 
-        // Diension.
-        // out.write("sizes: "+fi.width+" "+fi.height+" "+fi.nImages+" "+ui.getOpener().getNMasses()+"\n");
-		out.write("dimension: "+dimension+"\n");
+		// Encoding.
+		out.write("encoding: "+getEncoding(fi)+"\n");
+
+        // Endian.
+		if(fi.intelByteOrder) out.write("endian: little\n");
+		else out.write("endian: big\n");		       
+
+        // Dimension.
+		int dimension=4;
+        out.write("dimension: "+dimension+"\n");
 		
         // Sizes.
-        //out.write(dimmedLine("sizes",dimension,fi.width+"",fi.height+"",fi.nImages+""));
         out.write("sizes: "+fi.width+" "+fi.height+" "+fi.nImages+" "+ui.getOpener().getNMasses()+"\n");
 
         // Kinds.
         out.write("kinds: space space space list\n");
 
         // Calibration.
-        if(cal!=null)
-			//out.write(dimmedLine("spacings",dimension,cal.pixelWidth+"",cal.pixelHeight+"",cal.pixelDepth+""));
+        if(cal!=null)			
             out.write("spacings: "+cal.pixelWidth+" "+cal.pixelHeight+" "+cal.pixelDepth+" NaN\n");
 		
         // Centers.
-        // GJ: It's my understanding that ImageJ operates on a 'node' basis
-		// See http://teem.sourceforge.net/nrrd/format.html#centers
-		//out.write(dimmedLine("centers",dimension,defaultNrrdCentering,defaultNrrdCentering,"node"));
         out.write("centers: node node node node\n");
 
         // Units.
@@ -200,12 +178,10 @@ public class Nrrd_Writer implements PlugIn {
 		if(cal!=null) units=cal.getUnit();
 		else units=fi.unit;
 		if(units.equals("�m")) units="microns";
-		//if(!units.equals("")) out.write(dimmedQuotedLine("units",dimension,units,units,units));
         if(!units.equals("")) out.write("units: \"pixel\" \"pixel\" \"pixel\" \"pixel\"\n");
 
         // Axis.
-		// Only write axis mins if origin info has at least one non-zero
-		// element
+		// Only write axis mins if origin info has at least one non-zero element.
 		if(cal!=null && (cal.xOrigin!=0 || cal.yOrigin!=0 || cal.zOrigin!=0) ) {
 			out.write(dimmedLine("axis mins",dimension,(cal.xOrigin*cal.pixelWidth)+"",
 								 (cal.yOrigin*cal.pixelHeight)+"",(cal.zOrigin*cal.pixelDepth)+""));
@@ -214,16 +190,51 @@ public class Nrrd_Writer implements PlugIn {
 		return out.toString();
     }
 
+    // Write Mims specific key/value pairs.
     private String getMimsKeyValuePairs() {
-       StringWriter out=new StringWriter();
 
-       // Write Mims specific key/value pairs.
+       // initialize variables.
+       StringWriter out=new StringWriter();
+       String line;
 
        // Mass numbers
-       String line = "MIMS_mass_numbers:=";
+       line = Opener.Mims_mass_numbers+Opener.Nrrd_seperator;
        for (int i=0; i<ui.getOpener().getNMasses(); i++)
           line += ui.getOpener().getMassNames()[i]+" ";
        out.write(line+"\n");
+
+       // Position
+       out.write(Opener.Mims_position+Opener.Nrrd_seperator+ui.getOpener().getPosition()+"\n");
+
+       // Date
+       out.write(Opener.Mims_date+Opener.Nrrd_seperator+ui.getOpener().getSampleDate()+"\n");
+
+       // Hour
+       out.write(Opener.Mims_hour+Opener.Nrrd_seperator+ui.getOpener().getSampleHour()+"\n");
+
+       // Username
+       out.write(Opener.Mims_user_name+Opener.Nrrd_seperator+ui.getOpener().getUserName()+"\n");
+
+       // Sample name
+       out.write(Opener.Mims_sample_name+Opener.Nrrd_seperator+ui.getOpener().getSampleName()+"\n");
+
+       // Dwell time
+       out.write(Opener.Mims_dwell_time+Opener.Nrrd_seperator+ui.getOpener().getDwellTime()+"\n");
+
+       // Count time
+       out.write(Opener.Mims_count_time+Opener.Nrrd_seperator+ui.getOpener().getCountTime()+"\n");
+
+       // Duration
+       out.write(Opener.Mims_duration+Opener.Nrrd_seperator+ui.getOpener().getDuration()+"\n");
+
+       // Raster
+       out.write(Opener.Mims_raster+Opener.Nrrd_seperator+ui.getOpener().getRaster()+"\n");
+
+       // Pixel width
+       out.write(Opener.Mims_pixel_width+Opener.Nrrd_seperator+ui.getOpener().getPixelWidth()+"\n");
+
+       // Pixel height
+       out.write(Opener.Mims_pixel_height+Opener.Nrrd_seperator+ui.getOpener().getPixelHeight()+"\n");
 
 	   return out.toString();
     }
@@ -293,13 +304,17 @@ public class Nrrd_Writer implements PlugIn {
 	}
 
 }
+
 class NrrdFileInfo extends FileInfo {
-	public int dimension=0;
 	public int[] sizes;
-    public int nMasses=1;
 	public String encoding="";
 	public String[] centers=null;
     public String[] massNames;
+    public String duration, position,  sampleDate, sampleHour,
+                  userName, dwellTime, countTime,  sampleName;
+    public int raster, dimension, nMasses;
+    public float pixel_width;
+    public float pixel_height;
 	
 	// Additional compression modes for fi.compression
 	public static final int GZIP = 1001;
@@ -310,5 +325,4 @@ class NrrdFileInfo extends FileInfo {
 	public static final int NRRD = 1001;
 	public static final int NRRD_TEXT = 1002;
 	public static final int NRRD_HEX = 1003;
-
 }
