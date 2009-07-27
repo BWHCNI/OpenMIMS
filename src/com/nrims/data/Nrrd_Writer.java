@@ -74,10 +74,10 @@ public class Nrrd_Writer implements PlugIn {
 	}
 
     //
-	public void save(ImagePlus[] imp, String directory, String file) {
+	public File save(ImagePlus[] imp, String directory, String file) {
 		if (imp == null) {
 			IJ.showMessage(noImages);
-			return;
+			return null;
 		}
 
         // Get FileInfo for each image although only the one is rfeally needed for the header.
@@ -91,7 +91,7 @@ public class Nrrd_Writer implements PlugIn {
 			imgTypeString=imgType(fi[0].fileType);
 			if (imgTypeString.equals("unsupported")) {
 				IJ.showMessage(supportedTypes);
-				return;
+				return null;
 			}
 		}
 
@@ -104,17 +104,22 @@ public class Nrrd_Writer implements PlugIn {
         Calibration cal = imp[0].getCalibration();
 		
 		// Actually write out the image
+        File returnFile = null;
 		try {
-			writeImage(fi, cal);
+			returnFile = writeImage(fi, cal);
 		} catch (IOException e) {
 			IJ.error("An error occured writing the file.\n \n" + e);
 			IJ.showStatus("");
 		}
+        
+        return returnFile;
 	}
-	void writeImage(FileInfo[] fi, Calibration cal) throws IOException {
+	File writeImage(FileInfo[] fi, Calibration cal) throws IOException {
+
+        File file = new File(fi[0].directory, fi[0].fileName);
 
         // Setup output stream.
-		FileOutputStream out = new FileOutputStream(new File(fi[0].directory, fi[0].fileName));
+		FileOutputStream out = new FileOutputStream(file);
 
         // First write out the full header
 		Writer bw = new BufferedWriter(new OutputStreamWriter(out));
@@ -136,6 +141,8 @@ public class Nrrd_Writer implements PlugIn {
         out.close();
 			
 		IJ.showStatus("Saved "+ fi[0].fileName);
+
+        return file;
 	}
 		
 	public static String makeHeader(FileInfo fi, Calibration cal) {

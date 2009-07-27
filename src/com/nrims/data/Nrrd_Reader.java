@@ -37,16 +37,16 @@ public class Nrrd_Reader implements Opener {
     private int currentIndex = 0;
     private NrrdFileInfo fi = null;
 
-    public Nrrd_Reader(String imageFileName) {
+    public Nrrd_Reader(File imageFile) {
 
         // Make sure file exists.
-        this.file = new File(imageFileName);
+        this.file = imageFile;
         if (!file.exists())
-            throw new NullPointerException("File " + imageFileName + " does not exist.");
+            throw new NullPointerException("File " + imageFile + " does not exist.");
 
         // Read the header.
         try {
-           fi = getHeaderInfo(imageFileName);
+           fi = getHeaderInfo();
         } catch (IOException io) {System.out.println("Error reading file "+file.getAbsolutePath());}
 
         if (fi.nMasses != fi.massNames.length) {
@@ -62,7 +62,7 @@ public class Nrrd_Reader implements Opener {
     }
 
     // Reads header and gets metadata.
-	public NrrdFileInfo getHeaderInfo(String imageFileName) throws IOException {
+	public NrrdFileInfo getHeaderInfo() throws IOException {
 
         if (IJ.debugMode) IJ.log("Entering Nrrd_Reader.readHeader():");
 
@@ -275,7 +275,7 @@ public class Nrrd_Reader implements Opener {
         // Set up a temporary header to read the pixels from the file.
 		NrrdFileInfo fi;
 		try {
-			fi=getHeaderInfo(file.getAbsolutePath());
+			fi=getHeaderInfo();
 		} catch (IOException e) {
 			IJ.write("readHeader: "+ e.getMessage());
 			return null;

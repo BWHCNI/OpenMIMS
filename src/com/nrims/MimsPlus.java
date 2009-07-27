@@ -1,6 +1,7 @@
 package com.nrims;
 import ij.IJ ;
 import ij.gui.* ;
+import java.io.File;
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent ;
 import java.awt.event.WindowListener ;
@@ -28,6 +29,28 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     MimsPlus internalRatio;
     MimsPlus internalNumerator;
     MimsPlus internalDenominator;
+
+    public double massNumber;
+    public double denomMassNumber;
+    public double numerMassNumber;
+    public SumProps sumProps = null;
+    private String parentImageName = null;
+    private boolean allowClose =true;
+    private boolean bIgnoreClose = false ;
+    boolean bMoving = false;
+    boolean autoAdjustContrast = false;
+    static boolean bStateChanging = false ;
+    private int nMass = 0 ;
+    private int nType = 0 ;
+    private int nRatioNum = 0 ;
+    private int nRatioDen = 0 ;
+    private int x1, x2, y1, y2, w1, w2, h1, h2;
+    private boolean bIsStack = false ;
+    private HSIProcessor hsiProcessor = null ;
+    private com.nrims.data.Opener srcImage ;
+    private com.nrims.UI ui = null;
+    private EventListenerList fStateListeners = null ;
+    private File dataFile;
 
     /** Creates a new instance of mimsPlus */
     public MimsPlus() {
@@ -1000,31 +1023,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     
     public boolean isStack() { return bIsStack ; }
     public void setIsStack(boolean isS) { bIsStack = isS; }
+
+    public File getDataFile() { return dataFile; }
+    public void setDataFile(File file) { dataFile = file; }
     
     public double getMassNumber() {return massNumber;}
     public double getDenomMassNumber() {return denomMassNumber;}
     public double getNumerMassNumber() {return numerMassNumber;}
     
-    public UI getUI() { return ui ; }
-
-    public double massNumber;
-    public double denomMassNumber;
-    public double numerMassNumber; 
-    public SumProps sumProps = null;
-    private String parentImageName = null;
-    private boolean allowClose =true;
-    private boolean bIgnoreClose = false ;
-    boolean bMoving = false;
-    boolean autoAdjustContrast = false;
-    static boolean bStateChanging = false ;
-    private int nMass = 0 ;
-    private int nType = 0 ;
-    private int nRatioNum = 0 ;
-    private int nRatioDen = 0 ;
-    private int x1, x2, y1, y2, w1, w2, h1, h2;
-    private boolean bIsStack = false ;
-    private HSIProcessor hsiProcessor = null ;
-    private com.nrims.data.Opener srcImage ;
-    private com.nrims.UI ui = null;
-    private EventListenerList fStateListeners = null ;
+    public UI getUI() { return ui ; }        
 }

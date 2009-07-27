@@ -31,6 +31,7 @@ public class HSIProps implements java.io.Serializable {
         backgroundRatio = (float)129/(float)10000;
         xloc = -1;
         yloc = -1;
+        dataFileName = null;
     }
     public void setNumMass(int n) { numMass = n ; }
     public int getNumMass() { return numMass ; }
@@ -58,15 +59,14 @@ public class HSIProps implements java.io.Serializable {
     public int getXWindowLocation() { return this.xloc; }
     public void setYWindowLocation(int y) { this.yloc = y; }
     public int getYWindowLocation() { return this.yloc; }     
-
     public void setTransform(boolean trans) { this.transform = trans; }
     public boolean getTransform() { return this.transform; }
-
     public void setReferenceRatio(float ref) { this.referenceRatio = ref; }
     public float getReferenceRatio() { return this.referenceRatio; }
-
     public void setBackgroundRatio(float bg) { this.backgroundRatio = bg; }
     public float getBackgroundRatio() { return this.backgroundRatio; }
+    public void setDataFileName(String fileName) { dataFileName = fileName;}
+    public String getDatFileName() { return dataFileName; }
     /**
      * Set this class' properties from another class
      */
@@ -149,4 +149,5 @@ public class HSIProps implements java.io.Serializable {
     private float referenceRatio;
     private float backgroundRatio;
     private int xloc, yloc;
+    private String dataFileName;
 }

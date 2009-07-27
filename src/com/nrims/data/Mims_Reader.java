@@ -373,12 +373,9 @@ public class Mims_Reader implements Opener {
      * @throws IOException if there is a problem reading the image file
      * @throws NullPointerException if the imagename is null or empty.
      */
-    public Mims_Reader(String imageFileName) throws IOException, NullPointerException {
-        if (imageFileName == null || imageFileName.length() == 0) {
-            throw new NullPointerException("Can't create an Opener with no valid imagename");
-        }
+    public Mims_Reader(File imageFile) throws IOException, NullPointerException {
 
-        this.file = new File(imageFileName);
+        this.file = imageFile;
         in = new RandomAccessFile(file, "r");
 
         readHeader();

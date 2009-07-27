@@ -1,7 +1,8 @@
 package com.nrims.segmentation;
 
 import java.util.ArrayList;
-import javax.swing.SwingWorker;
+//import javax.swing.SwingWorker;
+import org.jdesktop.swingworker.SwingWorker;
 
 /**
  *
