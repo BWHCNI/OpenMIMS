@@ -111,10 +111,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private MimsTomography mimsTomography = null;        
     private HSIView hsiControl = null;
     private SegmentationForm segmentation = null;    
+    private javax.swing.JRadioButtonMenuItem[] viewMassMenuItems = null;
     private Opener image = null;
     private ij.ImageJ ijapp = null;
     private FileDrop mimsDrop;    
     
+    private Point[] windowPositions = null;
+
     protected MimsLineProfile lineProfile;
     protected MimsAction mimsAction = null;
     protected Roi activeRoi;    
@@ -191,6 +194,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      */
     private synchronized void closeCurrentImage() {
         // TODO why is this 6? Changed to maxMasses
+        this.windowPositions = gatherWindowPosistions();
         for (int i = 0; i < maxMasses; i++) {
             if (segImages[i] != null) {
                 segImages[i].removeListener(this);
@@ -467,8 +471,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         massImages[i].show();
                     }
                 }
+
+                if(this.windowPositions != null) {
+                    applyWindowPositions(windowPositions);
+                } else {
+                    //replace with mass image tile
                 ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
+
                 wo.run("tile");
+                }
 
             } catch (Exception x) {
                 updateStatus(x.toString());
@@ -484,6 +495,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
 
             if (mimsData == null) {
+                initializeViewMenu();
                 mimsData = new com.nrims.MimsData(this, image);
                 roiControl = new MimsRoiControl(this);
                 hsiControl = new HSIView(this);
@@ -505,7 +517,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 jTabbedPane1.add("MIMS Log", mimsLog);
 
             } else {
-
+                resetViewMenu();
                 mimsData = new com.nrims.MimsData(this, image);
                 hsiControl = new HSIView(this);
                 cbControl = new MimsCBControl(this);
@@ -521,7 +533,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 jTabbedPane1.setComponentAt(3, roiControl);
                 jTabbedPane1.setComponentAt(4, mimsStackEditing);
                 jTabbedPane1.setComponentAt(5, mimsTomography);
-                //jTabbedPane1.setComponentAt(6, segmentation);
+                jTabbedPane1.setComponentAt(6, segmentation);
 
                 mimsData.setMimsImage(image);
                 hsiControl.updateImage();                
@@ -555,6 +567,105 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         } finally {
             currentlyOpeningImages = false;
         }        
+    }
+
+    public Point[] gatherWindowPosistions() {
+        Point[] positions = new Point[maxMasses];
+
+        MimsPlus[] images = this.getOpenMassImages();
+        if(images.length==0) return null;
+
+        for( int i = 0; i < images.length; i++) {
+            if( images[i].getWindow() != null)
+                positions[i] = images[i].getWindow().getLocation();
+        }
+
+        return positions;
+    }
+
+    public void applyWindowPositions(Point[] positions) {
+        for(int i = 0; i < positions.length; i++) {
+           if ( positions[i] != null && massImages[i] != null)
+               if (massImages[i].getWindow() != null)
+                massImages[i].getWindow().setLocation(positions[i]);
+
+        }
+    }
+
+    private void resetViewMenu() {
+        for (int i = 0; i < viewMassMenuItems.length; i++) {
+            if (i < image.getNMasses()) {
+                viewMassMenuItems[i].setText(image.getMassNames()[i]);
+                viewMassMenuItems[i].setVisible(true);
+            } else {
+                viewMassMenuItems[i].setText("foo");
+                viewMassMenuItems[i].setVisible(false);
+            }
+
+        }
+    }
+
+    private void initializeViewMenu() {
+        this.viewMassMenuItems = new javax.swing.JRadioButtonMenuItem[this.maxMasses];
+
+        for (int i = 0; i < viewMassMenuItems.length; i++) {
+            javax.swing.JRadioButtonMenuItem massRButton = new javax.swing.JRadioButtonMenuItem();
+
+            if (i < image.getNMasses()) {
+                massRButton.setSelected(true);
+                massRButton.setText(image.getMassNames()[i]);
+                massRButton.setVisible(true);
+            } else {
+                massRButton.setSelected(false);
+                massRButton.setText("foo");
+                massRButton.setVisible(false);
+            }
+
+            massRButton.addActionListener(new java.awt.event.ActionListener() {
+
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    viewMassChanged(evt);
+                }
+            });
+            viewMassMenuItems[i] = massRButton;
+
+            this.viewMenu.add(massRButton);
+        }
+
+    }
+
+    private void viewMassChanged(java.awt.event.ActionEvent evt) {
+        int index = 0;
+        for (int i = 0; i < viewMassMenuItems.length; i++) {
+            if (evt.getActionCommand() == viewMassMenuItems[i].getText()) {
+                index = i;
+            }
+        }
+        if (massImages[index] != null) {
+            if (viewMassMenuItems[index].isSelected() && !massImages[index].isVisible()) {
+                //int plane = getVisableMassImages()[0].getSlice();
+                massImages[index].show();
+                if(windowPositions[index] != null) massImages[index].getWindow().setLocation(windowPositions[index]);
+                massImages[index].setbIgnoreClose(true);
+                //massImages[index].setSlice(plane);
+                //massImages[index].updateAndDraw();
+            } else if( !viewMassMenuItems[index].isSelected() && massImages[index].isVisible()) {
+                massImages[index].hide();
+            }
+        }
+
+
+        System.out.print(evt.getActionCommand() + " index: " + index);
+        System.out.print(" selected: " + viewMassMenuItems[index].isSelected());
+        System.out.print(" visable: " + massImages[index].isVisible() + "\n");
+    }
+
+    public void massImageClosed(MimsPlus im) {
+        for (int i = 0; i < massImages.length; i++) {
+            if (massImages[i] == im) {
+                viewMassMenuItems[i].setSelected(false);
+            }
+        }
     }
 
     /**
@@ -2211,7 +2322,9 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     //MimsPlus img = (MimsPlus) ij.WindowManager.getCurrentImage();
     //System.out.println(img.getTitleFileMass());
 
-}                                            
+                                          
+}                                           
+
 
    // Method for saving action file and writing backup action files.
    public void saveAction(java.awt.event.ActionEvent evt) {
