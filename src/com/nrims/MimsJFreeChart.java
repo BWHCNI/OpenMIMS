@@ -45,7 +45,8 @@ public class MimsJFreeChart {
         rp = ui.getOpenRatioImages();
                 
         for (int i=0; i<=(numberMasses-1); i++) {
-            imagestacks[i]=this.images[i].getStack();
+            if(images[i]!=null)
+                imagestacks[i]=this.images[i].getStack();
         }
     }
     

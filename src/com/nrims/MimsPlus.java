@@ -1,7 +1,6 @@
 package com.nrims;
 import ij.IJ ;
 import ij.gui.* ;
-import java.io.File;
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent ;
 import java.awt.event.WindowListener ;
@@ -30,6 +29,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     MimsPlus internalNumerator;
     MimsPlus internalDenominator;
 
+
     public double massNumber;
     public double denomMassNumber;
     public double numerMassNumber;
@@ -50,7 +50,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     private com.nrims.data.Opener srcImage ;
     private com.nrims.UI ui = null;
     private EventListenerList fStateListeners = null ;
-    private File dataFile;
 
     /** Creates a new instance of mimsPlus */
     public MimsPlus() {
@@ -263,9 +262,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }       
         
         // Set window location parameters.
-        props.setXWindowLocation(this.getWindow().getX());
-        props.setYWindowLocation(this.getWindow().getY());
-        
+        if(this.getWindow()!=null) {
+            props.setXWindowLocation(this.getWindow().getX());
+            props.setYWindowLocation(this.getWindow().getY());
+        }
+
         return props; 
     }
     
@@ -330,7 +331,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
         return "0";
     }
-        
+
+    public void setbIgnoreClose(boolean b) {
+        this.bIgnoreClose = b;
+    }
+
     @Override
     public void show() {
         ij.gui.ImageWindow win = getWindow() ;
@@ -358,8 +363,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         else super.setRoi(roi);
         stateChanged(roi,MimsPlusEvent.ATTR_SET_ROI);
     }
-    
-    public void windowClosing(WindowEvent e) { 
+
+    @Override
+    public void windowClosing(WindowEvent e) {
 //        System.out.println("STOP");
 //        this.bIgnoreClose =false;
 //        this.
@@ -1008,7 +1014,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }        
     @Override
     public void close () {
-        if(allowClose) {super.close();}
+        if(allowClose) {
+            super.close();
+        } else {
+            this.hide();
+            ui.massImageClosed(this);
+        }
     }
     public void setHSIProcessor( HSIProcessor processor ) { this.hsiProcessor = processor ; }
     public HSIProcessor getHSIProcessor() { return hsiProcessor ; }
@@ -1023,13 +1034,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     
     public boolean isStack() { return bIsStack ; }
     public void setIsStack(boolean isS) { bIsStack = isS; }
-
-    public File getDataFile() { return dataFile; }
-    public void setDataFile(File file) { dataFile = file; }
     
     public double getMassNumber() {return massNumber;}
     public double getDenomMassNumber() {return denomMassNumber;}
     public double getNumerMassNumber() {return numerMassNumber;}
     
-    public UI getUI() { return ui ; }        
+    public UI getUI() { return ui ; }
+
 }

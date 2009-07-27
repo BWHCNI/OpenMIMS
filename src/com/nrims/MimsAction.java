@@ -23,8 +23,9 @@ public class MimsAction implements Cloneable {
     public void resetAction(UI ui, Opener im) {                    
                                      
         // Size of the stack.
-        int size = ui.getMassImage(0).getNSlices();        
-        
+        //int size = ui.getMassImage(0).getNSlices();
+        int size = im.getNImages();
+
         // Set size of member variables.
         xyTranslationList = new ArrayList<double[]>();
         droppedList = new ArrayList<Integer>();

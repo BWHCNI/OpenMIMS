@@ -50,7 +50,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
     public void resetImageStacks() {
         for (int i = 0; i < numberMasses; i++) {
-            imagestacks[i] = this.images[i].getStack();
+            if(images[i]!=null)
+                imagestacks[i] = this.images[i].getStack();
         }
     }
 
@@ -749,7 +750,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
     }//GEN-LAST:event_translateYSpinnerStateChanged
 
     private void autoTrack(String options) {
-       int length = images[0].getStackSize();
+       int length = ui.getOpenMassImages()[0].getNSlices();//images[0].getStackSize();
        ArrayList<Integer> includeList = new ArrayList<Integer>();
        for (int i = 0; i < length; i++) {
           includeList.add(i, i+1);          
@@ -765,7 +766,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
           //ij.plugin.filter.Duplicater dup = new ij.plugin.filter.Duplicater();
           //ImagePlus imgcopy = dup.duplicateStack(tempImage, "copy");
 
-          int startPlane = images[0].getCurrentSlice();
+          int startPlane = ui.getOpenMassImages()[0].getCurrentSlice();
           String massname = tempImage.getTitle();
           
           
@@ -773,7 +774,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
           ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
                     
           for (int i = 0; i < includeList.size(); i++) {             
-             images[0].setSlice(includeList.get(i));
+             ui.getOpenMassImages()[0].setSlice(includeList.get(i));
              //tempImage = WindowManager.getCurrentImage();
              tempProcessor = tempImage.getProcessor();
              tempStack.addSlice(tempImage.getTitle(), tempProcessor);
@@ -854,7 +855,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                deltax = (-1.0) * translations[i][0];
                deltay = (-1.0) * translations[i][1];
 
-               images[0].setSlice(plane);
+               ui.getOpenMassImages()[0].setSlice(plane);
                double actx = ui.mimsAction.getXShift(plane);
                double acty = ui.mimsAction.getYShift(plane);
 
@@ -913,7 +914,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
 
 public void untrack() {
 
-    int startPlane = images[0].getCurrentSlice();
+    int startPlane = ui.getOpenMassImages()[0].getCurrentSlice();
 
         double xval = 0.0;
         double yval = 0.0;
@@ -1071,13 +1072,17 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
 
     protected void uncompressAllPlanes() {
+
+        this.restoreAllPlanes();
+
         int actionlength = ui.mimsAction.getSize();
         double xshift, yshift;
         //index starting with 1
         for(int i = 1; i <= actionlength; i++) {
-            if(!ui.mimsAction.isDropped(i)) {
+
+            if(ui.mimsAction.isDropped(i)) {
                 this.removeSlice(i);
-                this.restoreSlice(i); //?
+            } else {
                 xshift = ui.mimsAction.getXShift(i);
                 yshift = ui.mimsAction.getYShift(i);
                 this.XShiftSlice(i, xshift);
@@ -1087,6 +1092,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
     }
 
+    //Broken?  Needs to be cut out?
     protected void restoreAllPlanes() {
         this.holdupdate = true;
         for (int restoreIndex = 1; restoreIndex <= image.getNImages(); restoreIndex++) {
@@ -1106,7 +1112,7 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 e.printStackTrace();
             }           
         }
-        ui.getmimsAction().resetAction(ui, image);
+        //ui.getmimsAction().resetAction(ui, image);
         this.holdupdate = false;
     }
 
