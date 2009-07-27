@@ -86,7 +86,9 @@ public class LoadImageList {
      */
     public void simpleIMImport() {
         try {
-        this.ui.loadMIMSFile(workingDirectory + "/" + imageList.get(0));
+
+        File file = new File(workingDirectory, imageList.get(0));
+        this.ui.loadMIMSFile(file);
         MimsPlus[] massImages = this.ui.getMassImages();
         int nMasses = this.ui.getOpener().getNMasses();
         
