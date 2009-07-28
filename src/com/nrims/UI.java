@@ -117,6 +117,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private FileDrop mimsDrop;    
     
     private Point[] windowPositions = null;
+    private int[] hiddenWindows = null;
 
     protected MimsLineProfile lineProfile;
     protected MimsAction mimsAction = null;
@@ -195,6 +196,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private synchronized void closeCurrentImage() {
         // TODO why is this 6? Changed to maxMasses
         this.windowPositions = gatherWindowPosistions();
+        this.hiddenWindows = gatherHiddenWindows();
         for (int i = 0; i < maxMasses; i++) {
             if (segImages[i] != null) {
                 segImages[i].removeListener(this);
@@ -472,13 +474,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     }
                 }
 
-                if(this.windowPositions != null) {
+                if (this.windowPositions != null) {
                     applyWindowPositions(windowPositions);
                 } else {
                     //replace with mass image tile
-                ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
+                    ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
 
-                wo.run("tile");
+                    wo.run("tile");
                 }
 
             } catch (Exception x) {
@@ -564,6 +566,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                cbControl.addWindowtoList(mp[i]);
             }    
             
+            //hide mass images if needed
+            if (this.hiddenWindows != null) {
+                applyHiddenWindows(hiddenWindows);
+            }
+
         } finally {
             currentlyOpeningImages = false;
         }        
@@ -583,12 +590,36 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         return positions;
     }
 
+     public int[] gatherHiddenWindows() {
+        int[] hidden = new int[maxMasses];
+
+        MimsPlus[] images = this.getOpenMassImages();
+        if(images.length==0) return null;
+
+        for( int i = 0; i < images.length; i++) {
+            if( !images[i].isVisible() )
+                hidden[i] = 1;
+            else
+                hidden[i] = 0;
+        }
+
+        return hidden;
+    }
+
     public void applyWindowPositions(Point[] positions) {
         for(int i = 0; i < positions.length; i++) {
            if ( positions[i] != null && massImages[i] != null)
                if (massImages[i].getWindow() != null)
                 massImages[i].getWindow().setLocation(positions[i]);
 
+        }
+    }
+
+    public void applyHiddenWindows(int[] hidden) {
+        for(int i = 0; i < hidden.length; i++) {
+           if ( massImages[i] != null)
+               if( hidden[i] == 1)
+                    massImages[i].hide();
         }
     }
 
@@ -635,6 +666,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     private void viewMassChanged(java.awt.event.ActionEvent evt) {
+        if(windowPositions==null) windowPositions = gatherWindowPosistions();
         int index = 0;
         for (int i = 0; i < viewMassMenuItems.length; i++) {
             if (evt.getActionCommand() == viewMassMenuItems[i].getText()) {
@@ -650,6 +682,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 //massImages[index].setSlice(plane);
                 //massImages[index].updateAndDraw();
             } else if( !viewMassMenuItems[index].isSelected() && massImages[index].isVisible()) {
+                windowPositions[index] = massImages[index].getWindow().getLocation();
                 massImages[index].hide();
             }
         }
@@ -661,9 +694,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     public void massImageClosed(MimsPlus im) {
+        if(windowPositions==null) windowPositions = gatherWindowPosistions();
         for (int i = 0; i < massImages.length; i++) {
             if (massImages[i] == im) {
+                Point p = im.getWindow().getLocation();
+                windowPositions[i] = p;
                 viewMassMenuItems[i].setSelected(false);
+
             }
         }
     }
@@ -2319,10 +2356,39 @@ private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {
 private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {                                             
     // TODO add your handling code here:
 
-    //MimsPlus img = (MimsPlus) ij.WindowManager.getCurrentImage();
-    //System.out.println(img.getTitleFileMass());
+//    MimsPlus testimg = (MimsPlus) ij.WindowManager.getCurrentImage();
+//    System.out.println(testimg.getTitleFileMass());
 
-                                          
+//Appears to work...
+//    sumAllMenuItemActionPerformed(null);
+
+    String foo = "nrims/hom3/cpocatek/test_images/save/";
+    File file = image.getImageFile();
+    System.out.println(file.getParent()+file.separator);
+
+    MimsPlus[] sum = getOpenSumImages();
+    for( int i = 0; i < sum.length; i ++) {
+        ImagePlus img = (ImagePlus)sum[i];
+        ij.io.FileSaver saver = new ij.io.FileSaver(img);
+        String dir = file.getParent()+file.separator;
+        String name = img.getTitle();
+        name = name.replace("/", "-");
+        name = name.replace("\\", "-")+".png";
+        System.out.println(dir+name);
+        saver.saveAsPng(dir+name);
+    }
+
+    MimsPlus[] hsi = getOpenSumImages();
+    for( int i = 0; i < sum.length; i ++) {
+        ImagePlus img = (ImagePlus)hsi[i];
+        ij.io.FileSaver saver = new ij.io.FileSaver(img);
+        String dir = file.getParent()+file.separator;
+        String name = img.getTitle();
+        name = name.replace("/", "-");
+        name = name.replace("\\", "-")+".png";
+        System.out.println(dir+name);
+        saver.saveAsPng(dir+name);
+    }
 }                                           
 
 

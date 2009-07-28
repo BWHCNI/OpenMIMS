@@ -306,7 +306,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         //newname = tempstring.substring(colonindex+1,tempstring.length());
         
         newname += "_" + this.getShortTitle().replace("/", "-");
-        System.out.println(newname);
+        //System.out.println(newname);
         return newname;
     }
     
@@ -408,7 +408,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(ui.getDebug()) {
             ui.updateStatus("mimsPlus window opened");
         }
-        WindowListener [] wl = getWindow().getWindowListeners();
+        WindowListener [] wl = null;
+        if( getWindow() != null ) {
+            wl = getWindow().getWindowListeners();
+        } else { return; }
         boolean bFound = false ;
         int i ;
         for(i = 0 ; i < wl.length ; i++ ) {
@@ -1017,8 +1020,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(allowClose) {
             super.close();
         } else {
-            this.hide();
             ui.massImageClosed(this);
+            this.hide();
         }
     }
     public void setHSIProcessor( HSIProcessor processor ) { this.hsiProcessor = processor ; }
