@@ -1,0 +1,5 @@
+NOTE:
+
+I (Rob Gonzalez) modified the ImageJ source to produce ij.jar.  The only change is to change ij.Prefs.setHomeDir to be public so that I can change it form our program.
+
+
