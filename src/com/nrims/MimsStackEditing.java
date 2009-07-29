@@ -893,10 +893,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
           if (!this.reinsertButton.isEnabled()) {
              autoTrackButton.setEnabled(false);
           }
-          
-          // Save a backup action file incase of crash.
-          File backup = ui.saveTempActionFile();
-          ui.getmimsLog().Log("Autotracked on the " + massname + " images. \n" + optionmsg + "\nBackup action file saved to "+backup.getAbsolutePath());
+                    
        } finally {          
           setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
        }       

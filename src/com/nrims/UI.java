@@ -12,7 +12,6 @@ import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.gui.ImageWindow;
 import ij.gui.ImageCanvas;
-import ij.io.RoiEncoder;
 import ij.process.ImageStatistics;
 
 import java.awt.Cursor;
@@ -23,21 +22,17 @@ import java.awt.Image;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -47,14 +42,10 @@ import javax.swing.UIManager;
 import javax.swing.JOptionPane;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 /* 
  * The main user interface of the NRIMS ImageJ plugin.
@@ -67,9 +58,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public static final String NRRD_EXTENSION = ".nrrd";
     public static final String MIMS_EXTENSION = ".im";
     public static final String ROIS_EXTENSION = ".rois.zip";
+    public static final String ROI_EXTENSION = ".roi";
     public static final String RATIO_EXTENSION = ".ratio";
     public static final String HSI_EXTENSION = ".hsi";
     public static final String SUM_EXTENSION = ".sum";
+    public static final String ACT_EXTIONSION = ".act";
 
     private int maxMasses = 8;
     private int ratioScaleFactor = 10000;
@@ -90,9 +83,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private boolean[] bOpenMass = new boolean[maxMasses];
             
     private String lastFolder = null;      
-    public  File   tempActionFile;
-    public  String tempActionFileString = ".act";
-    public  String actionFileName = "action.txt";         
+    public  File   tempActionFile;        
     
             
     private HashMap openers = new HashMap();
@@ -281,6 +272,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
+                if (i == 0) {
+                   lastFolder = file.getParent();
+                   setIJDefaultDir(lastFolder);
+                }
                 if (file.getAbsolutePath().endsWith(NRRD_EXTENSION) ||
                     file.getAbsolutePath().endsWith(MIMS_EXTENSION)) {
                     loadMIMSFile(file);
@@ -325,6 +320,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         else if (image != null && !dataFileString.matches(image.getImageFile().getName()))
                             loadMIMSFile(dataFile);
                         computeHSI(hsiprops);
+
                     }
                 }
 
@@ -344,17 +340,27 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         computeSum(sumprops);
                     }
                 }
+
+                // Load Rois.
+                if (file.getAbsolutePath().endsWith(ROIS_EXTENSION) ||
+                    file.getAbsolutePath().endsWith(ROI_EXTENSION)) {
+                   getRoiManager().open(file.getAbsolutePath());
+                   updateAllImages();
+                }
+
             }
-            int slice = massImages[0].getCurrentSlice();
-            massImages[0].setSlice(slice+1);
+
+            // This 3 lines solves some strange updating issues.
+            // Has to do with syncing images by changing the slice.
+            int startslice = massImages[0].getCurrentSlice();
+            massImages[0].setSlice(getOpener().getNImages());
+            massImages[0].setSlice(startslice);
 
             } catch (Exception e) {
 
             } finally {
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
-
-
     }
 
     public synchronized void loadMIMSFile(File file) throws NullPointerException {
@@ -1410,21 +1416,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       return prefix;
    }
    
-   // Save a temporary backup of the action file.
-   public File saveTempActionFile(){
-      String tempBackupFileName = getImageFilePrefix() + tempActionFileString;
-      tempActionFile = new File(image.getImageFile().getParent(), tempBackupFileName);
-      getmimsAction().writeAction(tempActionFile);          
-      return tempActionFile;
-   }
-   
-   // Delete the temporary backup action file.
-   public void deleteTempActionFile(){
-      if (tempActionFile != null){
-         if (tempActionFile.exists())
-            tempActionFile.delete();
-      }
-   }
     
    private void initComponentsCustom() {
 
@@ -2091,8 +2082,8 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
         // Save the original .im file to a new file of the .nrrd file type.
         String nrrdFileName = name+NRRD_EXTENSION;
         ImagePlus[] imp = getOpenMassImages();
-		if (imp == null) return;
-		Nrrd_Writer nw = new Nrrd_Writer(this);
+		  if (imp == null) return;
+		  Nrrd_Writer nw = new Nrrd_Writer(this);
         File dataFile = nw.save(imp, directory, nrrdFileName);
        
         // Save the ROI files to zip.
@@ -2154,6 +2145,7 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
            obj_out.writeObject(sumProps);
         }}
 
+        getmimsAction().writeAction(new File(fileName+ACT_EXTIONSION));
 
       } catch (FileNotFoundException e) {
          e.printStackTrace();
@@ -2401,13 +2393,8 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
       // Query user where to save action file.
       JFileChooser fc = new JFileChooser(lastFolder);
       String fname = this.getImageFilePrefix();
-      fname = fname + ".act";
-      fc.setSelectedFile(new File(fname));
-
-      MIMSFileFilter ffilter = new MIMSFileFilter("txt");
-      ffilter.addExtension("act");
-      ffilter.setDescription("MIMS Action");
-      fc.setFileFilter(ffilter);
+      fname = fname + ACT_EXTIONSION;
+      fc.setSelectedFile(new File(fname));      
 
       while (true) {
          if (fc.showSaveDialog(this) == JFileChooser.CANCEL_OPTION) {
@@ -2431,7 +2418,6 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
 
          }
          getmimsAction().writeAction(selectedFile);
-         deleteTempActionFile();
          break;
       }
    }
@@ -2445,14 +2431,9 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
          fc.setCurrentDirectory(new java.io.File(lastFolder));
       }
       fc.setPreferredSize(new java.awt.Dimension(650, 500));
-      MIMSFileFilter ffilter = new MIMSFileFilter("txt");
-      ffilter.addExtension("act");
-      ffilter.setDescription("MIMS Action");
-      fc.setFileFilter(ffilter);
       if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
          return;
-      }
-            
+      }            
       File actionFile = fc.getSelectedFile();
       lastFolder = fc.getSelectedFile().getParent();
       setIJDefaultDir(lastFolder);
@@ -2465,31 +2446,7 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
             
       // initialize variables
       int trueIndex = 1;
-      ArrayList<Integer> deleteList = new ArrayList<Integer>();
-                              
-      // Get all open images so we can regenerate them with new data.
-      
-      // Get HSIProps for all open ratio images.
-       MimsPlus[] rto = getOpenRatioImages();
-       HSIProps[] rto_props = new HSIProps[rto.length]; 
-       for (int i=0; i<rto.length; i++){
-          rto_props[i] = rto[i].getHSIProps();
-       }
-       
-       // Get HSIProps for all open hsi images.     
-       MimsPlus[] hsi = getOpenHSIImages();
-       HSIProps[] hsi_props = new HSIProps[hsi.length];
-       for (int i=0; i<hsi.length; i++){
-          hsi_props[i] = hsi[i].getHSIProps();
-       }
-       
-       // Get SumProps for all open hsi images.    
-       MimsPlus[] sum = getOpenSumImages();
-       SumProps[] sum_props = new SumProps[sum.length];
-       for (int i=0; i<sum.length; i++){
-          sum_props[i] = sum[i].getSumProps();          
-       }             
-       // done with getting all open images.
+      ArrayList<Integer> deleteList = new ArrayList<Integer>();                             
 
       // more variable assignment and initialization.
       currentlyOpeningImages = true;
@@ -2576,8 +2533,6 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
 
       // TODO we need more refined Exception checking here
       } catch (Exception e) {}
-      
-      //restoreState(rto_props, hsi_props, sum_props);
 
       // Set all images to the first slice.
       for (int j = 0; j < image.getNMasses(); j++) {

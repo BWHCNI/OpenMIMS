@@ -761,6 +761,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     }
 
     void open(String path) {
+        ImagePlus imp = getImage();
+        if (imp == null) return;
         Macro.setOptions(null);
         String name = null;
         if (path == null) {
@@ -865,12 +867,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (indexes.length == 0) {
             indexes = getAllIndexes();
         }
-        if (indexes.length > 1) {
-            if(indexes.length == getAllIndexes().length) {
-                return saveMultiple(indexes, name, !previouslySaved);
-            } else {
-                return saveMultiple(indexes, name, true);
-            }
+        if (indexes.length > 1) {            
+                return saveMultiple(indexes, name, true);            
         }
         //only called if one roi selected...
         String path = name;
@@ -909,7 +907,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
     boolean saveMultiple(int[] indexes, String path, boolean bPrompt) {
         Macro.setOptions(null);
-        if (path == null || bPrompt) {
+        if (bPrompt) {
             String defaultname = ui.getImageFilePrefix();
             defaultname += "_rois.zip";
             SaveDialog sd = new SaveDialog("Save ROIs...", path,
@@ -923,9 +921,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 name = name + ".zip";
             }
             String dir = sd.getDirectory();
-            path = dir + name;
-        } else {
-            path = savedpath;
+            path = (new File(dir, name)).getAbsolutePath();
         }
         try {
             ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
