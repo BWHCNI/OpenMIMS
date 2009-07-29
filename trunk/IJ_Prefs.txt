@@ -1,0 +1,39 @@
+# ImageJ 1.38l Preferences
+# Sat Jun 09 15:24:38 EDT 2007
+
+new.fill=0
+gel.options=2
+pp.options=1
+bcolor=#FFFFFF
+recent04=C:\\Documents and Settings\\Douglas Benson\\Desktop\\essai7_m27.tif
+recent03=C:\\Images\\1599 hg.tif
+recent02=C:\\Images\\1599 nor.tif
+noise.sd=25.0
+recent01=C:\\NSee\\NRIMS\\mims2tif\\tif\\070606_03-100uM-05-5x30_m12.12_001.tif
+recent00=C:\\NSee\\NRIMS\\mims2tif\\tif\\070606_03-100uM-05-5x30_m12.12_002.tif
+raw.offset=0
+fcolor=#000000
+raw.width=512
+prefs.options=4096
+new.height=400
+measurements=23
+fps=7.0
+raw.height=512
+jpeg=75
+ij.y=73
+ij.x=1003
+new.slices=1
+menu.size=14
+raw.n=1
+div-by-zero=Infinity
+new.type=0
+raw.options=0
+new.width=400
+mark.width=0
+raw.gap=0
+precision=3
+roicolor=#FFFF00
+ap.options=64
+dir.image=C:\\NSee\\NRIMS\\mims2tif\\tif\\
+new.name=Untitled
+raw.type=0

@@ -1,0 +1,34 @@
+------------------------------------------------------------
+OpenMIMS Todo List
+------------------------------------------------------------
+
+* Update TODO list ;-)
+* Remove need for deploy.bat by creating an ant target in build.xml
+
+
+
+
+------------------------------------------------------------
+Old List that needs updating.
+------------------------------------------------------------
+
+Features:
+    - Make "actions" (defining image state) savable/openable
+    - One button/menu to create all sum images.
+    - Make brightness/contrast "fixable" on ratio images.
+    - Store concatenation info in action.
+    - Tweak how auto track works, apply actual integer translation.
+    - Commas in raw export, option to export true plane number?
+
+
+Bugs:
+    - Plot scale discrepancy.
+    - "Restore MIMS" now throws out of bounds.
+    - Uncaught heap execution in class Opener.
+
+
+General Cleanup/UI issues:
+    - Window size and swing component layout.
+    - File browser dialog should remember locations better.
+    - Tooltips.
+    - Round parameters and add units.
