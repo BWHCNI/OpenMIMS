@@ -972,7 +972,9 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
        
         MimsPlus[] imp = new MimsPlus[1];
         imp[0] = (MimsPlus)getImage();
-        if (imp[0].getMimsType() == MimsPlus.MASS_IMAGE || imp[0].getMimsType() == MimsPlus.RATIO_IMAGE)
+        if (imp[0].getMimsType() == MimsPlus.MASS_IMAGE || 
+                imp[0].getMimsType() == MimsPlus.RATIO_IMAGE ||
+                imp[0].getMimsType() == MimsPlus.SUM_IMAGE )
            scratch.generateRoiTable(imp, true);       
     }
     

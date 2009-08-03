@@ -61,6 +61,8 @@ public class MimsJFreeChart {
             //chart.addProgressListener(arg0);
             ChartPanel chartPanel = new ChartPanel(chart);
             chartPanel.setPreferredSize(new java.awt.Dimension(600, 400));
+            java.io.File dir = new java.io.File(ui.getLastFolder());
+            chartPanel.setDefaultDirectoryForSaveAs(dir);
             setContentPane(chartPanel);
         }
     }
