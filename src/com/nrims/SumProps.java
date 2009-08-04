@@ -11,6 +11,7 @@ public class SumProps implements java.io.Serializable {
    private int sumType;
    private int xloc = -1;
    private int yloc = -1;
+   private double scaleFactor = -1.0;
    private String dataFileName = null;
     
     // Use for Mass Images.
@@ -47,6 +48,10 @@ public class SumProps implements java.io.Serializable {
     // Set the original data file used to generate image.
     public void setDataFileName(String fileName) { dataFileName = fileName; }
     public String getDataFileName() { return dataFileName; }
+
+    // Scale Factor
+    public void setScaleFactor(int sf) { scaleFactor = sf; }
+    public double getScaleFactor() { return scaleFactor; }
     
     // The type of image this sum image came from (either Mass or Ratio)
     public int getSumType() { return sumType; }    

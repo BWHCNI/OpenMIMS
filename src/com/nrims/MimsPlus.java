@@ -33,6 +33,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public double massNumber;
     public double denomMassNumber;
     public double numerMassNumber;
+    public double scaleFactor;
     public SumProps sumProps = null;
     private String parentImageName = null;
     private boolean allowClose =true;
@@ -133,6 +134,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
            String title = ui.getImageFilePrefix();
            nRatioNum = props.getNumMass() ;
            nRatioDen = props.getDenMass() ;
+           scaleFactor = props.getRatioScaleFactor();
+           System.out.println("set MimsPlus.scaleFactor = " + props.getRatioScaleFactor());
            numerMassNumber = new Double(image.getMassNames()[numIndex]);
            denomMassNumber = new Double(image.getMassNames()[denIndex]);
            
@@ -250,11 +253,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         else
            props = new HSIProps();
         
-        if(nType == RATIO_IMAGE) {          
+        if(nType == RATIO_IMAGE || nType == HSI_IMAGE) {
            
            // If ratio, set numerator and denominator masses.
            props.setNumMass(nRatioNum);
            props.setDenMass(nRatioDen);
+           props.setRatioScaleFactor(scaleFactor);
                 
            // Unlikee an HSIimage, the props of a ratio image 
            // CAN NOT be changed. Therefore we get the default values
@@ -842,7 +846,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         float[] denpixels = (float[]) internalDenominator.getProcessor().getPixels();
         float rMax = 0.0f;
         float rMin = 1000000.0f;
-        float sf = props.getRatioScaleFactor();
+        float sf = (float) props.getRatioScaleFactor();
         for(int i = 0; i < rpixels.length; i++) {
             if (numpixels[i] >= 0 && denpixels[i] > 0) {
                 rpixels[i] =  sf*(numpixels[i]/denpixels[i]);
@@ -928,7 +932,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                     denPixels[j] += tempPixels[j];
                 }
             }
-            float sf = this.getHSIProps().getRatioScaleFactor();
+            float sf = (float) getHSIProps().getRatioScaleFactor();
             for (int i = 0; i < sumPixels.length; i++) {
                 if (denPixels[i] != 0) {
                     sumPixels[i] = sf * (numPixels[i] / denPixels[i]);

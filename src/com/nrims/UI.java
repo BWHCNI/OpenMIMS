@@ -237,6 +237,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
               }
           }
       });
+
+      File[] file = new File[1];
+      file[0] = new File("/nrims/home3/zkaufman/Images/test_file1.im");
+      openFiles(file);
    }
 
     /**
@@ -945,15 +949,17 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         mp.internalNumerator = num;
         mp.internalDenominator = den;
-        float sf = props.getRatioScaleFactor();
-        System.out.println("Using sf = "+sf);
+        float sf = (float)props.getRatioScaleFactor();
+        if (sf < 0)
+           sf = (float)getRatioScaleFactor();
+        mp.scaleFactor = sf;
 
         float[] rPixels = (float[]) mp.getProcessor().getPixels();
         float[] nPixels = (float[]) num.getProcessor().getPixels();
         float[] dPixels = (float[]) den.getProcessor().getPixels();
 
-        float rMax = 0.0f;
-        float rMin = 1000000.0f;
+        double rMax = 0.0f;
+        double rMin = 1000000.0f;
         for (int i = 0; i < rPixels.length; i++) {
             if (nPixels[i] >= 0 && dPixels[i] > 0) {
                 rPixels[i] = sf * ((float) nPixels[i] / (float) dPixels[i]);
@@ -966,10 +972,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 rPixels[i] = 0.0f;
             }
 
-        }
+        }        
         
         mp.getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
-        
+
         //DANGER DANGER DANGER DANGER DANGER DANGER
         if (getMedianFilterRatios()) {
             Roi temproi = mp.getRoi();
@@ -988,7 +994,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
            int xloc = props.getXWindowLocation();
            int yloc = props.getYWindowLocation();           
            if (xloc > -1 & yloc > -1)
-              mp.getWindow().setLocation(xloc, yloc);
+           //   mp.getWindow().setLocation(xloc, yloc);
             
             mp.updateAndDraw();
             ij.measure.Calibration cal = new ij.measure.Calibration(mp);
@@ -1099,7 +1105,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
              // and the new mass image is than 1%, treat as same and generate a new sum image. 
              if (Math.abs(sumProps.getParentMass()-mp.getMassNumber()) < tolerance*sumProps.getParentMass()) {
                 MimsPlus sp = computeSum(mp, true); 
-                sp.getWindow().setLocation(sumProps.getXWindowLocation(), sumProps.getYWindowLocation());             
+                //sp.getWindow().setLocation(sumProps.getXWindowLocation(), sumProps.getYWindowLocation());
              }
           }             
        } 
@@ -1130,7 +1136,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 props.setDenMass(den_idx);        
                 MimsPlus rp = computeRatio(props, false);
                 MimsPlus sp = computeSum(rp, true);
-                sp.getWindow().setLocation(sumProps.getXWindowLocation(), sumProps.getYWindowLocation());                           
+                //sp.getWindow().setLocation(sumProps.getXWindowLocation(), sumProps.getYWindowLocation());
              }                
           }          
     }
@@ -1190,7 +1196,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             float[] numPixels = (float[]) nImage.getProcessor().getPixels();
             float[] denPixels = (float[]) dImage.getProcessor().getPixels();
 
-            float sf = mImage.getHSIProps().getRatioScaleFactor();
+
+            float sf = (float)mImage.getHSIProps().getRatioScaleFactor();
+            if (sf < 0)
+                    sf = (float)getRatioScaleFactor();
 
             for (int i = 0; i < sumPixels.length; i++) {
                 if (denPixels[i] != 0) {
@@ -1209,7 +1218,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             MimsPlus mp = new MimsPlus(this, width, height, sumPixels, sumName);
             mp.setSumProps(sumProps);
             mp.setNumeratorSum(nImage);
-            mp.setDenominatorSum(dImage);
+            mp.setDenominatorSum(dImage);            
 
             if(show==false) return mp;
 
@@ -1349,8 +1358,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
            // Set window location.
            int xloc = props.getXWindowLocation();
            int yloc = props.getYWindowLocation();           
-           if (xloc > -1 & yloc > -1)
-              mp.getWindow().setLocation(xloc, yloc);
+           if (xloc > -1 & yloc > -1){}
+              //mp.getWindow().setLocation(xloc, yloc);
         }
 
         return true;
@@ -2938,11 +2947,27 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     }
 
     public void setActiveMimsPlus(MimsPlus mp) {
-        for (int i = 0; i < maxMasses; i++) {
-            if (mp == hsiImages[i]) {
-                if(hsiImages[i].getHSIProps()!=null) { hsiControl.setHSIProps(hsiImages[i].getHSIProps()); }
-            }
-        }
+       for (int i = 0; i < maxMasses; i++) {
+          //if (mp == hsiImages[i]) {
+          //      if(hsiImages[i].getHSIProps()!=null) {
+          //         hsiControl.setHSIProps(hsiImages[i].getHSIProps());
+          //      }
+          //}
+
+          if (mp.getMimsType() == MimsPlus.RATIO_IMAGE) {
+             if (mp == ratioImages[i]) {
+                if(ratioImages[i].getHSIProps()!=null)
+                   System.out.println("sf = "+ratioImages[i].getHSIProps().getRatioScaleFactor());
+                   hsiControl.setHSIProps(ratioImages[i].getHSIProps());
+             }
+          }
+          else if (mp.getMimsType() == MimsPlus.HSI_IMAGE) {
+             if (mp == hsiImages[i]) {
+                if(hsiImages[i].getHSIProps()!=null)
+                   hsiControl.setHSIProps(hsiImages[i].getHSIProps());
+             }
+          }
+       }
     }
 
     public synchronized void updateStatus(String msg) {
@@ -2976,6 +3001,10 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     public double setMedianFilterRadius(double r) {
         this.medianFilterRadius = r;
         return this.medianFilterRadius;
+    }
+
+    public double getRatioScaleFactor() {
+       return ratioScaleFactor;
     }
 
     public String getLastFolder() {
