@@ -173,6 +173,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                setProcessor(title, ip);
                getProcessor().setMinAndMax(0, 1.0); // default display range
                fStateListeners = new EventListenerList() ;
+
+               if(ui.getIsSum()) {
+                   this.initializeHSISum(props);
+               }
             }          
             /*
             info += "Numerator=" + srcImage.getMassName(numIndex)+"\n";
@@ -568,7 +572,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
             msg += "S (" + (int)ngl + " / " + (int)dgl + ") = " + IJ.d2s(ratio, 4);
         } 
-        else if(this.nType == RATIO_IMAGE) {
+        else if(this.nType == RATIO_IMAGE && (this.internalDenominator!=null && this.internalNumerator!=null) ) {
+           float ngl = internalNumerator.getProcessor().getPixelValue(mX, mY);
+            float dgl = internalDenominator.getProcessor().getPixelValue(mX, mY);
+            //double ratio = internalRatio.getProcessor().getPixelValue(mX, mY);
+            float ratio = this.getProcessor().getPixelValue(mX, mY);
+            msg += "S (" + (int)ngl + " / " + (int)dgl + ") = " + IJ.d2s(ratio, 4); 
+        }
+        /*else if(this.nType == RATIO_IMAGE) {
             int n = getHSIProps().getNumMass();
             int d = getHSIProps().getDenMass();
             MimsPlus [] ml = ui.getMassImages() ;
@@ -578,7 +589,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 float r = this.getProcessor().getPixelValue(mX, mY);
                 msg += "S (" + ngl[0] + " / " + dgl[0] + ") = " + IJ.d2s(r,4);
             }         
-        }
+        }*/
         else if(this.nType == SUM_IMAGE) {
             float ngl, dgl;
             if (numeratorSum != null && denominatorSum != null) {
@@ -831,7 +842,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         float[] denpixels = (float[]) internalDenominator.getProcessor().getPixels();
         float rMax = 0.0f;
         float rMin = 1000000.0f;
-        int sf = ui.getRatioScaleFactor();
+        float sf = props.getRatioScaleFactor();
         for(int i = 0; i < rpixels.length; i++) {
             if (numpixels[i] >= 0 && denpixels[i] > 0) {
                 rpixels[i] =  sf*(numpixels[i]/denpixels[i]);
@@ -917,9 +928,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                     denPixels[j] += tempPixels[j];
                 }
             }
+            float sf = this.getHSIProps().getRatioScaleFactor();
             for (int i = 0; i < sumPixels.length; i++) {
                 if (denPixels[i] != 0) {
-                    sumPixels[i] = ui.getRatioScaleFactor() * (numPixels[i] / denPixels[i]);
+                    sumPixels[i] = sf * (numPixels[i] / denPixels[i]);
                 } else {
                     sumPixels[i] = 0;
                 }

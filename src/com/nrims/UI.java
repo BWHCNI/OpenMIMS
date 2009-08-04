@@ -943,6 +943,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             return null;
         }
 
+        mp.internalNumerator = num;
+        mp.internalDenominator = den;
+        float sf = props.getRatioScaleFactor();
+        System.out.println("Using sf = "+sf);
+
         float[] rPixels = (float[]) mp.getProcessor().getPixels();
         float[] nPixels = (float[]) num.getProcessor().getPixels();
         float[] dPixels = (float[]) den.getProcessor().getPixels();
@@ -951,7 +956,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         float rMin = 1000000.0f;
         for (int i = 0; i < rPixels.length; i++) {
             if (nPixels[i] >= 0 && dPixels[i] > 0) {
-                rPixels[i] = ratioScaleFactor * ((float) nPixels[i] / (float) dPixels[i]);
+                rPixels[i] = sf * ((float) nPixels[i] / (float) dPixels[i]);
                 if (rPixels[i] > rMax) {
                     rMax = rPixels[i];
                 } else if (rPixels[i] < rMin) {
@@ -1185,9 +1190,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             float[] numPixels = (float[]) nImage.getProcessor().getPixels();
             float[] denPixels = (float[]) dImage.getProcessor().getPixels();
 
+            float sf = mImage.getHSIProps().getRatioScaleFactor();
+
             for (int i = 0; i < sumPixels.length; i++) {
                 if (denPixels[i] != 0) {
-                    sumPixels[i] = ratioScaleFactor * (numPixels[i] / denPixels[i]);
+                    sumPixels[i] = sf * (numPixels[i] / denPixels[i]);
                 } else {
                     sumPixels[i] = 0;
                 }
@@ -2425,7 +2432,7 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 //Appears to work...
 //    sumAllMenuItemActionPerformed(null);
-
+/*
     String foo = "nrims/hom3/cpocatek/test_images/save/";
     File file = image.getImageFile();
     System.out.println(file.getParent()+file.separator);
@@ -2453,6 +2460,8 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         System.out.println(dir+name);
         saver.saveAsPng(dir+name);
     }
+ */
+    this.segmentation.force();
 }//GEN-LAST:event_TestMenuItemActionPerformed
 
 
@@ -2950,7 +2959,7 @@ public void updateLineProfile(double[] newdata, String name, int width) {
 //            System.out.println(msg);
         }
     }
-    
+    /*
     public int getRatioScaleFactor() {
         return this.ratioScaleFactor;
     }
@@ -2959,7 +2968,7 @@ public void updateLineProfile(double[] newdata, String name, int width) {
         this.ratioScaleFactor = s;
         return this.ratioScaleFactor;
     }
-
+*/
     public double getMedianFilterRadius() {
         return this.medianFilterRadius;
     }

@@ -187,10 +187,11 @@ public class HSIProcessor implements Runnable {
                 transformedPixels = ratioPixels;
             }
 
+            //broken, needs to be fixed
             //if using non-ratio values, ie percent turnover
-            if(hsiProps.getTransform()) {
-                transformedPixels = this.turnoverTransform(transformedPixels, hsiProps.getReferenceRatio(), hsiProps.getBackgroundRatio(), hsiProps.getRatioScaleFactor());
-           }
+            //if(hsiProps.getTransform()) {
+                //transformedPixels = this.turnoverTransform(transformedPixels, hsiProps.getReferenceRatio(), hsiProps.getBackgroundRatio(), hsiProps.getRatioScaleFactor());
+           //}
 
             for(int offset = 0 ; offset < numPixels.length && fThread != null ; offset++ ) {
 
