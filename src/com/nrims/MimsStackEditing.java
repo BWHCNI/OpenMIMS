@@ -893,10 +893,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
           if (!this.reinsertButton.isEnabled()) {
              autoTrackButton.setEnabled(false);
           }
-          
-          // Save a backup action file incase of crash.
-          File backup = ui.saveTempActionFile();
-          ui.getmimsLog().Log("Autotracked on the " + massname + " images. \n" + optionmsg + "\nBackup action file saved to "+backup.getAbsolutePath());
+                    
        } finally {          
           setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
        }       
@@ -962,14 +959,26 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     String name = WindowManager.getCurrentImage().getTitle();
     String sumTextFieldString = sumTextField.getText().trim();
-    if (sumTextFieldString.isEmpty())
-       ui.computeSum(ui.getImageByName(name), true);
-    else {
+    
+    SumProps sumProps = null;
+    MimsPlus mp = ui.getImageByName(name);
+    MimsPlus sp;
+
+    if (mp.getMimsType() == MimsPlus.MASS_IMAGE) {
+       int parentIdx = mp.getMassIndex();
+       if (parentIdx > -1) sumProps = new SumProps(parentIdx);
+    }
+    if (mp.getMimsType() == MimsPlus.RATIO_IMAGE) {
+       sumProps = mp.getSumProps();
+    }
+    if (sumTextFieldString.isEmpty()) {
+       sp = new MimsPlus(ui, sumProps, null);
+    } else {
        ArrayList<Integer> sumlist = parseList(sumTextFieldString, 1, ui.mimsAction.getSize());
        if (sumlist.size()==0) return;
-       ui.computeSum(ui.getImageByName(name), true, sumlist);
+       sp = new MimsPlus(ui, sumProps, sumlist);
     }
-    
+    sp.showWindow();
 }//GEN-LAST:event_sumButtonActionPerformed
 
 private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
@@ -1033,7 +1042,8 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             MimsPlus cp;
             for (int mindex = 0; mindex < nmasses; mindex++) {
 
-                cp = ui.computeSum(images[mindex], false, sumlist);
+                SumProps sumProps = new SumProps(images[mindex].getMassIndex());
+                cp = new MimsPlus(ui, sumProps, sumlist);
 
                 // Check for bad data.
                 double m = cp.getProcessor().getMax();

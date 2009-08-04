@@ -111,7 +111,9 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                     HSIProps props = new HSIProps();
                     props.setNumMass(num);
                     props.setDenMass(den);
-                    mimsUi.computeRatio(props, true);
+                    MimsPlus mp = new MimsPlus(mimsUi, props);
+                    mp.showWindow();
+                    //mimsUi.computeRatio(props, true);
                     index = mimsUi.getRatioImageIndex(num, den);
                     if (index == -1) {
                         System.out.println("Error computing ratio image!");

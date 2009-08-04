@@ -569,18 +569,25 @@ private void displayRatiojButtonActionPerformed(java.awt.event.ActionEvent evt) 
    // Get the selected ratio images. Each element
    // should have the form 2:1 or 4:3 etc. 
    Object[] idx = jList1.getSelectedValues();
-   
+   MimsPlus mp;
+
    // Generate images
     for (int i = 0; i < idx.length; i++) {
         String label = (String) idx[i];
         int numerator = new Integer(label.substring(0, label.indexOf(":"))).intValue();
         int denomator = new Integer(label.substring(label.indexOf(":") + 1, label.length())).intValue();
-        props.setNumMass(numerator);
-        props.setDenMass(denomator);
+
+        int ri = ui.getRatioImageIndex(numerator, denomator);
+        if (ri > -1) {
+           mp = ui.getRatioImage(ri);
+           mp.computeRatio();
+           mp.updateAndDraw();
+        } else {
+           RatioProps ratioProps = new RatioProps(numerator, denomator);
+           mp = new MimsPlus(ui, ratioProps);
+           mp.showWindow();
+        }
         update(false);
-        computeRatio();
-        MimsPlus[] ratioimages = ui.getOpenRatioImages();
-        ui.autoContrastImage(ratioimages[ratioimages.length - 1]);
     }
 }//GEN-LAST:event_displayRatiojButtonActionPerformed
 
@@ -781,14 +788,10 @@ public synchronized void update(boolean bUpdateUI) {
         props.setRatioScaleFactor(ui.getRatioScaleFactor());
         
         return true ;
-    }
-    
-    public MimsPlus computeRatio() {
-        return ui.computeRatio(props, true) ;
-    }
+    }   
     
     public boolean displayHSI() {
-        return ui.computeHSI(props) ;
+        return true;
     }
     
     public JList getRatioList() {
