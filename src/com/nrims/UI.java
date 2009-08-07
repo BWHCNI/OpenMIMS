@@ -64,7 +64,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public static final String SUM_EXTENSION = ".sum";
     public static final String ACT_EXTIONSION = ".act";
 
-    private int maxMasses = 8;
+    public int maxMasses = 8;
     private int ratioScaleFactor = 10000;
     private double medianFilterRadius = 1;
     
@@ -90,7 +90,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     
     private MimsPlus[] massImages = new MimsPlus[maxMasses];
     private MimsPlus[] ratioImages = new MimsPlus[maxMasses];
-    private MimsPlus[] hsiImages = new MimsPlus[maxMasses];
+    public MimsPlus[] hsiImages = new MimsPlus[maxMasses];
     private MimsPlus[] segImages = new MimsPlus[maxMasses];
     private MimsPlus[] sumImages = new MimsPlus[2 * maxMasses];    
     private MimsData mimsData = null;
@@ -198,12 +198,32 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       return idx;
    }
 
-   public void addToRatioList(MimsPlus mp) {
-      int i = 0;      
-      while (ratioImages[i] != null) {
+   public void addToImagesList(MimsPlus mp) {
+      int i = 0; boolean inserted=false;
+      while (i < maxMasses) {
+         if (mp.getMimsType() == MimsPlus.RATIO_IMAGE && ratioImages[i] == null) {
+            inserted = true;
+            ratioImages[i] = mp;
+            break;
+         }
+         if (mp.getMimsType() == MimsPlus.HSI_IMAGE && hsiImages[i] == null) {
+            inserted = true;
+            hsiImages[i] = mp;
+            break;
+         }
+         if (mp.getMimsType() == MimsPlus.SUM_IMAGE && sumImages[i] == null) {
+            inserted = true;
+            sumImages[i] = mp;
+            break;
+         }
+         if (mp.getMimsType() == MimsPlus.SEG_IMAGE && segImages[i] == null) {
+            inserted = true;
+            segImages[i] = mp;
+            break;
+         }
          i++;         
-      }
-      ratioImages[i] = mp;
+      }      
+      if (!inserted) System.out.println("To many open images");
    }
 
     /**
@@ -737,22 +757,23 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         }
     }
 
-    /**
-     * @param props
-     * @return -1 if the index doesn't exist or a value between on and MAX_RATIO_IMAGES if it does.
-     */
-    public int getRatioImageIndex(HSIProps props) {
-        if (props == null) {
-            return -1;
-        }
-        return getRatioImageIndex(props.getNumMass(), props.getDenMass());
-    }
-
     public int getRatioImageIndex(int numIndex, int denIndex) {        
         for (int i = 0; i < ratioImages.length; i++) {
            if (ratioImages[i] != null) {
                RatioProps rp = ratioImages[i].getRatioProps();
                if (rp.getNumMassIdx() == numIndex && rp.getDenMassIdx() == denIndex) {
+                  return i;
+               }
+           }
+        }
+        return -1;
+    }
+
+    public int getHsiImageIndex(int numIndex, int denIndex) {
+        for (int i = 0; i < hsiImages.length; i++) {
+           if (hsiImages[i] != null) {
+               HSIProps hp = hsiImages[i].getHSIProps();
+               if (hp.getNumMassIdx() == numIndex && hp.getDenMassIdx() == denIndex) {
                   return i;
                }
            }
@@ -820,145 +841,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 //            jMenuItem2ActionPerformed(null);    //tile screws up plots          
         }
     }
-
-    /*
-    public synchronized MimsPlus computeRatio(HSIProps props, boolean show) {
-
-        int numIndex = props.getNumMass();
-        int denIndex = props.getDenMass();
-        MimsPlus mp = null;
-
-        // If were not showing the image than forget trying 
-        // to see if one already exists (ratioIndex >= 0).
-        int ratioIndex;
-        if (show)
-           ratioIndex = getRatioImageIndex(numIndex, denIndex);
-        else {
-           ratioIndex = -1;
-           mp = new MimsPlus(this, image, props, false);
-        }
-
-        // Get the numerator and denominator mass images.
-        MimsPlus parentNum = getMassImage( props.getNumMass() );
-        MimsPlus parentDen = getMassImage( props.getDenMass() );
-
-        // Setup list for sliding window, entire image, or single plane.
-        java.util.ArrayList<Integer> list = new java.util.ArrayList<Integer>();
-        int windowSize = getWindowRange();
-        int currentplane = parentNum.getSlice();
-            if (!getIsSum() && !getIsWindow()) {
-                list.add(currentplane);
-            } else if (getIsSum()) {
-                for (int i = 1; i <= parentNum.getNSlices(); i++) {
-                    list.add(i);
-                }
-            } else if (getIsWindow()) {
-                int lb = currentplane - windowSize;
-                int ub = currentplane + windowSize;
-                for (int i = lb; i <= ub; i++) {
-                    list.add(i);
-                }
-            }
-
-        // Compute the sum of the numerator and denominator mass images.
-        MimsPlus num = computeSum(parentNum, false, list);
-        MimsPlus den = computeSum(parentDen, false, list);        
-
-        if (ratioIndex >= 0) {
-            mp = ratioImages[ratioIndex];
-        }
-        boolean bAddSlice = false;
-        if (mp != null) {
-            if (mp.getNSlices() > 1) {
-                mp = null;
-                bAddSlice = true;
-            }
-        }
-
-        if (mp == null) {
-            mp = new MimsPlus(this, image, props, false);
-            if (bAddSlice) {
-                ij.ImageStack stack = ratioImages[ratioIndex].getStack();
-                stack.addSlice(null, mp.getProcessor(), num.getCurrentSlice());
-                ratioImages[ratioIndex].setStack(null, stack);
-                ratioImages[ratioIndex].setSlice(num.getCurrentSlice());
-            } else {
-                // find a slot to save it
-                boolean bFound = false;
-                for (int i = 0; i < maxMasses && !bFound; i++) {
-                    if (ratioImages[i] == null) {
-                        bFound = true;
-                        ratioImages[i] = mp;
-                        ratioIndex = i;
-                    }
-                }
-                if (!bFound) {
-                    ratioIndex = 5;
-                    ratioImages[ratioIndex] = mp;
-                }
-
-                mp.addListener(this);
-            }
-        }
-
-        if (mp == null) {
-            updateStatus("Error allocating ratio image");
-            return null;
-        }
-
-        float[] rPixels = (float[]) mp.getProcessor().getPixels();
-        float[] nPixels = (float[]) num.getProcessor().getPixels();
-        float[] dPixels = (float[]) den.getProcessor().getPixels();
-
-        float rMax = 0.0f;
-        float rMin = 1000000.0f;
-        for (int i = 0; i < rPixels.length; i++) {
-            if (nPixels[i] >= 0 && dPixels[i] > 0) {
-                rPixels[i] = ratioScaleFactor * ((float) nPixels[i] / (float) dPixels[i]);
-                if (rPixels[i] > rMax) {
-                    rMax = rPixels[i];
-                } else if (rPixels[i] < rMin) {
-                    rMin = rPixels[i];
-                }
-            } else {
-                rPixels[i] = 0.0f;
-            }
-
-        }
-        
-        mp.getProcessor().setMinAndMax(props.getMinRatio(), props.getMaxRatio());
-        
-        //DANGER DANGER DANGER DANGER DANGER DANGER
-        if (getMedianFilterRatios()) {
-            Roi temproi = mp.getRoi();
-            mp.killRoi();
-            ij.plugin.filter.RankFilters rfilter = new ij.plugin.filter.RankFilters();
-            double r = getMedianFilterRadius();
-            rfilter.rank(mp.getProcessor(), r, rfilter.MEDIAN);
-            rfilter = null;
-            mp.setRoi(temproi);
-        }
-
-        if (show) {                      
-            mp.show();
-            
-           // Set window location.
-           int xloc = props.getXWindowLocation();
-           int yloc = props.getYWindowLocation();           
-           if (xloc > -1 & yloc > -1)
-              mp.getWindow().setLocation(xloc, yloc);
-            
-            mp.updateAndDraw();
-            ij.measure.Calibration cal = new ij.measure.Calibration(mp);
-            mp.setCalibration(cal);
-        } else {
-            mp.updateAndRepaintWindow();
-        }
-
-        cbControl.addWindowtoList(mp);
-        return mp;
-    }
-    */
 
     public static String getImageHeader(Opener im) {
         //String str = "\nHeader: \n";
@@ -1135,8 +1017,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         if (props == null) {
             return -1;
         }
-        int numIndex = props.getNumMass();
-        int denIndex = props.getDenMass();
+        int numIndex = props.getNumMassIdx();
+        int denIndex = props.getDenMassIdx();
         for (int i = 0; i < maxMasses; i++) {
             if (hsiImages[i] != null) {
                 if (hsiImages[i].getNumMass() == numIndex && hsiImages[i].getDenMass() == denIndex) {
@@ -1286,36 +1168,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             autocontrastAllImages();
             cbControl.updateHistogram();
 
-        } else if (evt.getAttribute() == MimsPlusEvent.ATTR_IMAGE_CLOSED) {
-            // If an image was closed by a window event,
-            // dispose the corresponding reference.            
-            boolean bNotFound = true;
-            int i;
-            for (i = 0; bNotFound && i < image.getNMasses(); i++) {
-                if (massImages[i] == evt.getSource()) {
-                    massImages[i].removeListener(this);
-                    massImages[i] = null;
-                    bNotFound = false;
-                }
-            }
-            for (i = 0; bNotFound && i < maxMasses; i++) {
-                if (sumImages[i] == evt.getSource()) {
-                    sumImages[i].removeListener(this);
-                    sumImages[i] = null;
-                    bNotFound = false;
-                }
-            }
-            for (i = 0; bNotFound && i < maxMasses; i++) {
-                if (hsiImages[i] == evt.getSource()) {
-                    hsiImages[i].removeListener(this);
-                    hsiImages[i] = null;
-                    bNotFound = false;
-                } else if (ratioImages[i] == evt.getSource()) {
-                    ratioImages[i].removeListener(this);
-                    ratioImages[i] = null;
-                    bNotFound = false;
-                }
-            }
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_SET_ROI || 
                    evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
             // Update all images with a selected ROI 
@@ -1372,6 +1224,33 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.mimsStackEditing.resetTrueIndexLabel();
         this.mimsStackEditing.resetSpinners();
     }
+
+   public void imageClosed(MimsPlus mp) {
+            int i;
+            // TODO: add switch case statement
+            for (i = 0; i < sumImages.length; i++) {
+               if (sumImages[i] != null)
+                  if (sumImages[i].equals(mp))
+                     sumImages[i] = null;
+            }
+            for (i = 0; i < segImages.length; i++) {
+               if (segImages[i] != null)
+                  if (segImages[i].equals(mp))
+                     segImages[i] = null;
+                
+            }
+            for (i = 0; i < hsiImages.length; i++) {
+               if (hsiImages[i] != null)
+                  if (hsiImages[i].equals(mp))
+                     hsiImages[i] = null;
+                
+            }
+            for (i = 0; i < ratioImages.length; i++) {
+               if (ratioImages[i] != null)
+                  if (ratioImages[i].equals(mp))
+                    ratioImages[i] = null;                
+            }            
+   }
 
    // This method returns the name of the main image file without the extension.
    public String getImageFilePrefix() {
@@ -2061,8 +1940,8 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
         for (int i = 0; i < ratio.length; i++) {
            HSIProps hsiprops = ratio[i].getHSIProps();
            hsiprops.setDataFileName(dataFile.getName());
-           int numIndex = hsiprops.getNumMass();
-           int denIndex = hsiprops.getDenMass();
+           int numIndex = hsiprops.getNumMassIdx();
+           int denIndex = hsiprops.getDenMassIdx();
            int numMass = Math.round(new Float(getOpener().getMassNames()[numIndex]));
            int denMass = Math.round(new Float(getOpener().getMassNames()[denIndex]));
            objectFileName = fileName + "_m" + numMass + "_m" + denMass + RATIO_EXTENSION;
@@ -2077,8 +1956,8 @@ private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
         for (int i = 0; i < hsi.length; i++) {
            HSIProps hsiprops = hsi[i].getHSIProps();
            hsiprops.setDataFileName(dataFile.getName());
-           int numIndex = hsiprops.getNumMass();
-           int denIndex = hsiprops.getDenMass();
+           int numIndex = hsiprops.getNumMassIdx();
+           int denIndex = hsiprops.getDenMassIdx();
            int numMass = Math.round(new Float(getOpener().getMassNames()[numIndex]));
            int denMass = Math.round(new Float(getOpener().getMassNames()[denIndex]));
            objectFileName = fileName + "_m" + numMass + "_m" + denMass + HSI_EXTENSION;
@@ -2710,23 +2589,25 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     }
 
     public MimsPlus getImageByName(String name) {
-        MimsPlus mp =null;
-        
-        MimsPlus[] tempimages = this.getOpenMassImages();
-        
+        MimsPlus mp = null;
+        MimsPlus[] tempimages;
+
+        // Mass images.
+        tempimages = getOpenMassImages();        
         for(int i=0; i<tempimages.length; i++){
             if(name.equals(tempimages[i].getTitle())) {
                 return tempimages[i];
             }
         }
-        
-        tempimages = this.getOpenRatioImages();
-        
+
+        // Ratio images.
+        tempimages = getOpenRatioImages();        
         for(int i=0; i<tempimages.length; i++){
             if(name.equals(tempimages[i].getTitle())) {
                 return tempimages[i];
             }
         }
+
         return mp;
     }
    
@@ -2820,12 +2701,15 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     }
 
     public void setActiveMimsPlus(MimsPlus mp) {
-        for (int i = 0; i < maxMasses; i++) {
-            if (mp == hsiImages[i]) {
-                if(hsiImages[i].getHSIProps()!=null) { hsiControl.setHSIProps(hsiImages[i].getHSIProps()); }
-            }
-        }
+       for (int i = 0; i < maxMasses; i++) {
+          if (mp == hsiImages[i]) {
+                if(hsiImages[i].getHSIProps()!=null) {
+                   hsiControl.setHSIProps(hsiImages[i].getHSIProps());
+                }
+          }
+       }
     }
+    
 
     public synchronized void updateStatus(String msg) {
         if (bUpdating) {

@@ -455,10 +455,10 @@ public class HSIView extends JPanel {
 }//GEN-LAST:event_rartioMaxjSpinnerStateChanged
 
     private void displayHSIjButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayHSIjButtonActionPerformed
-        if (bUpdating) {
-            return;        
+            if (bUpdating) {
+            return;
         // Get the selected ratio images. Each element
-        // should have the form 2:1 or 4:3 etc. 
+        // should have the form 2:1 or 4:3 etc.
         }
         Object[] idx = jList1.getSelectedValues();
 
@@ -467,10 +467,11 @@ public class HSIView extends JPanel {
             String label = (String) idx[i];
             int numerator = new Integer(label.substring(0, label.indexOf(":"))).intValue();
             int denomator = new Integer(label.substring(label.indexOf(":") + 1, label.length())).intValue();
-            props.setNumMass(numerator);
-            props.setDenMass(denomator);
+            props.setNumMassIdx(numerator);
+            props.setDenMassIdx(denomator);
+            //props.setRatioScaleFactor((Double)scaleFactorjSpinner.getValue());
             update(false);
-            
+
             displayHSI();
             updateInternalImages();
         }
@@ -579,9 +580,9 @@ private void displayRatiojButtonActionPerformed(java.awt.event.ActionEvent evt) 
 
         int ri = ui.getRatioImageIndex(numerator, denomator);
         if (ri > -1) {
-           mp = ui.getRatioImage(ri);
-           mp.computeRatio();
-           mp.updateAndDraw();
+           MimsPlus[] mps = ui.getOpenRatioImages();
+           mp = mps[ri];
+           mp.getWindow().toFront();
         } else {
            RatioProps ratioProps = new RatioProps(numerator, denomator);
            mp = new MimsPlus(ui, ratioProps);
@@ -748,13 +749,13 @@ public synchronized void update(boolean bUpdateUI) {
     
     public boolean getRatioRange() {
         MimsPlus[] ml = ui.getMassImages() ;
-        if(props.getNumMass() > ml.length ) {
+        if(props.getNumMassIdx() > ml.length ) {
             return false;
-        } else if(props.getDenMass() > ml.length ) {
+        } else if(props.getDenMassIdx() > ml.length ) {
             return false;
         }
-        MimsPlus num = ml[props.getNumMass()];
-        MimsPlus den = ml[props.getDenMass()];
+        MimsPlus num = ml[props.getNumMassIdx()];
+        MimsPlus den = ml[props.getDenMassIdx()];
         if(num == null || den == null) {
             return false;
         } else if(num.getBitDepth() != 16 || den.getBitDepth() != 16) {
@@ -786,12 +787,14 @@ public synchronized void update(boolean bUpdateUI) {
         props.setMaxRatio(rmax);
         props.setMinRatio(rmin);
         props.setRatioScaleFactor(ui.getRatioScaleFactor());
-        
+       
         return true ;
     }   
     
     public boolean displayHSI() {
-        return true;
+       MimsPlus mp =  new MimsPlus(ui);
+       mp.computeHSI(props);
+       return true;
     }
     
     public JList getRatioList() {

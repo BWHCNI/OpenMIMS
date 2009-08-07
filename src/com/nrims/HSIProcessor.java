@@ -53,8 +53,8 @@ public class HSIProcessor implements Runnable {
     public void setProps(HSIProps props) {
         if(hsiImage == null) return ;
         
-        MimsPlus numerator = hsiImage.getUI().getMassImage(props.getNumMass());
-        MimsPlus denominator = hsiImage.getUI().getMassImage(props.getDenMass());
+        MimsPlus numerator = hsiImage.getUI().getMassImage(props.getNumMassIdx());
+        MimsPlus denominator = hsiImage.getUI().getMassImage(props.getDenMassIdx());
         if(numerator == null || denominator == null) return ;        
 
         // Need to catch cases where the props are the same but the slice changed
@@ -65,7 +65,7 @@ public class HSIProcessor implements Runnable {
         numSlice = nSlice ;
         denSlice = dSlice ;
         if(hsiProps == null) hsiProps = props.clone();
-        else if( !bNeedsUpdate && hsiProps.equal(props)) {
+        else if( !bNeedsUpdate && hsiProps.equals(props)) {
              if(hsiImage.getUI().getDebug())
                 hsiImage.getUI().updateStatus("HSIProcessor: no change redraw..");
             hsiImage.updateAndDraw() ;
@@ -114,7 +114,7 @@ public class HSIProcessor implements Runnable {
         
         try {
             if( hsiImage == null ) { fThread = null ; return ; }
-        
+
             // Thread stuff.
             while( hsiImage.lockSilently() == false ) {
                 if(fThread == null || fThread.interrupted()) {
@@ -163,7 +163,11 @@ public class HSIProcessor implements Runnable {
             double denMax = denominator.getProcessor().getMax();
             double denMin = denominator.getProcessor().getMin();
 
-            int [] hsiPixels = (int []) hsiImage.getProcessor().getPixels() ;
+
+            int[] hsiPixels = new int[ratioPixels.length];
+            for (int i = 0; i < hsiPixels.length; i++) {
+               hsiPixels[i] = Math.round(ratioPixels[i]);
+            }
             int rgbMax = hsiProps.getMaxRGB() ;
             int rgbMin = hsiProps.getMinRGB() ;
             if(rgbMax == rgbMin) rgbMax++ ;

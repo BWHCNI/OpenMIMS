@@ -3,8 +3,10 @@ import com.nrims.data.Opener;
 import ij.IJ ;
 import ij.gui.* ;
 import ij.plugin.filter.RankFilters;
+import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
+import ij.process.ShortProcessor;
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent ;
 import java.awt.event.WindowListener ;
@@ -29,6 +31,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     MimsPlus ratioMims;
     MimsPlus numeratorSum;
     MimsPlus denominatorSum;
+
     //replaced by these
     MimsPlus internalRatio;
     MimsPlus internalNumerator;
@@ -58,6 +61,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     private int nType = 0 ;
     private int nRatioNum = 0 ;
     private int nRatioDen = 0 ;
+    private int scaleFactor = 10000;
     private int x1, x2, y1, y2, w1, w2, h1, h2;
     private boolean bIsStack = false ;
     private HSIProcessor hsiProcessor = null ;
@@ -65,8 +69,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     private EventListenerList fStateListeners = null ;
 
     /** Creates a new instance of mimsPlus */
-    public MimsPlus() {
+    public MimsPlus(UI ui) {
         super();
+        this.ui = ui;
         fStateListeners = new EventListenerList() ;
     }
     
@@ -108,20 +113,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             fStateListeners = new EventListenerList() ;
         } catch (Exception x) { IJ.log(x.toString());}
     }
-
-    // This contructor is used for making SUM images.
-    public MimsPlus(UI ui,int width, int height, double[] pixels, String name) {
-           super();
-           this.ui=ui;
-           nType = SUM_IMAGE ;
-
-           try {
-               ij.process.FloatProcessor ipp = new ij.process.FloatProcessor(width, height, pixels);
-               String title = name;
-               setProcessor(title, ipp);
-               fStateListeners = new EventListenerList() ;
-           } catch (Exception x) { IJ.log(x.toString());}
-    }
     
    // This contructor is used for making SUM images.
    public MimsPlus(UI ui, SumProps sumProps, ArrayList<Integer> sumlist) {
@@ -130,38 +121,29 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       this.sumProps = sumProps;
       this.nType = SUM_IMAGE;
 
-      // initialize variables.
+      // Setup image.
       Opener op = ui.getOpener();
       int width = op.getWidth();
       int height = op.getHeight();
-      String title = "Sum : ";
-
-      // Compute Image.
-      if (sumlist == null) {
-         for(int i = 1; i <= ui.getOpener().getNImages(); i++)
-            sumlist.add(i);
-      }
-      double[] sumPixels = computeSum(sumlist);
-      
-      // Set some image parameters
+      double sumPixels[] = new double[width*height];
       ImageProcessor ipp = new FloatProcessor(width, height, sumPixels);
+      String title = "Sum : ";
       if (sumProps.getSumType() == SumProps.MASS_IMAGE)
          title += "m" + op.getMassNames()[sumProps.getParentMassIdx()] + " : " + op.getImageFile().getName();
       else if (sumProps.getSumType() == SumProps.RATIO_IMAGE)
          title += "m" + op.getMassNames()[sumProps.getNumMassIdx()] + "/m" + op.getMassNames()[sumProps.getDenMassIdx()] + " : " + op.getImageFile().getName();
       setProcessor(title, ipp);
       fStateListeners = new EventListenerList();
-
-      // Do median filter if set to true.
-      if (ui.getMedianFilterRatios()) {
-          Roi temproi = getRoi();
-          killRoi();
-          RankFilters rfilter = new RankFilters();
-          double r = ui.getMedianFilterRadius();
-          rfilter.rank(getProcessor(), r, RankFilters.MEDIAN);
-          rfilter = null;
-          setRoi(temproi);
+      
+      // setup sumlist.
+      if (sumlist == null) {
+         sumlist = new ArrayList<Integer>();
+         for(int i = 1; i <= ui.getOpener().getNImages(); i++)
+            sumlist.add(i);
       }
+      
+      // Compute pixels values.
+      computeSum(sumlist);
    }
 
    // Use for ratio images.
@@ -171,43 +153,40 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       this.ratioProps = props;
       this.nType = RATIO_IMAGE;
 
-      // initialize variables.
+      // Setup image.
       Opener op = ui.getOpener();
       int width = op.getWidth();
       int height = op.getHeight();
       float[] pixels = new float[width * height];
       ImageProcessor ip = new FloatProcessor(width, height, pixels, null);
       ip.setMinAndMax(0, 1.0);
-      setProcessor(title, ip);
       String numName = ui.getOpener().getMassNames()[props.getNumMassIdx()];
       String denName = ui.getOpener().getMassNames()[props.getDenMassIdx()];
-      this.title = "m" + numName + "/m" + denName + " : " + ui.getImageFilePrefix();
-      fStateListeners = new EventListenerList() ;
+      title = "m" + numName + "/m" + denName + " : " + ui.getImageFilePrefix();
+      setProcessor(title, ip);
+      fStateListeners = new EventListenerList();
 
-      // Set image.
+      // Compute pixel values.
       computeRatio();
     }
-    
-    // Use hsi images.
-    public MimsPlus(UI ui, HSIProps props) {
-       /*
-        super();
-        this.ui = ui;
-        this.hsiProps = props;
 
+   // Use for ratio and hsi images.
+    public MimsPlus(UI ui, com.nrims.data.Opener image, HSIProps props, boolean bIsHSI ) {
+        super();
         try {
-           
-           massIndex = -1 ;
-           int numIndex = props.getNumMass() ;
-           int denIndex = props.getDenMass() ;
+           Opener srcImage = ui.getOpener() ;
+           this.ui = ui;
+           int numIndex = props.getNumMassIdx() ;
+           int denIndex = props.getDenMassIdx() ;
            nType = bIsHSI ? HSI_IMAGE : RATIO_IMAGE ;
            String title = ui.getImageFilePrefix();
-           nRatioNum = props.getNumMass() ;
-           nRatioDen = props.getDenMass() ;
+           nRatioNum = props.getNumMassIdx() ;
+           nRatioDen = props.getDenMassIdx() ;
+           scaleFactor = props.getRatioScaleFactor();
+           System.out.println("set MimsPlus.scaleFactor = " + props.getRatioScaleFactor());
            numerMassNumber = new Double(image.getMassNames()[numIndex]);
            denomMassNumber = new Double(image.getMassNames()[denIndex]);
-           
-           if(bIsHSI) {
+
                int height = image.getHeight() ;
                if( props.getLabelMethod() > 0) {
                     height += 16;
@@ -221,33 +200,146 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                setProcessor(title, ip);
                getProcessor().setMinAndMax(0, 255); // default display range
                fStateListeners = new EventListenerList() ;
-               
-               // For HSI images make a copy of a ratio image without 
-               // showing it. This is useful for getting data associated 
-               // with line plot medianization.             
-               ratioMims = ui.computeRatio(props, false);
+
+               // For HSI images make a copy of a ratio image without
+               // showing it. This is useful for getting data associated
+               // with line plot medianization.
+               ratioMims = new MimsPlus(ui, new RatioProps(nRatioNum, nRatioDen));
 
                //TODO fix me
                if(ui.getIsSum()) {
                    this.initializeHSISum(props);
                }
 
-            }
-            else {
-               float [] fPixels = new float[image.getWidth()*image.getHeight()];
-               ij.process.ImageProcessor ip = new ij.process.FloatProcessor(
-                   image.getWidth(),
-                   image.getHeight(),
-                   fPixels,
-                   null );
-               title = "m" + srcImage.getMassNames()[numIndex]+"/m"+ srcImage.getMassNames()[denIndex] + " : " + title;
-               setProcessor(title, ip);
-               getProcessor().setMinAndMax(0, 1.0); // default display range
-               fStateListeners = new EventListenerList() ;
-            }          
         }
         catch(Exception x) { IJ.log(x.toString()); }
-        * */
+    }
+    
+    // Use hsi images.
+    public MimsPlus(UI ui, HSIProps props) {       
+      super();
+      this.ui = ui;
+      this.hsiProps = props;
+      this.nType = HSI_IMAGE;
+
+           nRatioNum = props.getNumMassIdx() ;
+           nRatioDen = props.getDenMassIdx() ;
+           scaleFactor = props.getRatioScaleFactor();
+
+      // Setup image.
+      Opener op = ui.getOpener();
+      int width = op.getWidth();
+      int height = op.getHeight();
+      if( props.getLabelMethod() > 0) {
+         height += 16;
+      }
+      int [] rgbPixels = new int[width*height];
+      ImageProcessor ip = new ColorProcessor(width, height, rgbPixels);
+      String numName = ui.getOpener().getMassNames()[props.getNumMassIdx()];
+      String denName = ui.getOpener().getMassNames()[props.getDenMassIdx()];
+      title = "HSI : m" + numName +"/m"+ denName + " : " + ui.getImageFilePrefix();
+      setProcessor(title, ip);
+      getProcessor().setMinAndMax(0, 255); // default display range
+      fStateListeners = new EventListenerList() ;
+      ratioMims = new MimsPlus(ui, new RatioProps(props.getNumMassIdx(), props.getDenMassIdx()));
+    }
+
+    public synchronized boolean computeHSI(HSIProps props) {
+        if(props==null) return false;
+
+        int hsiIndex = ui.getHSIImageIndex(props);
+        MimsPlus num = ui.getMassImage(props.getNumMassIdx());
+        if (num == null) {
+            ui.updateStatus("Error no numerator");
+            return false;
+        }
+        MimsPlus den = ui.getMassImage(props.getDenMassIdx());
+        if (den == null) {
+            ui.updateStatus("Error no denominator");
+            return false;
+        }
+
+        if (num.getBitDepth() != 16) {
+            ui.updateStatus("Error numerator not 16 bits");
+            return false;
+        }
+        if (den.getBitDepth() != 16) {
+            ui.updateStatus("Error denominator not 16 bits");
+            return false;
+        }
+
+        MimsPlus mp = null;              
+        if (hsiIndex != -1) {
+            mp = ui.hsiImages[hsiIndex];
+        }
+        boolean bShow = mp == null;
+
+        if (!bShow) {
+            HSIProps oldProps = mp.getHSIProcessor().getProps();
+            HSIProcessor proc = new HSIProcessor(mp);
+            proc.setProps(props);
+            mp.setHSIProcessor(proc);
+            int height = mp.getHeight();
+            if (oldProps.getLabelMethod() == 0 && props.getLabelMethod() > 0) {
+                height = ui.getOpener().getHeight() + 16;
+            } else if (oldProps.getLabelMethod() > 0 && props.getLabelMethod() == 0) {
+                height = ui.getOpener().getHeight();
+            }
+            if (height != mp.getHeight()) {
+                mp.setSize(mp.getWidth(), height);
+                bShow = true;
+            }
+        }
+
+        if (mp == null) {
+            mp = new MimsPlus(ui, ui.getOpener(), props, true);
+            mp.setHSIProcessor(new HSIProcessor(mp));
+            boolean bFound = false;
+            for (int i = 0; i < ui.maxMasses && !bFound; i++) {
+                if (ui.hsiImages[i] == null) {
+                    bFound = true;
+                    ui.hsiImages[i] = mp;
+                    hsiIndex = i;
+                }
+            }
+            if (!bFound) {
+                hsiIndex = 5;
+                ui.hsiImages[hsiIndex] = mp;
+            }
+
+            mp.addListener(ui);
+        }
+
+        if (mp == null) {
+            ui.updateStatus("Error allocating ratio image");
+            return false;
+        }
+
+        try {
+            mp.getHSIProcessor().setProps(props);
+        } catch (Exception x) {
+            IJ.log(x.toString());
+            ui.updateStatus("Failed computing HSI image");
+        }
+
+        if (bShow) {
+            while (mp.getHSIProcessor().isRunning()) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException x) {
+                }
+            }
+
+           mp.show();
+
+           // Set window location.
+           int xloc = props.getXWindowLocation();
+           int yloc = props.getYWindowLocation();
+           if (xloc > -1 & yloc > -1){}
+              //mp.getWindow().setLocation(xloc, yloc);
+        }
+
+        return true;
     }
 
     public synchronized void computeRatio() {
@@ -255,6 +347,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        // Get numerator and denominator mass indexes.
        int numIndex = ratioProps.getNumMassIdx();
        int denIndex = ratioProps.getDenMassIdx();
+
+       if (numIndex > ui.getOpener().getNMasses() - 1 || denIndex > ui.getOpener().getNMasses())
+          return;
 
         // Get the numerator and denominator mass images.
         MimsPlus parentNum = ui.getMassImage( numIndex );
@@ -281,12 +376,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         // Compute the sum of the numerator and denominator mass images.
         SumProps numProps = new SumProps(numIndex);
         SumProps denProps = new SumProps(denIndex);
-        MimsPlus num = new MimsPlus(ui, numProps, list);
-        MimsPlus den = new MimsPlus(ui, denProps, list);
+        internalNumerator = new MimsPlus(ui, numProps, list);
+        internalDenominator = new MimsPlus(ui, denProps, list);
 
         // Fill in the data.
-        float[] nPixels = (float[]) num.getProcessor().getPixels();
-        float[] dPixels = (float[]) den.getProcessor().getPixels();
+        float[] nPixels = (float[]) internalNumerator.getProcessor().getPixels();
+        float[] dPixels = (float[]) internalDenominator.getProcessor().getPixels();
         float[] rPixels = new float[getWidth() * getHeight()];
         float rMax = 0.0f;
         float rMin = 1000000.0f;
@@ -313,9 +408,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
           rfilter = null;
           setRoi(temproi);
        }
+
+       internalRatio = this;
     }
 
-    public synchronized double[] computeSum(ArrayList<Integer> sumlist) {
+    public synchronized void computeSum(ArrayList<Integer> sumlist) {
 
        double[] sumPixels = null;
        int parentIdx, numIdx, denIdx;
@@ -363,8 +460,20 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
              }
           }
        }
-       
-       return sumPixels;
+
+       ImageProcessor ip = new FloatProcessor(getWidth(), getHeight(), sumPixels);
+       setProcessor(title, ip);
+
+       // Do median filter if set to true.
+       if (ui.getMedianFilterRatios()) {
+          Roi temproi = getRoi();
+          killRoi();
+          RankFilters rfilter = new RankFilters();
+          double r = ui.getMedianFilterRadius();
+          rfilter.rank(getProcessor(), r, RankFilters.MEDIAN);
+          rfilter = null;
+          setRoi(temproi);
+       }
     }
 
     public void showWindow(){
@@ -377,10 +486,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
        // Add to contrast box
        ui.getCBControl().addWindowtoList(this);
-
-       if (nType == RATIO_IMAGE) {
-          ui.addToRatioList(this);
-       }
+       
+       ui.addToImagesList(this);
     }
 
 
@@ -438,7 +545,38 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public int getMimsType() { return nType ; }
     public SumProps getSumProps() { return sumProps; }
     public RatioProps getRatioProps() { return ratioProps; }
-    public HSIProps getHSIProps() { return hsiProps; }
+    public HSIProps getHSIProps() {
+        HSIProps props = new HSIProps();
+
+        if ( getHSIProcessor() != null )
+           props = getHSIProcessor().getProps();
+        else
+           props = new HSIProps();
+
+        if(nType == RATIO_IMAGE || nType == HSI_IMAGE) {
+
+           // If ratio, set numerator and denominator masses.
+           props.setNumMassIdx(nRatioNum);
+           props.setDenMassIdx(nRatioDen);
+           props.setRatioScaleFactor(scaleFactor);
+
+           // Unlikee an HSIimage, the props of a ratio image
+           // CAN NOT be changed. Therefore we get the default values
+           // and overwrite the minRatio and maxRatio with the current
+           // min and max used by ImageJ to render the image.
+           props.setMaxRatio(this.getProcessor().getMax());
+           props.setMinRatio(this.getProcessor().getMin());
+
+        }
+
+        // Set window location parameters.
+        if(this.getWindow()!=null) {
+            props.setXWindowLocation(this.getWindow().getX());
+            props.setYWindowLocation(this.getWindow().getY());
+        }
+
+        return props;
+    }
     public int getNumMass() { return nRatioNum ; }
     public int getDenMass() { return nRatioDen ; }
 
@@ -511,6 +649,33 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             }
         }
     }
+
+    public boolean equals(MimsPlus mp){
+
+       if (mp.getMimsType() != getMimsType())
+          return false;
+
+       if (mp.getMimsType() == MASS_IMAGE){
+          if (mp.getMassIndex() == getMassIndex())
+             return true;
+       } else if (mp.getMimsType() == RATIO_IMAGE) {
+          if (mp.getRatioProps().equals(getRatioProps())){
+             return true;
+          }
+       } else if (mp.getMimsType() == SUM_IMAGE) {
+          if (mp.getSumProps().equals(getSumProps())) {
+             return true;
+          }
+       } else if (mp.getMimsType() == HSI_IMAGE) {
+          if (mp.getHSIProps().equals(getHSIProps())) {
+             return true;
+          }
+       } else if (mp.getMimsType() == SEG_IMAGE) {
+          // TODO: Not sure what to add here
+       }
+
+       return false;
+    }
     
     @Override
     public void setRoi(ij.gui.Roi roi) {
@@ -524,7 +689,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 //        System.out.println("STOP");
 //        this.bIgnoreClose =false;
 //        this.
-        
+
     }
     @Override
     public void windowClosed(WindowEvent e) {
@@ -543,7 +708,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(ui.getDebug()) {
             ui.updateStatus("mimsPlus listener window closed");
         }
-        stateChanged(0,MimsPlusEvent.ATTR_IMAGE_CLOSED);
+        ui.imageClosed(this);
         ui.getCBControl().removeWindowfromList(this);
     }
     public void windowStateChanged(WindowEvent e) {}
@@ -761,7 +926,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             Roi roi = (Roi)rois.get(key);
             int slice=1;
             if(this.getMimsType()==this.HSI_IMAGE || this.getMimsType()==this.RATIO_IMAGE) {
-                int neum = getHSIProps().getNumMass();
+                int neum = getHSIProps().getNumMassIdx();
                 slice = ui.getMassImage(neum).getCurrentSlice();
             } else {
                 slice = getCurrentSlice();
@@ -947,11 +1112,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(nType != HSI_IMAGE && nType != RATIO_IMAGE ) return;
 
         // Get the properties.
-        HSIProps props = this.getHSIProps();
+        HSIProps props = getHSIProps();
+
 
         // Get the numerator and denominator mass images.
-        MimsPlus parentNum = ui.getMassImage( props.getNumMass() );
-        MimsPlus parentDen = ui.getMassImage( props.getDenMass() );
+        MimsPlus parentNum = ui.getMassImage( props.getNumMassIdx() );
+        MimsPlus parentDen = ui.getMassImage( props.getDenMassIdx() );
 
         // Setup list for sliding window, entire image, or single plane.
         java.util.ArrayList<Integer> list = new java.util.ArrayList<Integer>();
@@ -973,8 +1139,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             }
 
         // Compute the sum of the numerator and denominator mass images.
-        //this.internalNumerator = ui.computeSum(parentNum, false, list);
-        //this.internalDenominator = ui.computeSum(parentDen, false, list);
+        SumProps nProps = new SumProps(props.getNumMassIdx());
+        SumProps dProps = new SumProps(props.getDenMassIdx());
+
+        internalNumerator = new MimsPlus(ui, nProps, list);
+        internalDenominator = new MimsPlus(ui, dProps, list);
 
         // Fill in the data.
         int npixels = this.internalNumerator.getProcessor().getPixelCount();        
@@ -999,7 +1168,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
         // Do some other stuff.
         if( internalRatio == null ) {
-            internalRatio = new MimsPlus();
+            internalRatio = new MimsPlus(ui);
         }
         if( internalRatio.getProcessor() != null ) {
             internalRatio.getProcessor().setPixels(rpixels);

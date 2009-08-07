@@ -2,7 +2,6 @@ package com.nrims;
 
 // Ratio properties.
 public class RatioProps implements java.io.Serializable {
-   private double numMass, denMass;
    private int numMassIdx, denMassIdx;
    private int xloc, yloc;
    private String dataFileName;
@@ -17,15 +16,18 @@ public class RatioProps implements java.io.Serializable {
        denMassIdx = denominator ;
    }
 
+   // Two props objects are equal if numerator and denominator are the same.
+   public boolean equals(RatioProps rp) {
+      if (rp.getNumMassIdx() == numMassIdx && rp.getDenMassIdx() == denMassIdx)
+         return true;
+      else
+         return false;
+   }
+
    // Getters and Setters.
-   public void setNumMass(double d) { numMass = d ; }
-   public double getNumMass() { return numMass ; }
-   public void setDenMass(double d) { denMass = d ; }
-   public double getDenMass() { return denMass ; }
-   public void setNumMassIdx(int i) { numMassIdx = i ; }
    public int getNumMassIdx() { return numMassIdx ; }
-   public void setDenMassIdx(int i) { denMassIdx = i ; }
    public int getDenMassIdx() { return denMassIdx ; }
+
    public void setXWindowLocation(int x) { this.xloc = x; }
    public int getXWindowLocation() { return this.xloc; }
    public void setYWindowLocation(int y) { this.yloc = y; }

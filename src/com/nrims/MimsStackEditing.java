@@ -957,20 +957,29 @@ public void untrack() {
 
 private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumButtonActionPerformed
 
+    // Get the window title.
     String name = WindowManager.getCurrentImage().getTitle();
     String sumTextFieldString = sumTextField.getText().trim();
-    
+
+    // initialize varaibles.
     SumProps sumProps = null;
     MimsPlus mp = ui.getImageByName(name);
+    if (mp == null) return;
     MimsPlus sp;
 
+    // Generate a SumProps object
     if (mp.getMimsType() == MimsPlus.MASS_IMAGE) {
        int parentIdx = mp.getMassIndex();
        if (parentIdx > -1) sumProps = new SumProps(parentIdx);
     }
     if (mp.getMimsType() == MimsPlus.RATIO_IMAGE) {
-       sumProps = mp.getSumProps();
+       RatioProps rp = mp.getRatioProps();
+       int numIdx = rp.getNumMassIdx();
+       int denIdx = rp.getDenMassIdx();
+       if (numIdx > -1 && denIdx > -1) sumProps = new SumProps(numIdx, denIdx);
     }
+
+    // Get list from field box.
     if (sumTextFieldString.isEmpty()) {
        sp = new MimsPlus(ui, sumProps, null);
     } else {
@@ -978,6 +987,8 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
        if (sumlist.size()==0) return;
        sp = new MimsPlus(ui, sumProps, sumlist);
     }
+
+    // Show sum image.
     sp.showWindow();
 }//GEN-LAST:event_sumButtonActionPerformed
 
