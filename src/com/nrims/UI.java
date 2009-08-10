@@ -2196,6 +2196,7 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
 //Appears to work...
 //    sumAllMenuItemActionPerformed(null);
 
+    /*
     String foo = "nrims/hom3/cpocatek/test_images/save/";
     File file = image.getImageFile();
     System.out.println(file.getParent()+file.separator);
@@ -2222,6 +2223,14 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         name = name.replace("\\", "-")+".png";
         System.out.println(dir+name);
         saver.saveAsPng(dir+name);
+    }
+     */
+    MimsPlus[] h = getOpenHSIImages();
+    h[0].getHSIProcessor().getProps().setMaxRGB(333);
+    h[0].getHSIProcessor().getProps().setRatioScaleFactor(10000);
+
+    for( int i=0; i<h.length; i++) {
+     System.out.print(i);
     }
 }                                           
 

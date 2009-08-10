@@ -405,7 +405,7 @@ public class HSIView extends JPanel {
         if (bUpdating) {//GEN-LAST:event_rgbMaxjSliderStateChanged
             return;
         }
-        final int val = rgbMaxjSlider.getValue();
+        final int val = 255;//rgbMaxjSlider.getValue();
 
         props.setMaxRGB(val);
         rgbMaxjLabel.setText("RGB Max: " + val);
@@ -687,8 +687,8 @@ public synchronized void update(boolean bUpdateUI) {
             ratioMinjSpinner.setValue(props.getMinRatio());
             numThresholdjSpinner.setValue(props.getMinNum());
             denThresholdjSpinner.setValue(props.getMinDen());
-            rgbMaxjSlider.setValue(props.getMaxRGB());
-            rgbMinjSlider.setValue(props.getMinRGB());
+            //rgbMaxjSlider.setValue(props.getMaxRGB());
+            //rgbMinjSlider.setValue(props.getMinRGB());
             transparencyjComboBox.setSelectedIndex(props.getTransparency());
             scalebarjComboBox.setSelectedIndex(props.getLabelMethod());
         }      
@@ -810,7 +810,12 @@ public synchronized void update(boolean bUpdateUI) {
     
     public void setHSIProps(HSIProps props) {
         this.props.setProps(props);
+                System.out.println("Numerator = " + props.getNumMassIdx());
+        System.out.println("Denomator = " + props.getDenMassIdx());
+        System.out.println();
         update(true);
+         System.out.println("update(true)");
+
     }
 
     public boolean isMedianFilterSelected() {

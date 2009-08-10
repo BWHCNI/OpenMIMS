@@ -245,6 +245,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
 
     public synchronized boolean computeHSI(HSIProps props) {
+                System.out.println("computehsi called");
+
         if(props==null) return false;
 
         int hsiIndex = ui.getHSIImageIndex(props);
@@ -558,14 +560,21 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
            // If ratio, set numerator and denominator masses.
            props.setNumMassIdx(nRatioNum);
            props.setDenMassIdx(nRatioDen);
-           props.setRatioScaleFactor(scaleFactor);
+           props.setRatioScaleFactor(10000);
+           props.setMaxRGB(255);
+           props.setMinRGB(0);
+           props.setMaxRatio(3.0);
 
            // Unlikee an HSIimage, the props of a ratio image
            // CAN NOT be changed. Therefore we get the default values
            // and overwrite the minRatio and maxRatio with the current
            // min and max used by ImageJ to render the image.
-           props.setMaxRatio(this.getProcessor().getMax());
-           props.setMinRatio(this.getProcessor().getMin());
+           //if(nType == RATIO_IMAGE ) {
+               props.setMaxRatio(this.getProcessor().getMax());
+               props.setMinRatio(this.getProcessor().getMin());
+           //}
+
+
 
         }
 

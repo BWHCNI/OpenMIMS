@@ -64,6 +64,10 @@ public class HSIProcessor implements Runnable {
         if(nSlice != numSlice || dSlice != denSlice ) bNeedsUpdate = true ;
         numSlice = nSlice ;
         denSlice = dSlice ;
+         props.setRatioScaleFactor(10000);
+           props.setMaxRGB(333);
+           props.setMinRGB(0);
+           props.setMaxRatio(1.0);
         if(hsiProps == null) hsiProps = props.clone();
         else if( !bNeedsUpdate && hsiProps.equals(props)) {
              if(hsiImage.getUI().getDebug())
@@ -73,6 +77,7 @@ public class HSIProcessor implements Runnable {
         }
         else
             hsiProps.setProps(props);
+           hsiProps = props;
         start();
     }
     
@@ -109,6 +114,7 @@ public class HSIProcessor implements Runnable {
     public void run( ) {
         
        // initialize stuff.
+        System.out.println("hsiproc.run called");
         MimsPlus numerator = null , denominator = null, ratio = null ;
         MimsPlus [] ml = hsiImage.getUI().getMassImages() ;
         
@@ -164,12 +170,15 @@ public class HSIProcessor implements Runnable {
             double denMin = denominator.getProcessor().getMin();
 
 
-            int[] hsiPixels = new int[ratioPixels.length];
-            for (int i = 0; i < hsiPixels.length; i++) {
-               hsiPixels[i] = Math.round(ratioPixels[i]);
-            }
-            int rgbMax = hsiProps.getMaxRGB() ;
-            int rgbMin = hsiProps.getMinRGB() ;
+            //int[] hsiPixels = new int[ratioPixels.length];
+            int [] hsiPixels = (int []) hsiImage.getProcessor().getPixels() ;
+            //for (int i = 0; i < hsiPixels.length; i++) {
+              // hsiPixels[i] = Math.round(ratioPixels[i]);
+            //}
+            //int rgbMax = hsiProps.getMaxRGB() ;
+            //int rgbMin = hsiProps.getMinRGB() ;
+            int rgbMax = 255 ;
+            int rgbMin = 0 ;
             if(rgbMax == rgbMin) rgbMax++ ;
             double rgbGain = 255.0 / (double)(rgbMax-rgbMin);
 
@@ -192,9 +201,9 @@ public class HSIProcessor implements Runnable {
             }
 
             //if using non-ratio values, ie percent turnover
-            if(hsiProps.getTransform()) {
-                transformedPixels = this.turnoverTransform(transformedPixels, hsiProps.getReferenceRatio(), hsiProps.getBackgroundRatio(), hsiProps.getRatioScaleFactor());
-           }
+            //if(hsiProps.getTransform()) {
+              //  transformedPixels = this.turnoverTransform(transformedPixels, hsiProps.getReferenceRatio(), hsiProps.getBackgroundRatio(), hsiProps.getRatioScaleFactor());
+           //}
 
             for(int offset = 0 ; offset < numPixels.length && fThread != null ; offset++ ) {
 
@@ -263,7 +272,7 @@ public class HSIProcessor implements Runnable {
                 else{
                     hsiPixels[offset] = 0 ;
                 }
-                
+               // System.out.print(hsiPixels[offset] + " ");
                 if(fThread == null || fThread.interrupted()) {
                     fThread = null ;
                     hsiImage.unlock() ;
