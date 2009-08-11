@@ -46,7 +46,7 @@
                           <Component id="rgbMaxjSlider" alignment="0" min="-2" pref="300" max="-2" attributes="1"/>
                           <Component id="rgbMinjSlider" min="-2" pref="300" max="-2" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="247" max="32767" attributes="0"/>
+                      <EmptySpace pref="259" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jScrollPane1" min="-2" pref="175" max="-2" attributes="0"/>
@@ -56,7 +56,7 @@
                           <Component id="addRatiojButton" max="32767" attributes="1"/>
                           <Component id="displayRatiojButton" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="374" max="32767" attributes="0"/>
+                      <EmptySpace pref="394" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">

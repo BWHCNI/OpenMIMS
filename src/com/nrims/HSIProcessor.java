@@ -58,26 +58,11 @@ public class HSIProcessor implements Runnable {
         if(numerator == null || denominator == null) return ;        
 
         // Need to catch cases where the props are the same but the slice changed
-        boolean bNeedsUpdate = false ;
         int nSlice = numerator.getCurrentSlice() ;
         int dSlice = denominator.getCurrentSlice() ;
-        if(nSlice != numSlice || dSlice != denSlice ) bNeedsUpdate = true ;
         numSlice = nSlice ;
         denSlice = dSlice ;
-         props.setRatioScaleFactor(10000);
-           props.setMaxRGB(333);
-           props.setMinRGB(0);
-           props.setMaxRatio(1.0);
-        if(hsiProps == null) hsiProps = props.clone();
-        else if( !bNeedsUpdate && hsiProps.equals(props)) {
-             if(hsiImage.getUI().getDebug())
-                hsiImage.getUI().updateStatus("HSIProcessor: no change redraw..");
-            hsiImage.updateAndDraw() ;
-            return ;
-        }
-        else
-            hsiProps.setProps(props);
-           hsiProps = props;
+        hsiProps = props;
         start();
     }
     
@@ -114,7 +99,6 @@ public class HSIProcessor implements Runnable {
     public void run( ) {
         
        // initialize stuff.
-        System.out.println("hsiproc.run called");
         MimsPlus numerator = null , denominator = null, ratio = null ;
         MimsPlus [] ml = hsiImage.getUI().getMassImages() ;
         

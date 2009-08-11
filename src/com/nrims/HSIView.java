@@ -450,31 +450,37 @@ public class HSIView extends JPanel {
        if (bUpdating) {
             return;
         }
+
         props.setMaxRatio(new Double(rartioMaxjSpinner.getValue().toString()));
         update(false);
 }//GEN-LAST:event_rartioMaxjSpinnerStateChanged
 
     private void displayHSIjButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayHSIjButtonActionPerformed
-            if (bUpdating) {
-            return;
-        // Get the selected ratio images. Each element
-        // should have the form 2:1 or 4:3 etc.
-        }
-        Object[] idx = jList1.getSelectedValues();
+       if (bUpdating)
+          return;
 
-        // Generate images
-        for (int i = 0; i < idx.length; i++) {
-            String label = (String) idx[i];
-            int numerator = new Integer(label.substring(0, label.indexOf(":"))).intValue();
-            int denomator = new Integer(label.substring(label.indexOf(":") + 1, label.length())).intValue();
-            props.setNumMassIdx(numerator);
-            props.setDenMassIdx(denomator);
-            //props.setRatioScaleFactor((Double)scaleFactorjSpinner.getValue());
-            update(false);
+       // Get the selected ratio images. Each element
+       // should have the form 2:1 or 4:3 etc.
+       Object[] idx = jList1.getSelectedValues();
+       MimsPlus mp;
 
-            displayHSI();
-            updateInternalImages();
-        }
+       // Generate images
+       for (int i = 0; i < idx.length; i++) {
+          String label = (String) idx[i];
+          int numerator = new Integer(label.substring(0, label.indexOf(":"))).intValue();
+          int denomator = new Integer(label.substring(label.indexOf(":") + 1, label.length())).intValue();
+
+          int ri = ui.getHsiImageIndex(numerator, denomator);
+          if (ri > -1) {
+             MimsPlus[] mps = ui.getOpenHSIImages();
+             mp = mps[ri];
+             mp.getWindow().toFront();
+          } else {
+             HSIProps hsiProps = new HSIProps(numerator, denomator);             
+             mp = new MimsPlus(ui, hsiProps);
+             mp.showWindow();             
+          }
+       }
 }//GEN-LAST:event_displayHSIjButtonActionPerformed
 
     private void scalebarjComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_scalebarjComboBoxItemStateChanged
@@ -676,11 +682,8 @@ public double getMedianRadius() {
 }
 
 public synchronized void update(boolean bUpdateUI) {
-        if(ui == null) {
-            return;
-        } else if(bUpdating) {
-            return;
-        }
+   if(bUpdating)
+      return;
         bUpdating = true ;
         if(bUpdateUI) {     
             rartioMaxjSpinner.setValue(props.getMaxRatio());
@@ -693,22 +696,11 @@ public synchronized void update(boolean bUpdateUI) {
             scalebarjComboBox.setSelectedIndex(props.getLabelMethod());
         }      
 
-        if(ui.getHSIImageIndex(props) != -1) {
-                displayHSI();
-        }
+        //if(ui.getHSIImageIndex(props) != -1) {
+        //        displayHSI();
+        //}
         
         bUpdating = false ;
-    }
-
-    public void updateInternalImages() {
-        MimsPlus rp[] = ui.getOpenRatioImages();
-        MimsPlus hp[] = ui.getOpenHSIImages();
-        for (int i = 0; i < rp.length; i++) {
-            rp[i].recomputeInternalImages();
-        }
-        for (int j = 0; j < hp.length; j++) {
-            hp[j].recomputeInternalImages();
-        }
     }
 
     public void updateImage() {
@@ -792,8 +784,8 @@ public synchronized void update(boolean bUpdateUI) {
     }   
     
     public boolean displayHSI() {
-       MimsPlus mp =  new MimsPlus(ui);
-       mp.computeHSI(props);
+       MimsPlus mp =  new MimsPlus(ui, props);
+       mp.showWindow();
        return true;
     }
     

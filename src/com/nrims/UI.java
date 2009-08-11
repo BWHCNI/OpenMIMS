@@ -1156,8 +1156,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             // Update HSI image slice.
             for (int i = 0; i < hsi.length; i++) {                
-                hsi[i].recomputeInternalImages();
-                //computeHSI(hsi[i].getHSIProps());
+                hsi[i].computeHSI();
             }
 
             // Update ratio images.
@@ -1758,7 +1757,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        // Generate hsi images.
        for (int i=0; i<hsi_props.length; i++){
           //computeHSI(hsi_props[i]);
-          hsiControl.updateInternalImages();
+          //hsiControl.updateInternalImages();
        }
        
        MimsPlus[] openhsi = this.getOpenHSIImages();
