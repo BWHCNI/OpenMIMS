@@ -911,107 +911,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public void recomputeAllHSI() {
         MimsPlus[] openHSI = this.getOpenHSIImages();
         for (int i = 0; i < openHSI.length; i++) {
-                //computeHSI(hsiImages[i].getHSIProps());
-           //openHSI[i].updateAndDraw();
+            openHSI[i].computeHSI();
+            openHSI[i].updateAndDraw();
         }        
     }                  
-
-    /*
-    public MimsPlus computeSum(MimsPlus mImage, boolean show, ArrayList<Integer> sumlist) {
-        boolean fail = true;
-        
-        if (mImage == null) {
-            return null;
-        }
-                    
-        int width = mImage.getWidth();
-        int height = mImage.getHeight();        
-        String sumName = "Sum : " + mImage.getShortTitle() + " : " + image.getImageFile().getName();
-        int templength = mImage.getProcessor().getPixelCount();
-        double[] sumPixels = new double[templength];
-        short[] tempPixels = new short[templength];
-        SumProps sumProps = null;
-
-        int startSlice = mImage.getCurrentSlice();
-        bUpdating = true;        
-        
-        if (mImage.getMimsType() == MimsPlus.MASS_IMAGE) {                                                         
-            sumProps = new SumProps(mImage.getMassNumber());            
-            Object[] o = mImage.getStack().getImageArray();
-            for (int i = 0; i < sumlist.size(); i++) {
-                if (sumlist.get(i) < 1 || sumlist.get(i) > mImage.getNSlices()) continue;                
-                tempPixels = (short[])o[sumlist.get(i)-1];
-                for (int j = 0; j < sumPixels.length; j++) {                 
-                    sumPixels[j] += ((int) ( tempPixels[j] & 0xffff) );
-                }
-            }         
-            fail = false;
-        }
-
-        MimsPlus nImage = null;
-        MimsPlus dImage = null;
-        if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {
-            sumProps = new SumProps(mImage.getNumerMassNumber(), mImage.getDenomMassNumber());
-            int numMass = mImage.getNumMass();
-            int denMass = mImage.getDenMass();
-
-            // Get the sum images of the numerator and denominator.
-            nImage = computeSum(massImages[numMass], false, sumlist);
-            dImage = computeSum(massImages[denMass], false, sumlist);
-            
-            float[] numPixels = (float[]) nImage.getProcessor().getPixels();
-            float[] denPixels = (float[]) dImage.getProcessor().getPixels();
-
-            for (int i = 0; i < sumPixels.length; i++) {
-                if (denPixels[i] != 0) {
-                    sumPixels[i] = ratioScaleFactor * (numPixels[i] / denPixels[i]);
-                } else {
-                    sumPixels[i] = 0;
-                }
-            }
-
-            fail = false;
-        }
-        mImage.setSlice(startSlice);
-        this.bUpdating = false;
-        
-        if (!fail) {
-            MimsPlus mp = new MimsPlus(this, width, height, sumPixels, sumName);
-            mp.setSumProps(sumProps);
-            mp.setNumeratorSum(nImage);
-            mp.setDenominatorSum(dImage);
-
-            if(show==false) return mp;
-
-            // if showing find a slot to save it
-
-            boolean bFound = false;
-            for (int i = 0; i < maxMasses * 2 && !bFound; i++) {
-                if (sumImages[i] == null) {
-                    bFound = true;
-                    sumImages[i] = mp;
-                }
-            }
-            //why overwrite the last slot?
-            if (!bFound) {
-                sumImages[(maxMasses * 2) - 1] = mp;
-            }
-
-            mp.addListener(this);
-            mp.show();
-                        
-            if (mImage.getMimsType() == MimsPlus.RATIO_IMAGE) {               
-                this.autoContrastImage(mp);
-            }
-            mp.updateAndDraw();
-
-            cbControl.addWindowtoList(mp);
-            return mp;
-        } else {
-            return null;
-        }
-    }
-     */
 
     public int getHSIImageIndex(HSIProps props) {
         if (props == null) {
@@ -1021,113 +924,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         int denIndex = props.getDenMassIdx();
         for (int i = 0; i < maxMasses; i++) {
             if (hsiImages[i] != null) {
-                if (hsiImages[i].getNumMass() == numIndex && hsiImages[i].getDenMass() == denIndex) {
+                if (hsiImages[i].getHSIProps().getNumMassIdx() == numIndex && hsiImages[i].getHSIProps().getDenMassIdx() == denIndex) {
                     return i;
                 }
             }
         }
         return -1;
     }
-
-    /*
-    public synchronized boolean computeHSI(HSIProps props) {
-        if(props==null) return false;
-
-        int hsiIndex = getHSIImageIndex(props);
-        MimsPlus num = massImages[props.getNumMass()];
-        if (num == null) {
-            updateStatus("Error no numerator");
-            return false;
-        }
-        MimsPlus den = massImages[props.getDenMass()];
-        if (den == null) {
-            updateStatus("Error no denominator");
-            return false;
-        }
-
-        if (num.getBitDepth() != 16) {
-            updateStatus("Error numerator not 16 bits");
-            return false;
-        }
-        if (den.getBitDepth() != 16) {
-            updateStatus("Error denominator not 16 bits");
-            return false;
-        }
-
-        MimsPlus mp = null;
-        if (hsiIndex != -1) {
-            mp = hsiImages[hsiIndex];
-        }
-        boolean bShow = mp == null;
-
-        if (!bShow) {
-            HSIProps oldProps = mp.getHSIProcessor().getProps();
-            HSIProcessor proc = new HSIProcessor(mp);
-            proc.setProps(props);
-            mp.setHSIProcessor(proc);
-            int height = mp.getHeight();
-            if (oldProps.getLabelMethod() == 0 && props.getLabelMethod() > 0) {
-                height = image.getHeight() + 16;
-            } else if (oldProps.getLabelMethod() > 0 && props.getLabelMethod() == 0) {
-                height = image.getHeight();
-            }
-            if (height != mp.getHeight()) {
-                mp.setSize(mp.getWidth(), height);
-                bShow = true;
-            }
-        }
-
-        if (mp == null) {
-            mp = new MimsPlus(this, image, props, true);
-            mp.setHSIProcessor(new HSIProcessor(mp));
-            boolean bFound = false;
-            for (int i = 0; i < maxMasses && !bFound; i++) {
-                if (hsiImages[i] == null) {
-                    bFound = true;
-                    hsiImages[i] = mp;
-                    hsiIndex = i;
-                }
-            }
-            if (!bFound) {
-                hsiIndex = 5;
-                hsiImages[hsiIndex] = mp;
-            }
-
-            mp.addListener(this);
-        }
-
-        if (mp == null) {
-            updateStatus("Error allocating ratio image");
-            return false;
-        }
-
-        try {
-            mp.getHSIProcessor().setProps(props);
-        } catch (Exception x) {
-            IJ.log(x.toString());
-            updateStatus("Failed computing HSI image");
-        }
-
-        if (bShow) {
-            while (mp.getHSIProcessor().isRunning()) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException x) {
-                }
-            }
-                       
-           mp.show();                
-           
-           // Set window location.
-           int xloc = props.getXWindowLocation();
-           int yloc = props.getYWindowLocation();           
-           if (xloc > -1 & yloc > -1)
-              mp.getWindow().setLocation(xloc, yloc);
-        }
-
-        return true;
-    }
-     */
 
     /**
      * Catch events such as changing the slice number of a stack
@@ -1660,6 +1463,48 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       // Update processor
       img.getProcessor().setMinAndMax(min, max);
    }
+
+   public MimsPlus autoContrastNRIMSHSI(MimsPlus img) {
+      if (img == null) return img;
+
+      HSIProps props = img.getHSIProps();
+
+        MimsPlus num = massImages[props.getNumMassIdx()];
+        MimsPlus den = massImages[props.getDenMassIdx()];
+        if(num == null || den == null) {
+            return img;
+        } else if(num.getBitDepth() != 16 || den.getBitDepth() != 16) {
+            return img;
+        }
+
+        short [] numPixels = (short[])num.getProcessor().getPixels() ;
+        short [] denPixels = (short[])den.getProcessor().getPixels() ;
+
+        double rmax = 0.0 ;
+        double rmin = 100000000.0 ;
+        int nt = props.getMinNum() ;
+        int dt = props.getMinDen() ;
+
+        if(numPixels.length != denPixels.length) {
+            return img;
+        }
+        for(int i = 0 ; i < numPixels.length ; i++ ) {
+            if(numPixels[i] > nt && denPixels[i] > dt) {
+                double r = props.getRatioScaleFactor()*((double)numPixels[i]/(double)denPixels[i]);
+                if(r > rmax) {
+                    rmax = r;
+                }
+                else if( r < rmin ) {
+                    rmin = r;
+                }
+            }
+        }
+        props.setMaxRatio(rmax);
+        props.setMinRatio(rmin);
+        img.getHSIProcessor().setProps(props);
+
+        return img;
+   }
    
    public void autoContrastImage(MimsPlus img) {
                   
@@ -1670,8 +1515,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       
       // Use Collins code for HSI images (and NOT medianizing). 
       else if (img.getMimsType() == MimsPlus.HSI_IMAGE && !hsiControl.isMedianFilterSelected()) {
-         if (hsiControl.getRatioRange()) 
-            hsiControl.update(true);
+         MimsPlus mp = autoContrastNRIMSHSI(img);
+         hsiControl.setHSIProps(mp.getHSIProcessor().getHSIProps());
       } 
       
       // Anything else use imageJ autocontrasting. Have to reset everytime BEFORE
@@ -2224,13 +2069,7 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         saver.saveAsPng(dir+name);
     }
      */
-    MimsPlus[] h = getOpenHSIImages();
-    h[0].getHSIProcessor().getProps().setMaxRGB(333);
-    h[0].getHSIProcessor().getProps().setRatioScaleFactor(10000);
-
-    for( int i=0; i<h.length; i++) {
-     System.out.print(i);
-    }
+int c = 0;
 }                                           
 
 
@@ -2709,15 +2548,12 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     }
 
     public void setActiveMimsPlus(MimsPlus mp) {
-       for (int i = 0; i < maxMasses; i++) {
-          if (mp == hsiImages[i]) {
-                if(hsiImages[i].getHSIProps()!=null) {
-                   hsiControl.setHSIProps(hsiImages[i].getHSIProps());
-                }
-          }
+       if (mp.getMimsType() != MimsPlus.HSI_IMAGE) return;
+       int j = getHSIImageIndex(mp.getHSIProps());
+       if (j > -1 && j < maxMasses && hsiImages[j].getHSIProps()!=null) {
+          hsiControl.setHSIProps(hsiImages[j].getHSIProcessor().getHSIProps());
        }
-    }
-    
+    }    
 
     public synchronized void updateStatus(String msg) {
         if (bUpdating) {

@@ -66,7 +66,7 @@ public class HSIProcessor implements Runnable {
         start();
     }
     
-    public HSIProps getProps() { return hsiProps ; }
+    public HSIProps getHSIProps() { return hsiProps ; }
     
     private synchronized void start() {
         if(fThread != null) {
@@ -153,16 +153,9 @@ public class HSIProcessor implements Runnable {
             double denMax = denominator.getProcessor().getMax();
             double denMin = denominator.getProcessor().getMin();
 
-
-            //int[] hsiPixels = new int[ratioPixels.length];
             int [] hsiPixels = (int []) hsiImage.getProcessor().getPixels() ;
-            //for (int i = 0; i < hsiPixels.length; i++) {
-              // hsiPixels[i] = Math.round(ratioPixels[i]);
-            //}
-            //int rgbMax = hsiProps.getMaxRGB() ;
-            //int rgbMin = hsiProps.getMinRGB() ;
-            int rgbMax = 255 ;
-            int rgbMin = 0 ;
+            int rgbMax = hsiProps.getMaxRGB() ;
+            int rgbMin = hsiProps.getMinRGB() ;
             if(rgbMax == rgbMin) rgbMax++ ;
             double rgbGain = 255.0 / (double)(rgbMax-rgbMin);
 
@@ -183,11 +176,6 @@ public class HSIProcessor implements Runnable {
             if(transformedPixels == null) {
                 transformedPixels = ratioPixels;
             }
-
-            //if using non-ratio values, ie percent turnover
-            //if(hsiProps.getTransform()) {
-              //  transformedPixels = this.turnoverTransform(transformedPixels, hsiProps.getReferenceRatio(), hsiProps.getBackgroundRatio(), hsiProps.getRatioScaleFactor());
-           //}
 
             for(int offset = 0 ; offset < numPixels.length && fThread != null ; offset++ ) {
 

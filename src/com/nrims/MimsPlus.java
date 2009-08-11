@@ -176,6 +176,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       this.hsiProps = props;
       this.nType = HSI_IMAGE;
 
+      setupHSIImage(props);
+    }
+
+    public void setupHSIImage(HSIProps props) {
+
+      // Set props incase changes
+      hsiProps = props;
+
       // Setup image.
       Opener op = ui.getOpener();
       int width = op.getWidth();
@@ -189,7 +197,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       String denName = ui.getOpener().getMassNames()[props.getDenMassIdx()];
       title = "HSI : m" + numName +"/m"+ denName + " : " + ui.getImageFilePrefix();
       setProcessor(title, ip);
-      getProcessor().setMinAndMax(0, 255);      
+      getProcessor().setMinAndMax(0, 255);
       fStateListeners = new EventListenerList() ;
 
       // Fill in pixel values.
@@ -266,19 +274,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        ImageProcessor ip = new FloatProcessor(getWidth(), getHeight(), rPixels, null);
        ip.setMinAndMax(0, 1.0);      
        setProcessor(title, ip);
-
-       // Do median filter if set to true.
-       if (ui.getMedianFilterRatios()) {
-          Roi temproi = getRoi();
-          killRoi();
-          RankFilters rfilter = new RankFilters();
-          double r = ui.getMedianFilterRadius();
-          rfilter.rank(getProcessor(), r, RankFilters.MEDIAN);
-          rfilter = null;
-          setRoi(temproi);
-       }
-
-       internalRatio = this;
     }
 
     public synchronized void computeSum(ArrayList<Integer> sumlist) {
@@ -357,7 +352,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
        // Add to contrast box
        ui.getCBControl().addWindowtoList(this);
-       
+
+       // Add image to list og images in UI.
        ui.addToImagesList(this);
     }
 
@@ -422,7 +418,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public int getMimsType() { return nType ; }
     public SumProps getSumProps() { return sumProps; }
     public RatioProps getRatioProps() { return ratioProps; }
-    public HSIProps getHSIProps() { return hsiProps; }
+    public HSIProps getHSIProps() { return getHSIProcessor().getHSIProps(); }
     public int getNumMass() { return nRatioNum ; }
     public int getDenMass() { return nRatioDen ; }
 

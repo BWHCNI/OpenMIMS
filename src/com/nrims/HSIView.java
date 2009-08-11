@@ -148,9 +148,9 @@ public class HSIView extends JPanel {
 
       transparencyjComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Max Num,Den", "Numerator", "Denominator", "Min Num,Den", "Mean Num,Den", "Sum Num,Den", "RMS Num,Den" }));
       transparencyjComboBox.setToolTipText("Intensity component of HSI");
-      transparencyjComboBox.addItemListener(new java.awt.event.ItemListener() {
-         public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            transparencyjComboBoxItemStateChanged(evt);
+      transparencyjComboBox.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            transparencyjComboBoxActionPerformed(evt);
          }
       });
 
@@ -158,9 +158,9 @@ public class HSIView extends JPanel {
 
       scalebarjComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Off", "Scale", "Scale+Labels" }));
       scalebarjComboBox.setToolTipText("Show Scale and Labels");
-      scalebarjComboBox.addItemListener(new java.awt.event.ItemListener() {
-         public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            scalebarjComboBoxItemStateChanged(evt);
+      scalebarjComboBox.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            scalebarjComboBoxActionPerformed(evt);
          }
       });
 
@@ -405,7 +405,7 @@ public class HSIView extends JPanel {
         if (bUpdating) {//GEN-LAST:event_rgbMaxjSliderStateChanged
             return;
         }
-        final int val = 255;//rgbMaxjSlider.getValue();
+        int val = rgbMaxjSlider.getValue();
 
         props.setMaxRGB(val);
         rgbMaxjLabel.setText("RGB Max: " + val);
@@ -418,7 +418,7 @@ public class HSIView extends JPanel {
         rgbMinjSlider.setLabelTable(rgbMinjSlider.createStandardLabels(spacing)); 
         rgbMinjSlider.repaint();
         //needs to be called to update image
-        update(false);
+        update();
 
 }                                          
 
@@ -427,7 +427,7 @@ public class HSIView extends JPanel {
             return;
         }
         props.setMinDen(new Integer(denThresholdjSpinner.getValue().toString()));
-        update(false);
+        update();
 }//GEN-LAST:event_denThresholdjSpinnerStateChanged
 
     private void numThresholdjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_numThresholdjSpinnerStateChanged
@@ -435,7 +435,7 @@ public class HSIView extends JPanel {
             return;
         }
         props.setMinNum(new Integer(numThresholdjSpinner.getValue().toString()));
-        update(false);
+        update();
 }//GEN-LAST:event_numThresholdjSpinnerStateChanged
 
     private void ratioMinjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ratioMinjSpinnerStateChanged
@@ -443,7 +443,7 @@ public class HSIView extends JPanel {
             return;
         }
         props.setMinRatio(new Double(ratioMinjSpinner.getValue().toString()));
-        update(false);
+        update();
 }//GEN-LAST:event_ratioMinjSpinnerStateChanged
 
     private void rartioMaxjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rartioMaxjSpinnerStateChanged
@@ -452,7 +452,7 @@ public class HSIView extends JPanel {
         }
 
         props.setMaxRatio(new Double(rartioMaxjSpinner.getValue().toString()));
-        update(false);
+        update();
 }//GEN-LAST:event_rartioMaxjSpinnerStateChanged
 
     private void displayHSIjButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayHSIjButtonActionPerformed
@@ -483,26 +483,15 @@ public class HSIView extends JPanel {
        }
 }//GEN-LAST:event_displayHSIjButtonActionPerformed
 
-    private void scalebarjComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_scalebarjComboBoxItemStateChanged
-        if (bUpdating) {
-            return;
-        }
-        props.setLabelMethod(scalebarjComboBox.getSelectedIndex());
-        update(false);
-}//GEN-LAST:event_scalebarjComboBoxItemStateChanged
-
-    private void transparencyjComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_transparencyjComboBoxItemStateChanged
-        if (bUpdating) {
-            return;
-        }
-        props.setTransparency(transparencyjComboBox.getSelectedIndex());
-        update(false);
-}//GEN-LAST:event_transparencyjComboBoxItemStateChanged
-
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        if (getRatioRange()) {
-            update(true);
-        }
+        if (props == null) return;
+        int i = ui.getHSIImageIndex(props);
+        if (i < 0 || i >= ui.maxMasses) return;
+        MimsPlus mp = ui.getHSIImage(i);
+        if (mp == null) return;
+
+
+        ui.autoContrastImage(mp);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void medianFilterjButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_medianFilterjButtonActionPerformed
@@ -542,10 +531,6 @@ public class HSIView extends JPanel {
         ui.recomputeAllRatio();
 
         // Recompute all hsi images.
-        MimsPlus[] hsiImages = ui.getOpenHSIImages();
-        for( int i = 0; i< hsiImages.length; i++) {
-           hsiImages[i].recomputeInternalImages();
-        }
         ui.recomputeAllHSI();
 }//GEN-LAST:event_medianRadiusjSpinnerStateChanged
 
@@ -566,7 +551,7 @@ private void rgbMinjSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN
     rgbMaxjSlider.setLabelTable(rgbMaxjSlider.createStandardLabels(spacing));
     rgbMaxjSlider.repaint();
     //needs to be called to update image
-    update(false);
+    update();
 }//GEN-LAST:event_rgbMinjSliderStateChanged
 
 private void displayRatiojButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayRatiojButtonActionPerformed
@@ -594,7 +579,6 @@ private void displayRatiojButtonActionPerformed(java.awt.event.ActionEvent evt) 
            mp = new MimsPlus(ui, ratioProps);
            mp.showWindow();
         }
-        update(false);
     }
 }//GEN-LAST:event_displayRatiojButtonActionPerformed
 
@@ -629,10 +613,6 @@ private void hsiSumRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     ui.recomputeAllRatio();
 
     // Recompute all hsi images.
-    MimsPlus[] hsiImages = ui.getOpenHSIImages();
-    for( int i = 0; i< hsiImages.length; i++) {
-       hsiImages[i].recomputeInternalImages();
-    }
     ui.recomputeAllHSI();
 }//GEN-LAST:event_hsiSumRadioButtonActionPerformed
 
@@ -653,10 +633,6 @@ private void hsiWindowRadioButtonActionPerformed(java.awt.event.ActionEvent evt)
     ui.recomputeAllRatio();
 
     // Recompute all hsi images.
-    MimsPlus[] hsiImages = ui.getOpenHSIImages();
-    for( int i = 0; i< hsiImages.length; i++) {
-       hsiImages[i].recomputeInternalImages();
-    }
     ui.recomputeAllHSI();
 }//GEN-LAST:event_hsiWindowRadioButtonActionPerformed
 
@@ -670,38 +646,56 @@ private void hsiWindowjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {/
     ui.recomputeAllRatio();
 
     // Recompute all hsi images.
-    MimsPlus[] hsiImages = ui.getOpenHSIImages();
-    for( int i = 0; i< hsiImages.length; i++) {
-       hsiImages[i].recomputeInternalImages();
-    }
     ui.recomputeAllHSI();
 }//GEN-LAST:event_hsiWindowjSpinnerStateChanged
+
+private void scalebarjComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scalebarjComboBoxActionPerformed
+   if (bUpdating) 
+      return;
+   
+   // Make sure we have valid props object.
+   if (props == null) return;
+
+   // Get the HSI image to be changed.
+   int i = ui.getHSIImageIndex(props);
+   if (i<0 || i>=ui.maxMasses) return;
+   MimsPlus mp = ui.getHSIImage(i);
+   if (mp == null) return;
+
+   // Adjust HSIProps.
+   props = mp.getHSIProps();
+   props.setLabelMethod(scalebarjComboBox.getSelectedIndex());
+   
+   // Regenerate Image.
+   mp.setupHSIImage(props);
+}//GEN-LAST:event_scalebarjComboBoxActionPerformed
+
+private void transparencyjComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transparencyjComboBoxActionPerformed
+        if (bUpdating)
+            return;
+
+        props.setTransparency(transparencyjComboBox.getSelectedIndex());
+        update();
+}//GEN-LAST:event_transparencyjComboBoxActionPerformed
 
 public double getMedianRadius() {
     return new Double(this.medianRadiusjSpinner.getValue().toString());
 }
 
-public synchronized void update(boolean bUpdateUI) {
-   if(bUpdating)
-      return;
-        bUpdating = true ;
-        if(bUpdateUI) {     
-            rartioMaxjSpinner.setValue(props.getMaxRatio());
-            ratioMinjSpinner.setValue(props.getMinRatio());
-            numThresholdjSpinner.setValue(props.getMinNum());
-            denThresholdjSpinner.setValue(props.getMinDen());
-            //rgbMaxjSlider.setValue(props.getMaxRGB());
-            //rgbMinjSlider.setValue(props.getMinRGB());
-            transparencyjComboBox.setSelectedIndex(props.getTransparency());
-            scalebarjComboBox.setSelectedIndex(props.getLabelMethod());
-        }      
+public synchronized void update() {
 
-        //if(ui.getHSIImageIndex(props) != -1) {
-        //        displayHSI();
-        //}
-        
-        bUpdating = false ;
-    }
+   // Make sure we have valid props object.
+   if (props == null) return;
+
+   // Get the HSI image to be changed.
+   int i = ui.getHSIImageIndex(props);
+   if (i<0 || i>=ui.maxMasses) return;
+   MimsPlus mp = ui.getHSIImage(i);
+   if (mp == null) return;
+
+   // Adjust processor
+   mp.getHSIProcessor().setProps(props);
+}
 
     public void updateImage() {
         if(ui == null)
@@ -737,51 +731,7 @@ public synchronized void update(boolean bUpdateUI) {
         jList1.clearSelection();
         
         bUpdating = false;        
-    }
-    
-    public boolean getRatioRange() {
-        MimsPlus[] ml = ui.getMassImages() ;
-        if(props.getNumMassIdx() > ml.length ) {
-            return false;
-        } else if(props.getDenMassIdx() > ml.length ) {
-            return false;
-        }
-        MimsPlus num = ml[props.getNumMassIdx()];
-        MimsPlus den = ml[props.getDenMassIdx()];
-        if(num == null || den == null) {
-            return false;
-        } else if(num.getBitDepth() != 16 || den.getBitDepth() != 16) {
-            return false;
-        }
-
-        short [] numPixels = (short[])num.getProcessor().getPixels() ;
-        short [] denPixels = (short[])den.getProcessor().getPixels() ;
-        
-        double rmax = 0.0 ;
-        double rmin = 100000000.0 ;
-        int nt = props.getMinNum() ;
-        int dt = props.getMinDen() ;
-        
-        if(numPixels.length != denPixels.length) {
-            return false;
-        }
-        for(int i = 0 ; i < numPixels.length ; i++ ) {
-            if(numPixels[i] > nt && denPixels[i] > dt) {
-                double r = ui.getRatioScaleFactor()*((double)numPixels[i]/(double)denPixels[i]);
-                if(r > rmax) {
-                    rmax = r;
-                }
-                else if( r < rmin ) {
-                    rmin = r;
-                }
-            }
-        }
-        props.setMaxRatio(rmax);
-        props.setMinRatio(rmin);
-        props.setRatioScaleFactor(ui.getRatioScaleFactor());
-       
-        return true ;
-    }   
+    } 
     
     public boolean displayHSI() {
        MimsPlus mp =  new MimsPlus(ui, props);
@@ -794,20 +744,23 @@ public synchronized void update(boolean bUpdateUI) {
     }
     
     public void addToRatioList(int a, int b){
-       listModel.addElement(a+":"+b);     
-       System.out.println("adding element...");
+       listModel.addElement(a+":"+b);
     }    
     
-    public HSIProps getHSIProps() { return props ; }
-    
     public void setHSIProps(HSIProps props) {
-        this.props.setProps(props);
-                System.out.println("Numerator = " + props.getNumMassIdx());
-        System.out.println("Denomator = " + props.getDenMassIdx());
-        System.out.println();
-        update(true);
-         System.out.println("update(true)");
+        bUpdating = true ;
 
+            this.props = props;
+            rartioMaxjSpinner.setValue(props.getMaxRatio());
+            ratioMinjSpinner.setValue(props.getMinRatio());
+            numThresholdjSpinner.setValue(props.getMinNum());
+            denThresholdjSpinner.setValue(props.getMinDen());
+            rgbMaxjSlider.setValue(props.getMaxRGB());
+            rgbMinjSlider.setValue(props.getMinRGB());
+            transparencyjComboBox.setSelectedIndex(props.getTransparency());
+            scalebarjComboBox.setSelectedIndex(props.getLabelMethod());
+
+        bUpdating = false ;
     }
 
     public boolean isMedianFilterSelected() {
