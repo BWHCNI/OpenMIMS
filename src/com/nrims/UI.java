@@ -204,6 +204,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
          if (mp.getMimsType() == MimsPlus.RATIO_IMAGE && ratioImages[i] == null) {
             inserted = true;
             ratioImages[i] = mp;
+            getCBControl().addWindowtoList(mp);
             break;
          }
          if (mp.getMimsType() == MimsPlus.HSI_IMAGE && hsiImages[i] == null) {
@@ -214,6 +215,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
          if (mp.getMimsType() == MimsPlus.SUM_IMAGE && sumImages[i] == null) {
             inserted = true;
             sumImages[i] = mp;
+            getCBControl().addWindowtoList(mp);
             break;
          }
          if (mp.getMimsType() == MimsPlus.SEG_IMAGE && segImages[i] == null) {
@@ -1462,6 +1464,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
       // Update processor
       img.getProcessor().setMinAndMax(min, max);
+      img.updateAndDraw();
    }
 
    public MimsPlus autoContrastNRIMSHSI(MimsPlus img) {

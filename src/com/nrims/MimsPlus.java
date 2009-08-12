@@ -272,7 +272,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        }
         
        ImageProcessor ip = new FloatProcessor(getWidth(), getHeight(), rPixels, null);
-       ip.setMinAndMax(0, 1.0);      
+       ip.setMinAndMax(getProcessor().getMin(), getProcessor().getMax());
        setProcessor(title, ip);
     }
 
@@ -350,11 +350,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        if (xloc > -1 & yloc > -1)
           getWindow().setLocation(xloc, yloc);
 
-       // Add to contrast box
-       ui.getCBControl().addWindowtoList(this);
-
        // Add image to list og images in UI.
        ui.addToImagesList(this);
+
+       ui.autoContrastImage(this);
     }
 
 
@@ -558,7 +557,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public void windowDeactivated(WindowEvent e) {}
     @Override
     public void windowActivated(WindowEvent e) {
-        ui.setActiveMimsPlus(this); 
+        ui.setActiveMimsPlus(this);
         ui.getCBControl().setWindowlistCombobox(getTitle()); 
     }
     @Override
