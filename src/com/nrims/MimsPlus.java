@@ -399,6 +399,28 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         else return "";
     }
 
+    //returns the rounded mass value(s) of an image, eg "26" or "27/26"
+    public String getRoundedTitle() {
+        if (this.getMimsType() == this.MASS_IMAGE) {
+            String tempstring = this.getTitle();
+            int colonindex = tempstring.indexOf(":");
+            tempstring = tempstring.substring(1, colonindex-1);
+            int massint = java.lang.Math.round(Float.parseFloat(tempstring));
+            return Integer.toString(massint);
+        }
+        if (this.getMimsType() == this.RATIO_IMAGE) {
+            String tempstring = this.getTitle();
+            int colonindex = tempstring.indexOf(":");
+            int slashindex = tempstring.indexOf("/");
+            String neumstring = tempstring.substring(1,slashindex);
+            String denstring = tempstring.substring(slashindex+2, colonindex-1);
+            int nint = java.lang.Math.round(Float.parseFloat(neumstring));
+            int dint = java.lang.Math.round(Float.parseFloat(denstring));
+            return Integer.toString(nint)+"/"+Integer.toString(dint);
+        }
+        return "0";
+    }
+
     public void setbIgnoreClose(boolean b) {
         this.bIgnoreClose = b;
     }
