@@ -510,10 +510,6 @@ public class HSIView extends JPanel {
         ui.recomputeAllRatio();
 
         // Recompute all hsi images.
-        MimsPlus[] hsiImages = ui.getOpenHSIImages();
-        for( int i = 0; i< hsiImages.length; i++) {
-           hsiImages[i].recomputeInternalImages();
-        }
         ui.recomputeAllHSI();       
 }//GEN-LAST:event_medianFilterjButtonActionPerformed
 
