@@ -913,16 +913,17 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                mp[i].setSlice(nSlice);
             }                                                    
 
-            // Update HSI image slice.
-            for (int i = 0; i < hsi.length; i++) {                
-                hsi[i].computeHSI();
+            if (!isSum) {
+                // Update HSI image slice.
+                for (int i = 0; i < hsi.length; i++) {
+                    hsi[i].computeHSI();
+                }
+
+                // Update ratio images.
+                for (int i = 0; i < rp.length; i++) {
+                    rp[i].computeRatio();
+                }
             }
-
-            // Update ratio images.
-            for (int i = 0; i < rp.length; i++) {                                                                     
-                rp[i].computeRatio();
-            }                            
-
             autocontrastAllImages();
             cbControl.updateHistogram();
 
@@ -1460,7 +1461,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        
        // Get HSIProps for all open ratio images.
        MimsPlus[] rto = getOpenRatioImages();
-       HSIProps[] rto_props = new HSIProps[rto.length]; 
+       HSIProps[] rto_props = new HSIProps[rto.length];
        for (int i=0; i<rto.length; i++){
           rto_props[i] = rto[i].getHSIProps();
        }

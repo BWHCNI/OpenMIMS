@@ -74,6 +74,7 @@ public class HSIProcessor implements Runnable {
                 hsiImage.getUI().updateStatus("HSIProcessor: stop and restart");
             stop();
         }
+        try {
         fThread = new Thread(this);
         fThread.setPriority(fThread.NORM_PRIORITY);
         fThread.setContextClassLoader(
@@ -82,6 +83,7 @@ public class HSIProcessor implements Runnable {
                 hsiImage.getUI().updateStatus("HSIProcessor: start");
         try { fThread.start();}
         catch( IllegalThreadStateException x){ IJ.log(x.toString()); }
+        } catch (NullPointerException xn) {}
     }
     
     private void stop() {
