@@ -324,15 +324,16 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     FileInputStream f_in = new FileInputStream(file);
                     ObjectInputStream obj_in = new ObjectInputStream(f_in);
                     Object obj = obj_in.readObject();
-                    if (obj instanceof HSIProps) {
-                        HSIProps hsiprops = (HSIProps)obj;
-                        String dataFileString = hsiprops.getDatFileName();
+                    if (obj instanceof RatioProps) {
+                        RatioProps ratioprops = (RatioProps)obj;
+                        String dataFileString = ratioprops.getDataFileName();
                         File dataFile = new File(file.getParent(), dataFileString);
                         if (image == null)
                             loadMIMSFile(dataFile);
                         else if (image != null && !dataFileString.matches(image.getImageFile().getName()))
                             loadMIMSFile(dataFile);
-                        //computeRatio(hsiprops, true);
+                        MimsPlus mp = new MimsPlus(this, ratioprops);
+                        mp.showWindow();
                     }
                 }
 
@@ -349,8 +350,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                             loadMIMSFile(dataFile);
                         else if (image != null && !dataFileString.matches(image.getImageFile().getName()))
                             loadMIMSFile(dataFile);
-                        //computeHSI(hsiprops);
-
+                        MimsPlus mp = new MimsPlus(this, hsiprops);
+                        mp.showWindow();
                     }
                 }
 
@@ -388,7 +389,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             massImages[0].setSlice(startslice);
 
             } catch (Exception e) {
-
+               e.printStackTrace();
             } finally {
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
@@ -1293,8 +1294,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * restores any closed or modified massImages
      */
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {                                           
-
-        mimsStackEditing.untrack();
+        
         int currentSlice = massImages[0].getCurrentSlice();
 
         // concatenate the remaining files.
@@ -1303,6 +1303,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
            massImages[0].setSlice(i);
            if (mimsAction.isDropped(i)) mimsStackEditing.insertSlice(i);
         }
+        mimsStackEditing.untrack();
 
         mimsStackEditing.resetTrueIndexLabel();
         mimsStackEditing.resetSpinners();

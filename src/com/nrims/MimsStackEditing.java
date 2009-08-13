@@ -611,7 +611,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
 }//GEN-LAST:event_deleteListButtonActionPerformed
       
     private void concatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_concatButtonActionPerformed
-        UI tempUi = new UI(ui.getImageDir()); //loadMims here
+        UI tempUi = new UI(ui.getImageDir());
+        tempUi.loadMIMSFile();
         Opener tempImage = tempUi.getOpener();
         if (tempImage == null) {
             return; // if the FileChooser dialog was canceled
