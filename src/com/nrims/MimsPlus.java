@@ -131,7 +131,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       // Setup sumlist.
       if (sumlist == null) {
          sumlist = new ArrayList<Integer>();
-         for(int i = 1; i <= ui.getOpener().getNImages(); i++)
+         for(int i = 1; i <= ui.getmimsAction().getSize(); i++)
             sumlist.add(i);
       }
       
@@ -309,7 +309,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
           Object[] o = parentImage.getStack().getImageArray();
             for (int i = 0; i < sumlist.size(); i++) {
-                if (sumlist.get(i) < 1 || sumlist.get(i) > ui.getOpener().getNImages()) continue;
+                if (sumlist.get(i) < 1 || sumlist.get(i) > ui.getmimsAction().getSize()) continue;
                 tempPixels = (short[])o[sumlist.get(i)-1];
                 for (int j = 0; j < sumPixels.length; j++) {
                     sumPixels[j] += ((int) ( tempPixels[j] & 0xffff) );
