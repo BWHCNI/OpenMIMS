@@ -428,7 +428,7 @@ public class HSIView extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void rgbMaxjSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rgbMaxjSliderStateChanged
-        if (bUpdating) {//GEN-LAST:event_rgbMaxjSliderStateChanged
+        if (bUpdating || (currentImage.getMimsType()!=currentImage.HSI_IMAGE)) {
             return;
         }
         int val = rgbMaxjSlider.getValue();
@@ -446,10 +446,10 @@ public class HSIView extends JPanel {
         //needs to be called to update image
         update();
 
-}                                          
+}//GEN-LAST:event_rgbMaxjSliderStateChanged
 
     private void denThresholdjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_denThresholdjSpinnerStateChanged
-        if (bUpdating) {
+        if (bUpdating || (currentImage.getMimsType()!=currentImage.HSI_IMAGE)) {
             return;
         }
         props.setMinDen(new Integer(denThresholdjSpinner.getValue().toString()));
@@ -457,7 +457,7 @@ public class HSIView extends JPanel {
 }//GEN-LAST:event_denThresholdjSpinnerStateChanged
 
     private void numThresholdjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_numThresholdjSpinnerStateChanged
-        if (bUpdating) {
+        if (bUpdating || (currentImage.getMimsType()!=currentImage.HSI_IMAGE)) {
             return;
         }
         props.setMinNum(new Integer(numThresholdjSpinner.getValue().toString()));
@@ -465,7 +465,7 @@ public class HSIView extends JPanel {
 }//GEN-LAST:event_numThresholdjSpinnerStateChanged
 
     private void ratioMinjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ratioMinjSpinnerStateChanged
-        if (bUpdating) {
+        if (bUpdating || (currentImage.getMimsType()!=currentImage.HSI_IMAGE)) {
             return;
         }
         props.setMinRatio(new Double(ratioMinjSpinner.getValue().toString()));
@@ -473,7 +473,7 @@ public class HSIView extends JPanel {
 }//GEN-LAST:event_ratioMinjSpinnerStateChanged
 
     private void rartioMaxjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rartioMaxjSpinnerStateChanged
-       if (bUpdating) {
+       if (bUpdating || (currentImage.getMimsType()!=currentImage.HSI_IMAGE)) {
             return;
         }
 
@@ -510,12 +510,8 @@ public class HSIView extends JPanel {
 }//GEN-LAST:event_displayHSIjButtonActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        if (props == null) return;
-        int i = ui.getHSIImageIndex(props);
-        if (i < 0 || i >= ui.maxMasses) return;
-        MimsPlus mp = ui.getHSIImage(i);
-        if (mp == null) return;
-
+        if (props == null || (currentImage.getMimsType()!=currentImage.HSI_IMAGE)) return;
+        MimsPlus mp = currentImage;
 
         ui.autoContrastImage(mp);
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -557,7 +553,7 @@ public class HSIView extends JPanel {
 }//GEN-LAST:event_medianRadiusjSpinnerStateChanged
 
 private void rgbMinjSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rgbMinjSliderStateChanged
-    if (bUpdating) {
+    if (bUpdating || (currentImage.getMimsType()!=currentImage.HSI_IMAGE)) {
         return;
     }
     final int val = rgbMinjSlider.getValue();
@@ -673,7 +669,7 @@ private void hsiWindowjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {/
 }//GEN-LAST:event_hsiWindowjSpinnerStateChanged
 
 private void scalebarjComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scalebarjComboBoxActionPerformed
-   if (bUpdating) 
+   if (bUpdating || (currentImage.getMimsType()!=currentImage.HSI_IMAGE))
       return;
    
    // Make sure we have valid props object.
@@ -694,7 +690,7 @@ private void scalebarjComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
 }//GEN-LAST:event_scalebarjComboBoxActionPerformed
 
 private void transparencyjComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transparencyjComboBoxActionPerformed
-        if (bUpdating)
+        if (bUpdating || (currentImage.getMimsType()!=currentImage.HSI_IMAGE))
             return;
 
         props.setTransparency(transparencyjComboBox.getSelectedIndex());
@@ -733,6 +729,7 @@ public synchronized void update() {
    if (props == null) return;
 
    MimsPlus mp = currentImage;
+   if(mp.getMimsType()!=mp.HSI_IMAGE) { return; }
    // Adjust processor
    mp.getHSIProcessor().setProps(props);
 }
