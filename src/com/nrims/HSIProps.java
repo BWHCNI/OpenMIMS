@@ -21,7 +21,7 @@ public class HSIProps implements java.io.Serializable {
     private int minRGB ;
     private int transparency ;
     private int label ;
-    private int ratioScaleFactor;
+    private double ratioScaleFactor;
     private boolean transform;
     private float referenceRatio;
     private float backgroundRatio;
@@ -73,8 +73,8 @@ public class HSIProps implements java.io.Serializable {
     public int getTransparency() { return transparency ; }
     public void setLabelMethod(int n) { label = n ; }
     public int getLabelMethod() { return label ; }
-    public void setRatioScaleFactor(int s) { this.ratioScaleFactor = s; }
-    public int getRatioScaleFactor() { return this.ratioScaleFactor; }
+    public void setRatioScaleFactor(double s) { this.ratioScaleFactor = s; }
+    public double getRatioScaleFactor() { return this.ratioScaleFactor; }
     public void setXWindowLocation(int x) { this.xloc = x; }
     public int getXWindowLocation() { return this.xloc; }
     public void setYWindowLocation(int y) { this.yloc = y; }

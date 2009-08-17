@@ -205,7 +205,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
    public synchronized boolean computeHSI() {
 
       // Set up internal images for data display.
-      internalRatio = new MimsPlus(ui, new RatioProps(hsiProps.getNumMassIdx(), hsiProps.getDenMassIdx()));
+       RatioProps rProps = new RatioProps(hsiProps.getNumMassIdx(), hsiProps.getDenMassIdx());
+       rProps.setRatioScaleFactor(hsiProps.getRatioScaleFactor());
+      internalRatio = new MimsPlus(ui, rProps);
       internalNumerator = internalRatio.internalNumerator;
       internalDenominator = internalRatio.internalDenominator;
       setHSIProcessor(new HSIProcessor(this));
@@ -260,9 +262,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         float[] rPixels = new float[getWidth() * getHeight()];
         float rMax = 0.0f;
         float rMin = 1000000.0f;
+        float rSF = ui.getRatioScaleFactor();
+        if( this.ratioProps.getRatioScaleFactor()>0 ) {
+            rSF = ((Double)this.ratioProps.getRatioScaleFactor()).floatValue();
+        }
         for (int i = 0; i < rPixels.length; i++) {
             if( dPixels[i]!=0) {
-                rPixels[i] = ui.getRatioScaleFactor() * ((float) nPixels[i] / (float) dPixels[i]);
+                rPixels[i] = rSF * ((float) nPixels[i] / (float) dPixels[i]);
             } else {
                 rPixels[i]=0;
             }
@@ -337,9 +343,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
           float[] denPixels = (float[]) denImage.getProcessor().getPixels();
           sumPixels = new double[numImage.getProcessor().getPixelCount()];
 
+          
+          float rSF = ui.getRatioScaleFactor();
+            if( this.sumProps.getRatioScaleFactor()>0 ) {
+                rSF = ((Double)this.sumProps.getRatioScaleFactor()).floatValue();
+            }
           for (int i = 0; i < sumPixels.length; i++) {
              if (denPixels[i] != 0) {
-                 sumPixels[i] = ui.getRatioScaleFactor() * (numPixels[i] / denPixels[i]);
+                 sumPixels[i] = rSF * (numPixels[i] / denPixels[i]);
              } else {
                  sumPixels[i] = 0;
              }

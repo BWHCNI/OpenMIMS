@@ -978,6 +978,7 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
        int numIdx = rp.getNumMassIdx();
        int denIdx = rp.getDenMassIdx();
        if (numIdx > -1 && denIdx > -1) sumProps = new SumProps(numIdx, denIdx);
+       sumProps.setRatioScaleFactor(mp.getRatioProps().getRatioScaleFactor());
     }
 
     // Get list from field box.

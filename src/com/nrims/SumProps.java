@@ -7,6 +7,7 @@ public class SumProps implements java.io.Serializable {
       
    private int parentMassIdx, numMassIdx, denMassIdx;
    private double parentMass, numMass, denMass;
+   private double ratioScaleFactor;
    private int sumType;
    private int xloc, yloc;
    private String dataFileName;
@@ -39,6 +40,10 @@ public class SumProps implements java.io.Serializable {
     // The mass of the Denominator.
     public void setDenMass(double d) { denMass = d; }
     public double getDenMass() { return denMass; }
+
+    // The ratio scale factor
+    public void setRatioScaleFactor(double rsf) { ratioScaleFactor = rsf; }
+    public double getRatioScaleFactor() { return ratioScaleFactor; }
 
     // The mass number of the Parent Mass.
     public void setParentMassIdx(int i) { parentMassIdx = i; }

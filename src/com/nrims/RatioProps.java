@@ -5,7 +5,7 @@ public class RatioProps implements java.io.Serializable {
    private int numMassIdx, denMassIdx;
    private int xloc, yloc;
    private String dataFileName;
-   private int ratioScaleFactor;
+   private double ratioScaleFactor;
 
    // Create an empty ratio props object.
    public RatioProps(){}
@@ -34,8 +34,8 @@ public class RatioProps implements java.io.Serializable {
    public int getYWindowLocation() { return this.yloc; }
    public void setDataFileName(String fileName) { dataFileName = fileName;}
    public String getDataFileName() { return dataFileName; }
-   public void setRatioScaleFactor(int s) { this.ratioScaleFactor = s; }
-   public int getRatioScaleFactor() { return this.ratioScaleFactor; }
+   public void setRatioScaleFactor(double s) { this.ratioScaleFactor = s; }
+   public double getRatioScaleFactor() { return this.ratioScaleFactor; }
 }
 
 
