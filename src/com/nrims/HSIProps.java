@@ -43,7 +43,7 @@ public class HSIProps implements java.io.Serializable {
         minRGB = 0 ;
         transparency = 0 ;
         label = 0 ;
-        ratioScaleFactor = 10000;
+        ratioScaleFactor = -1;
 
         //TODO: this is for testing and should be fixed
         transform = false;

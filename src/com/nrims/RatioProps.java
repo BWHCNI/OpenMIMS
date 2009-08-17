@@ -5,7 +5,7 @@ public class RatioProps implements java.io.Serializable {
    private int numMassIdx, denMassIdx;
    private int xloc, yloc;
    private String dataFileName;
-   private double ratioScaleFactor;
+   private double ratioScaleFactor = -1;
 
    // Create an empty ratio props object.
    public RatioProps(){}

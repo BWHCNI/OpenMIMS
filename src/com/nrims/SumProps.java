@@ -7,7 +7,7 @@ public class SumProps implements java.io.Serializable {
       
    private int parentMassIdx, numMassIdx, denMassIdx;
    private double parentMass, numMass, denMass;
-   private double ratioScaleFactor;
+   private double ratioScaleFactor = -1;
    private int sumType;
    private int xloc, yloc;
    private String dataFileName;
