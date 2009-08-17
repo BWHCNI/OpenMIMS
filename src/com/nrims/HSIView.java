@@ -503,6 +503,7 @@ public class HSIView extends JPanel {
              mp.getWindow().toFront();
           } else {
              HSIProps hsiProps = new HSIProps(numerator, denomator);
+             hsiProps.setRatioScaleFactor((Double)ratioSFjSpinner.getValue());
              mp = new MimsPlus(ui, hsiProps);
              mp.showWindow();             
           }
@@ -594,7 +595,7 @@ private void displayRatiojButtonActionPerformed(java.awt.event.ActionEvent evt) 
            mp.getWindow().toFront();
         } else {
            RatioProps ratioProps = new RatioProps(numerator, denomator);
-           ratioProps.setRatioScaleFactor(ui.getRatioScaleFactor());
+           ratioProps.setRatioScaleFactor((Double)ratioSFjSpinner.getValue());
            mp = new MimsPlus(ui, ratioProps);
            mp.showWindow();
         }
