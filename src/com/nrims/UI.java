@@ -176,7 +176,19 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
       this.mimsDrop = new FileDrop(null, jTabbedPane1, new FileDrop.Listener() {
          public void filesDropped(File[] files) {
+            // Get HSIProps for all open ratio images.
+            RatioProps[] rto_props = getOpenRatioProps();
+
+            // Get HSIProps for all open hsi images.
+            HSIProps[] hsi_props = getOpenHSIProps();
+
+            // Get SumProps for all open sum images.
+            SumProps[] sum_props = getOpenSumProps();
+
             openFiles(files);
+
+            // Generate all images that were previously open.
+            //restoreState(rto_props, hsi_props, sum_props);
          }
       });
    }
@@ -1479,7 +1491,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
-    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {                                           
         ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
         wo.run("tile");
     }
@@ -1581,47 +1593,19 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private void openMIMSImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {                                                      
        
        // Get HSIProps for all open ratio images.
-       MimsPlus[] rto = getOpenRatioImages();
-       RatioProps[] rto_props = new RatioProps[rto.length];
-       for (int i=0; i<rto.length; i++){
-          rto_props[i] = rto[i].getRatioProps();
-          rto_props[i].setXWindowLocation(rto[i].getWindow().getX());
-          rto_props[i].setYWindowLocation(rto[i].getWindow().getY());
-          rto_props[i].setNumMassValue(getMassValue(rto_props[i].getNumMassIdx()));
-          rto_props[i].setDenMassValue(getMassValue(rto_props[i].getDenMassIdx()));
-       }
+       RatioProps[] rto_props = getOpenRatioProps();
        
        // Get HSIProps for all open hsi images.     
-       MimsPlus[] hsi = getOpenHSIImages();
-       HSIProps[] hsi_props = new HSIProps[hsi.length];
-       for (int i=0; i<hsi.length; i++){
-          hsi_props[i] = hsi[i].getHSIProps();
-          hsi_props[i].setXWindowLocation(hsi[i].getWindow().getX());
-          hsi_props[i].setYWindowLocation(hsi[i].getWindow().getY());
-          hsi_props[i].setNumMassValue(getMassValue(hsi_props[i].getNumMassIdx()));
-          hsi_props[i].setDenMassValue(getMassValue(hsi_props[i].getDenMassIdx()));
-       }
+       HSIProps[] hsi_props = getOpenHSIProps();
        
        // Get SumProps for all open sum images.    
-       MimsPlus[] sum = getOpenSumImages();
-       SumProps[] sum_props = new SumProps[sum.length];
-       for (int i=0; i<sum.length; i++){
-          sum_props[i] = sum[i].getSumProps();
-          sum_props[i].setXWindowLocation(sum[i].getWindow().getX());
-          sum_props[i].setYWindowLocation(sum[i].getWindow().getY());
-          if (sum_props[i].getSumType() == SumProps.RATIO_IMAGE) {
-             sum_props[i].setNumMassValue(getMassValue(sum_props[i].getNumMassIdx()));
-             sum_props[i].setDenMassValue(getMassValue(sum_props[i].getDenMassIdx()));
-          } else if (sum_props[i].getSumType() == SumProps.MASS_IMAGE) {
-             sum_props[i].setParentMassValue(getMassValue(sum_props[i].getParentMassIdx()));
-          }
-       }
+       SumProps[] sum_props = getOpenSumProps();
              
        // Load the new file.
        loadMIMSFile();
        
        // Generate all images that were previously open.
-       restoreState(rto_props, hsi_props, sum_props);
+       //restoreState(rto_props, hsi_props, sum_props);
 
        // Keep the HSIView GUI up to date.
        if (medianFilterRatios) {
@@ -1636,7 +1620,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
            hsiControl.setWindowRange(windowRange);
        }
 
-}//GEN-LAST:event_openMIMSImageMenuItemActionPerformed
+}                                                     
 
     public void restoreState( RatioProps[] rto_props,  HSIProps[] hsi_props, SumProps[] sum_props){
 
@@ -2224,6 +2208,52 @@ public void updateLineProfile(double[] newdata, String name, int width) {
             }
         }
         return mp;
+    }
+
+    // Get HSIProps for all open HSI images.
+    public HSIProps[] getOpenHSIProps() {
+       MimsPlus[] hsi = getOpenHSIImages();
+       HSIProps[] hsi_props = new HSIProps[hsi.length];
+       for (int i=0; i<hsi.length; i++){
+          hsi_props[i] = hsi[i].getHSIProps();
+          hsi_props[i].setXWindowLocation(hsi[i].getWindow().getX());
+          hsi_props[i].setYWindowLocation(hsi[i].getWindow().getY());
+          hsi_props[i].setNumMassValue(getMassValue(hsi_props[i].getNumMassIdx()));
+          hsi_props[i].setDenMassValue(getMassValue(hsi_props[i].getDenMassIdx()));
+       }
+       return hsi_props;
+    }
+
+    // Get RatioProps for all open Ratio images.
+    public RatioProps[] getOpenRatioProps() {
+       MimsPlus[] rto = getOpenRatioImages();
+       RatioProps[] rto_props = new RatioProps[rto.length];
+       for (int i=0; i<rto.length; i++){
+          rto_props[i] = rto[i].getRatioProps();
+          rto_props[i].setXWindowLocation(rto[i].getWindow().getX());
+          rto_props[i].setYWindowLocation(rto[i].getWindow().getY());
+          rto_props[i].setNumMassValue(getMassValue(rto_props[i].getNumMassIdx()));
+          rto_props[i].setDenMassValue(getMassValue(rto_props[i].getDenMassIdx()));
+       }
+       return rto_props;
+    }
+
+    // Get SumProps for all open Sum images.
+    public SumProps[] getOpenSumProps(){
+       MimsPlus[] sum = getOpenSumImages();
+       SumProps[] sum_props = new SumProps[sum.length];
+       for (int i=0; i<sum.length; i++){
+          sum_props[i] = sum[i].getSumProps();
+          sum_props[i].setXWindowLocation(sum[i].getWindow().getX());
+          sum_props[i].setYWindowLocation(sum[i].getWindow().getY());
+          if (sum_props[i].getSumType() == SumProps.RATIO_IMAGE) {
+             sum_props[i].setNumMassValue(getMassValue(sum_props[i].getNumMassIdx()));
+             sum_props[i].setDenMassValue(getMassValue(sum_props[i].getDenMassIdx()));
+          } else if (sum_props[i].getSumType() == SumProps.MASS_IMAGE) {
+             sum_props[i].setParentMassValue(getMassValue(sum_props[i].getParentMassIdx()));
+          }
+       }
+       return sum_props;
     }
 
     public MimsPlus getImageByName(String name) {
