@@ -3,9 +3,10 @@ package com.nrims;
 // Ratio properties.
 public class RatioProps implements java.io.Serializable {
    private int numMassIdx, denMassIdx;
+   private double numMassValue, denMassValue;
    private int xloc, yloc;
    private String dataFileName;
-   private double ratioScaleFactor = -1;
+   private double ratioScaleFactor;
 
    // Create an empty ratio props object.
    public RatioProps(){}
@@ -14,6 +15,13 @@ public class RatioProps implements java.io.Serializable {
    public RatioProps(int numerator, int denominator) {
        numMassIdx = numerator ;
        denMassIdx = denominator ;
+
+       // Default values.
+       xloc = -1;
+       yloc = -1;
+       numMassValue = -1.0;
+       denMassValue = -1.0;
+       ratioScaleFactor = -1.0;
    }
 
    // Two props objects are equal if numerator and denominator are the same.
@@ -27,7 +35,10 @@ public class RatioProps implements java.io.Serializable {
    // Getters and Setters.
    public int getNumMassIdx() { return numMassIdx ; }
    public int getDenMassIdx() { return denMassIdx ; }
-
+   public void setNumMassValue(double d) { this.numMassValue = d; }
+   public double getNumMassValue() { return this.numMassValue; }
+   public void setDenMassValue(double d) { this.denMassValue = d; }
+   public double getDenMassValue() { return this.denMassValue; }
    public void setXWindowLocation(int x) { this.xloc = x; }
    public int getXWindowLocation() { return this.xloc; }
    public void setYWindowLocation(int y) { this.yloc = y; }

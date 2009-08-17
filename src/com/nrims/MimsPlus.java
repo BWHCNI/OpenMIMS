@@ -111,6 +111,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       this.ui = ui;
       this.sumProps = sumProps;
       this.nType = SUM_IMAGE;
+      this.xloc = sumProps.getXWindowLocation();
+      this.yloc = sumProps.getYWindowLocation();
 
       // Setup image.
       Opener op = ui.getOpener();
@@ -145,6 +147,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       this.ui = ui;
       this.ratioProps = props;
       this.nType = RATIO_IMAGE;
+      this.xloc = props.getXWindowLocation();
+      this.yloc = props.getYWindowLocation();
 
       // Setup image.
       Opener op = ui.getOpener();
@@ -171,6 +175,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       this.ui = ui;
       this.hsiProps = props;
       this.nType = HSI_IMAGE;
+      this.xloc = props.getXWindowLocation();
+      this.yloc = props.getYWindowLocation();
 
       setupHSIImage(props);
     }

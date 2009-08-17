@@ -1132,6 +1132,32 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         jMenuItem6.setText("Save MIMS");
         fileMenu.add(jMenuItem6);
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+             String fileName;
+             try {
+                 // User sets file prefix name
+                 JFileChooser fc = new JFileChooser();
+                 if (lastFolder != null) {
+                     fc.setCurrentDirectory(new java.io.File(lastFolder));
+                 }
+                 int returnVal = fc.showSaveDialog(jTabbedPane1);
+                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                     fileName = fc.getSelectedFile().getAbsolutePath();
+                     File file  = new File(fileName);
+                     lastFolder = file.getParent();
+                     setIJDefaultDir(lastFolder);
+                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                     saveSession(fileName);
+                 } else {
+                     return;
+                 }
+             } finally {
+                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+             }
+         }
+      });
+
 
         fileMenu.add(jSeparator6);
 
@@ -1456,15 +1482,113 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         ij.plugin.WindowOrganizer wo = new ij.plugin.WindowOrganizer();
         wo.run("tile");
-    }//GEN-LAST:event_jMenuItem2ActionPerformed
+    }
 
-    private void openMIMSImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMIMSImageMenuItemActionPerformed
+   // Saves a session.
+   private void saveSession(String fileName) {
+
+      // Initialize variables.
+      File file = new File(fileName);
+      String directory = file.getParent();
+      String name = file.getName();
+      FileOutputStream f_out;
+      ObjectOutputStream obj_out;
+      String objectFileName;
+
+      try {
+
+        // Save the original .im file to a new file of the .nrrd file type.
+        String nrrdFileName = name;
+        if (!name.endsWith(NRRD_EXTENSION))
+           nrrdFileName = name+NRRD_EXTENSION;
+
+        ImagePlus[] imp = getOpenMassImages();
+		  if (imp == null) return;
+		  Nrrd_Writer nw = new Nrrd_Writer(this);
+        File dataFile = nw.save(imp, directory, nrrdFileName);
+
+        // Save the ROI files to zip.
+        String roisFileName = fileName+ROIS_EXTENSION;
+        int[] indexes = getRoiManager().getAllIndexes();
+        if (indexes.length > 0)
+           getRoiManager().saveMultiple(indexes, roisFileName, false);
+
+        // Contruct a unique name for each ratio image and save.
+        MimsPlus ratio[] = getOpenRatioImages();
+        if (ratio.length > 0){
+        for (int i = 0; i < ratio.length; i++) {
+           RatioProps ratioprops = ratio[i].getRatioProps();
+           ratioprops.setDataFileName(dataFile.getName());
+           int numIndex = ratioprops.getNumMassIdx();
+           int denIndex = ratioprops.getDenMassIdx();
+           int numMass = Math.round(new Float(getOpener().getMassNames()[numIndex]));
+           int denMass = Math.round(new Float(getOpener().getMassNames()[denIndex]));
+           objectFileName = fileName + "_m" + numMass + "_m" + denMass + RATIO_EXTENSION;
+           f_out = new FileOutputStream(objectFileName);
+           obj_out = new ObjectOutputStream(f_out);
+           obj_out.writeObject(ratioprops);
+        }}
+
+        // Contruct a unique name for each hsi image and save.
+        MimsPlus hsi[] = getOpenHSIImages();
+        if (hsi.length > 0){
+        for (int i = 0; i < hsi.length; i++) {
+           HSIProps hsiprops = hsi[i].getHSIProps();
+           hsiprops.setDataFileName(dataFile.getName());
+           int numIndex = hsiprops.getNumMassIdx();
+           int denIndex = hsiprops.getDenMassIdx();
+           int numMass = Math.round(new Float(getOpener().getMassNames()[numIndex]));
+           int denMass = Math.round(new Float(getOpener().getMassNames()[denIndex]));
+           objectFileName = fileName + "_m" + numMass + "_m" + denMass + HSI_EXTENSION;
+           f_out = new FileOutputStream(objectFileName);
+           obj_out = new ObjectOutputStream(f_out);
+           obj_out.writeObject(hsiprops);
+        }}
+
+        // Contruct a unique name for each sum image and save.
+        MimsPlus sum[] = getOpenSumImages();
+        if (sum.length > 0){
+        for (int i = 0; i < sum.length; i++) {
+           SumProps sumProps = sum[i].getSumProps();
+           sumProps.setDataFileName(dataFile.getName());
+           if (sumProps.getSumType() == SumProps.RATIO_IMAGE) {
+               int numIndex = sumProps.getNumMassIdx();
+               int denIndex = sumProps.getDenMassIdx();
+               int numMass = Math.round(new Float(getOpener().getMassNames()[numIndex]));
+               int denMass = Math.round(new Float(getOpener().getMassNames()[denIndex]));
+               objectFileName = fileName + "_m" + numMass + "_m" + denMass + SUM_EXTENSION;
+           } else if (sumProps.getSumType() == SumProps.MASS_IMAGE) {
+              int parentIndex = sumProps.getParentMassIdx();
+              int parentMass = Math.round(new Float(getOpener().getMassNames()[parentIndex]));
+              objectFileName = fileName + "_m" + parentMass + SUM_EXTENSION;
+           } else {
+              continue;
+           }
+           f_out = new FileOutputStream(objectFileName);
+           obj_out = new ObjectOutputStream(f_out);
+           obj_out.writeObject(sumProps);
+        }}
+
+        getmimsAction().writeAction(new File(fileName+ACT_EXTIONSION));
+
+      } catch (FileNotFoundException e) {
+         e.printStackTrace();
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+
+    private void openMIMSImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {                                                      
        
        // Get HSIProps for all open ratio images.
        MimsPlus[] rto = getOpenRatioImages();
-       HSIProps[] rto_props = new HSIProps[rto.length];
+       RatioProps[] rto_props = new RatioProps[rto.length];
        for (int i=0; i<rto.length; i++){
-          rto_props[i] = rto[i].getHSIProps();
+          rto_props[i] = rto[i].getRatioProps();
+          rto_props[i].setXWindowLocation(rto[i].getWindow().getX());
+          rto_props[i].setYWindowLocation(rto[i].getWindow().getY());
+          rto_props[i].setNumMassValue(getMassValue(rto_props[i].getNumMassIdx()));
+          rto_props[i].setDenMassValue(getMassValue(rto_props[i].getDenMassIdx()));
        }
        
        // Get HSIProps for all open hsi images.     
@@ -1472,13 +1596,25 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        HSIProps[] hsi_props = new HSIProps[hsi.length];
        for (int i=0; i<hsi.length; i++){
           hsi_props[i] = hsi[i].getHSIProps();
+          hsi_props[i].setXWindowLocation(hsi[i].getWindow().getX());
+          hsi_props[i].setYWindowLocation(hsi[i].getWindow().getY());
+          hsi_props[i].setNumMassValue(getMassValue(hsi_props[i].getNumMassIdx()));
+          hsi_props[i].setDenMassValue(getMassValue(hsi_props[i].getDenMassIdx()));
        }
        
        // Get SumProps for all open sum images.    
        MimsPlus[] sum = getOpenSumImages();
        SumProps[] sum_props = new SumProps[sum.length];
        for (int i=0; i<sum.length; i++){
-          sum_props[i] = sum[i].getSumProps();          
+          sum_props[i] = sum[i].getSumProps();
+          sum_props[i].setXWindowLocation(sum[i].getWindow().getX());
+          sum_props[i].setYWindowLocation(sum[i].getWindow().getY());
+          if (sum_props[i].getSumType() == SumProps.RATIO_IMAGE) {
+             sum_props[i].setNumMassValue(getMassValue(sum_props[i].getNumMassIdx()));
+             sum_props[i].setDenMassValue(getMassValue(sum_props[i].getDenMassIdx()));
+          } else if (sum_props[i].getSumType() == SumProps.MASS_IMAGE) {
+             sum_props[i].setParentMassValue(getMassValue(sum_props[i].getParentMassIdx()));
+          }
        }
              
        // Load the new file.
@@ -1502,27 +1638,41 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
 }//GEN-LAST:event_openMIMSImageMenuItemActionPerformed
 
-    public void restoreState( HSIProps[] rto_props,  HSIProps[] hsi_props, SumProps[] sum_props){
-       
+    public void restoreState( RatioProps[] rto_props,  HSIProps[] hsi_props, SumProps[] sum_props){
+
+       MimsPlus mp;
        // Generate ratio images.
        for (int i=0; i<rto_props.length; i++){
-         // computeRatio(rto_props[i], true);
+          if (closeEnough(rto_props[i].getNumMassIdx(), rto_props[i].getNumMassValue()) &&
+              closeEnough(rto_props[i].getDenMassIdx(), rto_props[i].getDenMassValue())) {
+             mp = new MimsPlus(this, rto_props[i]);
+             mp.showWindow();
+          }
        }
        
        // Generate hsi images.
        for (int i=0; i<hsi_props.length; i++){
-          //computeHSI(hsi_props[i]);
-          //hsiControl.updateInternalImages();
-       }
-       
-       MimsPlus[] openhsi = this.getOpenHSIImages();
-       for (int i=0; i<openhsi.length; i++){
-          //openhsi[i].recomputeInternalImages();
+          if (closeEnough(hsi_props[i].getNumMassIdx(), hsi_props[i].getNumMassValue()) &&
+              closeEnough(hsi_props[i].getDenMassIdx(), hsi_props[i].getDenMassValue())) {
+             mp = new MimsPlus(this, hsi_props[i]);
+             mp.showWindow();
+          }
        }
 
        // Generate sum images.
        for (int i=0; i<sum_props.length; i++){
-          //computeSum(sum_props[i]);
+          if (sum_props[i].getSumType() == MimsPlus.MASS_IMAGE) {
+             if (closeEnough(sum_props[i].getNumMassIdx(), sum_props[i].getNumMassValue()) &&
+                 closeEnough(sum_props[i].getDenMassIdx(), sum_props[i].getDenMassValue())) {
+                mp = new MimsPlus(this, sum_props[i], null);
+                mp.showWindow();
+             }
+          } else if (sum_props[i].getSumType() == MimsPlus.RATIO_IMAGE) {
+             if (closeEnough(sum_props[i].getParentMassIdx(), sum_props[i].getParentMassValue())) {
+                mp = new MimsPlus(this, sum_props[i], null);
+                mp.showWindow();
+             }
+          }
        }
        
     }
@@ -1930,6 +2080,25 @@ public void updateLineProfile(double[] newdata, String name, int width) {
             return massImages[i];
         }
         return null;
+    }
+    
+    // Determine if mass value for a given index (i)
+    // is nearly the same as (d).
+    public boolean closeEnough(int i, double d) {
+       double mass = getMassValue(i);
+       double q = d/mass;
+       if (q > 0.9 && q < 1.1)
+          return true;
+       else 
+          return false;
+    }
+
+    public double getMassValue(int i) {
+       double mass = -1.0;
+       try {
+          mass = new Double(getOpener().getMassNames()[i]);
+       } catch (Exception e) {}
+       return mass;
     }
 
     public MimsPlus[] getHSIImages() {

@@ -13,6 +13,7 @@ public class HSIProps implements java.io.Serializable {
 
     private int numMassIdx ;
     private int denMassIdx ;
+    private double numMassValue, denMassValue;
     private double maxRatio ;
     private double minRatio ;
     private int minNum ;
@@ -43,7 +44,7 @@ public class HSIProps implements java.io.Serializable {
         minRGB = 0 ;
         transparency = 0 ;
         label = 0 ;
-        ratioScaleFactor = -1;
+        ratioScaleFactor = -1.0;
 
         //TODO: this is for testing and should be fixed
         transform = false;
@@ -51,12 +52,18 @@ public class HSIProps implements java.io.Serializable {
         backgroundRatio = (float)129/(float)10000;
         xloc = -1;
         yloc = -1;
+        numMassValue = -1.0;
+        denMassValue = -1.0;
         dataFileName = null;
     }
     public void setNumMassIdx(int n) { numMassIdx = n ; }
     public int getNumMassIdx() { return numMassIdx ; }
     public void setDenMassIdx(int n) { denMassIdx = n ; }
     public int getDenMassIdx() { return denMassIdx ; }
+    public void setNumMassValue(double d) { this.numMassValue = d; }
+    public double getNumMassValue() { return this.numMassValue; }
+    public void setDenMassValue(double d) { this.denMassValue = d; }
+    public double getDenMassValue() { return this.denMassValue; }
     public void setMinNum(int n) { minNum = n ; }
     public int getMinNum() { return minNum ; }
     public void setMinDen(int n) { minDen = n ; }
