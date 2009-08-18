@@ -511,6 +511,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
     @Override
     public void windowClosing(WindowEvent e) {
+        //String name = this.getTitle();
+        //System.out.println("windowClosing: "+name);
     }
 
     @Override
@@ -527,11 +529,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             }
             return ;
         }
+        //String name = this.getTitle();
+        //System.out.println("windowClosed: "+name);
         if(ui.getDebug()) {
             ui.updateStatus("mimsPlus listener window closed");
         }
-        ui.imageClosed(this);
-        ui.getCBControl().removeWindowfromList(this);
+        //ui.imageClosed(this);
+        //ui.getCBControl().removeWindowfromList(this);
     }
     public void windowStateChanged(WindowEvent e) {}
     @Override
@@ -976,10 +980,16 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         this.allowClose = allowClose;
     }        
     @Override
-    public void close () {
-        if(allowClose) {
+    public void close() {
+        if (allowClose) {
+            //String name = this.getTitle();
+            //System.out.println("close: " + name);
+            ui.imageClosed(this);
+            ui.getCBControl().removeWindowfromList(this);
             super.close();
         } else {
+            //String name = this.getTitle();
+            //System.out.println("close not allowed: " + name);
             this.hide();
             ui.massImageClosed(this);
         }

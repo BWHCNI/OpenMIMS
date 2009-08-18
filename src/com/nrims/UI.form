@@ -30,52 +30,13 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openMIMSImageMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JSeparator" name="jSeparator6">
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
+            <MenuItem class="javax.swing.JMenuItem" name="saveMIMSjMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Save Action File"/>
-              </Properties>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem5">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Open Action File"/>
-              </Properties>
-            </MenuItem>
-            <MenuItem class="javax.swing.JSeparator" name="jSeparator5">
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem6">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Save Session"/>
-              </Properties>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem7">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Open Session"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="UI_jMenuItem7"/>
-              </AuxValues>
-            </MenuItem>
-            <MenuItem class="javax.swing.JSeparator" name="jSeparator1">
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem11">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Save Image (nrrd)"/>
+                <Property name="text" type="java.lang.String" value="Save MIMS Image"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem11ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveMIMSjMenuItemActionPerformed"/>
               </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem8">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Export current image"/>
-              </Properties>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem10">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Export all images"/>
-              </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator7">
             </MenuItem>
@@ -306,7 +267,7 @@
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="348" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="347" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>

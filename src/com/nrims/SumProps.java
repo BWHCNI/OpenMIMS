@@ -2,8 +2,13 @@ package com.nrims;
 
 public class SumProps implements java.io.Serializable {
       
-   static final int MASS_IMAGE = 0;
-   static final int RATIO_IMAGE = 1;
+    //-----------------------------
+    static final long serialVersionUID = 2L;
+    //-----------------------------
+    // DO NOT! Change variable order/type
+    // DO NOT! Delete variables
+    static final int MASS_IMAGE = 0;
+    static final int RATIO_IMAGE = 1;
       
    private int parentMassIdx, numMassIdx, denMassIdx;
    private double parentMassValue, numMassValue, denMassValue;
@@ -11,6 +16,8 @@ public class SumProps implements java.io.Serializable {
    private int xloc, yloc;
    private String dataFileName;
    private double ratioScaleFactor;
+   //--------------------------------
+   //End of v2
     
     // Use for Mass Images.
     public SumProps(int massIndex) {

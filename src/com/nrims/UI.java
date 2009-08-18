@@ -188,7 +188,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             openFiles(files);
 
             // Generate all images that were previously open.
-            //restoreState(rto_props, hsi_props, sum_props);
+            // TODO: a better check than just looking at the first file?
+            if( files[0].getAbsolutePath().endsWith(NRRD_EXTENSION) ||
+                    files[0].getAbsolutePath().endsWith(MIMS_EXTENSION) ) {
+                restoreState(rto_props, hsi_props, sum_props);
+            }
          }
       });
    }
@@ -825,7 +829,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         for (int i = 0; i < im.getNMasses(); i++) {str += names[i] + " ";}
         str += "\n";
         str += "Pixels: " + im.getWidth() + "x" + im.getHeight() + "\n";
-        /*
+        
         str += "Raster (nm): " + im.getRaster() + "\n";
         str += "Duration (s): " + im.getDuration() + "\n";
         str += "Dwell time (ms/xy): " + im.getDwellTime() + "\n";
@@ -835,7 +839,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         str += "Sample hour: " + im.getSampleHour() + "\n";
         str += "Pixel width (nm): " + im.getPixelWidth() + "\n";
         str += "Pixel height (nm): " + im.getPixelHeight() + "\n";
-        */
+        
         str += "End header.\n\n";
         return str;
     }
@@ -1033,7 +1037,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
    
     
    private void initComponentsCustom() {
-
+/*
       // Open action.
       jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
          public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1046,7 +1050,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       });
       
       // save action.
-      jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+      saveMIMSjMenuItem.addActionListener(new java.awt.event.ActionListener() {
          public void actionPerformed(java.awt.event.ActionEvent evt) {
             try {
                saveAction(evt);
@@ -1055,6 +1059,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
          }
       });
+ */
    }
    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -1067,15 +1072,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openNewMenuItem = new javax.swing.JMenuItem();
-        jSeparator6 = new javax.swing.JSeparator();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
-        jSeparator5 = new javax.swing.JSeparator();
-        jMenuItem6 = new javax.swing.JMenuItem();
-        jSeparator1 = new javax.swing.JSeparator();
-        jMenuItem8 = new javax.swing.JMenuItem();
-        jMenuItem10 = new javax.swing.JMenuItem();
-        jMenuItem11 = new javax.swing.JMenuItem();
+        saveMIMSjMenuItem = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JSeparator();
         aboutMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
@@ -1085,6 +1082,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jMenuItem4 = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JSeparator();
         utilitiesMenu = new javax.swing.JMenu();
         sumAllMenuItem = new javax.swing.JMenuItem();
         importIMListMenuItem = new javax.swing.JMenuItem();
@@ -1133,7 +1131,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         openNewMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openNewMenuItem.setMnemonic('o');
         openNewMenuItem.setText("Open MIMS Image");
-        openNewMenuItem.setToolTipText("Open a MIMS image.");
+        openNewMenuItem.setToolTipText("Open a MIMS image from an existing .im file.");
         openNewMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openMIMSImageMenuItemActionPerformed(evt);
@@ -1142,36 +1140,14 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         fileMenu.add(openNewMenuItem);
         openNewMenuItem.getAccessibleContext().setAccessibleDescription("Open a MIMS Image");
 
-        jMenuItem6.setText("Save MIMS");
-        fileMenu.add(jMenuItem6);
-        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
-         public void actionPerformed(java.awt.event.ActionEvent evt) {
-             String fileName;
-             try {
-                 // User sets file prefix name
-                 JFileChooser fc = new JFileChooser();
-                 if (lastFolder != null) {
-                     fc.setCurrentDirectory(new java.io.File(lastFolder));
-                 }
-                 int returnVal = fc.showSaveDialog(jTabbedPane1);
-                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                     fileName = fc.getSelectedFile().getAbsolutePath();
-                     File file  = new File(fileName);
-                     lastFolder = file.getParent();
-                     setIJDefaultDir(lastFolder);
-                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                     saveSession(fileName);
-                 } else {
-                     return;
-                 }
-             } finally {
-                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-             }
-         }
-      });
-
-
-        fileMenu.add(jSeparator6);
+        saveMIMSjMenuItem.setText("Save MIMS Image");
+        saveMIMSjMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveMIMSjMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveMIMSjMenuItem);
+        fileMenu.add(jSeparator7);
 
         aboutMenuItem.setText("About OpenMIMS");
         aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1226,6 +1202,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
         });
         viewMenu.add(jMenuItem2);
+        viewMenu.add(jSeparator8);
 
         jMenuBar1.add(viewMenu);
 
@@ -1605,7 +1582,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        loadMIMSFile();
        
        // Generate all images that were previously open.
-       //restoreState(rto_props, hsi_props, sum_props);
+       restoreState(rto_props, hsi_props, sum_props);
 
        // Keep the HSIView GUI up to date.
        if (medianFilterRatios) {
@@ -1645,13 +1622,14 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
        // Generate sum images.
        for (int i=0; i<sum_props.length; i++){
-          if (sum_props[i].getSumType() == MimsPlus.MASS_IMAGE) {
+          if (sum_props[i].getSumType() == MimsPlus.RATIO_IMAGE) {
+              //boolean foo = closeEnough(sum_props[i].getNumMassIdx(), sum_props[i].getNumMassValue()) && closeEnough(sum_props[i].getDenMassIdx(), sum_props[i].getDenMassValue());
              if (closeEnough(sum_props[i].getNumMassIdx(), sum_props[i].getNumMassValue()) &&
                  closeEnough(sum_props[i].getDenMassIdx(), sum_props[i].getDenMassValue())) {
                 mp = new MimsPlus(this, sum_props[i], null);
                 mp.showWindow();
              }
-          } else if (sum_props[i].getSumType() == MimsPlus.RATIO_IMAGE) {
+          } else if (sum_props[i].getSumType() == MimsPlus.MASS_IMAGE) {
              if (closeEnough(sum_props[i].getParentMassIdx(), sum_props[i].getParentMassValue())) {
                 mp = new MimsPlus(this, sum_props[i], null);
                 mp.showWindow();
@@ -1715,7 +1693,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
 private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
 
-    String message = "OpenMIMS v0.7\n\n";
+    String message = "OpenMIMS v0.8\n\n";
     message += "OpenMIMS was Developed at NRIMS, the National Resource\n";
     message += "for Imaging Mass Spectrometry.\n";
     message += "http://www.nrims.hms.harvard.edu/\n";
@@ -1825,7 +1803,40 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
 private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TestMenuItemActionPerformed
      int c = 0;
+     //MimsPlus[] hsi = this.getOpenHSIImages();
+     //HSIProps p = hsi[0].getHSIProps();
+     
+     MimsPlus[] sum = this.getOpenSumImages();
+
+     int b = 0;
 }//GEN-LAST:event_TestMenuItemActionPerformed
+
+private void saveMIMSjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMIMSjMenuItemActionPerformed
+
+     String fileName;
+             try {
+                 // User sets file prefix name
+                 JFileChooser fc = new JFileChooser();
+                 if (lastFolder != null) {
+                     fc.setCurrentDirectory(new java.io.File(lastFolder));
+                 }
+                 fc.setSelectedFile(new java.io.File(this.getImageFilePrefix()));
+                 int returnVal = fc.showSaveDialog(jTabbedPane1);
+                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                     fileName = fc.getSelectedFile().getAbsolutePath();
+                     File file  = new File(fileName);
+                     lastFolder = file.getParent();
+                     setIJDefaultDir(lastFolder);
+                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                     saveSession(fileName);
+                 } else {
+                     return;
+                 }
+             } finally {
+                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+             }
+
+}//GEN-LAST:event_saveMIMSjMenuItemActionPerformed
                                            
 
 
@@ -2489,27 +2500,20 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     private javax.swing.JMenuItem genStackMenuItem;
     private javax.swing.JMenuItem importIMListMenuItem;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem10;
-    private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
-    private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
-    private javax.swing.JSeparator jSeparator5;
-    private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
+    private javax.swing.JSeparator jSeparator8;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField mainTextField;
     private javax.swing.JMenuItem openNewMenuItem;
+    private javax.swing.JMenuItem saveMIMSjMenuItem;
     private javax.swing.JMenuItem sumAllMenuItem;
     private javax.swing.JMenu utilitiesMenu;
     private javax.swing.JMenu viewMenu;

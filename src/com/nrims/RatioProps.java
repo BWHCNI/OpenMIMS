@@ -2,11 +2,19 @@ package com.nrims;
 
 // Ratio properties.
 public class RatioProps implements java.io.Serializable {
-   private int numMassIdx, denMassIdx;
-   private double numMassValue, denMassValue;
-   private int xloc, yloc;
-   private String dataFileName;
-   private double ratioScaleFactor;
+    //-----------------------------
+    static final long serialVersionUID = 2L;
+    //-----------------------------
+    // DO NOT! Change variable order/type
+    // DO NOT! Delete variables
+    private int numMassIdx,  denMassIdx;
+    private double numMassValue,  denMassValue;
+    private int xloc,  yloc;
+    private String dataFileName;
+    private double ratioScaleFactor;
+    //------------------------------
+    //End of v2
+
 
    // Create an empty ratio props object.
    public RatioProps(){}

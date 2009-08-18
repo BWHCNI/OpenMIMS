@@ -10,7 +10,11 @@
 package com.nrims;
 
 public class HSIProps implements java.io.Serializable {
-
+    //-----------------------------
+    static final long serialVersionUID = 2L;
+    //-----------------------------
+    // DO NOT! Change variable order/type
+    // DO NOT! Delete variables
     private int numMassIdx ;
     private int denMassIdx ;
     private double numMassValue, denMassValue;
@@ -28,7 +32,9 @@ public class HSIProps implements java.io.Serializable {
     private float backgroundRatio;
     private int xloc, yloc;
     private String dataFileName;
-    
+    //--------------------------------------
+    //End of v2
+
     /** Creates a new instance of HSIProps */
     public HSIProps() {}
 
@@ -55,6 +61,9 @@ public class HSIProps implements java.io.Serializable {
         numMassValue = -1.0;
         denMassValue = -1.0;
         dataFileName = null;
+        //---------------------------------
+
+
     }
     public void setNumMassIdx(int n) { numMassIdx = n ; }
     public int getNumMassIdx() { return numMassIdx ; }
