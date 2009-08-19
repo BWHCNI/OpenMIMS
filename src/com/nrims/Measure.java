@@ -357,8 +357,9 @@ public class Measure {
                    images[i].setRoi(rois[r]);
                 }
                                
-                // Put results in table.            
-                ncol = addResults(images[i], i, rois.length > 0 ? rois[r] : null, n, ncol);
+                // Put results in table.
+                if (rois[r] != null)
+                   ncol = addResults(images[i], i, rois.length > 0 ? rois[r] : null, n, ncol);
              }             
              
              String slicelabel = images[0].getStack().getShortSliceLabel(nSlices);
@@ -473,7 +474,8 @@ public class Measure {
                 } 
                                   
                 // Put results in table.
-                ncol = addResults(images[i], i, rois.length > 0 ? rois[r] : null, n+1, ncol);
+                if (rois[r] != null)
+                  ncol = addResults(images[i], i, rois.length > 0 ? rois[r] : null, n+1, ncol);
              }
           }
        }
@@ -545,10 +547,10 @@ public class Measure {
             ncol = 0;
             for (int r = 0; r < nrois; r++) {
                 if (rois.length > 0) {
-                    mSumImages[i].setRoi(rois[r]);
-                }
-                if (mSumImages[i].getProcessor() != null) {
-                    ncol = addResults(mSumImages[i], 0, rois.length > 0 ? rois[r] : null, 1, ncol);
+                   mSumImages[i].setRoi(rois[r]);                
+                   if (mSumImages[i].getProcessor() != null && rois[r] != null) {
+                      ncol = addResults(mSumImages[i], 0, rois.length > 0 ? rois[r] : null, 1, ncol);
+                   }
                 }
             }            
         }
