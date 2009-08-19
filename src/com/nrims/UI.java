@@ -749,11 +749,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public void massImageClosed(MimsPlus im) {
         if(windowPositions==null) windowPositions = gatherWindowPosistions();
         for (int i = 0; i < massImages.length; i++) {
-            if (massImages[i] == im) {
-                Point p = im.getWindow().getLocation();
-                windowPositions[i] = p;
-                viewMassMenuItems[i].setSelected(false);
+            if (massImages[i] != null) {
+                if (massImages[i].equals(im)) {
+                    windowPositions[i] = im.getXYLoc();
+                    viewMassMenuItems[i].setSelected(false);
 
+                }
             }
         }
     }
@@ -1820,7 +1821,9 @@ private void saveMIMSjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {/
                  if (lastFolder != null) {
                      fc.setCurrentDirectory(new java.io.File(lastFolder));
                  }
-                 fc.setSelectedFile(new java.io.File(this.getImageFilePrefix()));
+                 if( this.getImageFilePrefix() != null ) {
+                    fc.setSelectedFile(new java.io.File(this.getImageFilePrefix()));
+                 }
                  int returnVal = fc.showSaveDialog(jTabbedPane1);
                  if (returnVal == JFileChooser.APPROVE_OPTION) {
                      fileName = fc.getSelectedFile().getAbsolutePath();
@@ -1832,6 +1835,8 @@ private void saveMIMSjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {/
                  } else {
                      return;
                  }
+             } catch(Exception e) {
+                 ij.IJ.error("Save Error", "Error saving file.");
              } finally {
                  setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
              }

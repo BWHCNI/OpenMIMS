@@ -454,6 +454,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         this.bIgnoreClose = b;
     }
 
+    public java.awt.Point getXYLoc() {
+        return new java.awt.Point(this.xloc, this.yloc);
+    }
+
     @Override
     public void show() {
         ij.gui.ImageWindow win = getWindow() ;
@@ -513,6 +517,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public void windowClosing(WindowEvent e) {
         //String name = this.getTitle();
         //System.out.println("windowClosing: "+name);
+        java.awt.Point p = this.getWindow().getLocation();
+        this.xloc = p.x;
+        this.yloc = p.y;
     }
 
     @Override
