@@ -30,8 +30,6 @@ public class MimsTomography extends javax.swing.JPanel {
                 imagestacks[i]=this.images[i].getStack();
         }
         
-        tomographyChart = new MimsJFreeChart(ui,im);
-        
         //some swing component cleanup, whee...
         lowerSlider.setMaximum(image.getNImages());
         upperSlider.setMaximum(image.getNImages());
@@ -233,8 +231,8 @@ public class MimsTomography extends javax.swing.JPanel {
             
             int[] masses = imageJList.getSelectedIndices();
             
-            tomographyChart.creatNewFrame(rois, ui.getImageFilePrefix(), statnames, masses, lowerSlider.getValue(), upperSlider.getValue());
-                        
+            MimsJFreeChart tomoChart = new MimsJFreeChart(ui,image);
+            tomoChart.creatNewFrame(rois, ui.getImageFilePrefix(), statnames, masses, lowerSlider.getValue(), upperSlider.getValue());
         } else {
             ij.IJ.error("Tomography Error", "You must select at least one ROI, statistic, and mass.");
         }
@@ -296,7 +294,6 @@ public class MimsTomography extends javax.swing.JPanel {
     private ImageStack[] imagestacks;
     private ij.process.ImageStatistics imagestats;
     private MimsPlus[] rp;
-    private MimsJFreeChart tomographyChart;
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

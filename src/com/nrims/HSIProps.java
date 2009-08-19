@@ -10,11 +10,38 @@
 package com.nrims;
 
 public class HSIProps implements java.io.Serializable {
-    
+    //-----------------------------
+    static final long serialVersionUID = 2L;
+    //-----------------------------
+    // DO NOT! Change variable order/type
+    // DO NOT! Delete variables
+    private int numMassIdx ;
+    private int denMassIdx ;
+    private double numMassValue, denMassValue;
+    private double maxRatio ;
+    private double minRatio ;
+    private int minNum ;
+    private int minDen ;
+    private int maxRGB ;
+    private int minRGB ;
+    private int transparency ;
+    private int label ;
+    private double ratioScaleFactor;
+    private boolean transform;
+    private float referenceRatio;
+    private float backgroundRatio;
+    private int xloc, yloc;
+    private String dataFileName;
+    //--------------------------------------
+    //End of v2
+
     /** Creates a new instance of HSIProps */
-    public HSIProps() {
-        numMass = 0 ;
-        denMass = 1 ;
+    public HSIProps() {}
+
+    public HSIProps(int numerator, int denominator) {
+
+        numMassIdx = numerator;
+        denMassIdx = denominator;
         maxRatio = 1.0 ;
         minRatio = 0.01 ;
         minNum = 3 ;
@@ -31,12 +58,21 @@ public class HSIProps implements java.io.Serializable {
         backgroundRatio = (float)129/(float)10000;
         xloc = -1;
         yloc = -1;
+        numMassValue = -1.0;
+        denMassValue = -1.0;
         dataFileName = null;
+        //---------------------------------
+
+
     }
-    public void setNumMass(int n) { numMass = n ; }
-    public int getNumMass() { return numMass ; }
-    public void setDenMass(int n) { denMass = n ; }
-    public int getDenMass() { return denMass ; }
+    public void setNumMassIdx(int n) { numMassIdx = n ; }
+    public int getNumMassIdx() { return numMassIdx ; }
+    public void setDenMassIdx(int n) { denMassIdx = n ; }
+    public int getDenMassIdx() { return denMassIdx ; }
+    public void setNumMassValue(double d) { this.numMassValue = d; }
+    public double getNumMassValue() { return this.numMassValue; }
+    public void setDenMassValue(double d) { this.denMassValue = d; }
+    public double getDenMassValue() { return this.denMassValue; }
     public void setMinNum(int n) { minNum = n ; }
     public int getMinNum() { return minNum ; }
     public void setMinDen(int n) { minDen = n ; }
@@ -54,7 +90,7 @@ public class HSIProps implements java.io.Serializable {
     public void setLabelMethod(int n) { label = n ; }
     public int getLabelMethod() { return label ; }
     public void setRatioScaleFactor(double s) { this.ratioScaleFactor = s; }
-    public double getRatioScaleFactor() { return ratioScaleFactor; }
+    public double getRatioScaleFactor() { return this.ratioScaleFactor; }
     public void setXWindowLocation(int x) { this.xloc = x; }
     public int getXWindowLocation() { return this.xloc; }
     public void setYWindowLocation(int y) { this.yloc = y; }
@@ -71,8 +107,8 @@ public class HSIProps implements java.io.Serializable {
      * Set this class' properties from another class
      */
     public void setProps(HSIProps props) {
-        numMass = props.getNumMass();
-        denMass = props.getDenMass();
+        numMassIdx = props.getNumMassIdx();
+        denMassIdx = props.getDenMassIdx();
         minNum = props.getMinNum();
         minDen = props.getMinDen();
         maxRatio = props.getMaxRatio();
@@ -81,7 +117,6 @@ public class HSIProps implements java.io.Serializable {
         minRGB = props.getMinRGB();
         transparency = props.getTransparency();
         label = props.getLabelMethod();
-        ratioScaleFactor = props.getRatioScaleFactor();
         transform = props.getTransform();
         referenceRatio = props.getReferenceRatio();
         backgroundRatio = props.getBackgroundRatio();
@@ -94,8 +129,8 @@ public class HSIProps implements java.io.Serializable {
      */
     //Why is this getter setting?
     public void getProps(HSIProps props) {
-        props.setNumMass(numMass);
-        props.setDenMass(denMass);
+        props.setNumMassIdx(numMassIdx);
+        props.setDenMassIdx(denMassIdx);
         props.setMinNum(minNum);
         props.setMinDen(minDen);
         props.setMaxRatio(maxRatio);
@@ -104,7 +139,6 @@ public class HSIProps implements java.io.Serializable {
         props.setMinRGB(minRGB);
         props.setTransparency(transparency);
         props.setLabelMethod(label);
-        props.setRatioScaleFactor(ratioScaleFactor);
         props.setTransform(transform);
         props.setReferenceRatio(referenceRatio);
         props.setBackgroundRatio(backgroundRatio);
@@ -118,39 +152,11 @@ public class HSIProps implements java.io.Serializable {
         return props ;
     }
     
-    public boolean equal(HSIProps props) {
-        return
-                props.getDenMass() == denMass
-            &&  props.getNumMass() == numMass
-            &&  props.getMinDen() == minDen
-            &&  props.getMinNum() == minNum
-            &&  props.getMaxRatio() == maxRatio
-            &&  props.getMinRatio() == minRatio
-            &&  props.getMaxRGB() == maxRGB
-            &&  props.getMinRGB() == minRGB
-            &&  props.getTransparency() == transparency
-            &&  props.getLabelMethod() == label
-            &&  props.getRatioScaleFactor() == ratioScaleFactor
-            &&  props.getTransform() == transform
-            &&  props.getReferenceRatio() == referenceRatio
-            &&  props.getBackgroundRatio() == backgroundRatio;
-           //TODO: the three above are for testing and should be fixed
-    }
-    
-    private int numMass ;
-    private int denMass ;
-    private double maxRatio ;
-    private double minRatio ;
-    private int minNum ;
-    private int minDen ;
-    private int maxRGB ;
-    private int minRGB ;
-    private int transparency ;
-    private int label ;
-    private double ratioScaleFactor;
-    private boolean transform;
-    private float referenceRatio;
-    private float backgroundRatio;
-    private int xloc, yloc;
-    private String dataFileName;
+   // Two props objects are equal if numerator and denominator are the same.
+   public boolean equals(HSIProps rp) {
+      if (rp.getNumMassIdx() == numMassIdx && rp.getDenMassIdx() == denMassIdx)
+         return true;
+      else
+         return false;
+   }
 }

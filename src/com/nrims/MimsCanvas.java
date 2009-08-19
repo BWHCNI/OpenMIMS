@@ -55,8 +55,12 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
         //note getType is from ImagePlus
         boolean isRatio = (mImp.getMimsType() == MimsPlus.RATIO_IMAGE) || (mImp.getMimsType() == MimsPlus.HSI_IMAGE);
         int parentplane = 1;
-        if(isRatio) {
-            parentplane = ui.getMassImages()[mImp.getNumMass()].getCurrentSlice();
+        
+        if(mImp.getMimsType() == MimsPlus.RATIO_IMAGE) {
+            parentplane = ui.getMassImages()[mImp.getRatioProps().getNumMassIdx()].getCurrentSlice();
+        }
+        if(mImp.getMimsType() == MimsPlus.HSI_IMAGE) {
+            parentplane = ui.getMassImages()[mImp.getHSIProps().getNumMassIdx()].getCurrentSlice();
         }
 
         for (int id = 0; id < list.getModel().getSize(); id++) {

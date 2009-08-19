@@ -53,30 +53,20 @@ public class HSIProcessor implements Runnable {
     public void setProps(HSIProps props) {
         if(hsiImage == null) return ;
         
-        MimsPlus numerator = hsiImage.getUI().getMassImage(props.getNumMass());
-        MimsPlus denominator = hsiImage.getUI().getMassImage(props.getDenMass());
+        MimsPlus numerator = hsiImage.getUI().getMassImage(props.getNumMassIdx());
+        MimsPlus denominator = hsiImage.getUI().getMassImage(props.getDenMassIdx());
         if(numerator == null || denominator == null) return ;        
 
         // Need to catch cases where the props are the same but the slice changed
-        boolean bNeedsUpdate = false ;
         int nSlice = numerator.getCurrentSlice() ;
         int dSlice = denominator.getCurrentSlice() ;
-        if(nSlice != numSlice || dSlice != denSlice ) bNeedsUpdate = true ;
         numSlice = nSlice ;
         denSlice = dSlice ;
-        if(hsiProps == null) hsiProps = props.clone();
-        else if( !bNeedsUpdate && hsiProps.equal(props)) {
-             if(hsiImage.getUI().getDebug())
-                hsiImage.getUI().updateStatus("HSIProcessor: no change redraw..");
-            hsiImage.updateAndDraw() ;
-            return ;
-        }
-        else
-            hsiProps.setProps(props);
+        hsiProps = props;
         start();
     }
     
-    public HSIProps getProps() { return hsiProps ; }
+    public HSIProps getHSIProps() { return hsiProps ; }
     
     private synchronized void start() {
         if(fThread != null) {
@@ -84,6 +74,7 @@ public class HSIProcessor implements Runnable {
                 hsiImage.getUI().updateStatus("HSIProcessor: stop and restart");
             stop();
         }
+        try {
         fThread = new Thread(this);
         fThread.setPriority(fThread.NORM_PRIORITY);
         fThread.setContextClassLoader(
@@ -92,6 +83,7 @@ public class HSIProcessor implements Runnable {
                 hsiImage.getUI().updateStatus("HSIProcessor: start");
         try { fThread.start();}
         catch( IllegalThreadStateException x){ IJ.log(x.toString()); }
+        } catch (NullPointerException xn) {}
     }
     
     private void stop() {
@@ -114,7 +106,7 @@ public class HSIProcessor implements Runnable {
         
         try {
             if( hsiImage == null ) { fThread = null ; return ; }
-        
+
             // Thread stuff.
             while( hsiImage.lockSilently() == false ) {
                 if(fThread == null || fThread.interrupted()) {
@@ -187,12 +179,6 @@ public class HSIProcessor implements Runnable {
                 transformedPixels = ratioPixels;
             }
 
-            //broken, needs to be fixed
-            //if using non-ratio values, ie percent turnover
-            //if(hsiProps.getTransform()) {
-                //transformedPixels = this.turnoverTransform(transformedPixels, hsiProps.getReferenceRatio(), hsiProps.getBackgroundRatio(), hsiProps.getRatioScaleFactor());
-           //}
-
             for(int offset = 0 ; offset < numPixels.length && fThread != null ; offset++ ) {
 
 
@@ -260,7 +246,7 @@ public class HSIProcessor implements Runnable {
                 else{
                     hsiPixels[offset] = 0 ;
                 }
-                
+               // System.out.print(hsiPixels[offset] + " ");
                 if(fThread == null || fThread.interrupted()) {
                     fThread = null ;
                     hsiImage.unlock() ;

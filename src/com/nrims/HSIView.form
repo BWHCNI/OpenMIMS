@@ -26,30 +26,17 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="rgbMaxjLabel" alignment="1" min="-2" max="-2" attributes="1"/>
-                              <Component id="jLabel12" alignment="0" min="-2" max="-2" attributes="1"/>
-                          </Group>
-                          <Component id="rgbMinjLabel" alignment="0" min="0" pref="0" max="32767" attributes="1"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel12" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="transparencyjComboBox" min="-2" pref="101" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="scalebarjComboBox" min="-2" pref="105" max="-2" attributes="1"/>
                           </Group>
-                          <Component id="rgbMaxjSlider" alignment="0" min="-2" pref="300" max="-2" attributes="1"/>
-                          <Component id="rgbMinjSlider" min="-2" pref="300" max="-2" attributes="1"/>
-                      </Group>
-                      <EmptySpace pref="216" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -70,7 +57,7 @@
                                       <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
                                       <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="ratioMaxjSpinner" linkSize="1" pref="77" max="32767" attributes="1"/>
+                                      <Component id="rartioMaxjSpinner" linkSize="1" pref="77" max="32767" attributes="1"/>
                                       <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
                                       <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -78,39 +65,54 @@
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jButton2" min="-2" max="-2" attributes="1"/>
+                              <Component id="jButton2" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Group type="102" alignment="1" attributes="1">
-                                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="scaleFactorjSpinner" min="-2" pref="70" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Component id="jScrollPane1" alignment="1" min="-2" pref="175" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="jScrollPane1" min="-2" pref="175" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="removeRatiojButton" max="32767" attributes="1"/>
                                   <Component id="addRatiojButton" max="32767" attributes="1"/>
-                                  <Component id="displayHSIjButton" alignment="0" max="32767" attributes="1"/>
                                   <Component id="displayRatiojButton" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="displayHSIjButton" alignment="0" max="32767" attributes="1"/>
                               </Group>
-                              <EmptySpace pref="61" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="85" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="hsiWindowRadioButton" min="-2" max="-2" attributes="0"/>
-                                  <Component id="hsiSumRadioButton" min="-2" max="-2" attributes="0"/>
-                                  <Component id="medianFilterjButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="hsiWindowRadioButton" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="hsiWindowjSpinner" min="-2" pref="39" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="hsiSumRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="medianFilterjButton" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="medianRadiusjSpinner" min="-2" pref="48" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
+                      </Group>
+                      <EmptySpace min="-2" pref="153" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="rgbMaxjLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="rgbMinjLabel" alignment="0" min="0" pref="0" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="hsiWindowjSpinner" min="-2" pref="39" max="-2" attributes="0"/>
-                          <Component id="medianRadiusjSpinner" alignment="0" min="-2" pref="39" max="-2" attributes="0"/>
+                          <Component id="rgbMaxjSlider" alignment="0" min="-2" pref="300" max="-2" attributes="1"/>
+                          <Component id="rgbMinjSlider" min="-2" pref="300" max="-2" attributes="1"/>
                       </Group>
-                      <EmptySpace min="-2" pref="78" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="373" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ratioSFjSpinner" min="-2" pref="69" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="imagejLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="532" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -118,43 +120,38 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="1">
+                      <Component id="hsiSumRadioButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Group type="102" attributes="1">
-                              <Component id="displayRatiojButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Component id="displayHSIjButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="addRatiojButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="removeRatiojButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="hsiWindowjSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="hsiWindowRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="medianFilterjButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="medianRadiusjSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="hsiSumRadioButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="hsiWindowRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="hsiWindowjSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="1">
+                      <Component id="displayRatiojButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="displayHSIjButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="addRatiojButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="removeRatiojButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="12" max="32767" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="scaleFactorjSpinner" alignment="0" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="ratioSFjSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="imagejLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -162,7 +159,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                              <Component id="ratioMaxjSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="rartioMaxjSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -182,7 +179,7 @@
                       <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="rgbMaxjSlider" min="-2" max="-2" attributes="0"/>
                   <Component id="rgbMaxjLabel" min="-2" max="-2" attributes="0"/>
@@ -192,15 +189,20 @@
                   <Component id="rgbMinjSlider" min="-2" max="-2" attributes="0"/>
                   <Component id="rgbMinjLabel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="13" max="32767" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                      <Component id="transparencyjComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
+                      <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                      <Component id="scalebarjComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel13" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="transparencyjComboBox" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                              <Component id="scalebarjComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel13" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -227,12 +229,12 @@
         <Property name="text" type="java.lang.String" value="Max"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="ratioMaxjSpinner">
+    <Component class="javax.swing.JSpinner" name="rartioMaxjSpinner">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" value="Max Ratio in HSI"/>
       </Properties>
       <Events>
-        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="ratioMaxjSpinnerStateChanged"/>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="rartioMaxjSpinnerStateChanged"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
@@ -322,7 +324,7 @@
         <Property name="toolTipText" type="java.lang.String" value="Intensity component of HSI"/>
       </Properties>
       <Events>
-        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="transparencyjComboBoxItemStateChanged"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="transparencyjComboBoxActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel13">
@@ -342,7 +344,7 @@
         <Property name="toolTipText" type="java.lang.String" value="Show Scale and Labels"/>
       </Properties>
       <Events>
-        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="scalebarjComboBoxItemStateChanged"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scalebarjComboBoxActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JSlider" name="rgbMaxjSlider">
@@ -368,7 +370,7 @@
     </Component>
     <Component class="javax.swing.JRadioButton" name="medianFilterjButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Medianize"/>
+        <Property name="text" type="java.lang.String" value="Median Filter Ratio   Radius:"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="medianFilterjButtonActionPerformed"/>
@@ -484,19 +486,24 @@
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="hsiWindowjSpinnerStateChanged"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JSpinner" name="scaleFactorjSpinner">
+    <Component class="javax.swing.JSpinner" name="ratioSFjSpinner">
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-          <SpinnerModel initial="10000.0" minimum="0.001" numberType="java.lang.Double" stepSize="1.0" type="number"/>
+          <SpinnerModel initial="0.0" maximum="99999.0" minimum="0.0" numberType="java.lang.Double" stepSize="1.0" type="number"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="scaleFactorjSpinnerStateChanged"/>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="ratioSFjSpinnerStateChanged"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Scale factor"/>
+        <Property name="text" type="java.lang.String" value="Ratio Scale Factor"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="imagejLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Image: "/>
       </Properties>
     </Component>
   </SubComponents>

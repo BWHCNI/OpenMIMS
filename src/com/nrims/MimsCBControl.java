@@ -12,6 +12,7 @@ import ij.process.ImageProcessor;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -113,7 +114,7 @@ public class MimsCBControl extends javax.swing.JPanel {
       
       // Setup and plot histogram.
       HistogramDataset dataset = new HistogramDataset();
-      dataset.addSeries("", pixels, nbins);            
+      dataset.addSeries("", pixels, nbins);
       org.jfree.chart.plot.XYPlot plot = (XYPlot) chart.getPlot();
       plot.setDataset(dataset);                 
       

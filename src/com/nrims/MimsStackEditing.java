@@ -611,7 +611,8 @@ public class MimsStackEditing extends javax.swing.JPanel {
 }//GEN-LAST:event_deleteListButtonActionPerformed
       
     private void concatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_concatButtonActionPerformed
-        UI tempUi = new UI(ui.getImageDir()); //loadMims here
+        UI tempUi = new UI(ui.getImageDir());
+        tempUi.loadMIMSFile();
         Opener tempImage = tempUi.getOpener();
         if (tempImage == null) {
             return; // if the FileChooser dialog was canceled
@@ -957,16 +958,40 @@ public void untrack() {
 
 private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumButtonActionPerformed
 
+    // Get the window title.
     String name = WindowManager.getCurrentImage().getTitle();
     String sumTextFieldString = sumTextField.getText().trim();
-    if (sumTextFieldString.isEmpty())
-       ui.computeSum(ui.getImageByName(name), true);
-    else {
+
+    // initialize varaibles.
+    SumProps sumProps = null;
+    MimsPlus mp = ui.getImageByName(name);
+    if (mp == null) return;
+    MimsPlus sp;
+
+    // Generate a SumProps object
+    if (mp.getMimsType() == MimsPlus.MASS_IMAGE) {
+       int parentIdx = mp.getMassIndex();
+       if (parentIdx > -1) sumProps = new SumProps(parentIdx);
+    }
+    if (mp.getMimsType() == MimsPlus.RATIO_IMAGE) {
+       RatioProps rp = mp.getRatioProps();
+       int numIdx = rp.getNumMassIdx();
+       int denIdx = rp.getDenMassIdx();
+       if (numIdx > -1 && denIdx > -1) sumProps = new SumProps(numIdx, denIdx);
+       sumProps.setRatioScaleFactor(mp.getRatioProps().getRatioScaleFactor());
+    }
+
+    // Get list from field box.
+    if (sumTextFieldString.isEmpty()) {
+       sp = new MimsPlus(ui, sumProps, null);
+    } else {
        ArrayList<Integer> sumlist = parseList(sumTextFieldString, 1, ui.mimsAction.getSize());
        if (sumlist.size()==0) return;
-       ui.computeSum(ui.getImageByName(name), true, sumlist);
+       sp = new MimsPlus(ui, sumProps, sumlist);
     }
-    
+
+    // Show sum image.
+    sp.showWindow();
 }//GEN-LAST:event_sumButtonActionPerformed
 
 private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
@@ -1030,7 +1055,8 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             MimsPlus cp;
             for (int mindex = 0; mindex < nmasses; mindex++) {
 
-                cp = ui.computeSum(images[mindex], false, sumlist);
+                SumProps sumProps = new SumProps(images[mindex].getMassIndex());
+                cp = new MimsPlus(ui, sumProps, sumlist);
 
                 // Check for bad data.
                 double m = cp.getProcessor().getMax();

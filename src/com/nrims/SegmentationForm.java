@@ -108,10 +108,10 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                 int index = mimsUi.getRatioImageIndex(num, den);
                 if (index == -1) {
                     // create ratio image
-                    HSIProps props = new HSIProps();
-                    props.setNumMass(num);
-                    props.setDenMass(den);
-                    mimsUi.computeRatio(props, true);
+                    HSIProps props = new HSIProps(num, den);
+                    MimsPlus mp = new MimsPlus(mimsUi, props);
+                    mp.showWindow();
+                    //mimsUi.computeRatio(props, true);
                     index = mimsUi.getRatioImageIndex(num, den);
                     if (index == -1) {
                         System.out.println("Error computing ratio image!");
@@ -589,7 +589,7 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
 
         SegmentationSetupForm setup = new SegmentationSetupForm(mimsUi, this, roiManager, trainClasses, massImageFeatures,
                 ratioImageFeatures, localFeatures, colorImageIndex, properties, mimsUi.getOpener().getMassNames());
-        //mimsUi.setState(java.awt.Frame.ICONIFIED);
+        mimsUi.setState(java.awt.Frame.ICONIFIED);
         setup.setVisible(true);
 }//GEN-LAST:event_modifyButtonActionPerformed
 
@@ -644,17 +644,6 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         segUtil.addPropertyChangeListener(this);
         segUtil.execute();
     }//GEN-LAST:event_predictButtonActionPerformed
-
-    public void force() {
-        activeTask = NO_TASK;
-        workLabel.setText("done");
-        progressBar.setValue(0);
-        if (activeEngine.getSuccess() && activeEngine.getClassification() != null) {
-            byte[] tmpClassification = activeEngine.getClassification();
-            classification = tmpClassification;
-        }
-        updateControls();
-    }
 
     private void savePredictionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_savePredictionButtonActionPerformed
 //        String defaultPath = mimsUi.getOpener().getImageFile().getParent() + System.getProperty("file.separator") + "segResult.zip";
@@ -782,13 +771,6 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                     }
                     break;
                 case PRED_TASK:
-                    Object newval = evt.getNewValue();
-                    boolean newval_started = evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED);
-                    boolean newval_end = evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.DONE);
-
-                    int foo = 5;
-                    foo += 5;
-
                     if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)) {
                         workLabel.setText("predicting...");
                         progressBar.setValue(activeEngine.getProgress());
@@ -836,7 +818,7 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                         } else { // TODO error handling
                             workLabel.setText("Error: feature extraction failed!");
                         }
-                        }
+                    }
                     break;
                 case ROI_TASK:
                     if (evt.getNewValue().equals(javax.swing.SwingWorker.StateValue.STARTED)) {
