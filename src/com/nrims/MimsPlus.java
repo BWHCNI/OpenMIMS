@@ -814,7 +814,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     // Display statistics while dragging or creating ROIs.
     public void mouseDragged(MouseEvent e) {
-      
+
+        if( Toolbar.getBrushSize() != 0 && Toolbar.getToolId()==Toolbar.OVAL) return;
+        
        // get mouse poistion
        int x = (int) e.getPoint().getX();
        int y = (int) e.getPoint().getY();
