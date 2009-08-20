@@ -115,23 +115,29 @@ public class AutoTrack {
 	ImagePlus source = null;
 	ImagePlus target = null;
 	double[] colorWeights = null;
+
+    java.util.Date date = new java.util.Date();
+    java.util.Random rand = new java.util.Random(date.getTime());
+    randnumber = date.getTime() + rand.nextInt();
+    String targetname = "StackRegTarget-" + randnumber;
+
 	switch (imp.getType()) {
 		case ImagePlus.GRAY8: {
-			target = new ImagePlus("StackRegTarget",
+			target = new ImagePlus(targetname,
 				new ByteProcessor(width, height, new byte[width * height],
 				imp.getProcessor().getColorModel()));
 			target.getProcessor().copyBits(imp.getProcessor(), 0, 0, Blitter.COPY);
 			break;
 		}
 		case ImagePlus.GRAY16: {
-			target = new ImagePlus("StackRegTarget",
+			target = new ImagePlus(targetname,
 				new ShortProcessor(width, height, new short[width * height],
 				imp.getProcessor().getColorModel()));
 			target.getProcessor().copyBits(imp.getProcessor(), 0, 0, Blitter.COPY);
 			break;
 		}
 		case ImagePlus.GRAY32: {
-			target = new ImagePlus("StackRegTarget",
+			target = new ImagePlus(targetname,
 				new FloatProcessor(width, height, new float[width * height],
 				imp.getProcessor().getColorModel()));
 			target.getProcessor().copyBits(imp.getProcessor(), 0, 0, Blitter.COPY);
@@ -960,6 +966,9 @@ private ImagePlus registerSlice (
 	final double[] colorWeights,
 	final int s
 ) {
+
+    String sourcename = "StackRegSource-"+randnumber;
+
 	imp.setSlice(s);
 	try {
 		Object turboReg = null;
@@ -970,23 +979,23 @@ private ImagePlus registerSlice (
 		switch (imp.getType()) {
 			case ImagePlus.COLOR_256:
 			case ImagePlus.COLOR_RGB: {
-				source = getGray32("StackRegSource", imp, colorWeights);
+				source = getGray32(sourcename, imp, colorWeights);
 				break;
 			}
 			case ImagePlus.GRAY8: {
-				source = new ImagePlus("StackRegSource", new ByteProcessor(
+				source = new ImagePlus(sourcename, new ByteProcessor(
 					width, height, (byte[])imp.getProcessor().getPixels(),
 					imp.getProcessor().getColorModel()));
 				break;
 			}
 			case ImagePlus.GRAY16: {
-				source = new ImagePlus("StackRegSource", new ShortProcessor(
+				source = new ImagePlus(sourcename, new ShortProcessor(
 					width, height, (short[])imp.getProcessor().getPixels(),
 					imp.getProcessor().getColorModel()));
 				break;
 			}
 			case ImagePlus.GRAY32: {
-				source = new ImagePlus("StackRegSource", new FloatProcessor(
+				source = new ImagePlus(sourcename, new FloatProcessor(
 					width, height, (float[])imp.getProcessor().getPixels(),
 					imp.getProcessor().getColorModel()));
 				break;
@@ -1095,7 +1104,7 @@ private ImagePlus registerSlice (
 		}
 		switch (imp.getType()) {
 			case ImagePlus.COLOR_256: {
-				source = new ImagePlus("StackRegSource", new ByteProcessor(
+				source = new ImagePlus(sourcename, new ByteProcessor(
 					width, height, (byte[])imp.getProcessor().getPixels(),
 					imp.getProcessor().getColorModel()));
 				ImageConverter converter = new ImageConverter(source);
@@ -1107,11 +1116,11 @@ private ImagePlus registerSlice (
 				byte[] g = new byte[width * height];
 				byte[] b = new byte[width * height];
 				((ColorProcessor)source.getProcessor()).getRGB(r, g, b);
-				final ImagePlus sourceR = new ImagePlus("StackRegSourceR",
+				final ImagePlus sourceR = new ImagePlus(sourcename+"R",
 					new ByteProcessor(width, height));
-				final ImagePlus sourceG = new ImagePlus("StackRegSourceG",
+				final ImagePlus sourceG = new ImagePlus(sourcename+"G",
 					new ByteProcessor(width, height));
-				final ImagePlus sourceB = new ImagePlus("StackRegSourceB",
+				final ImagePlus sourceB = new ImagePlus(sourcename+"B",
 					new ByteProcessor(width, height));
 				sourceR.getProcessor().setPixels(r);
 				sourceG.getProcessor().setPixels(g);
@@ -1372,11 +1381,11 @@ private ImagePlus registerSlice (
 				final byte[] g = new byte[width * height];
 				final byte[] b = new byte[width * height];
 				((ColorProcessor)imp.getProcessor()).getRGB(r, g, b);
-				final ImagePlus sourceR = new ImagePlus("StackRegSourceR",
+				final ImagePlus sourceR = new ImagePlus(sourcename+"R",
 					new ByteProcessor(width, height));
-				final ImagePlus sourceG = new ImagePlus("StackRegSourceG",
+				final ImagePlus sourceG = new ImagePlus(sourcename+"G",
 					new ByteProcessor(width, height));
-				final ImagePlus sourceB = new ImagePlus("StackRegSourceB",
+				final ImagePlus sourceB = new ImagePlus(sourcename+"B",
 					new ByteProcessor(width, height));
 				sourceR.getProcessor().setPixels(r);
 				sourceG.getProcessor().setPixels(g);
@@ -1782,7 +1791,7 @@ private ImagePlus registerSlice (
 } /* end registerSlice */
 
 
-
+private long randnumber;
     
     
 // end of class...    
