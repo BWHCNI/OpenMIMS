@@ -144,6 +144,7 @@ public class HSIProps implements java.io.Serializable {
         props.setBackgroundRatio(backgroundRatio);
         props.setXWindowLocation(xloc);
         props.setYWindowLocation(yloc);
+        props.setRatioScaleFactor(ratioScaleFactor);
     }
     
     public HSIProps clone() {

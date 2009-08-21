@@ -1683,8 +1683,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        for (int i=0; i<hsi_props.length; i++){
           if (closeEnough(hsi_props[i].getNumMassIdx(), hsi_props[i].getNumMassValue()) &&
               closeEnough(hsi_props[i].getDenMassIdx(), hsi_props[i].getDenMassValue())) {
-             mp = new MimsPlus(this, hsi_props[i]);
+              HSIProps tempprops = hsi_props[i].clone();
+              mp = new MimsPlus(this, hsi_props[i]);
              mp.showWindow();
+             mp.getHSIProcessor().setProps(tempprops);
           }
        }
 
