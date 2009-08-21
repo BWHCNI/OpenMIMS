@@ -326,6 +326,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
     void addPopupMenu() {
         pm = new JPopupMenu();
+        addPopupItem("Duplicate");
         addPopupItem("Combine");
         addPopupItem("Split");
         addPopupItem("Add [t]");
@@ -373,6 +374,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             Point ploc = panel.getLocation();
             Point bloc = moreButton.getLocation();
             pm.show(this, ploc.x, bloc.y);
+        } else if (command.equals("Duplicate")) {
+            duplicate();
         } else if (command.equals("Combine")) {
             combine();
         } else if (command.equals("Split")) {
@@ -1031,6 +1034,45 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             Recorder.record("mimsRoiManager", "Measure");
         }
         return true;
+    }
+
+    void duplicate() {
+        ImagePlus imp = getImage();
+        if (imp == null) {
+            return;
+        }
+
+        Roi roi = imp.getRoi();
+
+        if (roi == null) {
+            error("The active image does not have a selection.");
+            return;
+        }
+
+        Roi roi2 = (Roi)roi.clone();
+
+        String name = roi2.getName();
+        if (isStandardName(name)) {
+            name = null;
+        }
+        String label = name != null ? name : getLabel(imp, roi);
+        label = getUniqueName(label);
+        if (label == null) {
+            return;
+        }
+        listModel.addElement(label);
+        roi2.setName(label);
+        Calibration cal = imp.getCalibration();
+        if (cal.xOrigin != 0.0 || cal.yOrigin != 0.0) {
+            Rectangle r = roi2.getBounds();
+            roi2.setLocation(r.x - (int) cal.xOrigin, r.y - (int) cal.yOrigin);
+        }
+        rois.put(label, roi2);
+        if (Recorder.record) {
+            Recorder.record("mimsRoiManager", "Add");
+        }
+        return;
+
     }
 
     void combine() {
