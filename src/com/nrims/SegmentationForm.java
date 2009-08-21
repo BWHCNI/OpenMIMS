@@ -73,8 +73,12 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         // reset current model setup
         properties = new SegmentationProperties();
         properties.setValueOf(SegmentationEngine.ENGINE, "lib-SVM");
-        massImageFeatures = new boolean[]{true, false, true, true};
-        ratioImageFeatures = new boolean[]{false, true};
+        int nMasses = mimsUi.getOpener().getNMasses();
+        massImageFeatures = new boolean[nMasses];
+        for (int i = 0; i < nMasses; i++){
+           massImageFeatures[i] = true;
+        }
+        ratioImageFeatures = new boolean[]{false, true, false};
         localFeatures = new int[]{1, 1, 1};
         colorImageIndex = 3;
         // modelFile = "";
@@ -101,7 +105,7 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
 
         // get ratio images
 
-        for (int i = 0; i < ratioImageFeatures.length; i++) {
+        for (int i = 0; i < ratioImageFeatures.length - 1; i++) {
             if (ratioImageFeatures[i]) {
                 int num = RATIOS[i][0];
                 int den = RATIOS[i][1];
@@ -121,6 +125,23 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                 images.add(mimsUi.getRatioImage(index));
             }
         }
+
+        if (ratioImageFeatures[ratioImageFeatures.length-1] == true) {
+           MimsPlus[] mp = mimsUi.getOpenRatioImages();
+           for (int i=0; i < mp.length; i++) {
+              boolean contains = false;
+              for(int j=0; j < images.size(); j++) {
+                 if (mp[i].equals(images.get(j))) {
+                    contains = true;
+                    break;
+                 }
+              }
+              if (!contains)
+                 images.add(mp[i]);
+           }
+        }
+
+
         return images.toArray(new MimsPlus[images.size()]);
     }
 
@@ -222,8 +243,18 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
             }
         }
         for (int i = 0; i < ratioImageFeatures.length; i++) {
-            if (ratioImageFeatures[i]) {
+            if (ratioImageFeatures[i] && i < ratioImageFeatures.length - 1) {
                 desc += mimsUi.getOpener().getMassNames()[RATIOS[i][0]] + "/" + mimsUi.getOpener().getMassNames()[RATIOS[i][1]] + "\n";
+            }
+            if (ratioImageFeatures[i] && i == ratioImageFeatures.length - 1) {
+                MimsPlus[] mp = mimsUi.getOpenRatioImages();
+                for (int j = 0; j < mp.length; j++) {
+                   if ((mp[j].getRatioProps().getNumMassIdx() != RATIOS[0][0]  ||
+                        mp[j].getRatioProps().getDenMassIdx() != RATIOS[0][1]) &&
+                       (mp[j].getRatioProps().getNumMassIdx() != RATIOS[1][0]  ||
+                        mp[j].getRatioProps().getDenMassIdx() != RATIOS[1][1]))
+                      desc += mimsUi.getOpener().getMassNames()[mp[j].getRatioProps().getNumMassIdx()] + "/" + mimsUi.getOpener().getMassNames()[mp[j].getRatioProps().getDenMassIdx()] + "\n";
+                }
             }
         }
         desc += "\nLOCAL FEATURES\n";
@@ -588,7 +619,7 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
 
 
         SegmentationSetupForm setup = new SegmentationSetupForm(mimsUi, this, roiManager, trainClasses, massImageFeatures,
-                ratioImageFeatures, localFeatures, colorImageIndex, properties, mimsUi.getOpener().getMassNames());
+                ratioImageFeatures, localFeatures, colorImageIndex, properties);
         //mimsUi.setState(java.awt.Frame.ICONIFIED);
         setup.setVisible(true);
 }//GEN-LAST:event_modifyButtonActionPerformed
