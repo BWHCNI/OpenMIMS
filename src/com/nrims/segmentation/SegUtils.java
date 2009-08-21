@@ -248,7 +248,7 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
     private void calcROIs(){
         // setup values to report progress
         int progress = 0;
-        int step = 100/(classNames.length*2);
+        int step = 100/(classNames.length*2+1);
         
         // create an image from the classification result in order to find ROIs
         ByteProcessor ip = new ByteProcessor(width,height);

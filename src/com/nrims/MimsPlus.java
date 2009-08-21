@@ -631,6 +631,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             internalRatio.killRoi();
          } else if(this.nType == RATIO_IMAGE || this.nType == SUM_IMAGE) {
              pix = (float[])getProcessor().getPixels();
+         } else if(this.nType == SEG_IMAGE) {
+             return;
          } else {
             short[] spix = (short[])getProcessor().getPixels();
             pix = new float[spix.length];
