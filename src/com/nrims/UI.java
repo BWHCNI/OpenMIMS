@@ -35,6 +35,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -113,13 +115,17 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     protected MimsLineProfile lineProfile;
     protected MimsAction mimsAction = null;
     protected Roi activeRoi;    
-    
+
+    private String revisionNumber = "";
+
     // fileName name of the .im image file to be opened.
     public UI(String fileName) {
       super("NRIMS Analysis Module");
 
       System.out.println("Ui constructor");
       System.out.println(System.getProperty("java.version") + " : " + System.getProperty("java.vendor"));
+
+      revisionNumber = extractRevisionNumber();
 
       // Set look and feel to native OS
       try {
@@ -639,6 +645,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         for( int i = 0; i < images.length; i++) {
             if( images[i].getWindow() != null)
                 positions[i] = images[i].getWindow().getLocation();
+            else
+                positions[i] = new Point(-9,-9);
         }
 
         return positions;
@@ -678,13 +686,29 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     private void resetViewMenu() {
+        int c=0;
+        for(int i = 0; i< windowPositions.length; i++) {
+            if(windowPositions[i]!=null) c++;
+        }
+        System.out.println("count: "+c);
+
         for (int i = 0; i < viewMassMenuItems.length; i++) {
             if (i < image.getNMasses()) {
                 viewMassMenuItems[i].setText(image.getMassNames()[i]);
                 viewMassMenuItems[i].setVisible(true);
+                if (i < windowPositions.length && windowPositions[i]!=null) {
+                    if (windowPositions[i].x > 0 && windowPositions[i].y > 0) {
+                        viewMassMenuItems[i].setSelected(true);
+                    } else {
+                        viewMassMenuItems[i].setSelected(false);
+                    }
+                } else {
+                    viewMassMenuItems[i].setSelected(true);
+                }
             } else {
                 viewMassMenuItems[i].setText("foo");
                 viewMassMenuItems[i].setVisible(false);
+                viewMassMenuItems[i].setSelected(false);
             }
 
         }
@@ -697,9 +721,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             javax.swing.JRadioButtonMenuItem massRButton = new javax.swing.JRadioButtonMenuItem();
 
             if (i < image.getNMasses()) {
+                massRButton.setVisible(true);
                 massRButton.setSelected(true);
                 massRButton.setText(image.getMassNames()[i]);
-                massRButton.setVisible(true);
             } else {
                 massRButton.setSelected(false);
                 massRButton.setText("foo");
@@ -731,7 +755,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             if (viewMassMenuItems[index].isSelected() && !massImages[index].isVisible()) {
                 //int plane = getVisableMassImages()[0].getSlice();
                 massImages[index].show();
-                if(windowPositions[index] != null) massImages[index].getWindow().setLocation(windowPositions[index]);
+                if(windowPositions[index] != null && (windowPositions[index].x > 0 && windowPositions[index].y > 0))
+                    massImages[index].getWindow().setLocation(windowPositions[index]);
                 massImages[index].setbIgnoreClose(true);
                 //massImages[index].setSlice(plane);
                 //massImages[index].updateAndDraw();
@@ -783,12 +808,34 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         return -1;
     }
 
+    private String extractRevisionNumber() {
+        try {
+            InputStream build = getClass().getResourceAsStream("/buildnum.txt");
+            InputStreamReader buildr = new InputStreamReader(build);
+            BufferedReader br = new BufferedReader(buildr);
+            String line;
+            line = br.readLine();
+            line = line.split(":")[1];
+
+            br.close();
+            buildr.close();
+            build.close();
+
+            return line;
+          }
+            catch(Exception v) {
+            return "";
+          }
+
+    }
+
+
     // TODO: Fix Me
     public void openSeg(int[] segImage, String description, int segImageHeight, int segImageWidth) {
 
         MimsPlus mp = new MimsPlus(this, segImageWidth, segImageHeight, segImage, description);
         mp.setHSIProcessor(new HSIProcessor(mp));
-        boolean bShow = mp == null;
+        boolean bShow = ( mp == null );
         // find a slot to save it
         boolean bFound = false;
 
@@ -1694,7 +1741,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
 private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
 
-    String message = "OpenMIMS v0.8\n\n";
+    String message = "OpenMIMS v0.8 Revision: " + this.revisionNumber + "\n\n";
     message += "OpenMIMS was Developed at NRIMS, the National Resource\n";
     message += "for Imaging Mass Spectrometry.\n";
     message += "http://www.nrims.hms.harvard.edu/\n";
@@ -2556,5 +2603,5 @@ public void updateLineProfile(double[] newdata, String name, int width) {
       
       destinationFile.deleteOnExit();
       return destinationFile;
-   }   
+   }
 }
