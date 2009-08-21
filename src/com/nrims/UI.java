@@ -1114,6 +1114,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private void initComponents() {
 
         jMenuItem9 = new javax.swing.JMenuItem();
+        jPopupMenu1 = new javax.swing.JPopupMenu();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         mainTextField = new javax.swing.JTextField();
@@ -1136,6 +1137,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         importIMListMenuItem = new javax.swing.JMenuItem();
         captureImageMenuItem = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JSeparator();
+        exportjMenu = new javax.swing.JMenu();
+        exportPNGjMenuItem = new javax.swing.JMenuItem();
+        closeMenu = new javax.swing.JMenu();
         closeAllRatioMenuItem = new javax.swing.JMenuItem();
         closeAllHSIMenuItem = new javax.swing.JMenuItem();
         closeAllSumMenuItem = new javax.swing.JMenuItem();
@@ -1282,13 +1286,27 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         utilitiesMenu.add(captureImageMenuItem);
         utilitiesMenu.add(jSeparator3);
 
+        exportjMenu.setText("Export...");
+
+        exportPNGjMenuItem.setText("Export All Derived (png)");
+        exportPNGjMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportPNGjMenuItemActionPerformed(evt);
+            }
+        });
+        exportjMenu.add(exportPNGjMenuItem);
+
+        utilitiesMenu.add(exportjMenu);
+
+        closeMenu.setText("Close...");
+
         closeAllRatioMenuItem.setText("Close All Ratio Images");
         closeAllRatioMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeAllRatioMenuItemActionPerformed(evt);
             }
         });
-        utilitiesMenu.add(closeAllRatioMenuItem);
+        closeMenu.add(closeAllRatioMenuItem);
 
         closeAllHSIMenuItem.setText("Close All HSI Images");
         closeAllHSIMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1296,7 +1314,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 closeAllHSIMenuItemActionPerformed(evt);
             }
         });
-        utilitiesMenu.add(closeAllHSIMenuItem);
+        closeMenu.add(closeAllHSIMenuItem);
 
         closeAllSumMenuItem.setText("Close All Sum Images");
         closeAllSumMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1304,7 +1322,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 closeAllSumMenuItemActionPerformed(evt);
             }
         });
-        utilitiesMenu.add(closeAllSumMenuItem);
+        closeMenu.add(closeAllSumMenuItem);
+
+        utilitiesMenu.add(closeMenu);
         utilitiesMenu.add(jSeparator4);
 
         genStackMenuItem.setText("Generate Stack");
@@ -1686,6 +1706,66 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        }
        
     }
+
+    String getExportName(MimsPlus img) {
+        String name = "";
+        name += this.getImageFilePrefix();
+
+        if(img.getMimsType()==img.MASS_IMAGE) {
+            int index = img.getMassIndex();
+            int mass = Math.round(new Float(getOpener().getMassNames()[index]));
+            name += "_m" + mass;
+            return name;
+        }
+
+        if(img.getMimsType()==img.RATIO_IMAGE) {
+            RatioProps ratioprops = img.getRatioProps();
+            int numIndex = ratioprops.getNumMassIdx();
+            int denIndex = ratioprops.getDenMassIdx();
+            int numMass = Math.round(new Float(getOpener().getMassNames()[numIndex]));
+            int denMass = Math.round(new Float(getOpener().getMassNames()[denIndex]));
+            name += "_m" + numMass + "_m" + denMass + "_ratio";
+            return name;
+        }
+
+        if(img.getMimsType()==img.HSI_IMAGE) {
+            HSIProps hsiprops = img.getHSIProps();
+
+           int numIndex = hsiprops.getNumMassIdx();
+           int denIndex = hsiprops.getDenMassIdx();
+           int numMass = Math.round(new Float(getOpener().getMassNames()[numIndex]));
+           int denMass = Math.round(new Float(getOpener().getMassNames()[denIndex]));
+           name += "_m" + numMass + "_m" + denMass + "_hsi";
+           return name;
+        }
+
+        if (img.getMimsType() == img.SUM_IMAGE) {
+            SumProps sumProps = img.getSumProps();
+            if (sumProps.getSumType() == SumProps.RATIO_IMAGE) {
+                int numIndex = sumProps.getNumMassIdx();
+                int denIndex = sumProps.getDenMassIdx();
+                int numMass = Math.round(new Float(getOpener().getMassNames()[numIndex]));
+                int denMass = Math.round(new Float(getOpener().getMassNames()[denIndex]));
+                name += "_m" + numMass + "_m" + denMass + "_sum";
+                return name;
+            } else if (sumProps.getSumType() == SumProps.MASS_IMAGE) {
+                int parentIndex = sumProps.getParentMassIdx();
+                int parentMass = Math.round(new Float(getOpener().getMassNames()[parentIndex]));
+                name += "_m" + parentMass + "_sum";
+                return name;
+            }
+
+        }
+
+        if (img.getMimsType() == img.SEG_IMAGE) {
+            name += "_seg";
+            return name;
+        }
+
+        return name;
+    }
+
+
     
     private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
         //tab focus changed
@@ -1807,30 +1887,6 @@ private void importIMListMenuItemActionPerformed(java.awt.event.ActionEvent evt)
     testLoad.simpleIMImport();
     //this.mimsStackEditing.setConcatGUI(true);
 }//GEN-LAST:event_importIMListMenuItemActionPerformed
-
-private void closeAllRatioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeAllRatioMenuItemActionPerformed
-    for (int i = 0; i < ratioImages.length; i++) {
-        if (ratioImages[i] != null) {
-            ratioImages[i].close();
-        }
-    }
-}//GEN-LAST:event_closeAllRatioMenuItemActionPerformed
-
-private void closeAllHSIMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeAllHSIMenuItemActionPerformed
-    for (int i = 0; i < hsiImages.length; i++) {
-        if (hsiImages[i] != null) {
-            hsiImages[i].close();
-        }
-    }
-}//GEN-LAST:event_closeAllHSIMenuItemActionPerformed
-
-private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeAllSumMenuItemActionPerformed
-    for (int i = 0; i < sumImages.length; i++) {
-        if (sumImages[i] != null) {
-            sumImages[i].close();
-        }
-    }
-}//GEN-LAST:event_closeAllSumMenuItemActionPerformed
                                                                               
 
 private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_genStackMenuItemActionPerformed
@@ -1889,6 +1945,66 @@ private void saveMIMSjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {/
              }
 
 }//GEN-LAST:event_saveMIMSjMenuItemActionPerformed
+
+private void closeAllRatioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeAllRatioMenuItemActionPerformed
+
+    for (int i = 0; i < ratioImages.length; i++) {
+        if (ratioImages[i] != null) {
+            ratioImages[i].close();
+        }
+    }
+}//GEN-LAST:event_closeAllRatioMenuItemActionPerformed
+
+private void closeAllHSIMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeAllHSIMenuItemActionPerformed
+
+    for (int i = 0; i < hsiImages.length; i++) {
+        if (hsiImages[i] != null) {
+            hsiImages[i].close();
+        }
+    }
+}//GEN-LAST:event_closeAllHSIMenuItemActionPerformed
+
+private void closeAllSumMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeAllSumMenuItemActionPerformed
+
+    for (int i = 0; i < sumImages.length; i++) {
+        if (sumImages[i] != null) {
+            sumImages[i].close();
+        }
+    }
+}//GEN-LAST:event_closeAllSumMenuItemActionPerformed
+
+private void exportPNGjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportPNGjMenuItemActionPerformed
+
+    File file = image.getImageFile();
+    System.out.println(file.getParent()+file.separator);
+    String dir = file.getParent()+file.separator;
+
+    MimsPlus[] sum = getOpenSumImages();
+    for( int i = 0; i < sum.length; i ++) {
+        ImagePlus img = (ImagePlus)sum[i];
+        ij.io.FileSaver saver = new ij.io.FileSaver(img);
+        String name = getExportName(sum[i]) + ".png";
+        saver.saveAsPng(dir+name);
+    }
+
+    MimsPlus[] hsi = getOpenHSIImages();
+    for( int i = 0; i < hsi.length; i ++) {
+        ImagePlus img = (ImagePlus)hsi[i];
+        ij.io.FileSaver saver = new ij.io.FileSaver(img);
+        String name = getExportName(hsi[i]) + ".png";
+        saver.saveAsPng(dir+name);
+    }
+
+    MimsPlus[] ratios = getOpenRatioImages();
+    for( int i = 0; i < ratios.length; i ++) {
+        ImagePlus img = (ImagePlus)ratios[i];
+        ij.io.FileSaver saver = new ij.io.FileSaver(img);
+        String name = getExportName(ratios[i]) + ".png";
+        saver.saveAsPng(dir+name);
+    }
+
+
+}//GEN-LAST:event_exportPNGjMenuItemActionPerformed
                                            
 
 
@@ -2546,8 +2662,11 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     private javax.swing.JMenuItem closeAllHSIMenuItem;
     private javax.swing.JMenuItem closeAllRatioMenuItem;
     private javax.swing.JMenuItem closeAllSumMenuItem;
+    private javax.swing.JMenu closeMenu;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
+    private javax.swing.JMenuItem exportPNGjMenuItem;
+    private javax.swing.JMenu exportjMenu;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem genStackMenuItem;
     private javax.swing.JMenuItem importIMListMenuItem;
@@ -2557,6 +2676,7 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
