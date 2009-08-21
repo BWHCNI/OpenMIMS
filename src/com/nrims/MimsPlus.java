@@ -561,7 +561,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(ui.getDebug()) {
             ui.updateStatus("mimsPlus window opened");
         }
-        WindowListener [] wl = getWindow().getWindowListeners();
+
+        java.awt.Window w = getWindow();
+        if(w==null) return;
+        WindowListener [] wl = w.getWindowListeners();
         boolean bFound = false ;
         int i ;
         for(i = 0 ; i < wl.length ; i++ ) {
