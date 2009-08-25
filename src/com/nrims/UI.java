@@ -1380,6 +1380,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
         int currentSlice = massImages[0].getCurrentSlice();
 
+        mimsStackEditing.uncompressPlanes();
+
         // concatenate the remaining files.
         int x = mimsAction.getSize();
         for (int i = 1; i <= mimsAction.getSize(); i++) {
