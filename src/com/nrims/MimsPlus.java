@@ -24,11 +24,11 @@ import javax.swing.event.EventListenerList;
  */
 public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListener, MouseMotionListener {
     
-    static final int MASS_IMAGE = 0 ;
-    static final int RATIO_IMAGE = 1 ;
-    static final int HSI_IMAGE  =  2 ;
-    static final int SEG_IMAGE = 3 ;
-    static final int SUM_IMAGE = 4 ;
+    static final public int MASS_IMAGE = 0 ;
+    static final public int RATIO_IMAGE = 1 ;
+    static final public int HSI_IMAGE  =  2 ;
+    static final public int SEG_IMAGE = 3 ;
+    static final public int SUM_IMAGE = 4 ;
 
     // Internal images for test data display.
     public MimsPlus internalRatio;
@@ -321,7 +321,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
           Object[] o = parentImage.getStack().getImageArray();
             for (int i = 0; i < sumlist.size(); i++) {
-                if (sumlist.get(i) < 1 || sumlist.get(i) > ui.getmimsAction().getSize()) continue;
+                //if (sumlist.get(i) < 1 || sumlist.get(i) > ui.getmimsAction().getSize()) continue;
+                if (sumlist.get(i) < 1 || sumlist.get(i) > parentImage.getNSlices()) continue;
                 tempPixels = (short[])o[sumlist.get(i)-1];
                 for (int j = 0; j < sumPixels.length; j++) {
                     sumPixels[j] += ((int) ( tempPixels[j] & 0xffff) );
@@ -448,6 +449,18 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             return Integer.toString(nint)+"/"+Integer.toString(dint);
         }
         return "0";
+    }
+
+    public MimsPlus getNumeratorImage() {
+        if(this.getMimsType()!=this.RATIO_IMAGE)
+            return null;
+        return this.ui.getMassImage(this.getRatioProps().getNumMassIdx());
+    }
+
+    public MimsPlus getDenominatorImage() {
+        if(this.getMimsType()!=this.RATIO_IMAGE)
+            return null;
+        return this.ui.getMassImage(this.getRatioProps().getDenMassIdx());
     }
 
     public void setbIgnoreClose(boolean b) {
