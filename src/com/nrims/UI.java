@@ -611,7 +611,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             });
 
             this.mimsLog.Log("\n\nNew image: " + getImageFilePrefix() + "\n" + getImageHeader(image));
-            this.mimsTomography.resetBounds();
             this.mimsTomography.resetImageNamesList();
             this.mimsStackEditing.resetSpinners();
 
@@ -1775,7 +1774,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         //tab focus changed
         //reset tomography info
         if (this.mimsTomography != null) {
-            this.mimsTomography.resetBounds();
             this.mimsTomography.resetImageNamesList();
         }
 

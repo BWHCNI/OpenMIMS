@@ -272,15 +272,15 @@ public class Measure {
        MimsPlus[] images = getMeasureImages();                 
        generateRoiTable(images, false);       
     }
-    
+
     // This method creates a results table for rois
     // that are NOT synched across all slices.
     // The results table for Rois which are synched across
     // all slices of a mass image has a different format. Possibly merge later...
     public void generateRoiTable(MimsPlus[] images, boolean currentImageSliceOnly) {
-       
-       // return if no images;       
-       if (images.length == 0) 
+
+       // return if no images;
+       if (images.length == 0)
           return;
 
        // Get the starting slice.
@@ -288,23 +288,23 @@ public class Measure {
 
        // Get the number of slices in stack.
        int nSlices = images[0].getNSlices();
-       if (nSlices < 1) 
-          return;            
-        
+       if (nSlices < 1)
+          return;
+
        // Get the list of ROIs.
        MimsRoiManager rm = ui.getRoiManager();
        Roi[] rois;
-       javax.swing.JList rlist = rm.getList();        
-       if (rm.getROIs().isEmpty()) 
-          rois = new Roi[0];           
+       javax.swing.JList rlist = rm.getList();
+       if (rm.getROIs().isEmpty())
+          rois = new Roi[0];
        else {
           int length = rlist.getModel().getSize();
           rois = new Roi[length];
           for (int i = 0; i < length; i++) {
               rois[i] = (Roi) rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
-          }            
-       }               
-       
+          }
+       }
+
        // Generate column headings. We are hard coding the "Plane" column
        // because for this table, we want it first in the list.
        rTable.setHeading(0, "Slice");
@@ -320,48 +320,48 @@ public class Measure {
                 } else {
                    hd += "_";
                    hd += images[i].getRoundedTitle();
-                   rTable.setHeading(ncol++, hd);                   
+                   rTable.setHeading(ncol++, hd);
                 }
              }
           }
-       }           
-       
+       }
+
        // If were using the scratch pad (the measure button provided
        // on the RoiManager interface) than were only calculating stats
        // for the current plane.
        int begin, end;
        if (currentImageSliceOnly) {begin = images[0].getCurrentSlice(); end = begin;}
        else {begin = 1; end = nSlices;}
-       
+
        // Fill in table data.
        int nrois = rois.length;
-       if (nrois == 0) 
-          nrois = 1;        
-       for (int n = begin; n <= end; n++) {   
+       if (nrois == 0)
+          nrois = 1;
+       for (int n = begin; n <= end; n++) {
           for (int r = 0; r < nrois; r++) {
-             if (ui.getRoiManager().getSliceNumber(rois[r].getName()) == n 
+             if (ui.getRoiManager().getSliceNumber(rois[r].getName()) == n
                      || nSlices == 1 || currentImageSliceOnly) {
-             ncol = 0;                          
+             ncol = 0;
              rTable.incrementCounter();
-             rTable.addValue(ncol++, n); 
+             rTable.addValue(ncol++, n);
              for (int i = 0; i < images.length; i++) {
-                
+
                 // Set the mass image to the current slice. Unless
                 // doing it for just the currect slice
                 if (images[i].getMimsType() == MimsPlus.MASS_IMAGE) {
                    images[i].setSlice(n);
                 }
-                
+
                 // Set the rois to the images.
                 if (rois.length > 0) {
                    images[i].setRoi(rois[r]);
                 }
-                               
+
                 // Put results in table.
                 if (rois[r] != null)
                    ncol = addResults(images[i], i, rois.length > 0 ? rois[r] : null, n, ncol);
-             }             
-             
+             }
+
              String slicelabel = images[0].getStack().getShortSliceLabel(nSlices);
              String filename = "";
              String label = "";
@@ -370,7 +370,7 @@ public class Measure {
                 slicelabel = images[0].getStack().getShortSliceLabel(n);
                 filename = slicelabel.substring(slicelabel.indexOf(":")+1, slicelabel.length());
                 labelHeader = "File name : Roi name";
-                label = "\'"+filename+" : "+rois[r].getName()+"\'";                
+                label = "\'"+filename+" : "+rois[r].getName()+"\'";
              } else {
                 labelHeader = "Roi name";
                 label = "\'"+rois[r].getName()+"\'";
@@ -381,12 +381,12 @@ public class Measure {
              }
              rTable.addLabel(labelHeader, label);
              }
-          }          
+          }
        }
-       
+
        // Set to original slice.
        images[0].setSlice(startSlice);
-       
+
        // Done! Show table.
        rTable.show(fileName);
        if (setsize) {

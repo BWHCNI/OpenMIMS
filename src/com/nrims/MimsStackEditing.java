@@ -289,7 +289,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
         return ((im.getPixelWidth() == ij.getPixelWidth()) && (im.getPixelHeight() == ij.getPixelHeight()));
     }
     
-    public ArrayList<Integer> parseList(String liststr, int lb, int ub) {
+    public static ArrayList<Integer> parseList(String liststr, int lb, int ub) {
         ArrayList<Integer> deletelist = new ArrayList<Integer>();
         ArrayList<Integer> checklist = new ArrayList<Integer>();
         boolean badlist = false;
@@ -657,7 +657,6 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
         tempUi = null;
 
-        ui.getmimsTomography().resetBounds();
         ui.getMimsData().setHasStack(true);
         ui.setSyncStack(true);
 

@@ -41,6 +41,8 @@ import javax.swing.table.TableModel;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 import java.awt.BorderLayout;
+import java.io.File;
+import java.util.ArrayList;
 import javax.swing.table.DefaultTableCellRenderer;
 
 /**
@@ -105,8 +107,10 @@ public class MimsJFreeChart {
             //chart.addProgressListener(arg0);
             chartpanel = new mimsPanel(chart);
             chartpanel.setPreferredSize(new java.awt.Dimension(600, 400));
-            java.io.File dir = new java.io.File(ui.getLastFolder());
-            chartpanel.setDefaultDirectoryForSaveAs(dir);
+            String lastFolder = ui.getLastFolder();
+            if (lastFolder != null)
+               if (new File(lastFolder).exists())
+                  chartpanel.setDefaultDirectoryForSaveAs(new File(lastFolder));
             chartpanel.setBorder(border);
 
             //setContentPane(chartpanel);
@@ -248,9 +252,9 @@ public class MimsJFreeChart {
         }
     }
 
-    public void creatNewFrame(Roi[] rois, String title, String[] stats, int[] masses, int min, int max) {
+    public void creatNewFrame(Roi[] rois, String title, String[] stats, int[] masses, ArrayList<Integer> planes) {
         chartframe = new chartFrame(ui.getImageFilePrefix());
-        XYDataset tempdata = getDataset(rois, title, stats, masses, min, max);
+        XYDataset tempdata = getDataset(rois, title, stats, masses, planes);
         chartframe.addData(tempdata);
         chartframe.pack();
         RefineryUtilities.centerFrameOnScreen(chartframe);
@@ -258,7 +262,7 @@ public class MimsJFreeChart {
     }
 
     // This method will generate a set of plots for a given set of: rois, stats, images.
-    public XYDataset getDataset(Roi[] rois, String title, String[] stats, int[] masses, int min, int max) {
+    public XYDataset getDataset(Roi[] rois, String title, String[] stats, int[] masses, ArrayList<Integer> planes) {
 
       // Initialize some variables
       XYSeriesCollection dataset = new XYSeriesCollection();
@@ -269,8 +273,8 @@ public class MimsJFreeChart {
 
       // begin looping
       for (int i = 0; i < rois.length; i++) {
-         for (int ii = min; ii <= max; ii++) {
-            images[0].setSlice(ii);
+         for (int ii = 0; ii < planes.size(); ii++) {
+            images[0].setSlice(planes.get(ii));
             for (int j = 0; j < masses.length; j++) {
                for (int k = 0; k < stats.length; k++) {
 
@@ -298,7 +302,7 @@ public class MimsJFreeChart {
                   if (series[i][j][k] == null) {
                      series[i][j][k] = new XYSeries(seriesname[i][j][k]);
                   }
-                  series[i][j][k].add(ii, getSingleStat(tempstats, stats[k]));
+                  series[i][j][k].add(planes.get(ii).intValue(), getSingleStat(tempstats, stats[k]));
 
                } // End of Stats
             } // End of Masses
@@ -334,27 +338,10 @@ public class MimsJFreeChart {
         plot.setDomainCrosshairVisible(true);
         plot.setRangeCrosshairVisible(true);
 
-        //XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
-        //depricated...
-        //renderer.setShapesVisible(true);
-        //renderer.setShapesFilled(true);
-
-        // change the auto tick unit selection to integer units only...
-        //shouldn't do this?
-        /*
-        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-        domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        */
-
-
-        // OPTIONAL CUSTOMISATION COMPLETED.
-
         return chart;
     }
 
-    public double getSingleStat(ImageStatistics stats, String statname) {
+    public static double getSingleStat(ImageStatistics stats, String statname) {
         double st;
 
         if(statname.equals("area"))
