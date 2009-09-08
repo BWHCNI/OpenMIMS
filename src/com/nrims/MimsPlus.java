@@ -320,9 +320,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
           short[] tempPixels = new short[templength];
 
           Object[] o = parentImage.getStack().getImageArray();
+          int numSlices = parentImage.getNSlices();
             for (int i = 0; i < sumlist.size(); i++) {
-                //if (sumlist.get(i) < 1 || sumlist.get(i) > ui.getmimsAction().getSize()) continue;
-                if (sumlist.get(i) < 1 || sumlist.get(i) > parentImage.getNSlices()) continue;
+                if (sumlist.get(i) < 1 || sumlist.get(i) > numSlices) continue;
                 tempPixels = (short[])o[sumlist.get(i)-1];
                 for (int j = 0; j < sumPixels.length; j++) {
                     sumPixels[j] += ((int) ( tempPixels[j] & 0xffff) );
@@ -802,12 +802,16 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                   ij.process.ImageStatistics stats;                 
                   if(this.getMimsType()==HSI_IMAGE && internalRatio!=null) {
                       internalRatio.setRoi(roi);
-                     stats = internalRatio.getStatistics();
+                      stats = internalRatio.getStatistics();
                       internalRatio.killRoi();
                   } else {
                      stats = this.getStatistics();
                   }
-                  msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
+
+                  if (roi.getType() == roi.LINE)
+                     msg += "\t ROI " + roi.getName() + ": L=" + IJ.d2s(roi.getLength(), 0);
+                  else
+                     msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
                   
                   // Set Roi to yellow.
                   if(ui.activeRoi != roi){                   
