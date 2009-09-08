@@ -164,9 +164,9 @@ public class MimsTomography extends javax.swing.JPanel {
    }// </editor-fold>//GEN-END:initComponents
 
     private void plotButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plotButtonActionPerformed
-        // TODO add your handling code here:
-        
+       
         int currentPlane = images[0].getCurrentSlice();
+        Roi roi;
         
         MimsRoiManager rm = ui.getRoiManager();
         rm.showFrame();
@@ -178,8 +178,9 @@ public class MimsTomography extends javax.swing.JPanel {
         if(!rm.getROIs().isEmpty()) {
             rois = new ij.gui.Roi[roiIndexes.length];
             for(int i = 0 ; i < roiIndexes.length; i++ ) {
-                //rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getModel().getElementAt(i).toString());
-                rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getModel().getElementAt(roiIndexes[i]));
+                //rois[i] = (ij.gui.Roi)rm.getROIs().get(rlist.getModel().getElementAt(roiIndexes[i]));
+                roi = (ij.gui.Roi) rm.getROIs().get(rlist.getModel().getElementAt(roiIndexes[i]));
+                rois[i] = (Roi) roi.clone();
                 rois[i].setName("Roi " + Integer.toString(roiIndexes[i]+1));
             }
         }            
@@ -268,7 +269,7 @@ public class MimsTomography extends javax.swing.JPanel {
           rois = new ij.gui.Roi[roiIndexes.length];
           for (int i = 0; i < roiIndexes.length; i++) {
              roi = (ij.gui.Roi) rm.getROIs().get(rlist.getModel().getElementAt(roiIndexes[i]));
-             rois[i] = roi;
+             rois[i] = (Roi) roi.clone();
              rois[i].setName("r" + Integer.toString(roiIndexes[i] + 1));
           }
        } else {
