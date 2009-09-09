@@ -14,7 +14,7 @@ import javax.swing.JOptionPane;
 public class SegmentationForm extends javax.swing.JPanel implements java.beans.PropertyChangeListener {
 
     private static final int NO_TASK = -1,  TRAIN_TASK = 0,  PRED_TASK = 1,  TRAINFEAT_TASK = 2,  PREDFEAT_TASK = 3,  ROI_TASK = 4,  EXPORT_TASK = 5;
-
+    public  static final String[] FEATURE_NAMES = {"Neighboorhood", "Gradient", "Radius"};
     // TODO
     // ### HARD CODED ###
     private final int[][] RATIOS = {{1, 0}, {3, 2}}; // ratio images 13/12 and 27/26
@@ -78,7 +78,7 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         for (int i = 0; i < nMasses; i++){
            massImageFeatures[i] = true;
         }
-        ratioImageFeatures = new boolean[]{false, true, false};
+        ratioImageFeatures = new boolean[]{false, false, false};
         localFeatures = new int[]{1, 1, 1};
         colorImageIndex = 3;
         // modelFile = "";
@@ -104,7 +104,6 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         }
 
         // get ratio images
-
         for (int i = 0; i < ratioImageFeatures.length - 1; i++) {
             if (ratioImageFeatures[i]) {
                 int num = RATIOS[i][0];
@@ -195,7 +194,7 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         displayButton.setEnabled(!working && predicted);
 //        savePredictionButton.setEnabled(!working && predicted);
 //        loadPredictionButton.setEnabled(!working);
-       
+
     }
 
     private boolean fillBox() {
@@ -642,9 +641,26 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                     continue;
                 }
             }
-            //SegFileUtils.saveModel(filePath, trainClasses, classColors, properties,
-            //           massImageFeatures, ratioImageFeatures, localFeatures);
-            SegFileUtils.save(filePath, properties, trainClasses, classColors, colorImageIndex, massImageFeatures, ratioImageFeatures,
+            ArrayList ratioImages = new ArrayList<String>();
+            if (ratioImageFeatures[0] == true) {
+               String tmp = new String(new Integer(RATIOS[0][0]).toString() + " " + new Integer(RATIOS[0][1]).toString());
+               ratioImages.add(tmp);
+            }
+            if (ratioImageFeatures[1] == true) {
+               String tmp = new String(new Integer(RATIOS[1][0]).toString() + " " + new Integer(RATIOS[1][1]).toString());
+               ratioImages.add(tmp);
+            }
+            if (ratioImageFeatures[2] == true) {
+               MimsPlus[] mp = mimsUi.getOpenRatioImages();
+               for (int i = 0; i < mp.length; i++) {
+                  int n = mp[i].getRatioProps().getNumMassIdx();
+                  int d = mp[i].getRatioProps().getDenMassIdx();
+                  String tmp = new String(new Integer(n).toString() + " " + new Integer(d).toString());
+                  if (!ratioImages.contains(tmp))
+                     ratioImages.add(tmp);
+               }
+            }
+            SegFileUtils.save(filePath, properties, trainClasses, classColors, colorImageIndex, massImageFeatures, ratioImages,
                     localFeatures, classification, predClasses);
             break;
         }
