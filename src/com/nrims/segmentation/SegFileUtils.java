@@ -118,6 +118,7 @@ public class SegFileUtils {
                 }else if(name[0].equals(FEATFILE)){
                     // load features (see comments in the "writeFeatures" method for details)
                     String line = br.readLine();
+                    byte[] bytes = line.getBytes();
                     if (line.matches(FEATURE_FILE_HEADER)) {
 
                        // Get color index.
@@ -153,10 +154,29 @@ public class SegFileUtils {
                              ratioImageFeatures[2] = true;
                        }
                     } else {
+                        //version 1 case
+                       /*original
                        colorImageIndex = in.read();
                        for(int i=0; i<massImageFeatures.length; i++)  massImageFeatures[i]  = (in.read()==1);
-                       for(int i=0; i<ratioImageFeatures.length; i++) ratioImageFeatures[i] = (in.read()==1);
+                       for(int i=0; i<2; i++) ratioImageFeatures[i] = (in.read()==1);
                        for(int i=0; i<localFeatures.length; i++)      localFeatures[i]      = in.read();
+                        */
+                        int offset = 0;
+                        colorImageIndex = bytes[offset];
+                        offset++;
+                        for (int i = 0; i < massImageFeatures.length; i++) {
+                            massImageFeatures[i] = (bytes[offset] == 1);
+                            offset++;
+                        }
+                        for (int i = 0; i < 2; i++) {
+                            ratioImageFeatures[i] = (bytes[offset] == 1);
+                            offset++;
+                        }
+                        for (int i = 0; i < localFeatures.length; i++) {
+                            localFeatures[i] = bytes[offset];
+                            offset++;
+                        }
+                        
                     }
                 }else if(name[0].equals(PROPFILE)){
                     // load properties
