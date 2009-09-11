@@ -5,23 +5,17 @@
 
 package com.nrims;
 
-import ij.*;
 import ij.gui.*;
 import ij.process.*;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Insets;
 import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -30,10 +24,7 @@ import org.jfree.ui.RefineryUtilities;
 
 import org.jfree.chart.event.ChartProgressEvent;
 import org.jfree.chart.event.ChartProgressListener;
-import org.jfree.chart.event.ChartChangeEvent;
-import org.jfree.chart.event.ChartChangeListener;
 
-import org.jfree.ui.DateCellRenderer;
 import org.jfree.ui.NumberCellRenderer;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -44,26 +35,23 @@ import java.awt.BorderLayout;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 
 /**
- *
  * @author cpoczatek
  */
 public class MimsJFreeChart {
 
-    public MimsJFreeChart(com.nrims.UI ui, com.nrims.data.Opener im) {
+   String[] stats;
+   MimsPlus images[];
+   Roi[] rois;
+   ArrayList planes;
+   private com.nrims.UI ui;
+   private chartFrame chartframe;
+   private mimsPanel chartpanel;
 
-        this.ui = ui ;
-        this.image = im;
-        this.images = ui.getMassImages();
-        numberMasses = image.getNMasses();
-        imagestacks = new ImageStack[numberMasses];
-        rp = ui.getOpenRatioImages();
-
-        for (int i=0; i<=(numberMasses-1); i++) {
-            if(images[i]!=null)
-                imagestacks[i]=this.images[i].getStack();
-        }
+    public MimsJFreeChart(UI ui) {
+       this.ui = ui;
     }
 
     public class chartFrame extends JFrame {
@@ -95,11 +83,9 @@ public class MimsJFreeChart {
             table.getColumnModel().getColumn(0).setPreferredWidth(250);
 
             javax.swing.JScrollPane spane = new javax.swing.JScrollPane(table);
-            //spane.setVisible(true);
             dashboard.add(spane);
             this.add(dashboard, BorderLayout.NORTH);
             this.pack();
-
         }
 
         public void addData(XYDataset dataset) {
@@ -112,8 +98,6 @@ public class MimsJFreeChart {
                if (new File(lastFolder).exists())
                   chartpanel.setDefaultDirectoryForSaveAs(new File(lastFolder));
             chartpanel.setBorder(border);
-
-            //setContentPane(chartpanel);
             this.add(chartpanel);
         }
 
@@ -201,9 +185,12 @@ public class MimsJFreeChart {
     }
 
     public class mimsPanel extends ChartPanel implements ChartProgressListener {
+
+       JFreeChart chart;
         
         public mimsPanel(JFreeChart chart) {
             super(chart);
+            this.chart = chart;
         }
 
         @Override
@@ -250,59 +237,71 @@ public class MimsJFreeChart {
 
             return name;
         }
+
+        public JFreeChart getChart() {
+           return this.chart;
+        }
     }
 
-    public void creatNewFrame(Roi[] rois, String title, String[] stats, int[] masses, ArrayList<Integer> planes) {
-        chartframe = new chartFrame(ui.getImageFilePrefix());
-        XYDataset tempdata = getDataset(rois, title, stats, masses, planes);
-        chartframe.addData(tempdata);
-        chartframe.pack();
-        RefineryUtilities.centerFrameOnScreen(chartframe);
-        chartframe.setVisible(true);
-    }
+   public void createFrame(boolean appendResults) {
+
+      // Cant append if frame doesnt exist
+      if (chartframe == null) {
+         appendResults = false;
+      } else if (!chartframe.isVisible()) {
+         appendResults = false;
+      }
+
+      // if appending
+      if (appendResults && chartframe != null) {
+         XYDataset tempdata = getDataset();
+         int numSeries = chartpanel.getChart().getXYPlot().getDatasetCount();
+         chartpanel.getChart().getXYPlot().setDataset(numSeries, tempdata);
+         chartpanel.getChart().getXYPlot().setRenderer(numSeries, new StandardXYItemRenderer());
+      } else if (rois.length == 0 || images.length == 0 || stats.length == 0) {
+         return;
+      } else {         
+         chartframe = new chartFrame("Plot");
+         XYDataset tempdata = getDataset();
+         chartframe.addData(tempdata);
+         chartframe.pack();
+         RefineryUtilities.centerFrameOnScreen(chartframe);
+         chartframe.setVisible(true);
+      }
+   }
 
     // This method will generate a set of plots for a given set of: rois, stats, images.
-    public XYDataset getDataset(Roi[] rois, String title, String[] stats, int[] masses, ArrayList<Integer> planes) {
+    public XYDataset getDataset() {
 
       // Initialize some variables
       XYSeriesCollection dataset = new XYSeriesCollection();
-      rp = ui.getOpenRatioImages();
-      XYSeries series[][][] = new XYSeries[rois.length][masses.length][stats.length];
-      String seriesname[][][] = new String[rois.length][masses.length][stats.length];
+      XYSeries series[][][] = new XYSeries[rois.length][images.length][stats.length];
+      String seriesname[][][] = new String[rois.length][images.length][stats.length];
       ImageStatistics tempstats = null;
+      int currentSlice = images[0].getCurrentSlice();
 
       // begin looping
       for (int i = 0; i < rois.length; i++) {
          for (int ii = 0; ii < planes.size(); ii++) {
-            images[0].setSlice(planes.get(ii));
-            for (int j = 0; j < masses.length; j++) {
+            images[0].setSlice((Integer)planes.get(ii));
+            for (int j = 0; j < images.length; j++) {
                for (int k = 0; k < stats.length; k++) {
 
                   // Generate a name for the dataset.
-                  if (seriesname[i][j][k] == null) {
-                     if (masses[j] < numberMasses) {
-                        images[masses[j]].setRoi(rois[i]);
-                        seriesname[i][j][k] = images[masses[j]].getShortTitle();
-                        seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + " \n" + rois[i].getName();
-                     } else {
-                        images[0].setRoi(rois[i]);
-                        seriesname[i][j][k] = rp[masses[j] - numberMasses].getShortTitle();
-                        seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + " \n" + rois[i].getName();
-                     }
-                  }
-
-                  // Get the data.
-                  if (masses[j] < numberMasses) {
-                     tempstats = images[masses[j]].getStatistics();
-                  } else {
-                     tempstats = rp[masses[j] - numberMasses].getStatistics();
+                  if (seriesname[i][j][k] == null) {                        
+                        seriesname[i][j][k] = images[j].getShortTitle();
+                        seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + " \n" + rois[i].getName();                        
                   }
 
                   // Add data to the series.
                   if (series[i][j][k] == null) {
                      series[i][j][k] = new XYSeries(seriesname[i][j][k]);
                   }
-                  series[i][j][k].add(planes.get(ii).intValue(), getSingleStat(tempstats, stats[k]));
+
+                  // Get the stats.
+                  images[j].setRoi(rois[i]);
+                  tempstats = images[j].getStatistics();
+                  series[i][j][k].add(((Integer)planes.get(ii)).intValue(), getSingleStat(tempstats, stats[k]));
 
                } // End of Stats
             } // End of Masses
@@ -311,14 +310,32 @@ public class MimsJFreeChart {
 
       // Populate the final data structure.
       for (int i = 0; i < rois.length; i++) {
-         for (int j = 0; j < masses.length; j++) {
+         for (int j = 0; j < images.length; j++) {
             for (int k = 0; k < stats.length; k++) {
                dataset.addSeries(series[i][j][k]);
             }
          }
       }
 
+      images[0].setSlice(currentSlice);
+
       return dataset;
+   }
+
+   public void setImages(MimsPlus[] images){
+      this.images = images;
+   }
+
+   public void setStats(String[] stats) {
+      this.stats = stats;
+   }
+
+   public void setRois(Roi[] rois) {
+      this.rois = rois;
+   }
+
+   void setPlanes(ArrayList planes) {
+      this.planes = planes;
    }
 
 
@@ -393,17 +410,4 @@ public class MimsJFreeChart {
 
         return -999;
     }
-
-
-
-    private com.nrims.UI ui;
-    private com.nrims.data.Opener image;
-    private int numberMasses;
-    private MimsPlus[] images;
-    private ImageStack[] imagestacks;
-    private ij.process.ImageStatistics imagestats;
-    private MimsPlus[] rp;
-    private chartFrame chartframe;
-    private mimsPanel chartpanel;
-
 }

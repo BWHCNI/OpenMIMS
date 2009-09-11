@@ -17,7 +17,6 @@ import javax.swing.table.TableModel;
  */
 public class MimsJTable {
 
-   UI ui;
    JTable table;
    String[] stats;
    MimsPlus images[];
@@ -26,9 +25,7 @@ public class MimsJTable {
    ArrayList planes;
    JFrame frame;
 
-   public MimsJTable(UI ui) {
-      this.ui = ui;
-   }
+   public MimsJTable() {}
 
    public void createTable(boolean appendResults) {
 
@@ -76,7 +73,6 @@ public class MimsJTable {
             col.setMinWidth(width);
             col.setPreferredWidth(width);
          }
-
 
          //Create the scroll pane and add the table to it.
          JScrollPane scrollPane = new JScrollPane(table);
@@ -150,12 +146,6 @@ public class MimsJTable {
       if (numCol1 != numCol2) {
          return false;
       }
-
-      // Exact heading match.
-      //for (int i = 0; i < numCol1; i++) {
-      //   if (!columnNames[i].matches(table.getColumnName(i)))
-      //      return false;
-      //}
 
       return true;
    }

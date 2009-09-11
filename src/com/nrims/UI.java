@@ -563,7 +563,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 hsiControl = new HSIView(this);
                 mimsLog = new MimsLog(this, image);
                 mimsStackEditing = new MimsStackEditing(this, image);
-                mimsTomography = new MimsTomography(this, image);
+                mimsTomography = new MimsTomography(this);
                 mimsAction = new MimsAction(this, image);
                 //TODO: throws an exception when opening an image with 2 masses
                 segmentation = new SegmentationForm(this);
@@ -584,7 +584,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 hsiControl = new HSIView(this);
                 cbControl = new MimsCBControl(this);
                 mimsStackEditing = new MimsStackEditing(this, image);
-                mimsTomography = new MimsTomography(this, image);
+                mimsTomography = new MimsTomography(this);
                 mimsAction = new MimsAction(this, image);
                 //TODO: throws an exception when opening an image with 2 masses
                 segmentation = new SegmentationForm(this);

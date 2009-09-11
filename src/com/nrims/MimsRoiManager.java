@@ -1227,6 +1227,29 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         return rois;
     }
 
+    /** Gets selected ROIs. */
+    public Roi[] getSelectedROIs() {
+
+       // initialize variables.
+       Roi roi;
+       Roi[] rois;
+
+       // get selected indexes.
+       int[] roiIndexes = jlist.getSelectedIndices();
+       if (roiIndexes.length == 0) {
+          rois = new Roi[0];
+       } else {
+          rois = new ij.gui.Roi[roiIndexes.length];
+          for (int i = 0; i < roiIndexes.length; i++) {
+             roi = (ij.gui.Roi) getROIs().get(jlist.getModel().getElementAt(roiIndexes[i]));
+             rois[i] = (Roi) roi.clone();
+             rois[i].setName("r" + Integer.toString(roiIndexes[i] + 1));
+          }
+       }
+
+       return rois;
+    }
+
     /** Returns the selection list. */
     public JList getList() {
         return jlist;
