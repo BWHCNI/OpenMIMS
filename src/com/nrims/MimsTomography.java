@@ -202,7 +202,7 @@ public class MimsTomography extends javax.swing.JPanel {
        rm.showFrame();
 
        if (!appendCheckBox.isSelected() || table == null) {
-          table = new MimsJTable();
+          table = new MimsJTable(ui);
        }
 
        // Determine planes.
