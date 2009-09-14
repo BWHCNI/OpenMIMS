@@ -14,6 +14,8 @@ public class RatioProps implements java.io.Serializable {
     private double ratioScaleFactor;
     //------------------------------
     //End of v2
+    private double minLUT;
+    private double maxLUT;
 
 
    // Create an empty ratio props object.
@@ -30,6 +32,9 @@ public class RatioProps implements java.io.Serializable {
        numMassValue = -1.0;
        denMassValue = -1.0;
        ratioScaleFactor = -1.0;
+       //-----------
+       minLUT = 0.0;
+       maxLUT = 1.0;
    }
 
    // Two props objects are equal if numerator and denominator are the same.
@@ -55,6 +60,11 @@ public class RatioProps implements java.io.Serializable {
    public String getDataFileName() { return dataFileName; }
    public void setRatioScaleFactor(double s) { this.ratioScaleFactor = s; }
    public double getRatioScaleFactor() { return this.ratioScaleFactor; }
+
+   public void setMinLUT(double min) { this.minLUT = min; }
+   public double getMinLUT() { return this.minLUT; }
+   public void setMaxLUT(double max) { this.maxLUT = max; }
+   public double getMaxLUT() { return this.maxLUT; }
 }
 
 

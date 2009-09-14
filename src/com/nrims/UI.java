@@ -9,6 +9,7 @@ import com.nrims.data.*;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.gui.Roi;
 import ij.gui.ImageWindow;
 import ij.gui.ImageCanvas;
@@ -832,33 +833,52 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     // TODO: Fix Me
     public void openSeg(int[] segImage, String description, int segImageHeight, int segImageWidth) {
 
-        MimsPlus mp = new MimsPlus(this, segImageWidth, segImageHeight, segImage, description);
-        mp.setHSIProcessor(new HSIProcessor(mp));
-        boolean bShow = ( mp == null );
-        // find a slot to save it
-        boolean bFound = false;
+        int npixels = segImageWidth * segImageHeight;
+        if (segImage.length % npixels != 0) return;
+        int nplanes = (int) Math.floor(segImage.length / npixels);
 
+        //TODO: need to unify these, ie fix the multi-plane part
+        if (nplanes > 1) {
+            ImageStack stack = new ImageStack(segImageWidth, segImageHeight, nplanes);
 
-        bFound = true;
-        segImages[0] = mp;
-        int segIndex = 0;
-
-        if (!bFound) {
-            segIndex = 5;
-            segImages[segIndex] = mp;
-        }
-
-        mp.addListener(this);
-        bShow = true;
-        if (bShow) {
-            while (mp.getHSIProcessor().isRunning()) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException x) {
+            for (int offset = 0; offset < nplanes; offset++) {
+                int[] pixels = new int[npixels];
+                for (int i = 0; i < npixels; i++) {
+                    pixels[i] = segImage[i + (npixels * offset)];
                 }
+                stack.setPixels(pixels, offset + 1);
+
             }
-            mp.show();
-//            jMenuItem2ActionPerformed(null);    //tile screws up plots          
+            ImagePlus img = new ImagePlus("seg", stack);
+            img.show();
+        } else {
+            MimsPlus mp = new MimsPlus(this, segImageWidth, segImageHeight, segImage, description);
+            mp.setHSIProcessor(new HSIProcessor(mp));
+            boolean bShow = (mp == null);
+            // find a slot to save it
+            boolean bFound = false;
+
+
+            bFound = true;
+            segImages[0] = mp;
+            int segIndex = 0;
+
+            if (!bFound) {
+                segIndex = 5;
+                segImages[segIndex] = mp;
+            }
+
+            mp.addListener(this);
+            bShow = true;
+            if (bShow) {
+                while (mp.getHSIProcessor().isRunning()) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException x) {
+                    }
+                }
+                mp.show();
+            }
         }
     }
 
@@ -1677,6 +1697,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
               closeEnough(rto_props[i].getDenMassIdx(), rto_props[i].getDenMassValue())) {
              mp = new MimsPlus(this, rto_props[i]);
              mp.showWindow();
+             mp.setDisplayRange(rto_props[i].getMinLUT(), rto_props[i].getMaxLUT());
           }
        }
        
@@ -1688,6 +1709,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
               mp = new MimsPlus(this, hsi_props[i]);
              mp.showWindow();
              mp.getHSIProcessor().setProps(tempprops);
+             mp.hsiProps = tempprops;
           }
        }
 
@@ -1913,6 +1935,9 @@ private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
      //HSIProps p = hsi[0].getHSIProps();
      
      MimsPlus[] sum = this.getOpenSumImages();
+
+     MimsPlus foo = this.getOpenMassImages()[0];
+     //foo.getStack().getPixels(asdf)
 
      int b = 0;
 }//GEN-LAST:event_TestMenuItemActionPerformed
@@ -2415,6 +2440,9 @@ public void updateLineProfile(double[] newdata, String name, int width) {
           rto_props[i].setYWindowLocation(rto[i].getWindow().getY());
           rto_props[i].setNumMassValue(getMassValue(rto_props[i].getNumMassIdx()));
           rto_props[i].setDenMassValue(getMassValue(rto_props[i].getDenMassIdx()));
+
+          rto_props[i].setMinLUT(rto[i].getDisplayRangeMin());
+          rto_props[i].setMaxLUT(rto[i].getDisplayRangeMax());
        }
        return rto_props;
     }
