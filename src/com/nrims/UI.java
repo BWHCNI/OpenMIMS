@@ -204,34 +204,40 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       });
    }
 
-   public void addToImagesList(MimsPlus mp) {
-      int i = 0; boolean inserted=false;
+   public boolean addToImagesList(MimsPlus mp) {
+      int i = 0; int ii = 0; boolean inserted=false;
       while (i < maxMasses) {
          if (mp.getMimsType() == MimsPlus.RATIO_IMAGE && ratioImages[i] == null) {
             inserted = true;
             ratioImages[i] = mp;
             getCBControl().addWindowtoList(mp);
-            break;
+            return true;
          }
          if (mp.getMimsType() == MimsPlus.HSI_IMAGE && hsiImages[i] == null) {
             inserted = true;
             hsiImages[i] = mp;
-            break;
-         }
-         if (mp.getMimsType() == MimsPlus.SUM_IMAGE && sumImages[i] == null) {
-            inserted = true;
-            sumImages[i] = mp;
-            getCBControl().addWindowtoList(mp);
-            break;
+            return true;
          }
          if (mp.getMimsType() == MimsPlus.SEG_IMAGE && segImages[i] == null) {
             inserted = true;
             segImages[i] = mp;
-            break;
+            return true;
          }
          i++;         
-      }      
-      if (!inserted) System.out.println("To many open images");
+      }     
+      
+      // Sum images has a larger array size.
+      while (ii < 2 * maxMasses) {
+         if (mp.getMimsType() == MimsPlus.SUM_IMAGE && sumImages[ii] == null) {
+            inserted = true;
+            sumImages[ii] = mp;
+            getCBControl().addWindowtoList(mp);
+            return true;
+         }
+         ii++;
+      }
+      if (!inserted) System.out.println("Too many open images");
+      return inserted;
    }
 
     /**
@@ -292,6 +298,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
             }
         }
+
+        int y = 0;
     // FIXME: todo: the current opener is not dispose anywhere, so there are likely dangling file handles.
     }
 

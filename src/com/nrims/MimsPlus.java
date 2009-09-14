@@ -372,18 +372,17 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
     public void showWindow(){
 
-       show();
+      if (ui.addToImagesList(this)) {
+         show();
 
-       // Set window location.
-       if (xloc > -1 & yloc > -1)
-          getWindow().setLocation(xloc, yloc);
+         // Set window location.
+         if (xloc > -1 & yloc > -1)
+            getWindow().setLocation(xloc, yloc);
 
-       // Add image to list og images in UI.
-       ui.addToImagesList(this);
-
-       // Autocontrast image by default.
-       ui.autoContrastImage(this);
-    }
+         // Autocontrast image by default.
+         ui.autoContrastImage(this);
+      }
+   }
 
 
    @Override
