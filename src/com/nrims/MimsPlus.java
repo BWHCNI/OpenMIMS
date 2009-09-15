@@ -520,8 +520,29 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     
     @Override
     public void setRoi(ij.gui.Roi roi) {
-        if(roi == null) super.killRoi();
-        else super.setRoi(roi);
+        if (roi == null) {
+            super.killRoi();
+        } //else super.setRoi(roi);
+        else {
+            ij.gui.Roi roiRm = null;
+            java.util.Hashtable rois = null;
+
+            com.nrims.MimsRoiManager rm = ui.getRoiManager();
+
+            if (rm != null) {
+                rois = rm.getROIs();
+            }
+            if (rois != null) {
+                String name = roi.getName();
+                if(name!=null) roiRm = (ij.gui.Roi) rois.get(name);
+            }
+            if (roiRm != null) {
+                super.setRoi(roiRm);
+            } else {
+                super.setRoi(roi);
+            }
+        }
+
         stateChanged(roi,MimsPlusEvent.ATTR_SET_ROI);
     }
 
@@ -850,6 +871,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        
        // Get the ROI, (the area in yellow).
       Roi roi = getRoi();
+
+
+
+
 
       // Display stats in the message bar.
       if (roi != null) {

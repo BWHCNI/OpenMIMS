@@ -279,11 +279,17 @@ public class MimsJFreeChart {
       String seriesname[][][] = new String[rois.length][images.length][stats.length];
       ImageStatistics tempstats = null;
       int currentSlice = images[0].getCurrentSlice();
+      MimsRoiManager rm = ui.getRoiManager();
 
       // begin looping
       for (int i = 0; i < rois.length; i++) {
          for (int ii = 0; ii < planes.size(); ii++) {
             images[0].setSlice((Integer)planes.get(ii));
+
+            rm.syncRoiPositions((Integer)planes.get(ii));
+            String name = rois[i].getName();
+            Roi roi2 = (Roi)rm.getROIs().get(name);
+
             for (int j = 0; j < images.length; j++) {
                for (int k = 0; k < stats.length; k++) {
 

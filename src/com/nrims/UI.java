@@ -1001,8 +1001,29 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             // Set mass images.
             int nSlice = evt.getSlice();
+
+            MimsRoiManager rm = getRoiManager();
+            if(rm!=null) {
+                rm.syncRoiPositions(nSlice);
+            }
+
             for (int i = 0; i < mp.length; i++) {
                mp[i].setSlice(nSlice);
+
+               //set roi with correct position
+               ij.gui.Roi roi = mp[i].getRoi();
+               
+               //MimsRoiManager rm = getRoiManager();
+                if (roi != null && rm != null) {
+                    String label = roi.getName();
+                //    if(rm.getROIs().get(label)==null) return;
+                //    int[] p = rm.getRoiPosition(label, nSlice - 1);
+                //    roi.setLocation(p[1], p[2]);
+                //    rm.getROIs().remove(label);
+                //    rm.getROIs().put(label, roi);
+                    ij.gui.Roi roiRm = (ij.gui.Roi)rm.getROIs().get(roi.getName());
+                    mp[i].setRoi(roiRm);
+                }
             }                                                    
 
             if (!isSum) {

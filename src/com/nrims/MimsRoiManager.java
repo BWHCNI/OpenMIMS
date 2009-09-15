@@ -54,6 +54,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     private String savedpath = "";
     boolean previouslySaved = false;
     Measure scratch;
+    Hashtable positions = new Hashtable();
     
     public MimsRoiManager(UI ui, com.nrims.data.Opener im) {
         super("MIMS ROI Manager");
@@ -216,6 +217,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         
         if (roi.getType() == Roi.RECTANGLE || roi.getType() == Roi.OVAL || roi.getType() == Roi.POLYGON || roi.getType() == Roi.FREEROI) {
             roi.setLocation(newx,newy);
+            int plane = imp.getSlice();
+            this.setRoiPosition(roi.getName(), new int[] {plane, newx, newy});
             move(imp, roi);
             
             MimsPlus im = (MimsPlus) WindowManager.getCurrentImage();
@@ -226,13 +229,14 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                     this.ui.getRoiControl().updateHistogram(roiPix, histlabel, false);
                 }
             } 
-        } 
+        }
+
         if (roi instanceof ij.gui.Line) {
             int deltax = newx-oldx;
             int deltay = newy-oldy;
             ij.gui.Line lineroi = (Line) roi;
             ij.gui.Line newline = new Line(lineroi.x1 + deltax, lineroi.y1 + deltay, lineroi.x2 + deltax, lineroi.y2 + deltay, imp);
-            
+
             String newName = getLabel(imp, newline);
             newName = getUniqueName(newName);
             if (newName != null) {
@@ -509,6 +513,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
       // ROI old name - based on its old bounding rect
       String oldName = roi.getName();           
 
+      /*
       // ROI new name - based on its new bounding rect
       String newName = getLabel(imp, roi);
       newName = getUniqueName(newName);
@@ -523,6 +528,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
       // update rois hashtable with new ROI            
       rois.remove(oldName); 
       rois.put(newName, roi);
+      */
       imp.setRoi(roi);
       
       imp.updateAndRepaintWindow();
@@ -577,6 +583,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             roi.setLocation(r.x - (int) cal.xOrigin, r.y - (int) cal.yOrigin);
         }
         rois.put(label, roi);
+
+        //add roi positions to name -> position list hash
+        this.addRoiPositions(roi);
+
         if (Recorder.record) {
             Recorder.record("mimsRoiManager", "Add");
         }
@@ -693,6 +703,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     }
 
     boolean rename(String name2) {
+        return false;
+        /*
         int index = jlist.getSelectedIndex();
         if (index < 0) {
             return error("Exactly one item in the list must be selected.");
@@ -713,7 +725,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (Recorder.record) {
             Recorder.record("mimsRoiManager", "Rename", name2);
         }
-        return true;
+        return true; */
     }
 
     String promptForName(String name) {
@@ -954,6 +966,53 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
         return true;
     }
+
+    public void addRoiPositions(Roi roi) {
+        String label = roi.getName();
+
+        //generate position list
+        //plane or z index starts with 0, unlike imageplus stacks
+        //be careful
+        ArrayList<int[]> positionList = new ArrayList<int[]>();
+        int actSize = ui.getmimsAction().getSize();
+        int x = roi.getBoundingRect().x;
+        int y = roi.getBoundingRect().y;
+        for(int i = 0; i < actSize; i++) {
+            int[] p = {i, x, y};
+            positionList.add(p);
+        }
+
+        //add list to positions with correct label
+        this.positions.put(label, positionList);
+
+    }
+
+    public int[] getRoiPosition(String name, int plane){
+        int[] p = {0, 0, 0};
+        p = ((ArrayList<int[]>)positions.get(name) ).get(plane);
+        return p;
+    }
+
+    public void setRoiPosition(String name, int[] p){
+
+        ArrayList<int[]> pos = (ArrayList<int[]>)positions.get(name);
+        pos.set(p[0]-1, p);
+    }
+
+    public void syncRoiPositions(int plane) {
+        //need a better loop...
+        int[] indexes = getAllIndexes();
+        for (int i = 0; i < indexes.length; i++) {
+            String label = listModel.get(indexes[i]).toString();
+            Roi roi = (Roi) rois.get(label);
+            ArrayList<int[]> pos = (ArrayList<int[]>)positions.get(label);
+            int[] p = pos.get(plane-1);
+            roi.setLocation(p[1], p[2]);
+            rois.remove(label);
+            rois.put(label, roi);
+        }
+    }
+
     private void resetTitle() {
         String name = savedpath.substring(savedpath.lastIndexOf("/")+1, savedpath.length());
         this.setTitle("MIMS ROI Manager: "+name);
@@ -1243,7 +1302,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
           for (int i = 0; i < roiIndexes.length; i++) {
              roi = (ij.gui.Roi) getROIs().get(jlist.getModel().getElementAt(roiIndexes[i]));
              rois[i] = (Roi) roi.clone();
-             rois[i].setName("r" + Integer.toString(roiIndexes[i] + 1));
+             //rois[i].setName("r" + Integer.toString(roiIndexes[i] + 1));
           }
        }
 
