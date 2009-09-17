@@ -636,6 +636,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
                         // store action to reapply it after restoring
                         // (shallow copy in mimsAction is enough as 'restoreMims' creates a new 'actionList' object
                         concatImages(value != JOptionPane.YES_OPTION, true, tempUi);
+                        ui.getRoiManager().updateRoiLocations(value != JOptionPane.YES_OPTION);
                     }
                 } else {
                     IJ.error("Images do not have the same spot size.");
@@ -656,7 +657,7 @@ public class MimsStackEditing extends javax.swing.JPanel {
             }
         }
         tempUi = null;
-
+        
         ui.getMimsData().setHasStack(true);
         ui.setSyncStack(true);
 

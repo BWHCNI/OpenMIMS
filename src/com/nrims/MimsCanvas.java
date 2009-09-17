@@ -8,10 +8,12 @@ import ij.gui.*;
 import ij.io.RoiEncoder;
 import ij.io.RoiDecoder;
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 /**
  * Extends ij.gui.ImageCanvas with utility to display all ROIs.
@@ -56,16 +58,26 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
         boolean isRatio = (mImp.getMimsType() == MimsPlus.RATIO_IMAGE) || (mImp.getMimsType() == MimsPlus.HSI_IMAGE);
         int parentplane = 1;
         
-        if(mImp.getMimsType() == MimsPlus.RATIO_IMAGE) {
+        if (mImp.getMimsType() == MimsPlus.MASS_IMAGE) {
+            parentplane = mImp.getCurrentSlice();
+        } else if(mImp.getMimsType() == MimsPlus.RATIO_IMAGE) {
             parentplane = ui.getMassImages()[mImp.getRatioProps().getNumMassIdx()].getCurrentSlice();
-        }
-        if(mImp.getMimsType() == MimsPlus.HSI_IMAGE) {
+        } else if(mImp.getMimsType() == MimsPlus.HSI_IMAGE) {
             parentplane = ui.getMassImages()[mImp.getHSIProps().getNumMassIdx()].getCurrentSlice();
+        } else if(mImp.getMimsType() == MimsPlus.SUM_IMAGE) {
+            if (mImp.getSumProps().getSumType() == SumProps.MASS_IMAGE)
+               parentplane = ui.getMassImages()[mImp.getSumProps().getParentMassIdx()].getCurrentSlice();
+            else if (mImp.getSumProps().getSumType() == SumProps.RATIO_IMAGE)
+               parentplane = ui.getMassImages()[mImp.getSumProps().getNumMassIdx()].getCurrentSlice();
         }
+
 
         for (int id = 0; id < list.getModel().getSize(); id++) {
             String label = (list.getModel().getElementAt(id).toString());
             Roi roi = (Roi) rois.get(label);
+            Integer[] xy = roiManager.getRoiLocation(label, parentplane);
+            roi.setLocation(xy[0], xy[1]);
+
             boolean bDraw = true;
 
 

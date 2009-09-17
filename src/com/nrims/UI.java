@@ -202,6 +202,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
          }
       });
+      
+      //loadMIMSFile(new File("/nrims/home3/zkaufman/Images/test_file.im"));
    }
 
    public boolean addToImagesList(MimsPlus mp) {
@@ -244,7 +246,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * Closes the current image and its associated set of windows if the mode is set to close open windows.
      */
     private synchronized void closeCurrentImage() {
-        // TODO why is this 6? Changed to maxMasses
         this.windowPositions = gatherWindowPosistions();
         this.hiddenWindows = gatherHiddenWindows();
         for (int i = 0; i < maxMasses; i++) {
@@ -298,9 +299,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
             }
         }
-
-        int y = 0;
-    // FIXME: todo: the current opener is not dispose anywhere, so there are likely dangling file handles.
     }
 
     public synchronized void loadMIMSFile() {
@@ -998,32 +996,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             MimsPlus mp[] = this.getOpenMassImages();
             MimsPlus rp[] = this.getOpenRatioImages();
             MimsPlus hsi[] = this.getOpenHSIImages();
+            MimsPlus sum[] = this.getOpenSumImages();
 
             // Set mass images.
             int nSlice = evt.getSlice();
-
-            MimsRoiManager rm = getRoiManager();
-            if(rm!=null) {
-                rm.syncRoiPositions(nSlice);
-            }
-
             for (int i = 0; i < mp.length; i++) {
                mp[i].setSlice(nSlice);
-
-               //set roi with correct position
-               ij.gui.Roi roi = mp[i].getRoi();
-               
-               //MimsRoiManager rm = getRoiManager();
-                if (roi != null && rm != null) {
-                    String label = roi.getName();
-                //    if(rm.getROIs().get(label)==null) return;
-                //    int[] p = rm.getRoiPosition(label, nSlice - 1);
-                //    roi.setLocation(p[1], p[2]);
-                //    rm.getROIs().remove(label);
-                //    rm.getROIs().put(label, roi);
-                    ij.gui.Roi roiRm = (ij.gui.Roi)rm.getROIs().get(roi.getName());
-                    mp[i].setRoi(roiRm);
-                }
             }                                                    
 
             if (!isSum) {
@@ -1036,9 +1014,16 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 for (int i = 0; i < rp.length; i++) {
                     rp[i].computeRatio();
                 }
+
+                // Update rois in sum images
+                for (int i = 0; i < sum.length; i++) {
+                    // For some reason 1 does not work... any other number does.
+                    sum[i].setSlice(2);
+                }
             }
             autocontrastAllImages();
             cbControl.updateHistogram();
+            roiManager.updateSpinners();
 
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_SET_ROI || 
                    evt.getAttribute() == MimsPlusEvent.ATTR_MOUSE_RELEASE) {
@@ -1444,9 +1429,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         massImages[0].setSlice(currentSlice);
     }
 
-    public void setIsSum(boolean set) {
-        isSum = set;
-    }
+    //public void setIsSum(boolean set) {
+    //    isSum = set;
+    //}
 
     public boolean getIsSum() {
         return isSum;

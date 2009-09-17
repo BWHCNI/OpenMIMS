@@ -279,24 +279,19 @@ public class MimsJFreeChart {
       String seriesname[][][] = new String[rois.length][images.length][stats.length];
       ImageStatistics tempstats = null;
       int currentSlice = images[0].getCurrentSlice();
-      MimsRoiManager rm = ui.getRoiManager();
 
       // begin looping
       for (int i = 0; i < rois.length; i++) {
          for (int ii = 0; ii < planes.size(); ii++) {
-            images[0].setSlice((Integer)planes.get(ii));
-
-            rm.syncRoiPositions((Integer)planes.get(ii));
-            String name = rois[i].getName();
-            Roi roi2 = (Roi)rm.getROIs().get(name);
-
+            int plane = (Integer)planes.get(ii);
+            images[0].setSlice(plane);
             for (int j = 0; j < images.length; j++) {
                for (int k = 0; k < stats.length; k++) {
 
                   // Generate a name for the dataset.
                   if (seriesname[i][j][k] == null) {                        
                         seriesname[i][j][k] = images[j].getShortTitle();
-                        seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + " \n" + rois[i].getName();                        
+                        seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + " \n" + "r" + (ui.getRoiManager().getIndex(rois[i].getName())+1);
                   }
 
                   // Add data to the series.
@@ -305,6 +300,8 @@ public class MimsJFreeChart {
                   }
 
                   // Get the stats.
+                  Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane-1);
+                  rois[i].setLocation(xy[0], xy[1]);
                   images[j].setRoi(rois[i]);
                   tempstats = images[j].getStatistics();
                   series[i][j][k].add(((Integer)planes.get(ii)).intValue(), getSingleStat(tempstats, stats[k]));

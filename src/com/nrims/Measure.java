@@ -469,7 +469,9 @@ public class Measure {
                    if (rois[r].isLine()) {
                       continue;   
                    }
-                   
+
+                   Integer[] xy = ui.getRoiManager().getRoiLocation(rois[r].getName(), n);
+                   rois[r].setLocation(xy[0], xy[1]);
                    images[i].setRoi(rois[r]);
                 } 
                                   
@@ -547,6 +549,9 @@ public class Measure {
             ncol = 0;
             for (int r = 0; r < nrois; r++) {
                 if (rois.length > 0) {
+                   //int plane = ui.getOpenMassImages()[0].getCurrentSlice();
+                   //Integer[] xy = ui.getRoiManager().getRoiLocation(rois[r].getName(), plane);
+                   //rois[r].setLocation(xy[0], xy[1]);
                    mSumImages[i].setRoi(rois[r]);                
                    if (mSumImages[i].getProcessor() != null && rois[r] != null) {
                       ncol = addResults(mSumImages[i], 0, rois.length > 0 ? rois[r] : null, 1, ncol);

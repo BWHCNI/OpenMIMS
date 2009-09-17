@@ -200,7 +200,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       title = "HSI : m" + numName +"/m"+ denName + " : " + ui.getImageFilePrefix();
       setProcessor(title, ip);
       getProcessor().setMinAndMax(0, 255);
-      fStateListeners = new EventListenerList() ;
+      fStateListeners = new EventListenerList();
       //before listeners were added in compute...
       addListener(ui);
 
@@ -519,31 +519,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
     
     @Override
-    public void setRoi(ij.gui.Roi roi) {
-        if (roi == null) {
-            super.killRoi();
-        } //else super.setRoi(roi);
-        else {
-            ij.gui.Roi roiRm = null;
-            java.util.Hashtable rois = null;
-
-            com.nrims.MimsRoiManager rm = ui.getRoiManager();
-
-            if (rm != null) {
-                rois = rm.getROIs();
-            }
-            if (rois != null) {
-                String name = roi.getName();
-                if(name!=null) roiRm = (ij.gui.Roi) rois.get(name);
-            }
-            if (roiRm != null) {
-                super.setRoi(roiRm);
-            } else {
-                super.setRoi(roi);
-            }
+    public void setRoi(ij.gui.Roi roi) {        
+        if(roi == null)  {
+           super.killRoi();
+        } else {
+           super.setRoi(roi);
         }
-
-        stateChanged(roi,MimsPlusEvent.ATTR_SET_ROI);
+        stateChanged(roi,MimsPlusEvent.ATTR_SET_ROI);        
     }
 
     @Override
@@ -656,6 +638,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
     @Override
     public void mouseClicked(MouseEvent e) {
+
+       //ArrayList<String> strings = new ArrayList<String>();
+       //strings.add(0, "Hello");
+       //strings.add(1, "World");
+       //System.out.println(strings.size());
 
          float[] pix;
          if (this.nType == HSI_IMAGE ) {
@@ -871,10 +858,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        
        // Get the ROI, (the area in yellow).
       Roi roi = getRoi();
-
-
-
-
 
       // Display stats in the message bar.
       if (roi != null) {

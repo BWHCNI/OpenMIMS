@@ -129,12 +129,14 @@ public class MimsJTable {
       // Fill in data.
       for (int ii = 0; ii < planes.size(); ii++) {
          int col = 1;
-         images[0].setSlice((Integer)planes.get(ii));
+         int plane = (Integer)planes.get(ii);
+         images[0].setSlice(plane);
          for (int i = 0; i < rois.length; i++) {
             for (int j = 0; j < images.length; j++) {
                for (int k = 0; k < stats.length; k++) {
-                  Roi tempRoi = rois[i];
-                  images[j].setRoi(tempRoi);
+                  Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane-1);
+                  rois[i].setLocation(xy[0], xy[1]);
+                  images[j].setRoi(rois[i]);
                   tempstats = images[j].getStatistics();                  
                   data[ii][col] = IJ.d2s(MimsJFreeChart.getSingleStat(tempstats, stats[k]), 2);
                   col++;
@@ -155,7 +157,7 @@ public class MimsJTable {
       for (int i = 0; i < rois.length; i++) {
          for (int j = 0; j < images.length; j++) {
             for (int k = 0; k < stats.length; k++) {
-               columnNames[col] = stats[k] + "_m" + images[j].getRoundedTitle() + "_" + rois[i].getName();
+               columnNames[col] = stats[k] + "_m" + images[j].getRoundedTitle() + "_r" + (ui.getRoiManager().getIndex(rois[i].getName())+1);
                col++;
             }
          }
