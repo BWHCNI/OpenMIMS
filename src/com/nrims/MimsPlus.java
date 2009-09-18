@@ -372,17 +372,18 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
     public void showWindow(){
 
-      if (ui.addToImagesList(this)) {
-         show();
+       show();
 
-         // Set window location.
-         if (xloc > -1 & yloc > -1)
-            getWindow().setLocation(xloc, yloc);
+       // Set window location.
+       if (xloc > -1 & yloc > -1)
+          getWindow().setLocation(xloc, yloc);
 
-         // Autocontrast image by default.
-         ui.autoContrastImage(this);
-      }
-   }
+       // Add image to list og images in UI.
+       ui.addToImagesList(this);
+
+       // Autocontrast image by default.
+       ui.autoContrastImage(this);
+    }
 
 
    @Override
@@ -699,11 +700,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         Rectangle r = thisroi.getBounds();
         x2 = r.x; y2 = r.y; w2 = r.width; h2 = r.height;         
         if (x1 == x2 && y1 == y2 && w1 == w2 && h1 == h2) return;
-        
-        stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED);
-       
+
+        if(IJ.controlKeyDown()) {
+            stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED);
+        } else {
+            stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED_ALL);
+        }
         ui.getRoiManager().resetSpinners(thisroi);
-         
+
         bMoving = false;
         return;
       }
@@ -815,7 +819,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                      stats = this.getStatistics();
                   }
 
-                  if (roi.getType() == Roi.LINE || roi.getType() == Roi.FREELINE  || roi.getType() == Roi.POLYLINE)
+                  if (roi.getType() == roi.LINE)
                      msg += "\t ROI " + roi.getName() + ": L=" + IJ.d2s(roi.getLength(), 0);
                   else
                      msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);

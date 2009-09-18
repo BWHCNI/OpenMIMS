@@ -290,7 +290,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
       Roi temproi = (Roi) roi.clone();
       temproi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
       imp.setRoi(temproi);
-
+            
       updatePlots(false);
 
     }
@@ -582,21 +582,36 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
       if (imp == null) return false;               
       if (roi == null) return false;
       
-      setRoi(imp, roi);
-        
-      // Debug
-      if (Recorder.record) {
+       setRoi(imp, roi);
+       
+       // Debug
+       if (Recorder.record) {
          Recorder.record("mimsRoiManager", "Move");
       }        
       return true;      
    }
 
-    boolean move() {             
+    boolean move(int flag) {
         // Get the image and the roi
         ImagePlus imp = getImage();
         Roi roi = imp.getRoi();
-        
-        boolean b = move(imp, roi);        
+        boolean b = true;
+
+        if( flag == MimsPlusEvent.ATTR_ROI_MOVED) {
+            b = move(imp, roi);
+        }
+
+        if( flag == MimsPlusEvent.ATTR_ROI_MOVED_ALL) {
+            String label = roi.getName();
+            Rectangle rec = roi.getBounds();
+            ArrayList xylist = (ArrayList<Integer[]>)locations.get(label);
+
+            for(int p = 1; p <= imp.getStackSize(); p ++) {
+                xylist.set(p-1, new Integer[] {rec.x, rec.y});
+            }
+            locations.put(label, xylist);
+        }
+
         return b;
     }    
     
@@ -783,6 +798,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         rois.remove(name);
         roi.setName(name2);
         rois.put(name2, roi);
+        locations.put(name2, locations.get(name));
+        locations.remove(name);
         listModel.set(index, name2);
         jlist.setSelectedIndex(index);
         if (Recorder.record) {
@@ -903,6 +920,18 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                         nRois++;
                     }
                 }
+                if (name.endsWith(".pos")) {
+                    ObjectInputStream ois = new ObjectInputStream(in);
+                    HashMap temp_loc = new HashMap<String, ArrayList<Integer[]>>();
+                    try {
+                        temp_loc = (HashMap<String, ArrayList<Integer[]>>)ois.readObject();
+                        this.locations = temp_loc;
+                    } catch(ClassNotFoundException e) {
+                        error(e.toString());
+                        System.out.println(e.toString());
+                    }
+                }
+
                 entry = in.getNextEntry();
             }
             in.close();
@@ -945,9 +974,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (indexes.length == 0) {
             indexes = getAllIndexes();
         }
-        if (indexes.length > 1) {            
-                return saveMultiple(indexes, name, true);            
-        }
+        
+        return saveMultiple(indexes, name, true);            
+
+        /* Allways save a .zip since we're saving positions as well.
         //only called if one roi selected...
         String path = name;
         name = null;
@@ -981,6 +1011,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             System.out.println(e.toString());
         }
         return true;
+        */
     }
 
     boolean saveMultiple(int[] indexes, String path, boolean bPrompt) {
@@ -1015,6 +1046,14 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 re.write(roi);
                 out.flush();
             }
+
+            //save locations hash
+            String label = "locations.pos";
+            zos.putNextEntry(new ZipEntry(label));
+            ObjectOutputStream obj_out = new ObjectOutputStream(zos);
+            obj_out.writeObject(locations);
+            obj_out.flush();
+
             out.close();
             savedpath = path;
             previouslySaved = true;
@@ -1300,6 +1339,11 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     /** Returns the ROI Hashtable. */
     public Hashtable getROIs() {
         return rois;
+    }
+
+    /** Return roi from hash by name */
+    public Roi getRoiByName(String name) {
+        return (Roi)rois.get(name);
     }
 
     /** Gets selected ROIs. */

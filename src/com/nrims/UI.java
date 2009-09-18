@@ -1071,7 +1071,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_ROI_MOVED) {
             MimsRoiManager rm = getRoiManager();
-            rm.move();
+            rm.move(evt.getAttribute());
+        } else if (evt.getAttribute() == MimsPlusEvent.ATTR_ROI_MOVED_ALL) {
+            MimsRoiManager rm = getRoiManager();
+            rm.move(evt.getAttribute());
         }
 
         bUpdating = false;
@@ -1429,9 +1432,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         massImages[0].setSlice(currentSlice);
     }
 
-    //public void setIsSum(boolean set) {
-    //    isSum = set;
-    //}
+    public void setIsSum(boolean set) {
+        isSum = set;
+    }
 
     public boolean getIsSum() {
         return isSum;

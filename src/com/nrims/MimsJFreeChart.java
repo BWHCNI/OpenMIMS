@@ -16,6 +16,9 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.DomainOrder;
+import org.jfree.data.general.DatasetChangeListener;
+import org.jfree.data.general.DatasetGroup;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -197,6 +200,7 @@ public class MimsJFreeChart {
         public void chartProgress(ChartProgressEvent event) {
             super.chartProgress(event);
             //add here
+            //System.out.println(event.getType());
             if (chartpanel != null) {
                 JFreeChart chart = chartpanel.getChart();
                 if (chart != null) {
@@ -206,10 +210,12 @@ public class MimsJFreeChart {
 
                     if(chartframe!=null) {
                         String name = findMatchingSeriesName(x,y);
-
-                        chartframe.getTableModel().setValueAt(name, 0, 0);
-                        chartframe.getTableModel().setValueAt(x, 0, 1);
-                        chartframe.getTableModel().setValueAt(y, 0, 2);
+                        //only reset labels if point found
+                        //if(!name.equals("")) {
+                            chartframe.getTableModel().setValueAt(name, 0, 0);
+                            chartframe.getTableModel().setValueAt(x, 0, 1);
+                            chartframe.getTableModel().setValueAt(y, 0, 2);
+                        //}
                     }
                 }
             }
@@ -227,11 +233,16 @@ public class MimsJFreeChart {
              double sx, sy;
              for(int i = 0; i<n; i++) {
                  sx = dataset.getX(i, xint).doubleValue();
+                 //check if for {x,y} pair y==null
+                 if(dataset.getY(i, xint)==null) {
+                     return "";
+                 }
                  sy = dataset.getY(i, xint).doubleValue();
                  //System.out.println(y + " - " + sy);
                  if(sy == y) {
                      //System.out.println(sx + " - " + sy);
                      name = plot.getLegendItems().get(i).getLabel();
+                     //System.out.println("found name: " + name);
                  }
              }
 
@@ -256,8 +267,23 @@ public class MimsJFreeChart {
       if (appendResults && chartframe != null) {
          XYDataset tempdata = getDataset();
          int numSeries = chartpanel.getChart().getXYPlot().getDatasetCount();
-         chartpanel.getChart().getXYPlot().setDataset(numSeries, tempdata);
-         chartpanel.getChart().getXYPlot().setRenderer(numSeries, new StandardXYItemRenderer());
+         
+         XYSeriesCollection originaldata = (XYSeriesCollection)chartpanel.getChart().getXYPlot().getDataset();
+         XYSeriesCollection newdata = (XYSeriesCollection)getDataset();
+
+         addToDataSet(newdata, originaldata);
+         tempdata = missingSeries(newdata, originaldata);
+
+         XYSeriesCollection foo = (XYSeriesCollection)tempdata;
+         int n = foo.getSeriesCount();
+         for(int i = 0; i < n; i++) {
+             originaldata.addSeries(foo.getSeries(i));
+         }
+         //chartpanel.getChart().getXYPlot().setDataset(numSeries, tempdata);
+         //chartpanel.getChart().getXYPlot().setRenderer(numSeries, new StandardXYItemRenderer());
+
+         nullMissingPoints((XYSeriesCollection)chartpanel.getChart().getXYPlot().getDataset());
+
       } else if (rois.length == 0 || images.length == 0 || stats.length == 0) {
          return;
       } else {         
@@ -270,6 +296,80 @@ public class MimsJFreeChart {
       }
    }
 
+   //add any series with a new key in newdata to olddata
+   //changes contents of olddata
+   public boolean addToDataSet(XYSeriesCollection newdata, XYSeriesCollection olddata) {
+
+       boolean hasnewseries = false;
+       //loop over newdata
+       for (int nindex = 0; nindex < newdata.getSeriesCount(); nindex++) {
+            XYSeries newseries = newdata.getSeries(nindex);
+            String newname = (String)newseries.getKey();
+           //check if olddata has series with same key
+            XYSeries oldseries = null;
+            try{
+                oldseries = olddata.getSeries(newname);
+            } catch(org.jfree.data.UnknownKeyException e) {
+                hasnewseries = true;
+                continue;
+            }
+           if(oldseries != null) {
+               
+               for(int n = 0; n < newseries.getItemCount(); n++) {
+                   //remove possible {x,null} pairs
+                   double xval = (Double)newseries.getX(n);
+                   int pos = oldseries.indexOf(xval);
+                   if( (pos > -1) && (oldseries.getY(pos) == null) ) {
+                       oldseries.remove(pos);
+                   }
+                   oldseries.add(newseries.getDataItem(n));
+               }
+           }
+       }
+       return hasnewseries;
+   }
+
+   //return any series from newdata with a key missing from olddata
+   public XYSeriesCollection missingSeries(XYSeriesCollection newdata, XYSeriesCollection olddata) {
+        XYSeriesCollection returncollection = new XYSeriesCollection();
+
+        //loop over newdata
+       for (int nindex = 0; nindex < newdata.getSeriesCount(); nindex++) {
+            XYSeries newseries = newdata.getSeries(nindex);
+            String newname = (String)newseries.getKey();
+           //check if olddata has series with same key
+            XYSeries oldseries = null;
+            try{
+                oldseries = olddata.getSeries(newname);
+            } catch(org.jfree.data.UnknownKeyException e) {
+                returncollection.addSeries(newseries);
+                continue;
+            }
+       }
+
+        return returncollection;
+   }
+
+   //adds the pair {x, null} to any series in data that is missing {x, y}
+   //changes contents of data
+   public void nullMissingPoints(XYSeriesCollection data) {
+       for (int nindex = 0; nindex < data.getSeriesCount(); nindex++) {
+            XYSeries series = data.getSeries(nindex);
+            double min = series.getMinX();
+            double max = series.getMaxX();
+            double span = (max-min)+1;
+            for (int xindex = (int)min; xindex <= (int)max; xindex++) {
+               double xval = (double)xindex;
+               int pos = series.indexOf(xval);
+               if(pos<0) {
+                   series.add(xval, null);
+               }
+
+           }
+
+       }
+
+   }
     // This method will generate a set of plots for a given set of: rois, stats, images.
     public XYDataset getDataset() {
 
@@ -300,7 +400,7 @@ public class MimsJFreeChart {
                   }
 
                   // Get the stats.
-                  Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane-1);
+                  Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane);
                   rois[i].setLocation(xy[0], xy[1]);
                   images[j].setRoi(rois[i]);
                   tempstats = images[j].getStatistics();

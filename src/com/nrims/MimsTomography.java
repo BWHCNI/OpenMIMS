@@ -150,7 +150,6 @@ public class MimsTomography extends javax.swing.JPanel {
 
        // initialize variables.
        MimsRoiManager rm = ui.getRoiManager();
-       rm.showFrame();
 
        if (!appendCheckBox.isSelected() || tomoChart == null) {
           tomoChart = new MimsJFreeChart(ui);
