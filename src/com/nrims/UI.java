@@ -514,8 +514,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         MimsPlus mp = new MimsPlus(this, i);
                         mp.setAllowClose(false);
                         massImages[i] = mp;
-                        //double dMin = (double) image.getMin(i);
-                        //double dMax = (double) image.getMax(i);
                         if (mp != null) {
                             massImages[i].getProcessor().setMinAndMax(0, 0);
                             massImages[i].getProcessor().setPixels(image.getPixels(i));                            
@@ -2704,8 +2702,8 @@ public void updateLineProfile(double[] newdata, String name, int width) {
             }
             
         });
+
         
-         
     }
 
     public boolean getDebug() {

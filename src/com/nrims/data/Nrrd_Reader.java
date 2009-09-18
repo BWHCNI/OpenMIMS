@@ -270,31 +270,27 @@ public class Nrrd_Reader implements Opener {
 	}
 
     @Override
-    public short[] getPixels(int index) throws IndexOutOfBoundsException, IOException {
+   public short[] getPixels(int index) throws IndexOutOfBoundsException, IOException {
 
-        // Set up a temporary header to read the pixels from the file.
-		NrrdFileInfo fi;
-		try {
-			fi=getHeaderInfo();
-		} catch (IOException e) {
-			IJ.write("readHeader: "+ e.getMessage());
-			return null;
-		}
+      // Set up a temporary header to read the pixels from the file.
+      NrrdFileInfo fi_clone = (NrrdFileInfo)fi.clone();
 
-        // Calculate offset
-        long offset = fi.longOffset + // move down header
-                      (2 * index * fi.width * fi.height * fi.nImages) + // move down to correct channel
-                      (2 * fi.width * fi.height * currentIndex); // move down to correct image within that channel
-        fi.longOffset = offset;
-        fi.nImages=1; // only going to read 1 image.
-        FileOpener fo = new FileOpener(fi);
+      // Calculate offset
+      long offset = fi_clone.longOffset + // move down header
+              (2 * index * fi_clone.width * fi_clone.height * fi_clone.nImages) + // move down to correct channel
+              (2 * fi_clone.width * fi_clone.height * currentIndex); // move down to correct image within that channel
+      fi_clone.longOffset = offset;
+      fi_clone.nImages = 1; // only going to read 1 image.
+      FileOpener fo = new FileOpener(fi_clone);
 
-        // Get image from file.
-        ImagePlus imp = fo.open(false);
-		if(imp==null) return null;
+      // Get image from file.
+      ImagePlus imp = fo.open(false);
+      if (imp == null) {
+         return null;
+      }
 
-        return (short[])imp.getProcessor().getPixels();
-    }
+      return (short[])imp.getProcessor().getPixels();
+   }
 
     public void setStackIndex(int index) throws IndexOutOfBoundsException {
         this.currentIndex = index;
