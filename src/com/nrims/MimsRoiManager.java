@@ -227,6 +227,51 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
       }
    }
 
+   void updateRoiLocations() {
+
+      // Loop over rios.
+      for (Object key : locations.keySet()) {
+
+         // Get roi location size.
+         ArrayList<Integer[]> xylist = (ArrayList<Integer[]>) locations.get(key);
+
+         // Current image size
+         MimsPlus mp = ui.getOpenMassImages()[0];
+         int size_new = mp.getNSlices();
+
+         // Difference in sizes
+         int size_orig = xylist.size();
+         int size_diff = size_orig - size_new;
+         if(size_diff<0) return;
+
+         // Create prepend/append array.
+         for (int i = 0; i < size_orig - size_diff; i++) {
+            xylist.remove(xylist.size()-1);
+         }
+      }
+   }
+
+   public void resetRoiLocationsLength() {
+        int img_size = 0;
+        int locations_size = 0;
+       for (Object key : locations.keySet()) {
+        // Get roi location size.
+         ArrayList<Integer[]> xylist = (ArrayList<Integer[]>) locations.get(key);
+         locations_size = xylist.size();
+         // Current image size
+         MimsPlus mp = ui.getOpenMassImages()[0];
+         img_size = mp.getNSlices();
+         break;
+       }
+
+       int diff = locations_size - img_size;
+       if(diff < 0) {
+           updateRoiLocations(false);
+       } else if(diff > 0) {
+           updateRoiLocations();
+       }
+   }
+
    void updateSpinners() {
 
       String label = "";

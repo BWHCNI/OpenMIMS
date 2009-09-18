@@ -1217,9 +1217,9 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
       sub.setSelected(false);
 
       norm = new JRadioButton("Normalize tracking image");
-      norm.setSelected(false);
+      norm.setSelected(true);
       eq = new JRadioButton("Equalize tracking image");
-      eq.setSelected(false);
+      eq.setSelected(true);
 
       buttonGroup.add(all);
       buttonGroup.add(some);      

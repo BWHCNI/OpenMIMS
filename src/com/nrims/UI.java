@@ -200,6 +200,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     files[0].getAbsolutePath().endsWith(MIMS_EXTENSION) ) {
                 restoreState(rto_props, hsi_props, sum_props);
             }
+            MimsRoiManager rm = getRoiManager();
+            if( rm!=null ) {
+                rm.resetRoiLocationsLength();
+            }
          }
       });
       
@@ -1689,6 +1693,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
        
        // Generate all images that were previously open.
        restoreState(rto_props, hsi_props, sum_props);
+
+        MimsRoiManager rm = getRoiManager();
+        if( rm!=null ) {
+            rm.resetRoiLocationsLength();
+        }
+
 
        // Keep the HSIView GUI up to date.
        if (medianFilterRatios) {
