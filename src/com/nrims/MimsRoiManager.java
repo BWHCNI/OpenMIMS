@@ -612,8 +612,24 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
       //rois.put(newName, roi);
 
       Rectangle rec = roi.getBounds();      
-
-      int plane = imp.getCurrentSlice();
+      MimsPlus mp = null;
+      try{
+          mp = (MimsPlus)imp;
+      } catch(Exception e){
+          return;
+      }
+      int plane = 1;
+      int t = mp.getMimsType();
+      if( t==mp.RATIO_IMAGE ) {
+          plane = ui.getMassImage(mp.getRatioProps().getNumMassIdx()).getSlice();
+      }else if( t==mp.HSI_IMAGE ) {
+          plane = ui.getMassImage(mp.getHSIProps().getNumMassIdx()).getSlice();
+      }else if( t==mp.SUM_IMAGE ) {
+          plane = ui.getMassImage(mp.getSumProps().getParentMassIdx()).getSlice();
+      }else if(t==mp.MASS_IMAGE) {
+          plane = mp.getSlice();
+      }
+      
       ArrayList xylist = (ArrayList<Integer[]>)locations.get(label);
       xylist.set(plane-1, new Integer[] {rec.x, rec.y});
       locations.put(label, xylist);
@@ -651,7 +667,9 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             Rectangle rec = roi.getBounds();
             ArrayList xylist = (ArrayList<Integer[]>)locations.get(label);
 
-            for(int p = 1; p <= imp.getStackSize(); p ++) {
+            int size = ui.getMassImage(0).getStackSize();
+
+            for(int p = 1; p <= size; p ++) {
                 xylist.set(p-1, new Integer[] {rec.x, rec.y});
             }
             locations.put(label, xylist);

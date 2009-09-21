@@ -288,9 +288,9 @@ public class MimsTomography extends javax.swing.JPanel {
        // Build list of images.
        MimsPlus[] images = new MimsPlus[num.length];
        for (int i = 0; i < num.length; i++) {
-          if (i < mp.length) {
+          if (num[i] < mp.length) {
              images[i] = mp[num[i]];
-          } else if (i >= mp.length && i < mp.length + rp.length) {
+          } else if (num[i] >= mp.length && num[i] < mp.length + rp.length) {
              images[i] = rp[num[i]-mp.length];
           }
        }
