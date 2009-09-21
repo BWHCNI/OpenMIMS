@@ -238,6 +238,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         MimsPlus parentNum = ui.getMassImage( numIndex );
         MimsPlus parentDen = ui.getMassImage( denIndex );
 
+        //get current lut
+        //String lutname = this.getLuts()[0];
+        //this.getProcessor().
+
         // Setup list for sliding window, entire image, or single plane.
         java.util.ArrayList<Integer> list = new java.util.ArrayList<Integer>();        
         int currentplane = parentNum.getCurrentSlice();
@@ -701,11 +705,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         x2 = r.x; y2 = r.y; w2 = r.width; h2 = r.height;         
         if (x1 == x2 && y1 == y2 && w1 == w2 && h1 == h2) return;
 
-        if(IJ.controlKeyDown()) {
-            stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED);
-        } else {
-            stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED_ALL);
-        }
+        stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED);
+        
         ui.getRoiManager().resetSpinners(thisroi);
 
         bMoving = false;

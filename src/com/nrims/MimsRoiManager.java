@@ -46,6 +46,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     JPopupMenu pm;
     JButton moreButton;
     JCheckBox cbShowAll;
+    JCheckBox cbAllPlanes;
     JSpinner xPosSpinner, yPosSpinner, widthSpinner, heightSpinner;
     JLabel xLabel, yLabel, wLabel, hLabel;
     boolean holdUpdate = false;
@@ -53,6 +54,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     private com.nrims.data.Opener image = null;
     private String savedpath = "";
     boolean previouslySaved = false;
+    boolean bAllPlanes = true;
     Measure scratch;
     HashMap locations = new HashMap<String, ArrayList<Integer[]>>();
     
@@ -91,7 +93,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         panel = new JPanel();
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         panel.setLayout(new FlowLayout());
-        panel.setPreferredSize(new Dimension(200, 300));
+        panel.setPreferredSize(new Dimension(200, 325));
         addButton("Delete");
         addButton("Rename");
         addButton("Open");
@@ -105,6 +107,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         //order of these calls determines position...
         setupPosLabels();
         setupPosSpinners();
+        addCheckbox("All planes", true);
+        panel.add(new JLabel(""));
         setupSizeLabels();
         setupSizeSpinners();
         
@@ -391,6 +395,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         cb.setMinimumSize(cb.getPreferredSize());
         if (label.equals("Show All")) {
             cbShowAll = cb;
+        }else if (label.equals("All planes")) {
+            cbAllPlanes = cb;
         }
         cb.setSelected(bEnabled);
         cb.addActionListener(this);
@@ -471,6 +477,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             String path = ui.getImageDir();
             previouslySaved = false;
             save(path);
+        } else if (command.equals("All planes")) {
+            bAllPlanes = cbAllPlanes.isSelected();
         }
     }
 
@@ -652,17 +660,17 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
       return true;      
    }
 
-    boolean move(int flag) {
+    boolean move() {
         // Get the image and the roi
         ImagePlus imp = getImage();
         Roi roi = imp.getRoi();
         boolean b = true;
 
-        if( flag == MimsPlusEvent.ATTR_ROI_MOVED) {
+        if( bAllPlanes==false) {
             b = move(imp, roi);
         }
 
-        if( flag == MimsPlusEvent.ATTR_ROI_MOVED_ALL) {
+        if( bAllPlanes==true ) {
             String label = roi.getName();
             Rectangle rec = roi.getBounds();
             ArrayList xylist = (ArrayList<Integer[]>)locations.get(label);

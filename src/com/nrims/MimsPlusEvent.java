@@ -19,8 +19,10 @@ public class MimsPlusEvent extends java.util.EventObject {
     static final int ATTR_SET_ROI = 3 ;
     static final int ATTR_MOUSE_RELEASE = 4 ;
     static final int ATTR_ROI_MOVED = 5;
-    static final int ATTR_ROI_MOVED_ALL = 6;
-    
+    //static final int ATTR_ROI_MOVED_ALL = 6;
+    //left in as example, was fired from mimsplus if ctrl key down
+    //then handled in ui, useful for other things maybe...
+
     /** Creates a new instance of mimsPlusEvent */
     public MimsPlusEvent( MimsPlus mimsImage, int slice, int attribute ) {
         super(mimsImage);
