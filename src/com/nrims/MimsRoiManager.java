@@ -24,6 +24,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -77,13 +78,14 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
         //JList stuff - for ROIs		               
         listModel = new DefaultListModel();
-        listModel.addElement("012345678901234567");
         jlist = new JList(listModel);
+        jlist.setCellRenderer(new ComboBoxRenderer());
+
         jlist.addKeyListener(ij);
         JScrollPane scrollpane = new JScrollPane(jlist);
         scrollpane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         jlist.getSelectionModel().addListSelectionListener(this);//Same as addItemListener                
-        scrollpane.setPreferredSize(new Dimension(150, 225));
+        scrollpane.setPreferredSize(new Dimension(175, 225));
         scrollpane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(5, 5, 5, 5),
                 BorderFactory.createLineBorder(Color.BLACK)));
@@ -114,7 +116,6 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         
         add(panel, BorderLayout.CENTER);
         pack();
-        listModel.remove(0);
         GUI.center(this);
     }
 
@@ -1446,12 +1447,6 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         return jlist;
     }
 
-    /** Returns the name of the selection with the specified index.
-    Can be called from a macro using
-    <pre>call("ij.plugin.frame.RoiManager.getName", index)</pre>
-    Returns "null" if the Roi Manager is not open or index is
-    out of range.
-     */
     public static String getName(String index) {
         int i = (int) Tools.parseDouble(index, -1);
         MimsRoiManager instance = getInstance();
@@ -1490,22 +1485,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         // Make sure we have a ROI
         Roi roi = (Roi)rois.get(label);
         if (roi == null) return;
-        else resetSpinners(roi);
-        
-        // Dont know why this is being done... commenting out for now. 
-        /*
-        if (jlist.getSelectionMode() != ListSelectionModel.SINGLE_SELECTION) {
-            jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        }
-        if (index < n) {
-            jlist.setSelectedIndex(index);
-            restore(index, true);
-            if (!Interpreter.isBatchMode()) {
-                IJ.wait(10);
-            }
-        }
-        jlist.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);                        
-        */
+        else resetSpinners(roi);       
     }
     
     // Programatically selects all items in the list 
@@ -1559,5 +1539,32 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         toFront();
         setExtendedState(NORMAL);
     }
+
+    class ComboBoxRenderer extends JLabel implements ListCellRenderer {
+
+      public ComboBoxRenderer() {
+         setOpaque(true);
+         setHorizontalAlignment(LEFT);
+         setVerticalAlignment(CENTER);
+      }
+
+      public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+         // Prepend label of Roi on the image into the name in the jlist.
+         String label = (String) value;
+         int idx = index + 1;
+         setText("(" + idx + ") " + label);
+
+         if (isSelected) {
+            setBackground(list.getSelectionBackground());
+            setForeground(list.getSelectionForeground());
+         } else {
+            setBackground(list.getBackground());
+            setForeground(list.getForeground());
+         }
+
+         return this;
+      }
+   }
 }
 

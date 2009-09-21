@@ -320,7 +320,7 @@ public class MimsTomography extends javax.swing.JPanel {
        if (jCheckBox1.isSelected()) {
           planes.add(ui.getOpenMassImages()[0].getCurrentSlice());
        } else if (list.matches("") || list.length() == 0) {
-          for(int i = 1; i <= ui.getmimsAction().getSize(); i++) {
+          for(int i = 1; i <= ui.getOpenMassImages()[0].getNSlices(); i++) {
              planes.add(i);
           }
        } else {

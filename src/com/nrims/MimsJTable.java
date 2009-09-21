@@ -134,7 +134,7 @@ public class MimsJTable {
          for (int i = 0; i < rois.length; i++) {
             for (int j = 0; j < images.length; j++) {
                for (int k = 0; k < stats.length; k++) {
-                  Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane-1);
+                  Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane);
                   rois[i].setLocation(xy[0], xy[1]);
                   images[j].setRoi(rois[i]);
                   tempstats = images[j].getStatistics();                  

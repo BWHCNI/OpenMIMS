@@ -469,8 +469,8 @@ public class Measure {
                    if (rois[r].isLine()) {
                       continue;   
                    }
-
-                   Integer[] xy = ui.getRoiManager().getRoiLocation(rois[r].getName(), n);
+                   int plane = n + 1;
+                   Integer[] xy = ui.getRoiManager().getRoiLocation(rois[r].getName(), plane);
                    rois[r].setLocation(xy[0], xy[1]);
                    images[i].setRoi(rois[r]);
                 } 
