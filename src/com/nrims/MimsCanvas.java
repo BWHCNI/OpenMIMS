@@ -76,7 +76,8 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
             String label = (list.getModel().getElementAt(id).toString());
             Roi roi = (Roi) rois.get(label);
             Integer[] xy = roiManager.getRoiLocation(label, parentplane);
-            roi.setLocation(xy[0], xy[1]);
+            if (xy != null)
+               roi.setLocation(xy[0], xy[1]);
 
             boolean bDraw = true;
 

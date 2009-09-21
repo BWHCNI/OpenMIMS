@@ -675,6 +675,16 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             String label = roi.getName();
             Rectangle rec = roi.getBounds();
             ArrayList xylist = (ArrayList<Integer[]>)locations.get(label);
+            if (xylist == null) {
+              int stacksize = ui.getOpenMassImages()[1].getStackSize();
+              xylist = new ArrayList<Integer[]>();
+              Integer[] xy = new Integer[2];
+              for (int i = 0; i < stacksize; i++) {
+                 xy = new Integer[]{rec.x, rec.y};
+                 xylist.add(i, xy);
+              }
+              locations.put(label, xylist);
+           }
 
             int size = ui.getMassImage(0).getStackSize();
 
