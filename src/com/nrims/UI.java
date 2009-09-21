@@ -1073,10 +1073,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         } else if (evt.getAttribute() == MimsPlusEvent.ATTR_ROI_MOVED) {
             MimsRoiManager rm = getRoiManager();
-            rm.move(evt.getAttribute());
-        } else if (evt.getAttribute() == MimsPlusEvent.ATTR_ROI_MOVED_ALL) {
-            MimsRoiManager rm = getRoiManager();
-            rm.move(evt.getAttribute());
+            rm.move();
         }
 
         bUpdating = false;
