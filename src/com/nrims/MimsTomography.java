@@ -324,7 +324,7 @@ public class MimsTomography extends javax.swing.JPanel {
              planes.add(i);
           }
        } else {
-          planes = MimsStackEditing.parseList(jTextField1.getText(), 1, ui.getmimsAction().getSize());
+          planes = MimsStackEditing.parseList(jTextField1.getText(), 1, ui.getOpenMassImages()[0].getNSlices());
        }
 
        return planes;
