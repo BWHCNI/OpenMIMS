@@ -1105,7 +1105,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         Macro.setOptions(null);
         if (bPrompt) {
             String defaultname = ui.getImageFilePrefix();
-            defaultname += "_rois.zip";
+            defaultname += ui.ROIS_EXTENSION;
             SaveDialog sd = new SaveDialog("Save ROIs...", path,
                     defaultname,
                     ".zip");
@@ -1113,8 +1113,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             if (name == null) {
                 return false;
             }
-            if (!(name.endsWith(".zip") || name.endsWith(".ZIP"))) {
-                name = name + ".zip";
+            if (!(name.endsWith(ui.ROIS_EXTENSION))) {
+                name = name + ui.ROIS_EXTENSION;
             }
             String dir = sd.getDirectory();
             path = (new File(dir, name)).getAbsolutePath();
