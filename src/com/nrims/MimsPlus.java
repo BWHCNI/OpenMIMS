@@ -15,6 +15,8 @@ import java.awt.event.WindowListener ;
 import java.awt.event.MouseListener ;
 import java.awt.event.MouseMotionListener ;
 import java.awt.event.MouseEvent ;
+import java.awt.event.MouseWheelListener;
+import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import javax.swing.event.EventListenerList;
 
@@ -22,7 +24,7 @@ import javax.swing.event.EventListenerList;
  * extends ImagePlus with methods to synchronize display of multiple stacks
  * and drawing ROIs in each windows
  */
-public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListener, MouseMotionListener {
+public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListener, MouseMotionListener, MouseWheelListener {
     
     static final public int MASS_IMAGE = 0 ;
     static final public int RATIO_IMAGE = 1 ;
@@ -489,7 +491,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             }
             getWindow().addWindowListener(this);
             getWindow().getCanvas().addMouseListener(this);
-            getWindow().getCanvas().addMouseMotionListener(this);            
+            getWindow().getCanvas().addMouseMotionListener(this);
+            getWindow().getCanvas().addMouseWheelListener(this);
             if(ui.getDebug()) {
                 ui.updateStatus("mimsPlus::show() addWindowListener " + getWindow().toString());
             }
@@ -887,6 +890,32 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       }
    }
     
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e){
+        int plane = 1;
+        int size = 1;
+        MimsPlus mp = null;
+        if(this.nType == MimsPlus.MASS_IMAGE) {
+            this.getWindow().mouseWheelMoved(e);
+            return;
+        }else if (this.nType == MimsPlus.HSI_IMAGE) {
+            mp = ui.getMassImage(this.getHSIProps().getNumMassIdx());
+            plane = mp.getSlice();
+            size = mp.getStackSize();
+        } else if(this.nType == MimsPlus.RATIO_IMAGE) {
+            mp = ui.getMassImage(this.getRatioProps().getNumMassIdx());
+            plane = mp.getSlice();
+            size = mp.getStackSize();
+        }else if( this.nType == MimsPlus.SUM_IMAGE ){ return; }
+        if(mp==null) return;
+
+        int d = e.getWheelRotation();
+        //System.out.println("rotate: " + d);
+        if( ( (plane + d)<=size ) && ( (plane+d)>=1 ) ) {
+            mp.setSlice(plane+d);
+        }
+    }
+
     public void updateHistogram(boolean force) {      
       
       // Update histogram (area Rois only).      

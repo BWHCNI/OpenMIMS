@@ -155,7 +155,11 @@ public class HSIProcessor implements Runnable {
             double denMax = denominator.getProcessor().getMax();
             double denMin = denominator.getProcessor().getMin();
 
-            int [] hsiPixels = (int []) hsiImage.getProcessor().getPixels() ;
+            int [] hsiPixels;
+            try{
+                hsiPixels = (int []) hsiImage.getProcessor().getPixels() ;
+            } catch(Exception e) { return; }
+            
             int rgbMax = hsiProps.getMaxRGB() ;
             int rgbMin = hsiProps.getMinRGB() ;
             if(rgbMax == rgbMin) rgbMax++ ;
