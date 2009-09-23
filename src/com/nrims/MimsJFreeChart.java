@@ -454,6 +454,8 @@ public class MimsJFreeChart {
         plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
         plot.setDomainGridlinePaint(Color.white);
         plot.setRangeGridlinePaint(Color.white);
+        plot.setDomainPannable(true);
+        plot.setRangePannable(true);
 
         plot.setDomainCrosshairVisible(true);
         plot.setRangeCrosshairVisible(true);

@@ -199,8 +199,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
          ArrayList<Integer[]> xylist = (ArrayList<Integer[]>) locations.get(key);
          
          // Current image size
-         MimsPlus mp = ui.getOpenMassImages()[0];
-         int size_new = mp.getNSlices();
+         int size_new = ui.getmimsAction().getSize();
 
          // Difference in sizes
          int size_orig = xylist.size();         
@@ -241,8 +240,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
          ArrayList<Integer[]> xylist = (ArrayList<Integer[]>) locations.get(key);
 
          // Current image size
-         MimsPlus mp = ui.getOpenMassImages()[0];
-         int size_new = mp.getNSlices();
+         int size_new = ui.getmimsAction().getSize();
 
          // Difference in sizes
          int size_orig = xylist.size();
@@ -257,24 +255,34 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
    }
 
    public void resetRoiLocationsLength() {
-        int img_size = 0;
-        int locations_size = 0;
-       for (Object key : locations.keySet()) {
-        // Get roi location size.
-         ArrayList<Integer[]> xylist = (ArrayList<Integer[]>) locations.get(key);
-         locations_size = xylist.size();
-         // Current image size
-         MimsPlus mp = ui.getOpenMassImages()[0];
-         img_size = mp.getNSlices();
-         break;
-       }
 
-       int diff = locations_size - img_size;
-       if(diff < 0) {
-           updateRoiLocations(false);
-       } else if(diff > 0) {
-           updateRoiLocations();
-       }
+       for (Object key : rois.keySet()) {
+         // Get roi location size.
+         Roi roi = (Roi)rois.get(key);
+         Rectangle rec = roi.getBoundingRect();
+         ArrayList<Integer[]> xylist = (ArrayList<Integer[]>) locations.get(key);
+
+         // If no entry, create one.
+         if (xylist == null) {
+            int stacksize = ui.getmimsAction().getSize();
+            xylist = new ArrayList<Integer[]>();
+            Integer[] xy = new Integer[2];
+            for (int i = 0; i < stacksize; i++) {
+               xy = new Integer[]{rec.x, rec.y};
+               xylist.add(i, xy);
+            }
+         // If exist but is not proper length, fix.
+         } else {
+            int locations_size = xylist.size();
+            int img_size = ui.getmimsAction().getSize();
+            int diff = locations_size - img_size;
+            if(diff < 0) {
+               updateRoiLocations(false);
+            } else if(diff > 0) {
+               updateRoiLocations();
+            }
+         }
+       }             
    }
 
    void updateSpinners() {
@@ -976,6 +984,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             listModel.addElement(name);
             rois.put(name, roi);            
         }
+        resetRoiLocationsLength();
     }
     // Modified on 2005/11/15 by Ulrik Stervbo to only read .roi files and to not empty the current list
     void openZip(String path) {
@@ -1032,6 +1041,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         if (nRois == 0) {
             error("This ZIP archive does not appear to contain \".roi\" files");
         }
+        resetRoiLocationsLength();
     }
 
     String getUniqueName(String name) {
@@ -1105,7 +1115,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         Macro.setOptions(null);
         if (bPrompt) {
             String defaultname = ui.getImageFilePrefix();
-            defaultname += ui.ROIS_EXTENSION;
+            defaultname += UI.ROIS_EXTENSION;
             SaveDialog sd = new SaveDialog("Save ROIs...", path,
                     defaultname,
                     ".zip");
@@ -1113,8 +1123,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             if (name == null) {
                 return false;
             }
-            if (!(name.endsWith(ui.ROIS_EXTENSION))) {
-                name = name + ui.ROIS_EXTENSION;
+            if (!(name.endsWith(UI.ROIS_EXTENSION))) {
+                name = name + UI.ROIS_EXTENSION;
             }
             String dir = sd.getDirectory();
             path = (new File(dir, name)).getAbsolutePath();
