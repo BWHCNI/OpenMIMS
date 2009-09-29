@@ -192,9 +192,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       Opener op = ui.getOpener();
       int width = op.getWidth();
       int height = op.getHeight();
-      if(props.getLabelMethod() > 0) {
+      if(props.getLabelMethod() > 0)
          height += 16;
-      }
       int [] rgbPixels = new int[width*height];
       ImageProcessor ip = new ColorProcessor(width, height, rgbPixels);
       String numName = ui.getOpener().getMassNames()[props.getNumMassIdx()];
@@ -203,7 +202,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       setProcessor(title, ip);
       getProcessor().setMinAndMax(0, 255);
       fStateListeners = new EventListenerList();
-      //before listeners were added in compute...
       addListener(ui);
 
       // Fill in pixel values.
@@ -239,10 +237,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         // Get the numerator and denominator mass images.
         MimsPlus parentNum = ui.getMassImage( numIndex );
         MimsPlus parentDen = ui.getMassImage( denIndex );
-
-        //get current lut
-        //String lutname = this.getLuts()[0];
-        //this.getProcessor().
 
         // Setup list for sliding window, entire image, or single plane.
         java.util.ArrayList<Integer> list = new java.util.ArrayList<Integer>();        
@@ -921,7 +915,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       // Update histogram (area Rois only).      
       if ((roi.getType() == roi.FREEROI) || (roi.getType() == roi.OVAL) ||
           (roi.getType() == roi.POLYGON) || (roi.getType() == roi.RECTANGLE)) {
-         String label = this.getShortTitle() + " ROI: " + roi.getName();
+         int imageLabel = ui.getRoiManager().getIndex(roi.getName()) + 1;
+         String label = getShortTitle() + " Roi: (" + imageLabel + ")";
          double[] roiPix;
          if (this.nType == HSI_IMAGE) {
             internalRatio.setRoi(getRoi());

@@ -338,17 +338,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             return;
         }
         
-      int plane = imp.getCurrentSlice();
-      int trueplane = ui.getmimsAction().trueIndex(plane);
-      ArrayList xylist = (ArrayList<Integer[]>)locations.get(label);
-      xylist.set(trueplane-1, new Integer[] {(Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue()});
-      locations.put(label, xylist);
-
-      // For display purposes.
-      Roi roi = (Roi)rois.get(label);
-      Roi temproi = (Roi) roi.clone();
-      temproi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
-      imp.setRoi(temproi);
+        Roi roi = (Roi)rois.get(label);
+        roi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
+        imp.setRoi(roi);
+        move();
             
       updatePlots(false);
 
@@ -1407,7 +1400,8 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(imp);
             ui.updateLineProfile(profileP.getProfile(), imp.getShortTitle() + " : " + roi.getName(), imp.getProcessor().getLineWidth());
         } else {
-            String label = imp.getShortTitle() + " ROI: " + roi.getName();
+            int imageLabel = ui.getRoiManager().getIndex(roi.getName()) + 1;
+            String label = imp.getShortTitle() + " Roi: (" + imageLabel + ")";
             ui.getRoiControl().updateHistogram(roipix, label, force);
         }
     }

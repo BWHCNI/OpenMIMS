@@ -378,13 +378,13 @@ public class MimsJFreeChart {
       XYSeries series[][][] = new XYSeries[rois.length][images.length][stats.length];
       String seriesname[][][] = new String[rois.length][images.length][stats.length];
       ImageStatistics tempstats = null;
-      int currentSlice = images[0].getCurrentSlice();
+      int currentSlice = ui.getOpenMassImages()[0].getCurrentSlice();
 
       // begin looping
       for (int i = 0; i < rois.length; i++) {
          for (int ii = 0; ii < planes.size(); ii++) {
             int plane = (Integer)planes.get(ii);
-            images[0].setSlice(plane);
+            ui.getOpenMassImages()[0].setSlice(plane);
             for (int j = 0; j < images.length; j++) {
                for (int k = 0; k < stats.length; k++) {
 
@@ -420,7 +420,7 @@ public class MimsJFreeChart {
          }
       }
 
-      images[0].setSlice(currentSlice);
+      ui.getOpenMassImages()[0].setSlice(currentSlice);
 
       return dataset;
    }
