@@ -670,7 +670,12 @@ private void hsiWindowjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {/
 }//GEN-LAST:event_hsiWindowjSpinnerStateChanged
 
 private void scalebarjComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scalebarjComboBoxActionPerformed
-   if (bUpdating || (currentImage.getMimsType()!=currentImage.HSI_IMAGE))
+   
+   // currentImage is only set when an HSI is generated/selected
+   if (bUpdating || currentImage == null)
+      return;
+
+   if (currentImage.getMimsType() != MimsPlus.HSI_IMAGE)
       return;
    
    // Make sure we have valid props object.
