@@ -437,6 +437,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             currentlyOpeningImages = true;
 
             closeCurrentImage();
+            
+            // Clear selections in the jlist (prevents exceptions from being thrown).
+            getRoiManager().jlist.clearSelection();
 
             try {
 

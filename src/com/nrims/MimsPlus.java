@@ -46,6 +46,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public RatioProps ratioProps = null;
     public HSIProps hsiProps = null;
 
+    // Lut
+    public String lut = "Grays";
+
+    // Other stuff
     public String title = "";
     private boolean allowClose =true;
     private boolean bIgnoreClose = false ;
@@ -286,7 +290,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        }
 
        // Set processor.
-       ImageProcessor ip = new FloatProcessor(getWidth(), getHeight(), rPixels, null);
+       ImageProcessor ip = new FloatProcessor(getWidth(), getHeight(), rPixels, getProcessor().getColorModel());
        ip.setMinAndMax(getProcessor().getMin(), getProcessor().getMax());
        setProcessor(title, ip);
        internalRatio = this;
@@ -567,7 +571,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     public void windowActivated(WindowEvent e) {
         ui.setActiveMimsPlus(this);
-        ui.getCBControl().setWindowlistCombobox(getTitle()); 
+        ui.getCBControl().setWindowlistCombobox(getTitle());
+        ui.getCBControl().setLUT(lut);
     }
     @Override
     public void windowDeiconified(WindowEvent e) {}
@@ -1004,6 +1009,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     public void removeListener(MimsUpdateListener inListener ) {
          fStateListeners.remove(MimsUpdateListener.class, inListener );
     }
+
+   public void setLut(String label) {
+      lut = label;
+   }
     
     /**
      * extends setSlice to notify listeners when the frame updates

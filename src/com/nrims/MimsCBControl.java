@@ -32,7 +32,8 @@ public class MimsCBControl extends javax.swing.JPanel {
    private JFreeChart chart;
    private ChartPanel chartPanel;
    XYPolygonAnnotation a;
-   
+   boolean holdUpdate = false;
+
     public MimsCBControl(UI ui) {
        this.ui = ui;       
        initComponents();
@@ -42,6 +43,12 @@ public class MimsCBControl extends javax.swing.JPanel {
        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder());
        setupHistogram();
     }
+
+   void setLUT(String lut) {
+      holdUpdate = true;
+      jComboBox2.setSelectedItem(lut);
+      holdUpdate = false;
+   }
     
     private void setupHistogram() {
 
@@ -322,12 +329,15 @@ private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_jRadioButton1ActionPerformed
 
 private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
-   
+
+   if (holdUpdate)
+      return;
+
    // Get the selected LUT  
    String label = (String)jComboBox2.getSelectedItem();
-   
+
    // Get the selected window.
-   String title = (String)jComboBox1.getSelectedItem();  
+   String title = (String)jComboBox1.getSelectedItem();
    MimsPlus imp = null;
    if (title != null) 
       imp = (MimsPlus)windows.get(title);    
@@ -335,19 +345,19 @@ private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
       WindowManager.setCurrentWindow(imp.getWindow());
   
    // Manipulate the string
+   String lutLabel = "";
    if (label.equals("Red/Green"))
-      label = "redgreen";
+      lutLabel = "redgreen";
    else if (label.equals("Invert LUT"))
-      label = "invert";
-   else if (label.equals("3-3-2 RGB"))
-      label = "3-3-2 RGB";
+      lutLabel = "invert";
    else
-      label = label.toLowerCase();
+      lutLabel = label.toLowerCase();
       
    // Change the LUT
    LutLoader ll = new LutLoader();
-   ll.run(label);
-                    
+   ll.run(lutLabel);
+
+   imp.setLut(label);
 }//GEN-LAST:event_jComboBox2ActionPerformed
 
    // Variables declaration - do not modify//GEN-BEGIN:variables
