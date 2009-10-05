@@ -456,15 +456,23 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
 
     public MimsPlus getNumeratorImage() {
-        if(this.getMimsType()!=this.RATIO_IMAGE)
+        if(this.getMimsType()==this.RATIO_IMAGE) {
+            return this.ui.getMassImage(this.getRatioProps().getNumMassIdx());
+        }else if(this.getMimsType()==this.HSI_IMAGE) {
+            return this.ui.getMassImage(this.getHSIProps().getNumMassIdx());
+        } else {
             return null;
-        return this.ui.getMassImage(this.getRatioProps().getNumMassIdx());
+        }
     }
 
     public MimsPlus getDenominatorImage() {
-        if(this.getMimsType()!=this.RATIO_IMAGE)
+        if(this.getMimsType()==this.RATIO_IMAGE) {
+            return this.ui.getMassImage(this.getRatioProps().getDenMassIdx());
+        }else if(this.getMimsType()==this.HSI_IMAGE) {
+            return this.ui.getMassImage(this.getHSIProps().getDenMassIdx());
+        } else {
             return null;
-        return this.ui.getMassImage(this.getRatioProps().getDenMassIdx());
+        }
     }
 
     public void setbIgnoreClose(boolean b) {
@@ -746,12 +754,20 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         int mX = getWindow().getCanvas().offScreenX(x);
         int mY = getWindow().getCanvas().offScreenY(y);        
         String msg = "" + mX + "," + mY ;
-        if(isStack()) {
-            msg += "," + getCurrentSlice() + " = ";
+
+        int cslice = getCurrentSlice();
+        boolean stacktest = isStack();
+        if (this.nType == RATIO_IMAGE || this.nType == HSI_IMAGE) {
+            stacktest = stacktest || this.getNumeratorImage().isStack();
+            if(stacktest) cslice = this.getNumeratorImage().getCurrentSlice();
         }
-        else {
+        if (stacktest) {
+            msg += "," + cslice + " = ";
+        } else {
             msg += " = ";
         }
+
+
         if((this.nType == RATIO_IMAGE || this.nType == HSI_IMAGE) && (this.internalDenominator!=null && this.internalNumerator!=null) ) {
             float ngl = internalNumerator.getProcessor().getPixelValue(mX, mY);
             float dgl = internalDenominator.getProcessor().getPixelValue(mX, mY);
@@ -858,8 +874,50 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
        int y = (int) e.getPoint().getY();
        int mX = getWindow().getCanvas().offScreenX(x);
        int mY = getWindow().getCanvas().offScreenY(y); 
-       String msg = "" + mX + "," + mY ;
+       String msg = "" + mX + "," + mY;
 
+       int cslice = getCurrentSlice();
+        boolean stacktest = isStack();
+        if (this.nType == RATIO_IMAGE || this.nType == HSI_IMAGE) {
+            stacktest = stacktest || this.getNumeratorImage().isStack();
+            if(stacktest) cslice = this.getNumeratorImage().getCurrentSlice();
+        }
+        if (stacktest) {
+            msg += "," + cslice + " = ";
+        } else {
+            msg += " = ";
+        }
+
+       if((this.nType == RATIO_IMAGE || this.nType == HSI_IMAGE) && (this.internalDenominator!=null && this.internalNumerator!=null) ) {
+            float ngl = internalNumerator.getProcessor().getPixelValue(mX, mY);
+            float dgl = internalDenominator.getProcessor().getPixelValue(mX, mY);
+            double ratio = internalRatio.getProcessor().getPixelValue(mX, mY);
+            String opstring = "";
+            if(ui.getMedianFilterRatios()) { opstring = "-med->"; } else { opstring = "=";}
+            msg += "S (" + (int)ngl + " / " + (int)dgl + ") " + opstring + " " + IJ.d2s(ratio, 4);
+        }
+        else if(this.nType == SUM_IMAGE) {
+            float ngl, dgl;
+            if (internalNumerator != null && internalDenominator != null) {
+               ngl = internalNumerator.getProcessor().getPixelValue(mX, mY);
+               dgl = internalDenominator.getProcessor().getPixelValue(mX, mY);
+               msg += " S (" + ngl + " / " + dgl + ") = ";
+            }
+            int[] gl = getPixel(mX, mY);
+            float s = Float.intBitsToFloat(gl[0]);
+            msg += IJ.d2s(s,0);
+        }
+        else {
+            MimsPlus[] ml = ui.getOpenMassImages() ;
+            for(int i = 0 ; i < ml.length ; i++ ) {
+                int [] gl = ml[i].getPixel(mX,mY);
+                msg += gl[0] ;
+                if( i+1 < ml.length ) {
+                    msg += ", ";
+                }
+            }
+        }
+       
        // precision
        int displayDigits = 2;
        
@@ -870,7 +928,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       if (roi != null) {
          ij.process.ImageStatistics stats = this.getStatistics();
          if (this.getMimsType() == MimsPlus.HSI_IMAGE) {
-            msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0);
+            this.internalRatio.setRoi(roi);
+             stats =  this.internalRatio.getStatistics();
+            msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
          } else {
             msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
          }
@@ -894,6 +954,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         int plane = 1;
         int size = 1;
         MimsPlus mp = null;
+        if(IJ.controlKeyDown()) {
+            this.getWindow().mouseWheelMoved(e);
+            return;
+        }
+
         if(this.nType == MimsPlus.MASS_IMAGE) {
             this.getWindow().mouseWheelMoved(e);
             return;
@@ -909,7 +974,6 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         if(mp==null) return;
 
         int d = e.getWheelRotation();
-        //System.out.println("rotate: " + d);
         if( ( (plane + d)<=size ) && ( (plane+d)>=1 ) ) {
             mp.setSlice(plane+d);
         }
