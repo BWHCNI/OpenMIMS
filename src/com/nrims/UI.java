@@ -1515,6 +1515,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         double rmax = 0.0 ;
         double rmin = 100000000.0 ;
+        double rmean = 0;
+        double rstd = 0;
+        int n = 0;
         int nt = props.getMinNum() ;
         int dt = props.getMinDen() ;
 
@@ -1524,6 +1527,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         for(int i = 0 ; i < numPixels.length ; i++ ) {
             if(numPixels[i] > nt && denPixels[i] > dt) {
                 double r = props.getRatioScaleFactor()*((double)numPixels[i]/(double)denPixels[i]);
+                rmean += r;
+                rstd += (r*r);
+                n++;
                 if(r > rmax) {
                     rmax = r;
                 }
@@ -1532,8 +1538,16 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
             }
         }
-        props.setMaxRatio(rmax);
-        props.setMinRatio(rmin);
+        //mean and std ignoring zero value pixels
+        rmean = rmean/n;
+        rstd = rstd/n;
+        rstd = rstd - (rmean*rmean);
+        rstd = java.lang.Math.sqrt(rstd);
+        double min = java.lang.Math.max(0.0, rmean - (2 * rstd));
+        double max = rmean + (rstd);
+
+        props.setMaxRatio(max);
+        props.setMinRatio(min);
         img.getHSIProcessor().setProps(props);
 
         return img;
