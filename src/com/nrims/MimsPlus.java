@@ -980,7 +980,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     }
 
     public void updateHistogram(boolean force) {      
-      
+      if(roi==null) return;
       // Update histogram (area Rois only).      
       if ((roi.getType() == roi.FREEROI) || (roi.getType() == roi.OVAL) ||
           (roi.getType() == roi.POLYGON) || (roi.getType() == roi.RECTANGLE)) {
@@ -1094,7 +1094,33 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
         bStateChanging = false ;
     }
-    
+
+    private void stateChanged(int slice, int attr, boolean updateRatioHSI) {
+        bStateChanging = true ;
+        MimsPlusEvent event = new MimsPlusEvent(this, slice, attr, updateRatioHSI);
+        Object[] listeners = fStateListeners.getListenerList();
+        for(int i=listeners.length-2; i >= 0; i -= 2){
+            if(listeners[i] == MimsUpdateListener.class ){
+                    ((MimsUpdateListener)listeners[i+1])
+					.mimsStateChanged(event);
+            }
+        }
+        bStateChanging = false ;
+    }
+
+    private void stateChanged(int slice, int attr, MimsPlus mplus) {
+        bStateChanging = true ;
+        MimsPlusEvent event = new MimsPlusEvent(this, slice, attr, mplus);
+        Object[] listeners = fStateListeners.getListenerList();
+        for(int i=listeners.length-2; i >= 0; i -= 2){
+            if(listeners[i] == MimsUpdateListener.class ){
+                    ((MimsUpdateListener)listeners[i+1])
+					.mimsStateChanged(event);
+            }
+        }
+        bStateChanging = false ;
+    }
+
     private void stateChanged(ij.gui.Roi roi, int attr) {
         MimsPlusEvent event = new MimsPlusEvent(this, roi, attr); 
         Object[] listeners = fStateListeners.getListenerList();
@@ -1106,6 +1132,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
     }
     
+    @Override
     public synchronized void setSlice(int index) {
         if(getCurrentSlice() == index) {
             return;
@@ -1116,6 +1143,29 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         }
         stateChanged(index,MimsPlusEvent.ATTR_UPDATE_SLICE);       
     }
+
+    public synchronized void setSlice(int index, boolean updateRatioHSI) {
+        if(getCurrentSlice() == index) {
+            return;
+        }
+        super.setSlice(index);
+        if(bStateChanging) {
+            return;
+        }
+        stateChanged(index,MimsPlusEvent.ATTR_UPDATE_SLICE, false);
+    }
+
+    public synchronized void setSlice(int index, MimsPlus mplus) {
+        if(this.getCurrentSlice() == index) {
+            return;
+        }
+        super.setSlice(index);
+        if(bStateChanging) {
+            return;
+        }
+        stateChanged(index,MimsPlusEvent.ATTR_UPDATE_SLICE, mplus);
+    }
+
     public void setAllowClose(boolean allowClose){
         this.allowClose = allowClose;
     }        

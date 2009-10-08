@@ -380,36 +380,36 @@ public class MimsJFreeChart {
       ImageStatistics tempstats = null;
       int currentSlice = ui.getOpenMassImages()[0].getCurrentSlice();
 
-      // begin looping
+      // begin looping      
       for (int i = 0; i < rois.length; i++) {
          for (int ii = 0; ii < planes.size(); ii++) {
             int plane = (Integer)planes.get(ii);
             ui.getOpenMassImages()[0].setSlice(plane);
-            for (int j = 0; j < images.length; j++) {
-               for (int k = 0; k < stats.length; k++) {
+      for (int j = 0; j < images.length; j++) {
+                    for (int k = 0; k < stats.length; k++) {
 
-                  // Generate a name for the dataset.
-                  if (seriesname[i][j][k] == null) {                        
-                        seriesname[i][j][k] = images[j].getShortTitle();
-                        seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + " \n" + "r" + (ui.getRoiManager().getIndex(rois[i].getName())+1);
-                  }
+                        // Generate a name for the dataset.
+                        if (seriesname[i][j][k] == null) {
+                            seriesname[i][j][k] = images[j].getShortTitle();
+                            seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + " \n" + "r" + (ui.getRoiManager().getIndex(rois[i].getName()) + 1);
+                        }
 
-                  // Add data to the series.
-                  if (series[i][j][k] == null) {
-                     series[i][j][k] = new XYSeries(seriesname[i][j][k]);
-                  }
+                        // Add data to the series.
+                        if (series[i][j][k] == null) {
+                            series[i][j][k] = new XYSeries(seriesname[i][j][k]);
+                        }
 
-                  // Get the stats.
-                  Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane);
-                  rois[i].setLocation(xy[0], xy[1]);
-                  images[j].setRoi(rois[i]);
-                  tempstats = images[j].getStatistics();
-                  series[i][j][k].add(((Integer)planes.get(ii)).intValue(), getSingleStat(tempstats, stats[k]));
+                        // Get the stats.
+                        Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane);
+                        rois[i].setLocation(xy[0], xy[1]);
+                        images[j].setRoi(rois[i]);
+                        tempstats = images[j].getStatistics();
+                        series[i][j][k].add(((Integer) planes.get(ii)).intValue(), getSingleStat(tempstats, stats[k]));
 
-               } // End of Stats
-            } // End of Masses
-         } // End of Slice
-      } // End of Rois
+                    } // End of Stats
+                } // End of Masses
+            } // End of Slice
+        } // End of Rois
 
       // Populate the final data structure.
       for (int i = 0; i < rois.length; i++) {

@@ -1,5 +1,7 @@
 package com.nrims;
 
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -13,6 +15,7 @@ import ij.util.Tools;
 import ij.macro.Interpreter;
 import ij.measure.Calibration;
 import ij.plugin.frame.*;
+import ij.plugin.filter.ParticleAnalyzer;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -28,6 +31,10 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JTextField;
+
 
 /** 
  * This plugin replaces the Analyze/Tools/ROI Manager command. 
@@ -58,6 +65,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     boolean bAllPlanes = true;
     Measure scratch;
     HashMap locations = new HashMap<String, ArrayList<Integer[]>>();
+    ParticlesManager partManager;
     
     public MimsRoiManager(UI ui, com.nrims.data.Opener im) {
         super("MIMS ROI Manager");
@@ -338,10 +346,17 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             return;
         }
         
-        Roi roi = (Roi)rois.get(label);
-        roi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
-        imp.setRoi(roi);
-        move();
+      int plane = imp.getCurrentSlice();
+      int trueplane = ui.getmimsAction().trueIndex(plane);
+      ArrayList xylist = (ArrayList<Integer[]>)locations.get(label);
+      xylist.set(trueplane-1, new Integer[] {(Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue()});
+      locations.put(label, xylist);
+
+      // For display purposes.
+      Roi roi = (Roi)rois.get(label);
+      Roi temproi = (Roi) roi.clone();
+      temproi.setLocation((Integer) xPosSpinner.getValue(), (Integer) yPosSpinner.getValue());
+      imp.setRoi(temproi);
             
       updatePlots(false);
 
@@ -428,6 +443,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         addPopupItem("Duplicate");
         addPopupItem("Combine");
         addPopupItem("Split");
+        addPopupItem("Particles");
         addPopupItem("Add [t]");
         addPopupItem("Save As");
         add(pm);
@@ -479,6 +495,9 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             combine();
         } else if (command.equals("Split")) {
             split();
+        } else if (command.equals("Particles")) {
+            if(partManager==null) { partManager = new ParticlesManager(); }
+            partManager.showFrame();
         } else if (command.equals("Save As")) {
             String path = ui.getImageDir();
             previouslySaved = false;
@@ -745,6 +764,51 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
         return true;
     }
+
+
+    boolean add(Roi roi) {
+        //don't really want to be looking at current image???
+        //should be refactored along with getlabel()?
+        ImagePlus imp = getImage();
+        if (imp == null) {
+            return false;
+        }
+        if (roi == null) {
+            return false;
+        }
+        String name = roi.getName();
+        if (isStandardName(name)) {
+            name = null;
+        }
+        String label = name != null ? name : getLabel(imp, roi);
+        label = getUniqueName(label);
+        if (label == null) {
+            return false;
+        }
+        listModel.addElement(label);
+        roi.setName(label);
+        Calibration cal = imp.getCalibration();
+        Rectangle r = roi.getBounds();
+        if (cal.xOrigin != 0.0 || cal.yOrigin != 0.0) {
+            roi.setLocation(r.x - (int) cal.xOrigin, r.y - (int) cal.yOrigin);
+        }
+
+        // Create positions arraylist.
+        int stacksize = ui.getmimsAction().getSize();
+        ArrayList xypositions = new ArrayList<Integer[]>();
+        Integer[] xy = new Integer[2];
+        for (int i = 0; i < stacksize; i++) {
+           xy = new Integer[] {r.x, r.y};
+           xypositions.add(i, xy);
+        }
+        locations.put(label, xypositions);
+
+        // Add roi to list.
+        rois.put(label, roi);
+
+        return true;
+    }
+
 
     boolean isStandardName(String name) {
         if (name == null) {
@@ -1361,6 +1425,67 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         return indexes;
     }
 
+    public void roiThreshold(Roi roi, MimsPlus img, double[] params) {
+        //check param size
+        if(params.length!=4) return;
+        //params = minthreshold, maxthreshold, minsize, maxsize
+        double mint = params[0];
+        double maxt = params[1];
+        double mins = params[2];
+        double maxs = params[3];
+
+        img.setRoi(roi, true);
+        ImageProcessor imgproc = img.getProcessor();
+        
+        int imgwidth = img.getWidth();
+        int imgheight =img.getHeight();
+        float[][] pix = new float[imgwidth][imgheight];
+
+        //get pixel values
+        for(int i = 0; i < imgwidth; i++) {
+            for(int j = 0; j < imgheight; j++) {
+                pix[i][j] = (float)imgproc.getPixelValue(i, j);
+            }
+        }
+
+        //apply "mask"
+        for (int j = 0; j < imgheight; j++) {
+            for (int i = 0; i < imgwidth; i++) {
+                if (!roi.contains(i, j)) {
+                    pix[i][j] = 0;
+                }
+
+            }
+        }
+
+        //threshold image
+        FloatProcessor proc = new FloatProcessor(pix);
+        proc.setThreshold(mint, maxt, FloatProcessor.NO_LUT_UPDATE);
+
+        ImagePlus temp_img = new ImagePlus("temp_img", proc);
+        //generate rois
+        int options = ParticleAnalyzer.ADD_TO_MANAGER;
+        ParticleAnalyzer pa = new ParticleAnalyzer(options, 0, Analyzer.getResultsTable(), mins, maxs);
+        pa.analyze(temp_img);
+        RoiManager rm = (RoiManager) WindowManager.getFrame("ROI Manager");
+        if (rm == null) {
+            return;
+        }
+        //add to mims roi manager with needed shift in location
+        for (Roi calcroi : rm.getRoisAsArray()) {
+            ui.getRoiManager().add(calcroi);
+        }
+        rm.close();
+        temp_img.close();
+
+    }
+
+    public void roiThreshold(Roi[] rois, MimsPlus img, double[] params) {
+        for(int i = 0; i < rois.length; i++) {
+            roiThreshold(rois[i], img, params);
+        }
+    }
+
     ImagePlus getImage() {
         ImagePlus imp = WindowManager.getCurrentImage();
         if (imp == null) {
@@ -1400,8 +1525,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             ij.gui.ProfilePlot profileP = new ij.gui.ProfilePlot(imp);
             ui.updateLineProfile(profileP.getProfile(), imp.getShortTitle() + " : " + roi.getName(), imp.getProcessor().getLineWidth());
         } else {
-            int imageLabel = ui.getRoiManager().getIndex(roi.getName()) + 1;
-            String label = imp.getShortTitle() + " Roi: (" + imageLabel + ")";
+            String label = imp.getShortTitle() + " ROI: " + roi.getName();
             ui.getRoiControl().updateHistogram(roipix, label, force);
         }
     }
@@ -1585,5 +1709,132 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
          return this;
       }
    }
+
+
+    private class ParticlesManager extends com.nrims.PlugInJFrame implements ActionListener {
+
+        Frame instance;
+
+        JTextField threshMinField = new JTextField();
+        JTextField threshMaxField = new JTextField();
+        JTextField sizeMinField = new JTextField();
+        JTextField sizeMaxField = new JTextField();
+        JButton cancelButton;
+        JButton okButton;
+
+        public ParticlesManager() {
+            super("Particles Manager");
+
+            if (instance != null) {
+                instance.toFront();
+                return;
+            }
+            instance = this;
+
+            // Setup panel.
+            JPanel jPanel = new JPanel();
+            jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
+
+            String imagename = WindowManager.getCurrentImage().getTitle();
+            JLabel label = new JLabel("Image:   " + imagename);
+            jPanel.add(label);
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+            //add textfields
+            JLabel label2 = new JLabel("Threshold min");
+            jPanel.add(label2);
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            jPanel.add(threshMinField);
+            jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+            JLabel label3 = new JLabel("Threshold max");
+            jPanel.add(label3);
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            jPanel.add(threshMaxField);
+            jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+            JLabel label4 = new JLabel("Size min");
+            jPanel.add(label4);
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            jPanel.add(sizeMinField);
+            jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+            JLabel label5 = new JLabel("Size max");
+            jPanel.add(label5);
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            jPanel.add(sizeMaxField);
+            jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+
+            // Set up "OK" and "Cancel" buttons.
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            cancelButton = new JButton("Cancel");
+            cancelButton.setActionCommand("Cancel");
+            cancelButton.addActionListener(this);
+            okButton = new JButton("OK");
+            okButton.setActionCommand("OK");
+            okButton.addActionListener(this);
+            buttonPanel.add(cancelButton);
+            buttonPanel.add(okButton);
+
+            // Add elements.
+            setLayout(new BorderLayout());
+            add(jPanel, BorderLayout.PAGE_START);
+            add(buttonPanel, BorderLayout.PAGE_END);
+            setSize(new Dimension(300, 350));
+
+        }
+
+        // Gray out textfield when "All" images radio button selected.
+        public void actionPerformed(ActionEvent e) {
+            if (e.getActionCommand().equals("Cancel")) {
+                closeWindow();
+            } else if (e.getActionCommand().equals("OK")) {
+                //
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                try {
+                    double mint = Double.parseDouble(threshMinField.getText());
+                    double maxt = Double.parseDouble(threshMaxField.getText());
+                    double mins = Double.parseDouble(sizeMinField.getText());
+                    double maxs = Double.parseDouble(sizeMaxField.getText());
+
+                    double[] params = {mint, maxt, mins, maxs};
+
+                    Roi[] rois = getSelectedROIs();
+                    MimsPlus img = (MimsPlus)getImage();
+
+                    roiThreshold(rois, img, params);
+
+                } catch(Exception x) {
+                    ij.IJ.error("Error", "Not a number.");
+                      return;
+                } finally {
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                }
+
+                ui.updateAllImages();
+                closeWindow();
+            }
+
+        }
+
+        // Show the frame.
+        public void showFrame() {
+            setLocation(400, 400);
+            setVisible(true);
+            toFront();
+            setExtendedState(NORMAL);
+        }
+
+        public void closeWindow() {
+            super.close();
+            instance = null;
+            this.setVisible(false);
+        }
+    }
 }
 

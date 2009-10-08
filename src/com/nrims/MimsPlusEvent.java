@@ -30,6 +30,20 @@ public class MimsPlusEvent extends java.util.EventObject {
         this.changeAttribute = attribute ;
     }
 
+    public MimsPlusEvent( MimsPlus mimsImage, int slice, int attribute, boolean updateRatioHSI ) {
+        super(mimsImage);
+        this.updateRatioHSI = updateRatioHSI ;
+        this.nSlice = slice ;
+        this.changeAttribute = attribute ;
+    }
+
+    public MimsPlusEvent( MimsPlus mimsImage, int slice, int attribute, MimsPlus mplus ) {
+        super(mimsImage);
+        this.mplus = mplus;
+        this.nSlice = slice ;
+        this.changeAttribute = attribute ;
+    }
+
     public MimsPlusEvent( MimsPlus mimsImage, ij.gui.Roi roi, int attribute ) {
         super(mimsImage);
         this.changeAttribute = attribute ;
@@ -39,7 +53,11 @@ public class MimsPlusEvent extends java.util.EventObject {
     public int getAttribute() { return changeAttribute; }
     public int getSlice() { return nSlice; }
     public ij.gui.Roi getRoi() { return roi ; }
-    
+    public boolean getUpdateRatioHSI() { return updateRatioHSI; }
+    public MimsPlus getMimsPlus() { return mplus; }
+
+    private boolean updateRatioHSI = true;
+    private MimsPlus mplus = null;
     private int nSlice ;
     private int changeAttribute ;
     private ij.gui.Roi roi = null ;

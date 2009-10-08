@@ -1005,27 +1005,39 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
             // Set mass images.
             int nSlice = evt.getSlice();
+            boolean updateRatioHSI = evt.getUpdateRatioHSI();
+            MimsPlus mplus = evt.getMimsPlus();
             for (int i = 0; i < mp.length; i++) {
                mp[i].setSlice(nSlice);
             }                                                    
 
             if (!isSum) {
-                // Update HSI image slice.
-                for (int i = 0; i < hsi.length; i++) {
-                    hsi[i].computeHSI();
-                }
+                if (updateRatioHSI) {
+                    if (mplus == null) {
 
-                // Update ratio images.
-                for (int i = 0; i < rp.length; i++) {
-                    rp[i].computeRatio();
-                }
+                        // Update HSI image slice.
+                        for (int i = 0; i < hsi.length; i++) {
+                            hsi[i].computeHSI();
+                        }
 
+                        // Update ratio images.
+                        for (int i = 0; i < rp.length; i++) {
+                            rp[i].computeRatio();
+                        }
+                    } else {
+                        if (mplus.getMimsType()==MimsPlus.RATIO_IMAGE)
+                            mplus.computeRatio();
+                        else if (mplus.getMimsType()==MimsPlus.HSI_IMAGE)
+                            mplus.computeHSI();
+                    }
+                }
                 // Update rois in sum images
                 for (int i = 0; i < sum.length; i++) {
                     // For some reason 1 does not work... any other number does.
                     sum[i].setSlice(2);
                 }
             }
+            
             autocontrastAllImages();
             cbControl.updateHistogram();
             roiManager.updateSpinners();
