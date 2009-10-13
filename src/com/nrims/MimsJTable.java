@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -118,33 +119,38 @@ public class MimsJTable {
 
       // initialize variables.
       ImageStatistics tempstats = null;
-      int currentSlice = images[0].getCurrentSlice();
+      int currentSlice = ui.getOpenMassImages()[0].getCurrentSlice();
       Object[][] data = new Object[planes.size()][rois.length * images.length * stats.length + 1];
 
       // Fill in "slice" field.
       for (int ii = 0; ii < planes.size(); ii++) {
          data[ii][0] = ((Integer)planes.get(ii)).toString();
-      }   
+      }
 
       // Fill in data.
       for (int ii = 0; ii < planes.size(); ii++) {
          int col = 1;
          int plane = (Integer)planes.get(ii);
-         images[0].setSlice(plane);
-         for (int i = 0; i < rois.length; i++) {
-            for (int j = 0; j < images.length; j++) {
+         for (int j = 0; j < images.length; j++) {
+            MimsPlus image = images[j];
+            if (image.getMimsType() == MimsPlus.MASS_IMAGE)
+               image.setSlice(plane, false);
+            else if (image.getMimsType() == MimsPlus.RATIO_IMAGE)
+               image.setSlice(plane, image);
+            for (int i = 0; i < rois.length; i++) {
                for (int k = 0; k < stats.length; k++) {
                   Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane);
                   rois[i].setLocation(xy[0], xy[1]);
-                  images[j].setRoi(rois[i]);
-                  tempstats = images[j].getStatistics();                  
+                  image.setRoi(rois[i]);
+                  tempstats = image.getStatistics();
                   data[ii][col] = IJ.d2s(MimsJFreeChart.getSingleStat(tempstats, stats[k]), 2);
                   col++;
                }
             }
          }
       }
-      images[0].setSlice(currentSlice);
+
+      ui.getOpenMassImages()[0].setSlice(currentSlice);
 
       return data;
    }
@@ -154,8 +160,8 @@ public class MimsJTable {
       columnNames[0] = "slice";
 
       int col = 1;
-      for (int i = 0; i < rois.length; i++) {
-         for (int j = 0; j < images.length; j++) {
+      for (int j = 0; j < images.length; j++) {
+         for (int i = 0; i < rois.length; i++) {
             for (int k = 0; k < stats.length; k++) {
                columnNames[col] = stats[k] + "_m" + images[j].getRoundedTitle() + "_r" + (ui.getRoiManager().getIndex(rois[i].getName())+1);
                col++;

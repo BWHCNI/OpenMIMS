@@ -380,17 +380,27 @@ public class MimsJFreeChart {
       ImageStatistics tempstats = null;
       int currentSlice = ui.getOpenMassImages()[0].getCurrentSlice();
 
-      // begin looping      
-      for (int i = 0; i < rois.length; i++) {
+      // Image loop
+      for (int j = 0; j < images.length; j++) {
+         MimsPlus image = images[j];
+         
+         // Plane loop
          for (int ii = 0; ii < planes.size(); ii++) {
             int plane = (Integer)planes.get(ii);
-            ui.getOpenMassImages()[0].setSlice(plane);
-      for (int j = 0; j < images.length; j++) {
-                    for (int k = 0; k < stats.length; k++) {
+            if (image.getMimsType() == MimsPlus.MASS_IMAGE)
+               ui.getOpenMassImages()[0].setSlice(plane, false);
+            else if (image.getMimsType() == MimsPlus.RATIO_IMAGE)
+               ui.getOpenMassImages()[0].setSlice(plane, image);
+
+               // Roi loop
+               for (int i = 0; i < rois.length; i++) {
+
+                  // Stat loop
+                  for (int k = 0; k < stats.length; k++) {
 
                         // Generate a name for the dataset.
                         if (seriesname[i][j][k] == null) {
-                            seriesname[i][j][k] = images[j].getShortTitle();
+                            seriesname[i][j][k] = image.getShortTitle();
                             seriesname[i][j][k] = seriesname[i][j][k] + " " + stats[k] + " \n" + "r" + (ui.getRoiManager().getIndex(rois[i].getName()) + 1);
                         }
 
@@ -402,8 +412,8 @@ public class MimsJFreeChart {
                         // Get the stats.
                         Integer[] xy = ui.getRoiManager().getRoiLocation(rois[i].getName(), plane);
                         rois[i].setLocation(xy[0], xy[1]);
-                        images[j].setRoi(rois[i]);
-                        tempstats = images[j].getStatistics();
+                        image.setRoi(rois[i]);
+                        tempstats = image.getStatistics();
                         series[i][j][k].add(((Integer) planes.get(ii)).intValue(), getSingleStat(tempstats, stats[k]));
 
                     } // End of Stats
