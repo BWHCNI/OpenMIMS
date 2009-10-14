@@ -1172,14 +1172,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     public void close() {
         if (allowClose) {
-            //String name = this.getTitle();
-            //System.out.println("close: " + name);
             ui.imageClosed(this);
             ui.getCBControl().removeWindowfromList(this);
+            ui.getmimsTomography().resetImageNamesList();
             super.close();
         } else {
-            //String name = this.getTitle();
-            //System.out.println("close not allowed: " + name);
             this.hide();
             ui.massImageClosed(this);
         }
