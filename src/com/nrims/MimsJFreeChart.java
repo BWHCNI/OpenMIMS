@@ -6,6 +6,10 @@ import ij.process.*;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.BorderLayout;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -49,8 +53,9 @@ public class MimsJFreeChart implements ChartMouseListener {
    Object e;
    private com.nrims.UI ui;
    private chartFrame chartframe;
-   //private mimsPanel chartpanel;
-   private ChartPanel chartpanel;
+   private mimsPanel chartpanel;
+   private int currentSeriesInt = -1;
+   private String currentSeriesName = null;
 
    public MimsJFreeChart(UI ui) {
       this.ui = ui;
@@ -98,6 +103,18 @@ public class MimsJFreeChart implements ChartMouseListener {
          RefineryUtilities.centerFrameOnScreen(chartframe);
          chartframe.setVisible(true);
          chartpanel.addChartMouseListener(this);
+
+         KeyboardFocusManager.getCurrentKeyboardFocusManager()
+            .addKeyEventDispatcher(new KeyEventDispatcher() {
+                public boolean dispatchKeyEvent(KeyEvent e) {
+                    if (e.getID() == KeyEvent.KEY_PRESSED) {
+                        chartpanel.keyPressed(e);
+                   }
+                    return false;
+                }
+            });
+
+
       }
    }
 
@@ -252,8 +269,55 @@ public class MimsJFreeChart implements ChartMouseListener {
       }
    }
 
+   // Keep the currentSeriesInt and the currentSeriesName up to date.
    public void chartMouseMoved(ChartMouseEvent event) {
-      // Do nothing
+      ChartEntity entity = event.getEntity();
+      int seriesInt = getSeriesInt(entity);
+      if (seriesInt > -1)
+         currentSeriesInt = seriesInt;
+      String seriesName = getSeriesName(entity);
+      if (seriesName != null)
+         currentSeriesName = seriesName;
+   }
+
+   // Get the series index associcated with the chartEntity.
+   public int getSeriesInt(ChartEntity chartEntity) {
+      int seriesKey = -1;
+      if (chartEntity instanceof LegendItemEntity) {
+         LegendItemEntity entity = (LegendItemEntity) chartEntity;
+         Comparable seriesName = entity.getSeriesKey();
+
+         // Get the plot.
+         XYPlot plot = (XYPlot) chartpanel.getChart().getPlot();
+         XYDataset dataset = plot.getDataset();
+
+         // Loop over all series, find matching one.
+         for (int i = 0; i < dataset.getSeriesCount(); i++) {
+            if (dataset.getSeriesKey(i) == seriesName) {
+               seriesKey = i;
+               break;
+            }
+         }
+      }  else if (chartEntity instanceof XYItemEntity) {
+         XYItemEntity entity = (XYItemEntity) chartEntity;
+         seriesKey = entity.getSeriesIndex();
+      }
+      return seriesKey;
+   }
+
+   // Get the series name associcated with the chartEntity.
+   public String getSeriesName(ChartEntity chartEntity) {
+      String seriesName = null;
+      if (chartEntity instanceof LegendItemEntity) {
+         LegendItemEntity entity = (LegendItemEntity) chartEntity;
+         seriesName = (String)entity.getSeriesKey();
+      }  else if (chartEntity instanceof XYItemEntity) {
+         XYItemEntity entity = (XYItemEntity) chartEntity;
+         XYPlot plot = (XYPlot) chartpanel.getChart().getPlot();
+         XYDataset dataset = plot.getDataset();
+         seriesName = (String)dataset.getSeriesKey(entity.getSeriesIndex());
+      }
+      return seriesName;
    }
 
    // Handle graphical events spawned from mouse clicks of the plots.
@@ -356,6 +420,10 @@ public class MimsJFreeChart implements ChartMouseListener {
    public class mimsPanel extends ChartPanel implements ChartProgressListener {
 
       JFreeChart chart;
+      int colorIdx = 0;
+      Color[] colorList = {Color.BLACK, Color.BLUE, Color.CYAN, Color.GRAY, Color.GREEN,
+                           Color.MAGENTA, Color.ORANGE, Color.PINK, Color.RED, Color.WHITE,
+                           Color.YELLOW};
 
       public mimsPanel(JFreeChart chart) {
          super(chart);
@@ -411,6 +479,28 @@ public class MimsJFreeChart implements ChartMouseListener {
       public JFreeChart getChart() {
          return this.chart;
       }
+
+   public void keyPressed(KeyEvent e) {
+      if (e.getKeyChar()=='c') {
+
+         // Get the plot.
+         XYPlot plot = (XYPlot) chartpanel.getChart().getPlot();
+         XYDataset dataset = plot.getDataset();
+
+         // Get the series.
+         int seriesKey = currentSeriesInt;
+         if (seriesKey < 0)
+            seriesKey = dataset.getSeriesCount()-1;
+
+         // Set the color.
+         XYItemRenderer renderer = plot.getRenderer();
+         renderer.setSeriesPaint(seriesKey, colorList[colorIdx]);
+         colorIdx++;
+         if (colorIdx >= colorList.length)
+            colorIdx = 0;
+      }
+   }
+
    }
    
    public class chartFrame extends JFrame {
@@ -505,7 +595,7 @@ public class MimsJFreeChart implements ChartMouseListener {
       this.rois = rois;
    }
 
-   void setPlanes(ArrayList planes) {
+   public void setPlanes(ArrayList planes) {
       this.planes = planes;
    }
 
