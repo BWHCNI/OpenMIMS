@@ -56,6 +56,7 @@ public class MimsJFreeChart implements ChartMouseListener {
    private mimsPanel chartpanel;
    private int currentSeriesInt = -1;
    private String currentSeriesName = null;
+   private ArrayList<Integer> hiddenSeries = new ArrayList<Integer>();
 
    public MimsJFreeChart(UI ui) {
       this.ui = ui;
@@ -271,14 +272,22 @@ public class MimsJFreeChart implements ChartMouseListener {
 
    // Keep the currentSeriesInt and the currentSeriesName up to date.
    public void chartMouseMoved(ChartMouseEvent event) {
+
       ChartEntity entity = event.getEntity();
+      String seriesName = null;
       int seriesInt = getSeriesInt(entity);
-      if (seriesInt > -1)
-         currentSeriesInt = seriesInt;
-      String seriesName = getSeriesName(entity);
-      if (seriesName != null)
-         currentSeriesName = seriesName;
-   }
+
+         if (seriesInt > -1) {
+            currentSeriesInt = seriesInt;
+            seriesName = getSeriesName(entity);
+            if (seriesName != null)
+               currentSeriesName = seriesName;
+         } else {
+            currentSeriesInt = -1;
+            currentSeriesName = null;
+         }
+
+      }
 
    // Get the series index associcated with the chartEntity.
    public int getSeriesInt(ChartEntity chartEntity) {
@@ -330,11 +339,7 @@ public class MimsJFreeChart implements ChartMouseListener {
             LegendItemEntity entity = (LegendItemEntity) e;
             seriesKey = entity.getSeriesKey();
             highlightSeries(seriesKey);
-         } // else if (e instanceof XYItemEntity) {
-           // XYItemEntity entity = (XYItemEntity) e;
-           // seriesKey = entity.getDataset().getSeriesKey(entity.getSeriesIndex());
-           // highlightSeries(seriesKey);
-           // }
+         } 
       }
 
       // Highlight the line that corresponds to the legend item clicked.
@@ -469,7 +474,10 @@ public class MimsJFreeChart implements ChartMouseListener {
             }
             sy = dataset.getY(i, xint).doubleValue();
             if (sy == y) {
-               name = plot.getLegendItems().get(i).getLabel();
+               if (i >= plot.getLegendItems().getItemCount())
+                  name = "";
+               else
+                  name = plot.getLegendItems().get(i).getLabel();
             }
          }
 
@@ -481,23 +489,58 @@ public class MimsJFreeChart implements ChartMouseListener {
       }
 
    public void keyPressed(KeyEvent e) {
+
+      // Get the plot.
+      XYPlot plot = (XYPlot) chartpanel.getChart().getPlot();
+      XYDataset dataset = plot.getDataset();
+
+      // Change color.
       if (e.getKeyChar()=='c') {
-
-         // Get the plot.
-         XYPlot plot = (XYPlot) chartpanel.getChart().getPlot();
-         XYDataset dataset = plot.getDataset();
-
+         
          // Get the series.
-         int seriesKey = currentSeriesInt;
-         if (seriesKey < 0)
-            seriesKey = dataset.getSeriesCount()-1;
+         if (currentSeriesInt < 0)
+            return;
 
          // Set the color.
          XYItemRenderer renderer = plot.getRenderer();
-         renderer.setSeriesPaint(seriesKey, colorList[colorIdx]);
+         renderer.setSeriesPaint(currentSeriesInt, colorList[colorIdx]);
          colorIdx++;
          if (colorIdx >= colorList.length)
             colorIdx = 0;
+
+      // Hide the plot.
+      } else if (e.getKeyChar()=='h') {
+            
+         // If hiding a series that has crosshairs on it than we must reset crosshair location.
+         Object crosshairSeries = chartframe.model.getValueAt(0,0);
+         if (crosshairSeries != null && currentSeriesName != null) {
+            String crosshairSeriesName = crosshairSeries.toString();
+            if (crosshairSeriesName.matches(currentSeriesName)) {
+               plot.setDomainCrosshairValue(0.0);
+               plot.setRangeCrosshairValue(0.0);
+            }
+         }
+
+         // Get the series and hide.
+         if (currentSeriesInt < 0 && hiddenSeries.isEmpty()) {
+            return;
+         } else if (currentSeriesInt < 0 && !hiddenSeries.isEmpty()) {
+            int seriesInt = (Integer) hiddenSeries.get(0);
+            hiddenSeries.remove(0);
+            XYItemRenderer renderer = plot.getRenderer();
+            renderer.setSeriesVisible(seriesInt, true);
+         } else {
+            XYItemRenderer renderer = plot.getRenderer();
+            renderer.setSeriesVisible(currentSeriesInt, false);
+            hiddenSeries.add(currentSeriesInt);
+         }
+
+      // Reset zoom.
+      } else if (e.getKeyChar() == 'r') {
+
+         // Auto range.
+         plot.getDomainAxis().setAutoRange(true);
+         plot.getRangeAxis().setAutoRange(true);
       }
    }
 
