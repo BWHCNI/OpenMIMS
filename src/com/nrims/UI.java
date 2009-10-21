@@ -2262,7 +2262,7 @@ public void generateStack(MimsPlus img) {
     if(refimp.getStackSize()==1)
         return;
     //return if it's not a computed image, ie ratio/hsi
-    if( !(img.getMimsType()==img.RATIO_IMAGE || img.getMimsType()==img.HSI_IMAGE) )
+    if( !(img.getMimsType()==MimsPlus.RATIO_IMAGE || img.getMimsType()==MimsPlus.HSI_IMAGE) )
         return;
 
     ij.ImageStack stack = img.getStack();
@@ -2272,6 +2272,9 @@ public void generateStack(MimsPlus img) {
 
     for (int i = 1; i <= numImages; i++) {
         refimp.setSlice(i);
+        if(img.getMimsType()==MimsPlus.HSI_IMAGE)
+        while(img.getHSIProcessor().isRunning()){}
+        
         ims.addSlice(refimp.getStack().getSliceLabel(i), img.getProcessor().duplicate());
     }
 
