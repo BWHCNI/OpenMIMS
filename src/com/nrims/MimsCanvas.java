@@ -119,7 +119,6 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
                 switch (roi.getType()) {
                     case Roi.COMPOSITE: {
                         roi.setImage(imp);
-                        Color tmp = roi.getInstanceColor();
                         roi.setInstanceColor(Color.RED);
                         roi.draw(g);
                         roi.setInstanceColor(tmp);
