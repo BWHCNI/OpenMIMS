@@ -121,7 +121,6 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
                         roi.setImage(imp);
                         roi.setInstanceColor(Color.RED);
                         roi.draw(g);
-                        roi.setInstanceColor(tmp);
                         break; //TODO test
                     }
                     case Roi.FREELINE: {
