@@ -4,6 +4,7 @@ import com.nrims.data.Opener;
 import ij.*;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
+import ij.process.StackProcessor;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -33,6 +34,21 @@ import javax.swing.JLabel;
 public class MimsStackEditing extends javax.swing.JPanel {
 
     public static final long serialVersionUID = 1;
+    public static final int OK = 2;
+    public static final int CANCEL = 3;
+    public static final int WORKING = 4;
+    public static final int DONE = 5;
+    public int STATE = -1;
+    public int THREAD_STATE = -1;
+    private UI ui = null;
+    private Opener image = null;
+    private int numberMasses = -1;
+    private MimsPlus[] images = null;
+    private ImageStack[] imagestacks = null;
+    private boolean holdupdate = false;
+    public AutoTrackManager atManager;
+    public ArrayList<Integer> includeList = new ArrayList<Integer>();
+    public int startSlice = -1;
     
     public MimsStackEditing(UI ui, Opener im) {
 
@@ -209,6 +225,100 @@ public class MimsStackEditing extends javax.swing.JPanel {
         this.resetTrueIndexLabel();
     }
 
+    // Set the user selected options on to the tempImage.
+    public ImagePlus setOptions(ImagePlus tempImage, String options) {
+
+         // Crop image to size of roi.
+         if (options.contains("roi")) {
+            tempImage = cropImage(tempImage);
+         } else {
+            ImageStack tempStack = tempImage.getImageStack();
+            ImageProcessor tempProcessor = tempImage.getProcessor();
+            StackProcessor stackproc = new StackProcessor(tempStack, tempProcessor);
+            tempImage.setStack("cropped", stackproc.crop(0, 0, tempImage.getProcessor().getWidth(), tempImage.getProcessor().getHeight()));
+         }
+
+          // Enhance tracking image contrast.
+          if(options.contains("normalize") || options.contains("equalize")) {
+             WindowManager.setTempCurrentImage(tempImage);
+             String tmpstring = "";
+             if(options.contains("normalize")) { tmpstring += "normalize "; }
+             if(options.contains("equalize")) { tmpstring += "equalize "; }
+             IJ.run("Enhance Contrast", "saturated=0.5 " + tmpstring + " normalize_all");
+          }
+
+          return tempImage;
+      }
+
+    // Get the user selected options.
+     public String getOptions() {
+
+         String options = " ";
+             if (atManager.sub.isSelected()) {
+                 options += "roi ";
+             }
+
+              //check for roi
+              if (options.contains("roi")) {
+                  MimsRoiManager roimanager = ui.getRoiManager();
+                  if (roimanager == null) {
+                      ij.IJ.error("Error", "No ROI selected.");
+                      return null;
+                  }
+                  ij.gui.Roi roi = roimanager.getRoi();
+                  if (roi == null) {
+                      ij.IJ.error("Error", "No ROI selected.");
+                      return null;
+                  }
+              }
+
+             if (atManager.norm.isSelected()) {
+                 options += "normailize ";
+             }
+             if (atManager.eq.isSelected()) {
+                 options += "equalize ";
+             }
+
+         return options;
+      }
+
+    // Apply translations onto the images.
+    public void applyTranslations(double[][] translations, ArrayList<Integer> includeList) {
+
+          double deltax, deltay;
+          int plane;
+
+           for (int i = 0; i < translations.length; i++) {
+              
+               if (STATE == CANCEL)
+                  return;
+
+               plane = includeList.get(i);
+               //possible loss of precision...
+               //notice the negative....
+               deltax = (-1.0) * translations[i][0];
+               deltay = (-1.0) * translations[i][1];
+               images[0].setSlice(plane);
+               double actx = ui.mimsAction.getXShift(plane);
+               double acty = ui.mimsAction.getYShift(plane);
+
+               boolean redraw = ((deltax * actx < 0) || (deltay * acty < 0));
+
+               if (!holdupdate && (!ui.isUpdating())) {
+                   if (redraw) {
+                       restoreSlice(plane);
+                       XShiftSlice(plane, actx + deltax);
+                       YShiftSlice(plane, acty + deltay);
+                   } else {
+                       XShiftSlice(plane, deltax);
+                       YShiftSlice(plane, deltay);
+                   }
+                   ui.mimsAction.setShiftX(plane, actx + deltax);
+                   ui.mimsAction.setShiftY(plane, acty + deltay);
+               }
+           }
+      }
+
     public void concatImages(boolean pre, boolean labeloriginal, UI tempui) {
 
         ui.setUpdating(true);
@@ -363,20 +473,12 @@ public class MimsStackEditing extends javax.swing.JPanel {
         }
     }
 
-    private UI ui = null;
-    private Opener image = null;
-    private int numberMasses = -1;
-    private MimsPlus[] images = null;
-    private ImageStack[] imagestacks = null;
-    private boolean holdupdate = false;
-    public AutoTrackManager atManager;
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+   // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
    private void initComponents() {
 
       buttonGroup1 = new javax.swing.ButtonGroup();
@@ -601,9 +703,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
                .addComponent(untrackButton))
             .addContainerGap())
       );
-   }// </editor-fold>//GEN-END:initComponents
+   }// </editor-fold>                        
 
-    private void deleteListButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteListButtonActionPerformed
+    private void deleteListButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                 
 
         String liststr = deleteListTextField.getText();
         ArrayList<Integer> checklist = parseList(liststr, 1, images[0].getStackSize());
@@ -617,9 +719,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
         this.resetTrueIndexLabel();
         this.resetSpinners();
         deleteListTextField.setText("");
-}//GEN-LAST:event_deleteListButtonActionPerformed
+}                                                
       
-    private void concatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_concatButtonActionPerformed
+    private void concatButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
         UI tempUi = new UI(ui.getImageDir());
         tempUi.loadMIMSFile();
         Opener tempImage = tempUi.getOpener();
@@ -665,9 +767,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
         //wo.run("tile");
         ui.updateStatus("");
         ij.WindowManager.repaintImageWindows();
-}//GEN-LAST:event_concatButtonActionPerformed
+}                                            
 
-    private void reinsertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reinsertButtonActionPerformed
+    private void reinsertButtonActionPerformed(java.awt.event.ActionEvent evt) {                                               
         // TODO add your handling code here:
         int current = images[0].getCurrentSlice();
         String liststr = reinsertListTextField.getText();
@@ -687,9 +789,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
         this.resetTrueIndexLabel();
         this.resetSpinners();
         reinsertListTextField.setText("");
-}//GEN-LAST:event_reinsertButtonActionPerformed
+}                                              
 
-    private void displayActionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayActionButtonActionPerformed
+    private void displayActionButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                    
         // TODO add your handling code here:
         ij.text.TextWindow actionWindow = new ij.text.TextWindow("Current Action State", "plane\tx\ty\tdrop\timage index\timage", "", 300, 400);
 
@@ -699,9 +801,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
             tempstr = ui.mimsAction.getActionRow(i);
             actionWindow.append(tempstr);
         }
-    }//GEN-LAST:event_displayActionButtonActionPerformed
+    }                                                   
 
-    private void translateXSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_translateXSpinnerStateChanged
+    private void translateXSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {                                               
         // TODO add your handling code here:
         int plane = images[0].getCurrentSlice();
 
@@ -728,9 +830,9 @@ public class MimsStackEditing extends javax.swing.JPanel {
             ui.mimsAction.setShiftX(plane, xval);
             ui.mimsAction.setShiftY(plane, yval);
         }
-    }//GEN-LAST:event_translateXSpinnerStateChanged
+    }                                              
 
-    private void translateYSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_translateYSpinnerStateChanged
+    private void translateYSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {                                               
         // TODO add your handling code here:
         int plane = images[0].getCurrentSlice();
 
@@ -757,167 +859,19 @@ public class MimsStackEditing extends javax.swing.JPanel {
             ui.mimsAction.setShiftX(plane, xval);
             ui.mimsAction.setShiftY(plane, yval);
         }
-    }//GEN-LAST:event_translateYSpinnerStateChanged
-
-    private void autoTrack(String options) {
-       int length = ui.getOpenMassImages()[0].getNSlices();//images[0].getStackSize();
-       ArrayList<Integer> includeList = new ArrayList<Integer>();
-       for (int i = 0; i < length; i++) {
-          includeList.add(i, i+1);          
-       }
-       autoTrack(includeList, options);
-    }
-    
-    private void autoTrack(ArrayList<Integer> includeList, String options){
-       try {
-          setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-          ImagePlus tempImage = WindowManager.getCurrentImage();
-
-          //ij.plugin.filter.Duplicater dup = new ij.plugin.filter.Duplicater();
-          //ImagePlus imgcopy = dup.duplicateStack(tempImage, "copy");
-
-          int startPlane = ui.getOpenMassImages()[0].getCurrentSlice();
-          String massname = tempImage.getTitle();
-          
-          
-          ij.process.ImageProcessor tempProcessor = tempImage.getProcessor();
-          ij.ImageStack tempStack = new ij.ImageStack(tempImage.getWidth(), tempImage.getHeight());
-                    
-          for (int i = 0; i < includeList.size(); i++) {             
-             ui.getOpenMassImages()[0].setSlice(includeList.get(i));
-             //tempImage = WindowManager.getCurrentImage();
-             tempProcessor = tempImage.getProcessor();
-             tempStack.addSlice(tempImage.getTitle(), tempProcessor);
-          }
-
-          tempImage.setSlice(0);
-
-          ImagePlus img = new ij.ImagePlus("img", tempStack);
-          String optionmsg = "";
-
-          //TODO: clean up messy weirdness... sometime...
-
-          //Comment in to show autotracking stack
-          //comment out close() below
-          //img.show();
-          //img.updateAndDraw();
-
-          ij.process.StackProcessor stackproc = new ij.process.StackProcessor(tempStack, tempProcessor);
-           if (options.contains("roi")) {
-               MimsRoiManager roimanager = ui.getRoiManager();
-
-               if (roimanager == null) { return; }
-               ij.gui.Roi roi = roimanager.getRoi();
-               if (roi == null) { return; }
-
-               int width = roi.getBoundingRect().width;
-               int height = roi.getBoundingRect().height;
-               int x = roi.getBoundingRect().x;
-               int y = roi.getBoundingRect().y;
-
-               img.getProcessor().setRoi(roi);
-
-               img.setStack("cropped", stackproc.crop(x, y, width, height));
-
-               img.killRoi();
-               optionmsg += "Subregion " + roi.getName() + " ";
-           } else {
-              img.setStack("cropped", stackproc.crop(0, 0, img.getProcessor().getWidth(), img.getProcessor().getHeight()));
-           }
+    }                                              
 
 
-          //Enhance tracking image contrast
 
-          if(options.contains("normalize") || options.contains("equalize")) {
-              WindowManager.setTempCurrentImage(img);
-              
-              System.out.println(IJ.getImage().getTitle());
-              
-              String tmpstring = "";
-              if(options.contains("normalize")) { tmpstring += "normalize "; }
-              if(options.contains("equalize")) { tmpstring += "equalize "; }
-              IJ.run("Enhance Contrast", "saturated=0.5 " + tmpstring + " normalize_all");
-
-              System.out.println(IJ.getImage().getTitle());
-              //System.out.println(WindowManager.getCurrentImage().getTitle());
-          }
-          
-          //the waiting
-          if (img == null) {
-             System.err.println("The img is null; aborting.");
-          } else if (ui == null) {
-             System.err.println("The UI is null; aborting.");
-          }
-          AutoTrack temptrack = new AutoTrack(ui);
-          double[][] translations = temptrack.track(img);
-
-          if (translations == null) {
-             throw new NullPointerException("translations is null: AutoTrack has failed.");
-          }
-
-          double xval, yval;
-          double deltax, deltay;
-          int plane;
-           for (int i = 0; i < translations.length; i++) {
-               plane = includeList.get(i);
-               //possible loss of precision...
-               //notice the negative....
-               deltax = (-1.0) * translations[i][0];
-               deltay = (-1.0) * translations[i][1];
-
-               ui.getOpenMassImages()[0].setSlice(plane);
-               double actx = ui.mimsAction.getXShift(plane);
-               double acty = ui.mimsAction.getYShift(plane);
-
-               boolean redraw = ((deltax * actx < 0) || (deltay * acty < 0));
-
-               if (!holdupdate && (!ui.isUpdating())) {
-                   if (redraw) {
-                       this.restoreSlice(plane);
-                       this.XShiftSlice(plane, actx + deltax);
-                       this.YShiftSlice(plane, acty + deltay);
-                   } else {
-                       this.XShiftSlice(plane, deltax);
-                       this.YShiftSlice(plane, deltay);
-                   }
-                   ui.mimsAction.setShiftX(plane, actx + deltax);
-                   ui.mimsAction.setShiftY(plane, acty + deltay);
-               }
-
-           //TODO fix this, shouldn't need to call setSlice
-           //original
-           //images[0].setSlice(plane);
-           //this.XShiftSlice(plane, xval);
-           //this.YShiftSlice(plane, yval);
-           }
-
-          //clean up
-          images[0].setSlice(startPlane);
-          //tempImage = null;
-          //tempProcessor = null;
-          //tempStack = null;
-
-          //comment out for testing
-          img.close();
-          img = null;
-          if (!this.reinsertButton.isEnabled()) {
-             autoTrackButton.setEnabled(false);
-          }
-                    
-       } finally {          
-          setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-       }       
-    }
-       
-    private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoTrackButtonActionPerformed
+    private void autoTrackButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                
 
         atManager = new AutoTrackManager();
         atManager.showFrame();              
-}//GEN-LAST:event_autoTrackButtonActionPerformed
+}                                               
    
-    private void untrackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_untrackButtonActionPerformed
+    private void untrackButtonActionPerformed(java.awt.event.ActionEvent evt) {                                              
         untrack();
-}//GEN-LAST:event_untrackButtonActionPerformed
+}                                             
 
 public void untrack() {
 
@@ -965,7 +919,7 @@ public void untrack() {
         ui.getmimsLog().Log("Untracked.");
 }
 
-private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sumButtonActionPerformed
+private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {                                          
 
     // Get the window title.
     String name = WindowManager.getCurrentImage().getTitle();
@@ -1001,9 +955,9 @@ private void sumButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     // Show sum image.
     sp.showWindow();
-}//GEN-LAST:event_sumButtonActionPerformed
+}                                         
 
-private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
+private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {                                               
 
    // Get the block size from the text box.
    String comptext = compressTextField.getText();
@@ -1029,11 +983,11 @@ private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
     compressTextField.setText("");
     ui.getmimsLog().Log("Compressed with blocksize: " + blockSize);
-}//GEN-LAST:event_compressButtonActionPerformed
+}                                              
 
-private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
         uncompressPlanes();
-}//GEN-LAST:event_jButton1ActionPerformed
+}                                        
 
 public void uncompressPlanes() {
    
@@ -1121,6 +1075,8 @@ private void compressPlanes(int blockSize) {
 
     protected void resetSpinners() {
         if (this.images != null && (!holdupdate) && (images[0] != null) && (!ui.isUpdating())) {
+            if (THREAD_STATE == this.WORKING)
+               return;
             holdupdate = true;
             int plane = images[0].getCurrentSlice();
             double xval = ui.mimsAction.getXShift(plane);
@@ -1144,7 +1100,7 @@ private void compressPlanes(int blockSize) {
             this.trueIndexLabel.setText(label);
         }
     }
-   // Variables declaration - do not modify//GEN-BEGIN:variables
+   // Variables declaration - do not modify                     
    private javax.swing.JButton autoTrackButton;
    private javax.swing.ButtonGroup buttonGroup1;
    private javax.swing.JButton compressButton;
@@ -1168,8 +1124,63 @@ private void compressPlanes(int blockSize) {
    private javax.swing.JSpinner translateYSpinner;
    private javax.swing.JLabel trueIndexLabel;
    private javax.swing.JButton untrackButton;
-   // End of variables declaration//GEN-END:variables
+   // End of variables declaration                   
+   
+   // Crops the image to the Roi selected in RoiManager.
+   // Otherwise calls crop (without actually cropping).
+      public ImagePlus cropImage(ImagePlus img) {
 
+         ImageStack tempStack = img.getImageStack();
+         ImageProcessor tempProcessor = img.getProcessor();
+         ij.process.StackProcessor stackproc = new ij.process.StackProcessor(tempStack, tempProcessor);
+
+               MimsRoiManager roimanager = ui.getRoiManager();
+               if (roimanager == null) { return null; }
+               ij.gui.Roi roi = roimanager.getRoi();
+               if (roi == null) { return null; }
+               int width = roi.getBoundingRect().width;
+               int height = roi.getBoundingRect().height;
+               int x = roi.getBoundingRect().x;
+               int y = roi.getBoundingRect().y;
+               img.getProcessor().setRoi(roi);
+               img.setStack("cropped", stackproc.crop(x, y, width, height));
+               img.killRoi();
+
+               return img;
+      }      
+
+      // Return a new image minus those planes specified in includeList.
+      public ImagePlus getSubStack(ImagePlus img, ArrayList<Integer> includeList) {
+         ImageStack imgStack = img.getImageStack();
+         ImageStack tempStack = new ImageStack(img.getHeight(), img.getWidth());
+          for (int i = 0; i < imgStack.getSize(); i++) {
+             if (includeList.contains(i+1)) {
+                tempStack.addSlice(Integer.toString(i+1), imgStack.getProcessor(i+1));
+             }
+          }
+         ImagePlus tempImg = new ImagePlus("img", tempStack);
+         return tempImg;
+      }
+
+    public void notifyComplete(double[][] trans) {
+
+       boolean nullTrans = false;
+       if (trans == null) {
+          nullTrans = true;
+       } else {
+          applyTranslations(trans, includeList);
+       }
+
+       THREAD_STATE = DONE;
+       ui.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+       atManager.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+       atManager.closeWindow();
+       if (startSlice > -1)
+             images[0].setSlice(startSlice);
+
+       if (nullTrans == true && STATE == MimsStackEditing.OK)
+          throw new NullPointerException("translations is null: AutoTrack has failed.");
+    }
    
 private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionListener{
    
@@ -1265,62 +1276,50 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
           txtField.setEditable(true);       
        else if (e.getActionCommand().equals("All"))   
           txtField.setEditable(false); 
-       else if (e.getActionCommand().equals("Cancel"))
+       else if (e.getActionCommand().equals("Cancel")) {
+          STATE = CANCEL;
+          THREAD_STATE = DONE;
           closeWindow();
-       else if (e.getActionCommand().equals("OK")) {                   
-          // Planes to be used for autotracking.
-          try {
-             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-             String options = " ";
-             if (sub.isSelected()) {
-                 options += "roi ";
-             }
+          if (startSlice > -1) 
+             images[0].setSlice(startSlice);
+       } else if (e.getActionCommand().equals("OK")) {
+            STATE = OK;
 
-              //check for roi
-              if (options.contains("roi")) {
-                  MimsRoiManager roimanager = ui.getRoiManager();
-                  if (roimanager == null) {
-                      ij.IJ.error("Error", "No ROI selected.");
-                      return;
-                  }
-                  ij.gui.Roi roi = roimanager.getRoi();
-                  if (roi == null) {
-                      ij.IJ.error("Error", "No ROI selected.");
-                      return;
-                  }
-              }
+            ui.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            atManager.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-             if (norm.isSelected()) {
-                 options += "normailize ";
-             }
-             if (eq.isSelected()) {
-                 options += "equalize ";
-             }
+            // Get optional parameters for auto tracking algorithm.
+            String options = getOptions();
+            if (options == null){
+               STATE = CANCEL;
+               notifyComplete(null);
+               return;
+            }
 
-              java.util.Date start = new java.util.Date();
+            // Get the list of included images and create substack.
+            ImagePlus currentImage = WindowManager.getCurrentImage();
+            startSlice = currentImage.getCurrentSlice();
+            if (atManager.getSelection(atManager.buttonGroup).getActionCommand().equals("Subset")) {
+               includeList = parseList(atManager.txtField.getText(), 1, ui.mimsAction.getSize());
+            } else {
+               for (int i = 0; i < images[0].getNSlices(); i++)
+                  includeList.add(i, i+1);
+            }
+            ImagePlus tempImage = getSubStack(currentImage, includeList);
 
-              if (getSelection(buttonGroup).getActionCommand().equals("Subset")) {
-                  ArrayList<Integer> includeList = parseList(txtField.getText(), 1, ui.mimsAction.getSize());
-                  if (includeList.size() != 0) {
-                      autoTrack(includeList, options);
-                  }
-              } else {
-                  autoTrack(options);
-              }
+            // Set options.
+            tempImage = setOptions(tempImage, options);
 
-              java.util.Date end = new java.util.Date();
-              System.out.println("Start time (ms): " + start.getTime());
-              System.out.println("End time (ms): " + end.getTime());
-              System.out.println("Time (ms): " + (end.getTime() - start.getTime() ));
-              
-          } finally {
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));           
-             }          
-          closeWindow();
+            // Call Autotrack algorithm.
+            THREAD_STATE = WORKING;
+            AutoTrack temptrack = new AutoTrack(ui, tempImage);
+            Thread thread = new Thread(temptrack);
+            thread.start();
+
+            tempImage.close();
        }
-          
     }
-   
+
     // Show the frame.
     public void showFrame() {
         setLocation(400, 400);
@@ -1363,8 +1362,9 @@ private class AutoTrackManager extends com.nrims.PlugInJFrame implements ActionL
         }
         return null;
     }
-    
+
 }
 
 }
+
 

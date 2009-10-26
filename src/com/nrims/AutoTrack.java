@@ -68,14 +68,24 @@ import java.lang.reflect.Method;
  * @author cpoczatek
  */
 
-public class AutoTrack {
+public class AutoTrack implements Runnable {
 
-    public AutoTrack(com.nrims.UI uiarg) {
+    private static final double TINY = (double)Float.intBitsToFloat((int)0x33FFFFFF);
+    private com.nrims.UI ui;
+    private ImagePlus imp;
+
+    public AutoTrack(com.nrims.UI uiarg, ImagePlus imp) {
         this.ui = uiarg;
+        this.imp = imp;
     }
 
-    double[][] track(ImagePlus imp) {
-        
+    public void run() {
+       double[][] trans = track(this.imp);
+       ui.getmimsStackEditing().notifyComplete(trans);
+    }
+
+   private double[][] track(ImagePlus imp) {
+
 	if (imp == null) {
 		IJ.error("No image available");
 		return null;
@@ -86,7 +96,7 @@ public class AutoTrack {
 	}
 
 	final int transformation = 0;
-        
+
 	final int width = imp.getWidth();
 	final int height = imp.getHeight();
 	final int targetSlice = imp.getCurrentSlice();
@@ -95,8 +105,8 @@ public class AutoTrack {
 		{0.0, 1.0, 0.0},
 		{0.0, 0.0, 1.0}
 	};
-        
-       
+
+
 	double[][] anchorPoints = null;
 	switch (transformation) {
 		case 0: {
@@ -148,12 +158,12 @@ public class AutoTrack {
 			return null;
 		}
 	}
-        
+
         int planesTotal = imp.getNSlices();
         int planesDone = 0;
         float percent;
-        
-        
+
+
 	for (int s = targetSlice - 1; (0 < s); s--) {
 		source = registerSlice(source, target, imp, width, height,
 			transformation, globalTransform, anchorPoints, colorWeights, s);
@@ -161,10 +171,10 @@ public class AutoTrack {
 			imp.setSlice(targetSlice);
 			return null;
 		}
-                
+
                 planesDone=planesDone+1;
                 //percent = (planesDone/planesTotal);
-                
+
                 //System.out.println(percent);
                 System.out.println(planesDone);
                 ui.updateStatus(planesDone+" planes of "+planesTotal+" total...");
@@ -193,64 +203,64 @@ public class AutoTrack {
 			}
 		}
 	}
-        
+
         int size = imp.getStackSize();
         double[][] trans = new double[size][2];
-        
+
         trans[0][0]=0;
         trans[0][1]=0;
 	for (int s = targetSlice + 1; (s <= size); s++) {
-            
-            
-            
+
+      if (ui.getmimsStackEditing().STATE == MimsStackEditing.CANCEL)
+         return null;
+
+
 		source = registerSlice(source, target, imp, width, height,
 			transformation, globalTransform, anchorPoints, colorWeights, s);
 		if (source == null) {
 			imp.setSlice(targetSlice);
 			return null;
 		}
-                
+
             //--------------------
             //System.out.println("p:"+s);
             //System.out.println(""+globalTransform[0][0]+" "+globalTransform[0][1]+" "+globalTransform[0][2]);
             //System.out.println(""+globalTransform[1][0]+" "+globalTransform[1][1]+" "+globalTransform[1][2]);
             //System.out.println(""+globalTransform[2][0]+" "+globalTransform[2][1]+" "+globalTransform[2][2]);
             //--------------------
-                
+
                 trans[s-1][0] = globalTransform[0][2];
                 trans[s-1][1] = globalTransform[1][2];
                 //imp.updateAndDraw();
-                
+
                 planesDone=planesDone+1;
                 //percent = (planesDone/planesTotal);
-                
+
                 //System.out.println("calling ui.showprog");
                 //System.out.println(planesDone + " of " + planesTotal);
                 //ui.updateStatus(planesDone+" planes of "+planesTotal+" total...");
-                if(ui.getMassImage(0)!=null) { 
+                if(ui.getMassImage(0)!=null) {
                     ui.getMassImage(0).setSlice(s);
                     //ui.getMassImage(0).updateAndDraw();
-                }
+               }
 	}
         imp.setSlice(targetSlice);
 	imp.updateAndDraw();
-        
-        return trans;
-        	
-} /* end track */    
-    
-    
 
-    
-    
-    
-    
-    
+        return trans;
+
+} /* end track */
+
+
+
+
+
+
+
+
 /*....................................................................
 	Private global variables
 ....................................................................*/
-private static final double TINY = (double)Float.intBitsToFloat((int)0x33FFFFFF);
-private com.nrims.UI ui;
 
 /*------------------------------------------------------------------*/
 
@@ -259,7 +269,7 @@ private com.nrims.UI ui;
 	Private methods
 ....................................................................*/
 
-/*------------------------------------------------------------------*/    
+/*------------------------------------------------------------------*/
 private void computeStatistics (
 	final ImagePlus imp,
 	final double[] average,
@@ -274,9 +284,9 @@ private void computeStatistics (
 		final int mapSize = icm.getMapSize();
 		final byte[] reds = new byte[mapSize];
 		final byte[] greens = new byte[mapSize];
-		final byte[] blues = new byte[mapSize];	
-		icm.getReds(reds); 
-		icm.getGreens(greens); 
+		final byte[] blues = new byte[mapSize];
+		icm.getReds(reds);
+		icm.getGreens(greens);
 		icm.getBlues(blues);
 		final double[] histogram = new double[mapSize];
 		for (int k = 0; (k < mapSize); k++) {
@@ -633,9 +643,9 @@ private ImagePlus getGray32 (
 		final int mapSize = icm.getMapSize();
 		final byte[] reds = new byte[mapSize];
 		final byte[] greens = new byte[mapSize];
-		final byte[] blues = new byte[mapSize];	
-		icm.getReds(reds); 
-		icm.getGreens(greens); 
+		final byte[] blues = new byte[mapSize];
+		icm.getReds(reds);
+		icm.getGreens(greens);
 		icm.getBlues(blues);
 		int index;
 		for (int k = 0; (k < length); k++) {
@@ -1792,9 +1802,9 @@ private ImagePlus registerSlice (
 
 
 private long randnumber;
-    
-    
-// end of class...    
+
+
+// end of class...
 }
 
 
