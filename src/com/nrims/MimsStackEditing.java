@@ -1165,11 +1165,13 @@ private void compressPlanes(int blockSize) {
     public void notifyComplete(double[][] trans) {
 
        boolean nullTrans = false;
+       atManager.cancelButton.setEnabled(false);
        if (trans == null) {
           nullTrans = true;
        } else {
           applyTranslations(trans, includeList);
        }
+       atManager.cancelButton.setEnabled(true);
 
        THREAD_STATE = DONE;
        ui.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
