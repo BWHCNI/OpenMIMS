@@ -800,8 +800,10 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
             
         int displayDigits = 2;
         //should be in preferences
-        boolean insideRoi = false;
-        java.util.Hashtable rois = ui.getRoiManager().getROIs();        
+        java.util.Hashtable rois = ui.getRoiManager().getROIs();
+        Roi smallestRoi = null;
+        double smallestRoiArea = 0.0;
+        ij.process.ImageStatistics stats = null;
         for(Object key:rois.keySet()) {
             Roi roi = (Roi)rois.get(key);
             int slice=1;
@@ -823,43 +825,43 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                 if(c != -1) linecheck=true;
                 
             }
-            
+
             if(roi.contains(mX, mY) || linecheck) {
-               if (ui.getSyncROIsAcrossPlanes() || ui.getRoiManager().getSliceNumber(key.toString()) == slice) {
-                  insideRoi = true;
-                                    
-                  // Update message.
-                  ij.process.ImageStatistics stats;                 
-                  if(this.getMimsType()==HSI_IMAGE && internalRatio!=null) {
+               if (ui.getSyncROIsAcrossPlanes() || ui.getRoiManager().getSliceNumber(key.toString()) == slice) {               
+                  if (this.getMimsType()==HSI_IMAGE && internalRatio!=null) {
                       internalRatio.setRoi(roi);
                       stats = internalRatio.getStatistics();
                       internalRatio.killRoi();
                   } else {
+                     setRoi(roi);
                      stats = this.getStatistics();
-                  }
+                     killRoi();
+                  }                 
 
-                  if (roi.getType() == roi.LINE)
-                     msg += "\t ROI " + roi.getName() + ": L=" + IJ.d2s(roi.getLength(), 0);
-                  else
-                     msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);
-                  
-                  // Set Roi to yellow.
-                  if(ui.activeRoi != roi){                   
-                    ui.activeRoi = roi;
-                    setRoi(roi);
+                  // Set as smallest Roi that the mouse is within.
+                  if (smallestRoi == null) {
+                     smallestRoi = roi;
+                     smallestRoiArea = stats.area;
+                  } else {                     
+                     if (stats.area < smallestRoiArea) {
+                        smallestRoi = roi;
+                        smallestRoiArea = stats.area;
+                     }
                   }
-                  
-                  updateHistogram(true);
-                  updateLineProfile();           
-                  
-                  break;
-               } // End - if (ui.getSyncROIsAcrossPlanes() 
-            } // End - if(contains)
-        } // End - for(Object key:rois.keySet())
-        if (ui.activeRoi != null && !insideRoi){
-           ui.activeRoi = null;
-           setRoi((Roi)null);
+               } 
+            }
         } 
+        
+        setRoi(smallestRoi);
+        stats = this.getStatistics();
+        if (smallestRoi != null) {           
+           if (roi.getType() == roi.LINE)
+              msg += "\t ROI " + roi.getName() + ": L=" + IJ.d2s(roi.getLength(), 0);
+           else
+              msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);           
+           updateHistogram(true);
+           updateLineProfile();           
+        }
         ui.updateStatus(msg);
     }
     
@@ -936,13 +938,9 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
          }
 
          ui.updateStatus(msg);
-
-         // Set Roi to yellow.
-         if (ui.activeRoi != roi) {
-            ui.activeRoi = roi;
-            setRoi(roi);
-         }        
          
+         setRoi(roi);
+
          updateHistogram(false);
          updateLineProfile();
 
