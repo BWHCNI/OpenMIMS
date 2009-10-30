@@ -84,27 +84,31 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
 
             // If the current slice is the one which the
             // roi was created then we want to show the roi in red.
+            String name = "";
             if (ui.getSyncROIsAcrossPlanes()) {
-                String name = "" + (id + 1);
+                name = "" + (id + 1);
                 java.awt.Rectangle r = roi.getBounds();
-                int x = screenX(r.x + r.width / 2 - g.getFontMetrics().stringWidth(name) / 2);
-                int y = screenY(r.y + r.height / 2 + g.getFontMetrics().getHeight() / 2);
-                g.drawString(name, x, y);
+                int x = screenX(r.x + r.width / 2);
+                int y = screenY(r.y + r.height / 2);
+                if (!(roi instanceof Line))
+                   g.drawString(name, x, y);
                 bDraw = true;
             } else if (!(ui.getSyncROIsAcrossPlanes()) && (roiManager.getSliceNumber(label) == mImp.getCurrentSlice()) && !isRatio) {
-                String name = "" + (nSyncid + 1);
+                name = "" + (nSyncid + 1);
                 java.awt.Rectangle r = roi.getBounds();
-                int x = screenX(r.x + r.width / 2 - g.getFontMetrics().stringWidth(name) / 2);
-                int y = screenY(r.y + r.height / 2 + g.getFontMetrics().getHeight() / 2);
-                g.drawString(name, x, y);
+                int x = screenX(r.x + r.width / 2);
+                int y = screenY(r.y + r.height / 2);
+                if (!(roi instanceof Line))
+                   g.drawString(name, x, y);
                 bDraw = true;
                 nSyncid = nSyncid + 1;
             } else if (!(ui.getSyncROIsAcrossPlanes()) && (roiManager.getSliceNumber(label) == parentplane) && isRatio) {
-                String name = "" + (nSyncid + 1);
+                name = "" + (nSyncid + 1);
                 java.awt.Rectangle r = roi.getBounds();
-                int x = screenX(r.x + r.width / 2 - g.getFontMetrics().stringWidth(name) / 2);
-                int y = screenY(r.y + r.height / 2 + g.getFontMetrics().getHeight() / 2);
-                g.drawString(name, x, y);
+                int x = screenX(r.x + r.width / 2);
+                int y = screenY(r.y + r.height / 2);
+                if (!(roi instanceof Line))
+                   g.drawString(name, x, y);
                 bDraw = true;
                 nSyncid = nSyncid + 1;
             } else {
@@ -153,11 +157,25 @@ public class MimsCanvas extends ij.gui.ImageCanvas {
                     }
                     case Roi.LINE: {
                         Line lroi = (Line) roi;
-                        int x1 = screenX(lroi.x1);
-                        int x2 = screenX(lroi.x2);
-                        int y1 = screenY(lroi.y1);
-                        int y2 = screenY(lroi.y2);
+                        int width = lroi.x2 - lroi.x1;
+                        int height = lroi.y2 - lroi.y1;                        
+                        int x1, y1, x2, y2;
+                        if (width > 0) {
+                           x1 = screenX(xy[0]);
+                           x2 = screenX(xy[0]+width);
+                        } else {
+                           x1 = screenX(xy[0]+Math.abs(width));
+                           x2 = screenX(xy[0]);
+                        }
+                        if (height > 0) {
+                           y1 = screenY(xy[1]);
+                           y2 = screenY(xy[1]+height);
+                        } else {
+                           y1 = screenY(xy[1]+Math.abs(height));
+                           y2 = screenY(xy[1]);
+                        }                                                
                         g.drawLine(x1, y1, x2, y2);
+                        g.drawString(name, x1+width/2, y1+height/2);
                         break;
                     }
                     case Roi.POINT: {
