@@ -3,6 +3,7 @@ package com.nrims;
 import com.nrims.data.Opener;
 
 import ij.IJ ;
+import ij.ImagePlus;
 import ij.gui.* ;
 import ij.plugin.filter.RankFilters;
 import ij.process.ColorProcessor;
@@ -836,14 +837,14 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
                      setRoi(roi);
                      stats = this.getStatistics();
                      killRoi();
-                  }                 
+                  }
 
                   // Set as smallest Roi that the mouse is within.
                   if (smallestRoi == null) {
                      smallestRoi = roi;
                      smallestRoiArea = stats.area;
                   } else {                     
-                     if (stats.area < smallestRoiArea) {
+                     if (stats.area < smallestRoiArea || linecheck) {
                         smallestRoi = roi;
                         smallestRoiArea = stats.area;
                      }
@@ -855,12 +856,12 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         setRoi(smallestRoi);
         stats = this.getStatistics();
         if (smallestRoi != null) {           
-           if (roi.getType() == roi.LINE)
+           if (roi.getType() == Roi.LINE || roi.getType() == Roi.FREELINE || roi.getType() == Roi.POLYLINE)
               msg += "\t ROI " + roi.getName() + ": L=" + IJ.d2s(roi.getLength(), 0);
            else
               msg += "\t ROI " + roi.getName() + ": A=" + IJ.d2s(stats.area, 0) + ", M=" + IJ.d2s(stats.mean, displayDigits) + ", Sd=" + IJ.d2s(stats.stdDev, displayDigits);           
            updateHistogram(true);
-           updateLineProfile();           
+           updateLineProfile();
         }
         ui.updateStatus(msg);
     }
@@ -998,7 +999,8 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
       }
 
    }
-    
+
+    // Line profiles for ratio images and HSI images should be identical.
     public void updateLineProfile() {
 
       // Line profiles for ratio images and HSI images should be identical.

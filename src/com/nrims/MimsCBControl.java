@@ -12,6 +12,9 @@ import ij.process.ImageProcessor;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import org.jfree.chart.ChartFactory;
@@ -31,7 +34,6 @@ public class MimsCBControl extends javax.swing.JPanel {
    UI ui;   
    private JFreeChart chart;
    private ChartPanel chartPanel;
-   XYPolygonAnnotation a;
    boolean holdUpdate = false;
 
     public MimsCBControl(UI ui) {
@@ -53,7 +55,7 @@ public class MimsCBControl extends javax.swing.JPanel {
     private void setupHistogram() {
 
         // Create chart using the ChartFactory.
-        chart = ChartFactory.createHistogram("", null, null, null, PlotOrientation.VERTICAL, true, true, false);
+        chart = ChartFactory.createHistogram("", "Pixel Value", "", null, PlotOrientation.VERTICAL, true, true, false);
         chart.setBackgroundPaint(this.getBackground());
         chart.removeLegend();
         
@@ -63,6 +65,20 @@ public class MimsCBControl extends javax.swing.JPanel {
         renderer.setDrawBarOutline(false);
         renderer.setShadowVisible(false);
         renderer.setBarPainter(new StandardXYBarPainter());
+
+        // Listen for key pressed events.
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+           public boolean dispatchKeyEvent(KeyEvent e) {
+             if (e.getID() == KeyEvent.KEY_PRESSED) {
+                chartPanel.keyPressed(e);
+             }
+             return false;
+           }
+        });
+
+        // Movable range and domain.
+        plot.setDomainPannable(true);
+        plot.setRangePannable(true);
         
         chartPanel = new ChartPanel(chart);
         chartPanel.setSize(350, 225); 
@@ -141,21 +157,21 @@ public class MimsCBControl extends javax.swing.JPanel {
       
       // Polygon bounds.      
       double x1 = contrastAdjuster1.min;
-      double x2 = contrastAdjuster1.min;   
+      double x2 = contrastAdjuster1.min;
       double x3 = contrastAdjuster1.max;
-      double x4 = contrastAdjuster1.max;    
+      double x4 = contrastAdjuster1.max;
       
-      double y1 = -10.0;
-      double y2 = plot.getRangeAxis().getUpperBound()+10.0;
-      double y3 = plot.getRangeAxis().getUpperBound()+10.0;
-      double y4 = -10.0;     
+      double y1 = Double.NEGATIVE_INFINITY;
+      double y2 = Double.POSITIVE_INFINITY;
+      double y3 = Double.POSITIVE_INFINITY;
+      double y4 = Double.NEGATIVE_INFINITY;
       
       // Displays polygon.
-      a = new XYPolygonAnnotation(new double[] {x1, y1, x2, y2, x3, y3, x4, y4}, 
-              new BasicStroke(1), new Color(0,0,0), new Color(200, 200, 255, 100));      
+      XYPolygonAnnotation a = new XYPolygonAnnotation(new double[] {x1, y1, x2, y2, x3, y3, x4, y4},
+              new BasicStroke(1), new Color(200, 200, 255, 100), new Color(200, 200, 255, 100));
       XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
       renderer.removeAnnotations();
-      renderer.addAnnotation(a, Layer.BACKGROUND);          
+      renderer.addAnnotation(a, Layer.BACKGROUND);
    }
                  
    // set the windowlist jComboBox

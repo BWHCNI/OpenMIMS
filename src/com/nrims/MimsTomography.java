@@ -148,10 +148,7 @@ public class MimsTomography extends javax.swing.JPanel {
 
     private void plotButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plotButtonActionPerformed
 
-       // initialize variables.
-       MimsRoiManager rm = ui.getRoiManager();
-       int currentPlane = ui.getMassImage(0).getSlice();
-
+       // Initialize chart.
        if (!appendCheckBox.isSelected() || tomoChart == null) {
           tomoChart = new MimsJFreeChart(ui);
        }
@@ -175,6 +172,7 @@ public class MimsTomography extends javax.swing.JPanel {
        }
 
        // Get selected rois.
+       MimsRoiManager rm = ui.getRoiManager();
        Roi[] rois = rm.getSelectedROIs();
        if (rois.length >= 1) {
           tomoChart.setRois(rois);
@@ -192,7 +190,10 @@ public class MimsTomography extends javax.swing.JPanel {
           return;
        }
 
-       tomoChart.createFrame(appendCheckBox.isSelected());
+       int currentPlane = ui.getMassImage(0).getSlice();
+       tomoChart.plotData(appendCheckBox.isSelected());
+       
+       // Fast forward stack by one slice if we are appending current plane.
        if((currentPlaneCheckBox.isSelected()) && ((currentPlane+1) <= ui.getMassImage(0).getStackSize())) {
            ui.getMassImage(0).setSlice(currentPlane + 1);
        }

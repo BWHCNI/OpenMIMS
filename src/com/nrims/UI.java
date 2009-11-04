@@ -114,8 +114,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private int[] hiddenWindows = null;
 
     protected MimsLineProfile lineProfile;
-    protected MimsAction mimsAction = null;
-    protected Roi activeRoi;    
+    protected MimsAction mimsAction = null; 
 
     private String revisionNumber = "";
 
@@ -205,9 +204,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 rm.resetRoiLocationsLength();
             }
          }
-      });
-      
-      //loadMIMSFile(new File("/nrims/home3/zkaufman/Images/test_file.im"));
+      });      
+      loadMIMSFile(new File("/nrims/home3/zkaufman/Images/test_file.im"));
    }
 
    public boolean addToImagesList(MimsPlus mp) {

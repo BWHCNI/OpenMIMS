@@ -8,6 +8,9 @@ package com.nrims;
 
 import ij.*;
 import com.nrims.UI;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -246,24 +249,28 @@ public class MimsRoiControl extends javax.swing.JPanel {
         HistogramDataset dataset = new HistogramDataset();
 
         // Create chart using the ChartFactory
-        chart = ChartFactory.createHistogram(
-                "",
-                null,
-                null,
-                dataset,
-                PlotOrientation.VERTICAL,
-                true,
-                true,
-                false);
+        chart = ChartFactory.createHistogram("", "Pixel Value", "", dataset, PlotOrientation.VERTICAL, true, true, false);
         chart.setBackgroundPaint(this.getBackground());
         
-        XYPlot plot = (XYPlot) chart.getPlot();
-        
+        XYPlot plot = (XYPlot) chart.getPlot();        
         XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
         renderer.setDrawBarOutline(false);
         renderer.setShadowVisible(false);
         renderer.setBarPainter(new StandardXYBarPainter());
 
+        // Listen for key pressed events.
+       KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+          public boolean dispatchKeyEvent(KeyEvent e) {
+             if (e.getID() == KeyEvent.KEY_PRESSED) {
+                chartPanel.keyPressed(e);
+             }
+             return false;
+          }
+       });
+
+        // Movable range and domain.
+        plot.setDomainPannable(true);
+        plot.setRangePannable(true);
 
         chartPanel = new ChartPanel(chart);
         chartPanel.setSize(350, 250);
@@ -362,7 +369,7 @@ private void profilejButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     } else {
         ui.lineProfile.setVisible(true);
     }
- 
+
 }//GEN-LAST:event_profilejButtonActionPerformed
 
 public Measure getMeasure(){

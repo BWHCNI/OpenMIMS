@@ -6,6 +6,9 @@
 package com.nrims;
 
 
+import java.awt.Color;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
@@ -55,6 +58,16 @@ public class MimsLineProfile extends JFrame implements ActionListener{
         menu.add(menuItem, 2);
         setContentPane(chartPanel);
 
+        KeyboardFocusManager.getCurrentKeyboardFocusManager()
+            .addKeyEventDispatcher(new KeyEventDispatcher() {
+                public boolean dispatchKeyEvent(KeyEvent e) {
+                    if (e.getID() == KeyEvent.KEY_PRESSED) {
+                        chartPanel.keyPressed(e);
+                   }
+                    return false;
+                }
+            });
+
         this.pack();
         this.setVisible(true);
     }
@@ -64,38 +77,8 @@ public class MimsLineProfile extends JFrame implements ActionListener{
         if(e.getActionCommand()=="Display text")
             this.displayProfileData();
     }
-    /*
-    
-    private void setupLineProfile() {
-        // Create arbitrary dataset
-        XYSeries dataset = new XYSeries();
-        double[] values = new double[100];
-        for (int i = 0; i < 100; i++) {
-            values[i] = 10*i;
-        }
-        
-        XYSeries series = new XYSeries("Average Size");
-        series.add(20.0, 10.0);
-        series.add(40.0, 20.0);
-        series.add(70.0, 50.0);
-        XYDataset xyDataset = new XYSeriesCollection(series);
-        chart = ChartFactory.createLineChart("Sample XY Chart", // Title
-                "Height", // X-Axis label
-                "Weight", // Y-Axis label
-                xyDataset, // Dataset
-                true // Show legend
-                );
-
-        
-        chartPanel = new ChartPanel(chart);
-        chartPanel.setSize(350, 250);
-        this.add(chartPanel);
-    }
-    
-    */
-    
-    
-        /**
+   
+     /**
      * Creates a sample dataset.
      * 
      * @return a sample dataset.
@@ -140,14 +123,25 @@ public class MimsLineProfile extends JFrame implements ActionListener{
             false                     // urls
         );
 
-        // NOW DO SOME OPTIONAL CUSTOMISATION OF THE CHART...
-        // get a reference to the plot for further customisation...
-        final XYPlot plot = chart.getXYPlot();
+      // get a reference to the plot for further customisation...
+      XYPlot plot = chart.getXYPlot();
 
-        // change the auto tick unit selection to integer units only...
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        // OPTIONAL CUSTOMISATION COMPLETED.
+      // Set colors.
+      plot.setBackgroundPaint(Color.lightGray);
+      plot.setDomainGridlinePaint(Color.white);
+      plot.setRangeGridlinePaint(Color.white);
+
+      // Movable range and domain.
+      plot.setDomainPannable(true);
+      plot.setRangePannable(true);
+
+      // Allow crosshairs to 'focus' in on a given point.
+      plot.setDomainCrosshairVisible(true);
+      plot.setRangeCrosshairVisible(true);
+
+        // change the auto tick unit selection to integer units only...        
+        plot.getRangeAxis().setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        plot.getDomainAxis().setStandardTickUnits(NumberAxis.createIntegerTickUnits());
                 
         return chart;
         
