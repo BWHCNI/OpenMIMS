@@ -6,6 +6,8 @@ import ij.process.*;
 import java.awt.Color;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 
 public class MimsJFreeChart extends JFrame {
 
@@ -64,8 +67,16 @@ public class MimsJFreeChart extends JFrame {
             }
          }
          this.add(chartpanel);
-         pack();
-         setVisible(true);         
+
+         // Add menu item for showing/hiding crosshairs.
+         JMenuItem xhairs = new JMenuItem("Show/Hide Crosshairs");
+         xhairs.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               ui.showHideCrossHairs(chartpanel);
+            }
+         });
+         chartpanel.getPopupMenu().addSeparator();
+         chartpanel.getPopupMenu().add(xhairs);
 
          // Add key listener.
          KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
@@ -76,6 +87,10 @@ public class MimsJFreeChart extends JFrame {
                return false;
             }
          });
+
+         pack();
+         setVisible(true);
+
       }
    }
 
@@ -101,7 +116,7 @@ public class MimsJFreeChart extends JFrame {
 
       // Allow crosshairs to 'focus' in on a given point.
       plot.setDomainCrosshairVisible(true);
-      plot.setRangeCrosshairVisible(true);
+      plot.setRangeCrosshairVisible(true);            
 
       return chart;
    }

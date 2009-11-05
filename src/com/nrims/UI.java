@@ -47,6 +47,7 @@ import javax.swing.JOptionPane;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -55,6 +56,12 @@ import java.util.zip.ZipFile;
  */
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.annotations.XYAnnotation;
+import org.jfree.chart.annotations.XYTextAnnotation;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.ui.TextAnchor;
 public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListener {
 
     public static final long serialVersionUID = 1;
@@ -205,7 +212,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             }
          }
       });      
-      loadMIMSFile(new File("/nrims/home3/zkaufman/Images/test_file.im"));
+      //loadMIMSFile(new File("/nrims/home3/zkaufman/Images/test_file.im"));
    }
 
    public boolean addToImagesList(MimsPlus mp) {
@@ -242,6 +249,18 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
       }
       if (!inserted) System.out.println("Too many open images");
       return inserted;
+   }
+
+   void showHideCrossHairs(ChartPanel chartpanel) {
+      Plot plot = chartpanel.getChart().getPlot();
+      if (!(plot instanceof XYPlot))
+         return;
+      
+      // Show/Hide XHairs
+      XYPlot xyplot = (XYPlot) plot;
+      xyplot.setDomainCrosshairVisible(!xyplot.isDomainCrosshairVisible());
+      xyplot.setRangeCrosshairVisible(!xyplot.isRangeCrosshairVisible());
+      xyplot.showXHairLabel(xyplot.isDomainCrosshairVisible() || xyplot.isDomainCrosshairVisible());
    }
 
     /**

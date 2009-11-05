@@ -360,7 +360,7 @@ private void profilejButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 // TODO add your handling code here:
     
     if (ui.lineProfile == null) {
-        ui.lineProfile = new MimsLineProfile();
+        ui.lineProfile = new MimsLineProfile(ui);
         double[] foo = new double[100];
         for (int i = 0; i < 100; i++) {
             foo[i] = 10;

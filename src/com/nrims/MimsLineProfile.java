@@ -41,10 +41,12 @@ public class MimsLineProfile extends JFrame implements ActionListener{
     private JFreeChart chart;
     private ChartPanel chartPanel;
     private int linewidth = 1;
+    private UI ui;
     
-    public MimsLineProfile() {
+    public MimsLineProfile(final UI ui) {
         super("Dynamic Line Profile");
         this.setDefaultCloseOperation(this.DISPOSE_ON_CLOSE);
+        this.ui = ui;
 
         XYDataset dataset = createDataset();
         chart = createChart(dataset);
@@ -57,6 +59,16 @@ public class MimsLineProfile extends JFrame implements ActionListener{
 
         menu.add(menuItem, 2);
         setContentPane(chartPanel);
+
+         // Add menu item for showing/hiding crosshairs.
+         JMenuItem xhairs = new JMenuItem("Show/Hide Crosshairs");
+         xhairs.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               ui.showHideCrossHairs(chartPanel);
+            }
+         });
+         chartPanel.getPopupMenu().addSeparator();
+         chartPanel.getPopupMenu().add(xhairs);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
             .addKeyEventDispatcher(new KeyEventDispatcher() {
