@@ -66,6 +66,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
     Measure scratch;
     HashMap locations = new HashMap<String, ArrayList<Integer[]>>();
     ParticlesManager partManager;
+    SquaresManager squaresManager;
     
     public MimsRoiManager(UI ui, com.nrims.data.Opener im) {
         super("MIMS ROI Manager");
@@ -444,6 +445,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         addPopupItem("Combine");
         addPopupItem("Split");
         addPopupItem("Particles");
+        addPopupItem("Squares");
         addPopupItem("Add [t]");
         addPopupItem("Save As");
         add(pm);
@@ -498,6 +500,9 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         } else if (command.equals("Particles")) {
             if(partManager==null) { partManager = new ParticlesManager(); }
             partManager.showFrame();
+        } else if (command.equals("Squares")) {
+            if(squaresManager==null) { squaresManager = new SquaresManager(); }
+            squaresManager.showFrame();
         } else if (command.equals("Save As")) {
             String path = ui.getImageDir();
             previouslySaved = false;
@@ -1120,6 +1125,14 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         return name2;
     }
 
+    public ParticlesManager getParticlesManager() {
+        return partManager;
+    }
+
+    public SquaresManager getSquaresManager() {
+        return squaresManager;
+    }
+
     boolean save(String name) {
         if (listModel.size() == 0) {
             return error("The selection list is empty.");
@@ -1427,12 +1440,13 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
     public void roiThreshold(Roi roi, MimsPlus img, double[] params) {
         //check param size
-        if(params.length!=4) return;
+        if(params.length!=5) return;
         //params = minthreshold, maxthreshold, minsize, maxsize
         double mint = params[0];
         double maxt = params[1];
         double mins = params[2];
         double maxs = params[3];
+        int diag = (int)params[4];
 
         img.setRoi(roi, true);
         ImageProcessor imgproc = img.getProcessor();
@@ -1465,6 +1479,10 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         ImagePlus temp_img = new ImagePlus("temp_img", proc);
         //generate rois
         int options = ParticleAnalyzer.ADD_TO_MANAGER;
+        if(diag!=0) {
+            options = options | diag;
+        }
+        //options = options | ParticleAnalyzer.INCLUDE_HOLES;
         ParticleAnalyzer pa = new ParticleAnalyzer(options, 0, Analyzer.getResultsTable(), mins, maxs);
         pa.analyze(temp_img);
         RoiManager rm = (RoiManager) WindowManager.getFrame("ROI Manager");
@@ -1486,6 +1504,170 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
         }
     }
 
+    public boolean roiOverlap(Roi r, Roi q) {
+        boolean overlap = false;
+        if((r.getType()==Roi.RECTANGLE) && (q.getType()==Roi.RECTANGLE)) {
+            overlap = r.getBoundingRect().intersects(q.getBoundingRect());
+        }
+        if(!(r.getType()==Roi.RECTANGLE) || !(q.getType()==Roi.RECTANGLE)) {
+            int x = r.getBoundingRect().x;
+            int y = r.getBoundingRect().y;
+            int w = r.getBoundingRect().width;
+            int h = r.getBoundingRect().height;
+
+            for (int ix = x; ix <= x + w; ix++) {
+                for (int iy = y; iy <= y + h; iy++) {
+                    overlap = overlap || q.contains(ix, iy);
+                    if(overlap) break;
+                }
+                if(overlap) break;
+            }
+        }
+
+        return overlap;
+    }
+
+    public boolean roiOverlap(Roi r, Roi[] rois) {
+        boolean overlap = false;
+        for(int i = 0; i < rois.length; i++) {
+            overlap = ( overlap || roiOverlap(r, rois[i]) );
+        }
+        return overlap;
+    }
+
+    public void roiSquares(Roi roi, MimsPlus img, double[] params) {
+        
+        //check param size
+        if(params.length!=3) return;
+        //params = size, number, overlap
+        int size = (int)Math.round(params[0]);
+        int num = (int)Math.round(params[1]);
+        boolean allowoverlap = (params[2]==1.0);
+
+        img.setRoi(roi, true);
+        ImageProcessor imgproc = img.getProcessor();
+        
+        int imgwidth = img.getWidth();
+        int imgheight =img.getHeight();
+        float[][] pix = new float[imgwidth][imgheight];
+
+        //get pixel values
+        for(int i = 0; i < imgwidth; i++) {
+            for(int j = 0; j < imgheight; j++) {
+                pix[i][j] = (float)imgproc.getPixelValue(i, j);
+            }
+        }
+
+        //apply "mask"
+        for (int j = 0; j < imgheight; j++) {
+            for (int i = 0; i < imgwidth; i++) {
+                if (!roi.contains(i, j)) {
+                    //pix[i][j] = 0;
+                    pix[i][j] = Float.NaN;
+                }
+
+            }
+        }
+
+        //generate temp image
+        FloatProcessor proc = new FloatProcessor(pix);
+        ImagePlus temp_img = new ImagePlus("temp_img", proc);
+        
+        //roi bounding box
+        int x = roi.getBoundingRect().x;
+        int y = roi.getBoundingRect().y;
+        int width = roi.getBoundingRect().width;
+        int height = roi.getBoundingRect().height;
+        
+        //generate rois keyed to mean
+        Hashtable<Double, ArrayList<Roi>> roihash = new Hashtable<Double, ArrayList<Roi>>();
+        
+        for(int ix=x; ix<=x+width; ix++) {
+            for(int iy=y; iy<=y+height; iy++) {
+                Roi troi = new Roi(ix, iy, size, size);
+                temp_img.setRoi(troi);
+                double mean = temp_img.getStatistics().mean;
+                //System.out.println("mean = "+mean);
+                //System.out.println("Double.isNaN(mean) = "+Double.isNaN(mean));
+                //exclude rois outside main roi
+                if(Double.isNaN(mean)) continue;
+                if(roihash.containsKey(mean)) {
+                    roihash.get(mean).add(troi);
+                } else {
+                    ArrayList<Roi> ar = new ArrayList<Roi>();
+                    ar.add(troi);
+                    roihash.put(mean, ar);
+                }
+            }
+        }
+
+
+
+        //double[] means = (double[])roihash.keySet().toArray();
+        Object[] means = roihash.keySet().toArray();
+        java.util.Arrays.sort(means);
+
+        MimsRoiManager rm = ui.getRoiManager();
+        ArrayList<Roi> keep = new ArrayList<Roi>();
+        //find highest mean rois
+        if(allowoverlap) {
+            int meanindex = means.length-1;
+            while(keep.size()<num) {
+                //if((Double)means[meanindex]<0) continue;
+                ArrayList fromhash = roihash.get(means[meanindex]);
+                for(Object r : fromhash) {
+                    keep.add((Roi)r);
+                    if(keep.size()==num)
+                        break;
+                }
+                meanindex--;
+                if(meanindex<0) break;
+            }
+            
+        } else {
+            //find highest mean rois checking for overlap
+            int meanindex = means.length-1;
+            Roi lastadded = roihash.get(means[meanindex]).get(0);
+            keep.add(lastadded);
+            
+            while(keep.size()<num) {
+                ArrayList fromhash = roihash.get(means[meanindex]);
+                for (Object r : fromhash) {
+                    Roi[] keeparray = new Roi[keep.size()];
+                    keeparray = keep.toArray(keeparray);
+
+                    if (!roiOverlap((Roi)r, keeparray)) {
+                        keep.add((Roi)r);
+                        lastadded = (Roi)r;
+                    }
+                    
+                    if (keep.size() == num) {
+                        break;
+                    }
+                }
+                meanindex--;
+                if(meanindex<0) break;
+            }
+            
+        }
+        
+        //
+        //add to manager
+        for (Roi r : keep) {
+            rm.add(r);
+        }
+
+        //cleanup
+        temp_img.close();
+        //temp_img.show();
+    }
+    
+    public void roiSquares(Roi[] rois, MimsPlus img, double[] params) {
+        for(int i = 0; i < rois.length; i++) {
+            roiSquares(rois[i], img, params);
+        }
+    }
+    
     ImagePlus getImage() {
         ImagePlus imp = WindowManager.getCurrentImage();
         if (imp == null) {
@@ -1711,14 +1893,18 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
    }
 
 
-    private class ParticlesManager extends com.nrims.PlugInJFrame implements ActionListener {
+    public class ParticlesManager extends com.nrims.PlugInJFrame implements ActionListener {
 
         Frame instance;
 
+        MimsPlus workingimage;
+
+        JLabel label;
         JTextField threshMinField = new JTextField();
         JTextField threshMaxField = new JTextField();
         JTextField sizeMinField = new JTextField();
         JTextField sizeMaxField = new JTextField();
+        JCheckBox allowDiagonal = new JCheckBox("Allow Diagonal Connections", false);
         JButton cancelButton;
         JButton okButton;
 
@@ -1735,8 +1921,12 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             JPanel jPanel = new JPanel();
             jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
 
-            String imagename = WindowManager.getCurrentImage().getTitle();
-            JLabel label = new JLabel("Image:   " + imagename);
+            try{
+                workingimage = (MimsPlus)getImage();
+            } catch(Exception e){ return; }
+
+            String imagename = workingimage.getTitle();
+            label = new JLabel("Image:   " + imagename);
             jPanel.add(label);
             jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
@@ -1769,6 +1959,150 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
             jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
+            jPanel.add(allowDiagonal);
+            jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+
+            // Set up "OK" and "Cancel" buttons.
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            cancelButton = new JButton("Cancel");
+            cancelButton.setActionCommand("Cancel");
+            cancelButton.addActionListener(this);
+            okButton = new JButton("OK");
+            okButton.setActionCommand("OK");
+            okButton.addActionListener(this);
+            buttonPanel.add(cancelButton);
+            buttonPanel.add(okButton);
+
+            // Add elements.
+            setLayout(new BorderLayout());
+            add(jPanel, BorderLayout.PAGE_START);
+            add(buttonPanel, BorderLayout.PAGE_END);
+            setSize(new Dimension(300, 375));
+
+        }
+
+        // Gray out textfield when "All" images radio button selected.
+        public void actionPerformed(ActionEvent e) {
+            if (e.getActionCommand().equals("Cancel")) {
+                closeWindow();
+            } else if (e.getActionCommand().equals("OK")) {
+                //
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                try {
+                    double mint = Double.parseDouble(threshMinField.getText());
+                    double maxt = Double.parseDouble(threshMaxField.getText());
+                    double mins = Double.parseDouble(sizeMinField.getText());
+                    double maxs = Double.parseDouble(sizeMaxField.getText());
+                    double diag = 0;
+                    if(allowDiagonal.isSelected()){ diag = 0; } else { diag = ij.plugin.filter.ParticleAnalyzer.FOUR_CONNECTED; }
+
+                    double[] params = {mint, maxt, mins, maxs, diag};
+
+                    Roi[] rois = getSelectedROIs();
+                    MimsPlus img = (MimsPlus)getImage();
+                    if(img.getMimsType()==MimsPlus.HSI_IMAGE && img.internalRatio!=null) {
+                        roiThreshold(rois, img.internalRatio, params);
+                    } else {
+                        roiThreshold(rois, img, params);
+                    }
+
+                } catch(Exception x) {
+                    ij.IJ.error("Error", "Not a number.");
+                      return;
+                } finally {
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                }
+
+                ui.updateAllImages();
+                closeWindow();
+            }
+
+        }
+
+        public void resetImage() {
+            try{
+                workingimage = (MimsPlus)getImage();
+            } catch(Exception e){ return; }
+
+            label.setText(workingimage.getTitle());
+        }
+
+        public void resetImage(MimsPlus img) {
+            workingimage = img;
+            label.setText(workingimage.getTitle());
+        }
+
+        // Show the frame.
+        public void showFrame() {
+            setLocation(400, 400);
+            resetImage();
+            setVisible(true);
+            toFront();
+            setExtendedState(NORMAL);
+        }
+
+        public void closeWindow() {
+            super.close();
+            instance = null;
+            this.setVisible(false);
+        }
+    }
+    
+    public class SquaresManager extends com.nrims.PlugInJFrame implements ActionListener {
+
+        Frame instance;
+
+        MimsPlus workingimage;
+        JLabel label;
+        JTextField sizeField = new JTextField();
+        JTextField numberField = new JTextField();
+        JCheckBox allowOverlap = new JCheckBox("Allow Overlap", false);
+
+        JButton cancelButton;
+        JButton okButton;
+
+        public SquaresManager() {
+            super("Squares Manager");
+
+            if (instance != null) {
+                instance.toFront();
+                return;
+            }
+            instance = this;
+
+            // Setup panel.
+            JPanel jPanel = new JPanel();
+            jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
+            
+            try{
+                workingimage = (MimsPlus)getImage();
+            } catch(Exception e){ return; }
+
+            String imagename = workingimage.getTitle();
+            label = new JLabel("Image:   " + imagename);
+            jPanel.add(label);
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+            //add textfields
+            JLabel label2 = new JLabel("Square size");
+            jPanel.add(label2);
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            jPanel.add(sizeField);
+            jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+            JLabel label3 = new JLabel("Number of squares");
+            jPanel.add(label3);
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            jPanel.add(numberField);
+            jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+            jPanel.add(allowOverlap);
+            jPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
             // Set up "OK" and "Cancel" buttons.
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -1797,17 +2131,22 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
                 //
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 try {
-                    double mint = Double.parseDouble(threshMinField.getText());
-                    double maxt = Double.parseDouble(threshMaxField.getText());
-                    double mins = Double.parseDouble(sizeMinField.getText());
-                    double maxs = Double.parseDouble(sizeMaxField.getText());
+                    double size = Double.parseDouble(sizeField.getText());
+                    double num = Double.parseDouble(numberField.getText());
+                    double overlap = 0.0;
+                    if(allowOverlap.isSelected()) { overlap = 1.0; }
 
-                    double[] params = {mint, maxt, mins, maxs};
+
+                    double[] params = {size, num, overlap};
 
                     Roi[] rois = getSelectedROIs();
                     MimsPlus img = (MimsPlus)getImage();
 
-                    roiThreshold(rois, img, params);
+                    if(img.getMimsType()==MimsPlus.HSI_IMAGE && img.internalRatio!=null) {
+                        roiSquares(rois, img.internalRatio, params);
+                    } else {
+                        roiSquares(rois, img, params);
+                    }
 
                 } catch(Exception x) {
                     ij.IJ.error("Error", "Not a number.");
@@ -1822,9 +2161,23 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
 
         }
 
+        public void resetImage() {
+            try{
+                workingimage = (MimsPlus)getImage();
+            } catch(Exception e){ return; }
+
+            label.setText(workingimage.getTitle());
+        }
+
+        public void resetImage(MimsPlus img) {
+            workingimage = img;
+            label.setText(workingimage.getTitle());
+        }
+
         // Show the frame.
         public void showFrame() {
             setLocation(400, 400);
+            resetImage();
             setVisible(true);
             toFront();
             setExtendedState(NORMAL);
@@ -1836,5 +2189,7 @@ public class MimsRoiManager extends PlugInJFrame implements ListSelectionListene
             this.setVisible(false);
         }
     }
+    
+    
 }
 

@@ -243,9 +243,16 @@ public class Nrrd_Writer implements PlugIn {
        // Pixel height
        out.write(Opener.Mims_pixel_height+Opener.Nrrd_seperator+ui.getOpener().getPixelHeight()+"\n");
 
+       // Image Notes
+       String notes = ui.getOpener().getNotes();
+       //this is redundant but
+       //double checking that file is written with no \n's
+       notes = outputFormatNotes(notes);
+       out.write(Opener.Mims_notes+Opener.Nrrd_seperator+notes+"\n");
+
 	   return out.toString();
     }
-		
+
 	public static String imgType(int fiType) {
 		switch (fiType) {
 			case FileInfo.GRAY32_FLOAT:
@@ -310,6 +317,12 @@ public class Nrrd_Writer implements PlugIn {
 		return rval;
 	}
 
+    public String outputFormatNotes(String s) {
+        String temp = s;
+        temp = temp.replaceAll("(\r)|(\f)", "\n");
+        return temp.replaceAll("\n", NrrdFileInfo.newlineReplacement);
+    }
+
 }
 
 class NrrdFileInfo extends FileInfo {
@@ -319,6 +332,7 @@ class NrrdFileInfo extends FileInfo {
     public String[] massNames;
     public String duration, position,  sampleDate, sampleHour,
                   userName, dwellTime, countTime,  sampleName;
+    public String notes = "";
     public int raster, dimension, nMasses;
     public float pixel_width;
     public float pixel_height;
@@ -332,4 +346,7 @@ class NrrdFileInfo extends FileInfo {
 	public static final int NRRD = 1001;
 	public static final int NRRD_TEXT = 1002;
 	public static final int NRRD_HEX = 1003;
+
+    //For notes field
+    public static final String newlineReplacement = "&/&/&";
 }

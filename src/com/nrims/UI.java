@@ -5,6 +5,7 @@
  */
 package com.nrims;
 
+import com.nrims.imageNotes;
 import com.nrims.data.*;
 
 import ij.IJ;
@@ -122,6 +123,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     protected MimsLineProfile lineProfile;
     protected MimsAction mimsAction = null; 
+
+    private imageNotes imgNotes;
 
     private String revisionNumber = "";
 
@@ -1152,6 +1155,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
    
     
    private void initComponentsCustom() {
+       //For non netbeans gui initialization....
+       this.imgNotes = new imageNotes();
+       this.imgNotes.setVisible(false);
+
+       //what is this?
 /*
       // Open action.
       jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
@@ -1200,6 +1208,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JSeparator();
         utilitiesMenu = new javax.swing.JMenu();
+        imageNotesMenuItem = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JSeparator();
         sumAllMenuItem = new javax.swing.JMenuItem();
         importIMListMenuItem = new javax.swing.JMenuItem();
         captureImageMenuItem = new javax.swing.JMenuItem();
@@ -1326,6 +1336,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jMenuBar1.add(viewMenu);
 
         utilitiesMenu.setText("Utilities");
+
+        imageNotesMenuItem.setText("Image Notes");
+        imageNotesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                imageNotesMenuItemActionPerformed(evt);
+            }
+        });
+        utilitiesMenu.add(imageNotesMenuItem);
+        utilitiesMenu.add(jSeparator1);
 
         sumAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
         sumAllMenuItem.setText("Sum all Open");
@@ -1637,6 +1656,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
       try {
 
+          this.getOpener().setNotes(imgNotes.getOutputFormatedText());
         // Save the original .im file to a new file of the .nrrd file type.
         String nrrdFileName = name;
         if (!name.endsWith(NRRD_EXTENSION))
@@ -1754,6 +1774,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
            hsiControl.setWindowRange(windowRange);
        }
 
+        //Update notes gui
+        imgNotes.setOutputFormatedText(image.getNotes());
 }                                                     
 
     public void restoreState( RatioProps[] rto_props,  HSIProps[] hsi_props, SumProps[] sum_props){
@@ -1999,15 +2021,51 @@ private void genStackMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//
 
 private void TestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TestMenuItemActionPerformed
      int c = 0;
-     //MimsPlus[] hsi = this.getOpenHSIImages();
-     //HSIProps p = hsi[0].getHSIProps();
+/*     try {
+        MimsRoiManager rm = getRoiManager();
+        if (rm != null) {
+            Roi[] rois = rm.getSelectedROIs();
+            boolean foo = rm.roiOverlap(rois[0], rois[1]);
+            System.out.println("overlap = " + foo);
+        }
+    } catch (Exception e) {
+    }
+*/
+    /*String n = this.getOpener().getNotes();
+    n = n + " !Notes! ";
+    this.getOpener().setNotes(n);*/
+
+     /*
+     this.imgNotes.setVisible(true);
+     String s = imgNotes.getNoteText();
      
-     MimsPlus[] sum = this.getOpenSumImages();
+     System.out.println("original\n: "+s);
+     System.out.println("--------------------------");
 
-     MimsPlus foo = this.getOpenMassImages()[0];
-     //foo.getStack().getPixels(asdf)
+     String s2 = s.replaceAll("\n", "&/&/&");
+     System.out.println("encoded\n: "+s2);
+     System.out.println("--------------------------");
 
-     int b = 0;
+     String s3 = s2.replaceAll("&/&/&", "\n");
+     System.out.println("decoded :\n" + s3);
+     System.out.println("--------------------------");
+     
+     c = c+1;
+     
+
+     this.imgNotes.setVisible(true);
+     String s = imgNotes.getNoteText() + "blah\r\f\r\fblah";
+     String s2 = s.replaceAll("(\r)|(\f)", "\n");
+     System.out.println(s2);
+     */
+     /*
+     String s = "mailto:foo@bar.com";
+     s +="?subject=Test Subject";
+     s += "?body=I am on the meryygoround.... ";
+     try{
+     ij.plugin.BrowserLauncher.openURL(s);
+     } catch(Exception e) {}
+     */
 }//GEN-LAST:event_TestMenuItemActionPerformed
 
 private void saveMIMSjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMIMSjMenuItemActionPerformed
@@ -2100,7 +2158,10 @@ private void exportPNGjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
 
 
 }//GEN-LAST:event_exportPNGjMenuItemActionPerformed
-                                           
+
+private void imageNotesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageNotesMenuItemActionPerformed
+    this.imgNotes.setVisible(true);
+}//GEN-LAST:event_imageNotesMenuItemActionPerformed
 
 
    // Method for saving action file and writing backup action files.
@@ -2770,6 +2831,7 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     private javax.swing.JMenu exportjMenu;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem genStackMenuItem;
+    private javax.swing.JMenuItem imageNotesMenuItem;
     private javax.swing.JMenuItem importIMListMenuItem;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem2;
@@ -2778,6 +2840,7 @@ public void updateLineProfile(double[] newdata, String name, int width) {
     private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPopupMenu jPopupMenu1;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;

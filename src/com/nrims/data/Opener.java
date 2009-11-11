@@ -22,6 +22,7 @@ public interface Opener {
     public static final String Mims_raster = "Mims_raster";
     public static final String Mims_pixel_width = "Mims_pixel_width";
     public static final String Mims_pixel_height = "Mims_pixel_height";
+    public static final String Mims_notes = "Mims_notes";
 
     // Worker functions.
     public File getImageFile();
@@ -53,7 +54,10 @@ public interface Opener {
     public String getCountTime();
     public String getDuration();
     public int getRaster();
+    public String getNotes();
 
+    //Setable metadata
+    public void setNotes(String notes);
 
     /**
      * defines a structure for saving the HeaderImage data

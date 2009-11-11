@@ -88,7 +88,9 @@ public class Nrrd_Reader implements Opener {
 			if(thisLine.indexOf("#")==0) continue; // ignore comments
 
             // Get the key/value pair
-			noteType=getFieldPart(thisLine,0).toLowerCase(); // case irrelevant
+			noteType=getFieldPart(thisLine,0);
+            String originalNoteType = noteType; //keep case for notes
+            noteType = noteType.toLowerCase(); // case irrelevant
 			noteValue=getFieldPart(thisLine,1);
 			noteValuelc=noteValue.toLowerCase();
 
@@ -185,6 +187,7 @@ public class Nrrd_Reader implements Opener {
             int j = Opener.Nrrd_seperator.length();
             int k = i+j;
             String value = noteType.substring(k);
+            String originalvalue = originalNoteType.substring(k);
             if (value == null) value = "";
 
             if (thisLine.startsWith(Opener.Mims_mass_numbers)) {               
@@ -234,6 +237,10 @@ public class Nrrd_Reader implements Opener {
                    Float fl = new Float(value);
                    fi.pixel_width=fl.floatValue();
                 } catch (Exception e) {fi.pixelWidth = (new Float(-1.0)).floatValue();}
+            }
+            //case sensitive text
+            if (thisLine.startsWith(Opener.Mims_notes)) {
+                fi.notes = originalvalue;
             }
 		}
 
@@ -364,4 +371,11 @@ public class Nrrd_Reader implements Opener {
         return fi.duration;
     }
 
+    public String getNotes() {
+        return fi.notes;
+    }
+
+    public void setNotes(String notes) {
+        fi.notes = notes;
+    }
 }

@@ -91,7 +91,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         Double massNumber = new Double(op.getMassNames()[index]);
         String title = "m" + massNumber + " : " + ui.getImageFilePrefix();
         setProcessor(title, ip);
-        getProcessor().setMinAndMax(0, 65535);           
+        getProcessor().setMinAndMax(0, 65535);
         fStateListeners = new EventListenerList() ;
     }
     
@@ -582,6 +582,16 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         ui.setActiveMimsPlus(this);
         ui.getCBControl().setWindowlistCombobox(getTitle());
         ui.getCBControl().setLUT(lut);
+
+        MimsRoiManager rm = ui.getRoiManager();
+        if(rm==null) return;
+
+        MimsRoiManager.ParticlesManager pm = rm.getParticlesManager();
+        MimsRoiManager.SquaresManager sm = rm.getSquaresManager();
+
+        if(pm!=null) pm.resetImage(this);
+        if(sm!=null) sm.resetImage(this);
+
     }
     @Override
     public void windowDeiconified(WindowEvent e) {}
@@ -628,13 +638,13 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
     @Override
     public void mousePressed(MouseEvent e) { 
       
-      if(getRoi() != null) {                  
+      if(getRoi() != null && !(ij.IJ.controlKeyDown())) {
          
          // Set the moving flag so we know if user is attempting to move a roi.
          // Line Rois have to be treated differently because their state is never MOVING .       
          int roiState = getRoi().getState();
          int roiType = getRoi().getType();
-         
+
          if (roiState == Roi.MOVING) bMoving = true;
          else if (roiType == Roi.LINE && roiState == Roi.MOVING_HANDLE) bMoving = true;
          else bMoving = false;
@@ -650,7 +660,11 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
          Rectangle r = getRoi().getBounds();
          x1 = r.x; y1 = r.y; w1 = r.width; h1 = r.height;         
          
+      }else if(getRoi() != null && ij.IJ.controlKeyDown()) {
+          this.killRoi();
+          bMoving = false;
       }
+
     }
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -719,7 +733,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
         stateChanged(getRoi(), MimsPlusEvent.ATTR_ROI_MOVED);
         
         ui.getRoiManager().resetSpinners(thisroi);
-
+        updateHistogram(true); 
         bMoving = false;
         return;
       }
@@ -1002,7 +1016,7 @@ public class MimsPlus extends ij.ImagePlus implements WindowListener, MouseListe
 
     // Line profiles for ratio images and HSI images should be identical.
     public void updateLineProfile() {
-
+      if(roi==null) return;
       // Line profiles for ratio images and HSI images should be identical.
       if ((roi.getType() == roi.LINE) || (roi.getType() == roi.POLYLINE) || (roi.getType() == roi.FREELINE)) {
          if (this.nType == HSI_IMAGE) {

@@ -24,6 +24,7 @@ public class Mims_Reader implements Opener {
     public static final int IHDR_SIZE = 84;
     private String[] massNames;
     private double counting_time;
+    private String notes = "";
 
     private Mims_Reader() {}
 
@@ -622,6 +623,13 @@ public class Mims_Reader implements Opener {
         return ph;
     }
 
+    public String getNotes() {
+        return this.notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
     /*
     public String getInfo() {
         String info = "";
