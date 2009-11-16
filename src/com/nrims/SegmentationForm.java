@@ -3,9 +3,11 @@ package com.nrims;
 import com.nrims.segmentation.*;
 import ij.gui.Roi;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Hashtable;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+
 
 /**
  *
@@ -45,7 +47,7 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         initComponents();
         loadPredictionButton.setVisible(false);
         savePredictionButton.setVisible(false);
-        exportButton.setVisible(false);
+        //exportButton.setVisible(false);
 
         mimsUi = ui;
         roiManager = mimsUi.getRoiManager();
@@ -317,7 +319,12 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
     public void setRatioImageFeatures(boolean[] ratioImageFeatures) {
         this.ratioImageFeatures = ratioImageFeatures;
     }
-
+    
+    public void generateRatioImage(int num, int den) {
+        RatioProps rp = new RatioProps(num, den);
+        MimsPlus mp = new MimsPlus(mimsUi, rp);
+        mp.showWindow();
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -764,11 +771,108 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
     }//GEN-LAST:event_roiButtonActionPerformed
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
+        /*  What does this do?
         MimsPlus[] images = getImages();
         activeTask = EXPORT_TASK;
         segUtil = SegUtils.initPrepSeg(images, colorImageIndex, localFeatures, trainClasses);
         segUtil.addPropertyChangeListener(this);
         segUtil.execute();
+         */
+
+        //prep trainding data
+        MimsPlus[] images = getImages();
+        SegUtils sUtil = SegUtils.initPrepSeg(images, colorImageIndex, localFeatures, trainClasses);
+        sUtil.prepareSegmentation();
+
+        //training data in (list of list of list) form
+        SVM.SvmEngine tempengine = new SVM.SvmEngine(1, sUtil.getData(), properties);
+        ArrayList<String> trainingdata = tempengine.convertData();
+        tempengine = null;
+
+        java.io.BufferedWriter bw = null;
+        String dir = mimsUi.getImageDir();
+        dir += mimsUi.getImageFilePrefix();
+        try{
+            //write training data
+            bw = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(dir + "_training_data.txt")));
+            for (int i = 0; i < trainingdata.size(); i++) {
+                bw.append(trainingdata.get(i));
+                bw.newLine();
+            }
+            bw.close();
+
+            //write scaled training data
+            SVM.svm_scale sc = new SVM.svm_scale();
+            ArrayList<String> scaledTrainData = sc.run(trainingdata, this.getProperties(), true);
+            bw = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(dir + "_scaled_training_data.txt")));
+            for (int i = 0; i < trainingdata.size(); i++) {
+                bw.append(scaledTrainData.get(i));
+                bw.newLine();
+            }
+            bw.close();
+
+        } catch(Exception e) { e.printStackTrace(); }
+
+        //prepare full image data
+        sUtil = SegUtils.initPrepSeg(images, colorImageIndex, localFeatures);
+        sUtil.prepareSegmentation();
+        SVM.SvmEngine engine = (SVM.SvmEngine)activeEngine;
+        if(engine == null ) return;
+        ArrayList<String> data = engine.convertData();
+        if(data == null) {
+            //???
+        }
+
+        //write SVM model
+        SVM.libsvm.svm_model model = (SVM.libsvm.svm_model)engine.getProperties().getValueOf("model");
+        try{
+            SVM.libsvm.svm.svm_save_model(dir + "_model.txt", model);
+        } catch(Exception e) { e.printStackTrace(); }
+
+        
+        try{
+            //write data for entire image
+            bw = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(dir + "_data.txt")));
+            for (int u = 0; u < sUtil.getData().size(); u++) {
+                Iterator pointIT = sUtil.getData().get(u).iterator();
+                while (pointIT.hasNext()) {
+                    Iterator featureIT = ((ArrayList) pointIT.next()).iterator();
+                    String res = u + "";
+                    int i = 0;
+                    while (featureIT.hasNext()) {
+                        res += " " + (i + 1) + ":" + (Double) featureIT.next();
+                        i++;
+                    }
+                    bw.append(res);
+                    bw.newLine();
+                }
+            }
+            bw.close();
+            
+            /*
+            //write scaled data
+            SVM.svm_scale sc = new SVM.svm_scale();
+            ArrayList<String> scaledData = sc.run(, this.getProperties(), true);
+
+            bw = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(dir + "_scaled_data.txt")));
+            for (int u = 0; u < sUtil.getData().size(); u++) {
+                Iterator pointIT = sUtil.getData().get(u).iterator();
+                while (pointIT.hasNext()) {
+                    Iterator featureIT = ((ArrayList) pointIT.next()).iterator();
+                    String res = u + "";
+                    int i = 0;
+                    while (featureIT.hasNext()) {
+                        res += " " + (i + 1) + ":" + (Double) featureIT.next();
+                        i++;
+                    }
+                    bw.append(res);
+                    bw.newLine();
+                }
+            }
+            bw.close();
+            */
+        } catch(Exception e) { e.printStackTrace(); }
+
 }//GEN-LAST:event_exportButtonActionPerformed
 
    // Variables declaration - do not modify//GEN-BEGIN:variables

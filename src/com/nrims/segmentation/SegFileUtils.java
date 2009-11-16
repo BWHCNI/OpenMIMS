@@ -150,8 +150,17 @@ public class SegFileUtils {
                              ratioImageFeatures[0] = true;
                           else if (rts[i].matches("3 2"))
                              ratioImageFeatures[1] = true;
-                          else if (rts[i].length() > 1)
+                          else if (rts[i].length() > 1) {
                              ratioImageFeatures[2] = true;
+                             //open ratio images now...
+                             //refactor out later?
+                             String[] pair = rts[i].split(" ");
+                             int num = Integer.parseInt(pair[0]);
+                             int den = Integer.parseInt(pair[1]);
+
+                             form.generateRatioImage(num, den);
+
+                          }
                        }
                     } else {
                         //version 1 case

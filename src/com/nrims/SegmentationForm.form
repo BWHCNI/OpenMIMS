@@ -33,9 +33,9 @@
               </Group>
               <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="workLabel" alignment="1" pref="315" max="32767" attributes="1"/>
+                  <Component id="workLabel" alignment="1" pref="323" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="progressBar" pref="230" max="32767" attributes="1"/>
+                      <Component id="progressBar" pref="238" max="32767" attributes="1"/>
                       <EmptySpace min="-2" pref="85" max="-2" attributes="0"/>
                   </Group>
                   <Component id="predictionPanel" min="-2" max="-2" attributes="1"/>
@@ -115,7 +115,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="147" max="32767" attributes="1"/>
+                  <Component id="jScrollPane1" pref="152" max="32767" attributes="1"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="trainButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -190,7 +190,7 @@
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="classesCombo" alignment="1" pref="281" max="32767" attributes="0"/>
+                      <Component id="classesCombo" alignment="1" pref="289" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="predictButton" min="-2" pref="74" max="-2" attributes="1"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -200,8 +200,8 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="savePredictionButton" pref="193" max="32767" attributes="1"/>
-                              <Component id="loadPredictionButton" alignment="1" pref="193" max="32767" attributes="1"/>
+                              <Component id="savePredictionButton" pref="201" max="32767" attributes="1"/>
+                              <Component id="loadPredictionButton" alignment="1" pref="201" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -241,7 +241,7 @@
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="classesCombo" min="-2" pref="24" max="-2" attributes="0"/>
-                  <EmptySpace pref="81" max="32767" attributes="0"/>
+                  <EmptySpace pref="84" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

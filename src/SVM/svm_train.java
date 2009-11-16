@@ -57,7 +57,7 @@ class svm_train {
                 }
             }
             accuracy = 100.0 * total_correct / prob.l;
-            System.out.print("Cross Validation Accuracy = " + 100.0 * total_correct / prob.l + "%\n");
+            System.out.print("Cross Validation Accuracy = " + 100.0 * total_correct / prob.l + "%"+ " C = " + this.param.C + " g = " + this.param.gamma + "\n");
         }
 
         return accuracy;

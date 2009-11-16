@@ -10,7 +10,8 @@ import java.util.*;
  * modified to fit NRIMS by: pgormanns
  */
 
-class svm_scale {
+//changed to public
+public class svm_scale {
 
     private String line = null;
     private double lower = -1.0;

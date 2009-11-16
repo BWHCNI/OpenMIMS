@@ -74,7 +74,11 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
 
     // get coordinates of specified region(s), extract the features and the class color
     // sets <data> and <classColors>
-    private void prepareSegmentation(){                  
+
+
+
+
+    public void prepareSegmentation(){
         // extract features for training
         ArrayList<ArrayList<int[]>> dataPoints;
         // if a classManager is available it is used for data point extraction (typically for training)
@@ -83,15 +87,51 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         else{
             ij.gui.Roi dummyRoi = new ij.gui.Roi(0, 0, images[0].getWidth(), images[0].getHeight());
             dataPoints = new ArrayList<ArrayList<int[]>>();
-            dataPoints.add(getDataPoints(dummyRoi));
-        }
+            int depth = getDataZSize(images);
+            dataPoints.add(getDataPointsZ(dummyRoi, depth));
+        }        
         double[] classMeans = new double[dataPoints.size()];
-        data = extractFeatures(dataPoints, images, classMeans);
+        //this is a stupid check, needs to be better
+        if(dataPoints.get(0).get(0).length==2) {
+            data = extractFeatures(dataPoints, images, classMeans);
+        } else {
+            data = extractFeaturesZ(dataPoints, images, classMeans);
+        }
         // get colors
-        classColors = createClassColors(classMeans);        
+        classColors = createClassColors(classMeans); 
     }   
-    
+
+    /* **************************
+        private void prepareSegmentation(){
+        // extract features for training
+        ArrayList<ArrayList<int[]>> dataPoints;
+        // if a classManager is available it is used for data point extraction (typically for training)
+        // otherwise, a dummy ROI of maximum width and height is created to extract all data points (typically for prediction)
+        if(classes != null) {
+            dataPoints = getDataPoints(classes);
+            double[] classMeans = new double[dataPoints.size()];
+            data = extractFeatures(dataPoints, images, classMeans);
+            // get colors
+            classColors = createClassColors(classMeans);
+        }
+        else{
+            ij.gui.Roi dummyRoi = new ij.gui.Roi(0, 0, images[0].getWidth(), images[0].getHeight());
+            int depth = getDataZSize(images);
+            dataPoints = new ArrayList<ArrayList<int[]>>();
+            dataPoints.add(getDataPointsZ(dummyRoi, depth));
+            double[] classMeans = new double[dataPoints.size()];
+            data = extractFeaturesZ(dataPoints, images, classMeans);
+            // get colors
+            classColors = createClassColors(classMeans);
+        }
+
+    }   */
+
+
     // get data points (pixel coordinates) for the specified ROIs
+
+
+
     private static ArrayList<int[]> getDataPoints(Roi roi){
         ArrayList<int[]> dataPoints = new ArrayList<int[]>();
         int roiY = roi.getBounds().y;
@@ -108,6 +148,26 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         }
         return dataPoints;
     }
+
+        private static ArrayList<int[]> getDataPointsZ(Roi roi, int depth){
+            ArrayList<int[]> dataPoints = new ArrayList<int[]>();
+            int roiY = roi.getBounds().y;
+            int roiX = roi.getBounds().x;
+            int roiHeight = roi.getBounds().height;
+            int roiWidth = roi.getBounds().width;
+            // iterate through ROI bounding box
+            for (int z = 0; z < depth; z++) {
+                for (int y = roiY; y < (roiY + roiHeight); y++) {
+                    for (int x = roiX; x < (roiX + roiWidth); x++) {
+                        if (roi.contains(x, y)) {
+                            dataPoints.add(new int[]{x, y, z});
+                        }
+                    }
+                }
+            }
+            System.out.println("getDataPointsZ dataPoint.size = " + dataPoints.size());
+            return dataPoints;
+    }
     
     // get data points for all ROIs of all classes
     private ArrayList<ArrayList<int[]>> getDataPoints(ClassManager classes){
@@ -121,7 +181,29 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         }
         return dataPoints;
     }       
-            
+
+    private int getDataZSize(MimsPlus[] imgs) {
+        //Is assuming that all mass images have same z size.
+        //Which should allways be true.
+
+        int size = 1;
+        boolean hasmass = false;
+
+        for(int i = 0; i< imgs.length; i++) {
+            if(imgs[i].getMimsType() == imgs[i].MASS_IMAGE) {
+                hasmass = true;
+                size = imgs[i].getNSlices();
+                break;
+            }
+        }
+
+        if(!hasmass && imgs[0].getMimsType()==imgs[0].RATIO_IMAGE) {
+            size = imgs[0].getNumeratorImage().getNSlices();
+        }
+
+        return size;
+    }
+
     private ArrayList<ArrayList<ArrayList<Double>>> extractFeatures (ArrayList<ArrayList<int[]>> dataPoints, MimsPlus[] images, double[] classMeans){
         ArrayList<ArrayList<ArrayList<Double>>> dataTable = new ArrayList<ArrayList<ArrayList<Double>>>(dataPoints.size());        
         
@@ -136,7 +218,7 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         // use neighborhood of specified size only if neigborhood or gradient feature are selected
         // features[0] : neigborhood; features[1] = gradient; features[2] = neigborhood size
         int neighborhood = (features[0]==1 || features[1]==1) ? features[2] : 0;
-        
+
         // iteratate through source images
         for (int i = 0; i < images.length; i++) {
             ij.process.ImageProcessor ip = images[i].getProcessor(); 
@@ -163,7 +245,7 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
             // iterate through all data points and collect features from the current image data
             for(int classIndex = 0; classIndex<dataPoints.size(); classIndex++){
                 ArrayList<ArrayList<Double>> classData = dataTable.get(classIndex);
-                for(int dataPointIndex=0; dataPointIndex<dataPoints.get(classIndex).size();dataPointIndex++){ 
+                for(int dataPointIndex=0; dataPointIndex<dataPoints.get(classIndex).size(); dataPointIndex++){
                     ArrayList<Double> featureVector = classData.get(dataPointIndex);
                     int x = dataPoints.get(classIndex).get(dataPointIndex)[0];
                     int y = dataPoints.get(classIndex).get(dataPointIndex)[1];
@@ -221,7 +303,141 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         }
         return dataTable;
     }
-    
+
+
+
+
+        public ArrayList<ArrayList<ArrayList<Double>>> extractFeaturesZ (ArrayList<ArrayList<int[]>> dataPoints, MimsPlus[] images, double[] classMeans){
+        ArrayList<ArrayList<ArrayList<Double>>> dataTable = new ArrayList<ArrayList<ArrayList<Double>>>(dataPoints.size());
+
+        for(int classIndex = 0; classIndex<dataPoints.size(); classIndex++){
+            ArrayList<ArrayList<Double>> classData = new ArrayList<ArrayList<Double>>();
+            for( int dataPointIndex=0; dataPointIndex<dataPoints.get(classIndex).size();dataPointIndex++){
+                classData.add(new ArrayList<Double>());
+            }
+            dataTable.add(classData);
+        }
+
+        // use neighborhood of specified size only if neigborhood or gradient feature are selected
+        // features[0] : neigborhood; features[1] = gradient; features[2] = neigborhood size
+        int neighborhood = (features[0]==1 || features[1]==1) ? features[2] : 0;
+
+        // iteratate through source images
+        for (int i = 0; i < images.length; i++) {
+
+            //generate pixel arrays correctly
+            ij.process.ImageProcessor ip = images[i].getProcessor();
+            int height = ip.getHeight();
+            int width = ip.getWidth();
+            int depth = this.getDataZSize(images);
+
+            double[][][] imageData = new double[height][width][depth];
+
+            //mass image case
+            if(ip instanceof ij.process.ShortProcessor){
+                for (int z = 0; z < depth; z++) {
+                    if(depth>1)
+                        ip = images[i].getStack().getProcessor(z+1);
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            imageData[x][y][z] = ip.get(x, y);
+                        }
+                    }
+                }
+            }
+            //ratio image case
+            //ratio images aren't stacks...
+            else if(ip instanceof ij.process.FloatProcessor){
+                for (int z = 0; z < depth; z++) {
+                    if(depth>1) {
+                        //surprisingly it works.  No concurency badness?
+                        images[i].getNumeratorImage().setSlice(z+1);
+                        ip = images[i].getProcessor();
+                    }
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            imageData[x][y][z] = Float.intBitsToFloat(ip.get(x, y));
+                        }
+                    }
+                }
+            }else{
+                System.out.println("Error: unknown pixel type");
+                return new ArrayList<ArrayList<ArrayList<Double>>>(0);
+            }
+
+
+            // iterate through all data points and collect features from the current image data
+            for(int classIndex = 0; classIndex<dataPoints.size(); classIndex++){
+                ArrayList<ArrayList<Double>> classData = dataTable.get(classIndex);
+
+                for(int dataPointIndex=0; dataPointIndex<dataPoints.get(classIndex).size(); dataPointIndex++){
+                    ArrayList<Double> featureVector = classData.get(dataPointIndex);
+                    int x = dataPoints.get(classIndex).get(dataPointIndex)[0];
+                    int y = dataPoints.get(classIndex).get(dataPointIndex)[1];
+                    int z = dataPoints.get(classIndex).get(dataPointIndex)[2];
+
+                    // intensity (or ratio) of this data point (pixel)
+                    double value = imageData[x][y][z];
+
+                    // iterate through neighborhood (#neighbors + current data point)
+                    double sum = 0;
+                    double sum2 = 0;
+                    int n = 0;
+                    double grad_x = 0;
+                    double grad_y = 0;
+                    double grad_n = 0;
+                    for(    int ny = y-neighborhood<0?0:y-neighborhood; ny<height && ny<=y+neighborhood; ny++){
+                        for(int nx = x-neighborhood<0?0:x-neighborhood; nx<width  && nx<=x+neighborhood; nx++){
+                            sum  += imageData[nx][ny][z];
+                            sum2 += imageData[nx][ny][z]*imageData[nx][ny][z];
+                            n++;
+
+                            // compute discrete gradient approximation for this neighbor
+                            // approx. gradient of function f at point i calculated as
+                            // grad{f(i)} = (f(i+1)-f(i-1))/2
+                            if(ny>0 && ny<height-1 && nx>0 && nx<width-1){
+                                double y_1 = imageData[nx][ny-1][z];
+                                double y_2 = imageData[nx][ny+1][z];
+                                grad_y += (y_2 - y_1)/2.0;
+                                double x_1 = imageData[nx-1][ny][z];
+                                double x_2 = imageData[nx+1][ny][z];
+                                grad_x += (x_2 - x_1)/2.0;
+                                grad_n++;
+                            }
+                        }
+                    }
+                    // subtract current data point from sum (does not add to neighborhood)
+                    sum -= value;
+                    sum2 -= value*value;
+                    n--;
+                    // calculate local gradient approximation (average gradient vector)
+                    grad_y = grad_y/grad_n;
+                    grad_x = grad_x/grad_n;
+
+                    // add requested features
+                    featureVector.add(value);   // intensity/ratio
+                    if(features[0]==1)  featureVector.add(sum/n);   // mean value of neigbors
+                    if(features[0]==1)  featureVector.add((n*sum2 - sum*sum) / (n*(n-1))); // variance of neighbors
+                    if(features[1]==1)  featureVector.add(Math.sqrt(grad_y*grad_y + grad_x*grad_x)); // norm of gradient
+
+                    //-------
+                    if (dataPointIndex % 10000 == 0) {
+                        System.out.println("dataPointIndex = " + dataPointIndex);
+                        System.out.println("featureVector.size() = " + featureVector.size());
+                    }
+                    //-------
+                    if(colorImage == i) classMeans[classIndex]+=value;
+                }
+            }
+        }
+        for(int classIndex = 0; classIndex<dataPoints.size(); classIndex++){
+            classMeans[classIndex] /= dataPoints.get(classIndex).size();
+        }
+        return dataTable;
+    }
+
+
+
     private static int[] createClassColors(double[] classMeans){
         int nClasses = classMeans.length;
         int[] classColors = new int[nClasses];     
@@ -252,6 +468,9 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         
         // create an image from the classification result in order to find ROIs
         ByteProcessor ip = new ByteProcessor(width,height);
+
+        if((width*height)!=classification.length) return;
+
         ip.setPixels(classification);
         ImagePlus classMap = new ImagePlus("",ip);
         classes = new ClassManager();
