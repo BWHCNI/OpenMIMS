@@ -151,12 +151,18 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
 
         private static ArrayList<int[]> getDataPointsZ(Roi roi, int depth){
             ArrayList<int[]> dataPoints = new ArrayList<int[]>();
+
+            System.out.println("getDataPointsZ called at depth: "+depth);
+
             int roiY = roi.getBounds().y;
             int roiX = roi.getBounds().x;
             int roiHeight = roi.getBounds().height;
             int roiWidth = roi.getBounds().width;
             // iterate through ROI bounding box
             for (int z = 0; z < depth; z++) {
+
+                System.out.println("Depth: "+z);
+
                 for (int y = roiY; y < (roiY + roiHeight); y++) {
                     for (int x = roiX; x < (roiX + roiWidth); x++) {
                         if (roi.contains(x, y)) {
@@ -306,7 +312,9 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
 
 
 
-
+        //-NOT- computing features using a z radius
+        //Simply extracting features serially
+        //Should change
         public ArrayList<ArrayList<ArrayList<Double>>> extractFeaturesZ (ArrayList<ArrayList<int[]>> dataPoints, MimsPlus[] images, double[] classMeans){
         ArrayList<ArrayList<ArrayList<Double>>> dataTable = new ArrayList<ArrayList<ArrayList<Double>>>(dataPoints.size());
 
@@ -436,6 +444,203 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean,Void>{
         return dataTable;
     }
 
+
+
+    //-NOT- computing features using a z radius
+    //Simply extracting features serially
+    //Should change
+    public void exportFeaturesZ(MimsPlus[] images, java.io.BufferedWriter buffwriter) {
+
+        ArrayList<ArrayList<int[]>> dataPoints = new ArrayList<ArrayList<int[]>>();
+        ij.gui.Roi dummyRoi = new ij.gui.Roi(0, 0, images[0].getWidth(), images[0].getHeight());
+        dataPoints.add(getDataPointsZ(dummyRoi, getDataZSize(images)));
+
+        // use neighborhood of specified size only if neigborhood or gradient feature are selected
+        // features[0] : neigborhood; features[1] = gradient; features[2] = neigborhood size
+        int neighborhood = (features[0] == 1 || features[1] == 1) ? features[2] : 0;
+        int currentplane = -1;
+
+        //generate pixel arrays correctly
+        ij.process.ImageProcessor ip = images[0].getProcessor();
+        int height = ip.getHeight();
+        int width = ip.getWidth();
+        int depth = this.getDataZSize(images);
+        int zdepth = 1;
+        double[][][][] imageData = new double[images.length][height][width][zdepth];
+        
+        ArrayList<ArrayList<Double>> featurebuffer = new ArrayList<ArrayList<Double>>();
+
+        //debugging vars
+        int grabpix = 0;
+        int write = 0;
+
+        for (int dataPointIndex = 0; dataPointIndex < dataPoints.get(0).size(); dataPointIndex++) {
+
+            ArrayList<Double> featureVector = new ArrayList<Double>();
+            featureVector.add(((double)dataPointIndex));
+            // iteratate through source images
+            //moved compared to extractFeatures
+            //was depedent on refencing an ArrayList in memory
+            //to build feature vectors of correct length
+            //NEEDS cleanup....
+                        
+            for (int i = 0; i < images.length; i++) {
+                               
+                int dataz =  dataPoints.get(0).get(dataPointIndex)[2];
+
+
+                //grab pixel data only if z value hase changed
+                if (dataz != currentplane) {
+                    grabpix++;
+                    System.out.println("grabbed pix "+grabpix+" times");
+                    //mass image case
+                    if (images[i].getMimsType()==MimsPlus.MASS_IMAGE) {
+
+                        if (depth > 1) {
+                            ip = images[i].getStack().getProcessor(dataz + 1);
+                        }
+                        for (int y = 0; y < height; y++) {
+                            for (int x = 0; x < width; x++) {
+                                imageData[i][x][y][0] = ip.get(x, y);
+                            }
+                        }
+
+                    } //ratio image case
+                    //ratio images aren't stacks...
+                    else if (images[i].getMimsType()==MimsPlus.RATIO_IMAGE) {
+
+                        if (depth > 1) {
+                            //surprisingly it works.  No concurency badness?
+                            images[i].getNumeratorImage().setSlice(dataz + 1);
+                            ip = images[i].getProcessor();
+                        }
+                        for (int y = 0; y < height; y++) {
+                            for (int x = 0; x < width; x++) {
+                                imageData[i][x][y][0] = Float.intBitsToFloat(ip.get(x, y));
+                            }
+                        }
+
+                    } else {
+                        System.out.println("Error: unknown pixel type");
+                        return;
+                    }
+                    currentplane = dataz;
+                }
+
+                int x = dataPoints.get(0).get(dataPointIndex)[0];
+                int y = dataPoints.get(0).get(dataPointIndex)[1];
+                int z = 0;
+
+                // intensity (or ratio) of this data point (pixel)
+                double value = imageData[i][x][y][0];
+
+                // iterate through neighborhood (#neighbors + current data point)
+                double sum = 0;
+                double sum2 = 0;
+                int n = 0;
+                double grad_x = 0;
+                double grad_y = 0;
+                double grad_n = 0;
+                for (int ny = y - neighborhood < 0 ? 0 : y - neighborhood; ny < height && ny <= y + neighborhood; ny++) {
+                    for (int nx = x - neighborhood < 0 ? 0 : x - neighborhood; nx < width && nx <= x + neighborhood; nx++) {
+                        sum += imageData[i][nx][ny][z];
+                        sum2 += imageData[i][nx][ny][z] * imageData[i][nx][ny][z];
+                        n++;
+
+                        // compute discrete gradient approximation for this neighbor
+                        // approx. gradient of function f at point i calculated as
+                        // grad{f(i)} = (f(i+1)-f(i-1))/2
+                        if (ny > 0 && ny < height - 1 && nx > 0 && nx < width - 1) {
+                            double y_1 = imageData[i][nx][ny - 1][z];
+                            double y_2 = imageData[i][nx][ny + 1][z];
+                            grad_y += (y_2 - y_1) / 2.0;
+                            double x_1 = imageData[i][nx - 1][ny][z];
+                            double x_2 = imageData[i][nx + 1][ny][z];
+                            grad_x += (x_2 - x_1) / 2.0;
+                            grad_n++;
+                        }
+                    }
+                }
+                // subtract current data point from sum (does not add to neighborhood)
+                sum -= value;
+                sum2 -= value * value;
+                n--;
+                // calculate local gradient approximation (average gradient vector)
+                grad_y = grad_y / grad_n;
+                grad_x = grad_x / grad_n;
+
+                // add requested features
+                featureVector.add(value);   // intensity/ratio
+                if (features[0] == 1) {
+                    featureVector.add(sum / n);   // mean value of neigbors
+                }
+                if (features[0] == 1) {
+                    featureVector.add((n * sum2 - sum * sum) / (n * (n - 1))); // variance of neighbors
+                }
+                if (features[1] == 1) {
+                    featureVector.add(Math.sqrt(grad_y * grad_y + grad_x * grad_x)); // norm of gradient
+                }
+                //-------
+                if (dataPointIndex % 10000 == 0) {
+                    System.out.println("dataPointIndex = " + dataPointIndex);
+                    System.out.println("featureVector.size() = " + featureVector.size());
+                }
+
+            }
+
+            featurebuffer.add(featureVector);
+
+            if (featurebuffer.size() >= 100000) {
+                write++;
+                System.out.println("Writing feature buffer: "+write);
+                for (int i = 0; i < featurebuffer.size(); i++) {
+                    //write feature vector
+                    java.util.Iterator featureIT = featurebuffer.get(i).iterator();
+                    long ind = ((Double)featureIT.next()).longValue();
+
+                    String res = ind + "";
+                    int f = 0;
+                    while (featureIT.hasNext()) {
+                        res += " " + (f + 1) + ":" + (Double) featureIT.next();
+                        f++;
+                    }
+                    try {
+                        buffwriter.append(res);
+                        buffwriter.newLine();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                featurebuffer.clear();
+            }
+        }
+
+        //final write/clear of buffer
+        if (!featurebuffer.isEmpty()) {
+                write++;
+                System.out.println("Final writing feature buffer: "+write);
+                for (int i = 0; i < featurebuffer.size(); i++) {
+                    //write feature vector
+                    java.util.Iterator featureIT = featurebuffer.get(i).iterator();
+                    long ind = ((Double)featureIT.next()).longValue();
+
+                    String res = ind + "";
+                    int f = 0;
+                    while (featureIT.hasNext()) {
+                        res += " " + (f + 1) + ":" + (Double) featureIT.next();
+                        f++;
+                    }
+                    try {
+                        buffwriter.append(res);
+                        buffwriter.newLine();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                featurebuffer.clear();
+            }
+
+    }
 
 
     private static int[] createClassColors(double[] classMeans){

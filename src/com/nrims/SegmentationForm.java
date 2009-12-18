@@ -784,23 +784,29 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         SegUtils sUtil = SegUtils.initPrepSeg(images, colorImageIndex, localFeatures, trainClasses);
         sUtil.prepareSegmentation();
 
+        SVM.SvmEngine engine = (SVM.SvmEngine)activeEngine;
+
         //training data in (list of list of list) form
-        SVM.SvmEngine tempengine = new SVM.SvmEngine(1, sUtil.getData(), properties);
-        ArrayList<String> trainingdata = tempengine.convertData();
-        tempengine = null;
+        //SVM.SvmEngine tempengine = new SVM.SvmEngine(1, sUtil.getData(), properties);
+        ArrayList<String> trainingdata = engine.convertData();
+        //tempengine = null;
 
         java.io.BufferedWriter bw = null;
         String dir = mimsUi.getImageDir();
         dir += mimsUi.getImageFilePrefix();
         try{
             //write training data
-            bw = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(dir + "_training_data.txt")));
+            bw = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(dir + "_training.txt")));
             for (int i = 0; i < trainingdata.size(); i++) {
                 bw.append(trainingdata.get(i));
                 bw.newLine();
             }
             bw.close();
 
+            //Dont's do this
+            //generate scaling params outside plugin
+            //is there a way to get scaling params???
+            /*
             //write scaled training data
             SVM.svm_scale sc = new SVM.svm_scale();
             ArrayList<String> scaledTrainData = sc.run(trainingdata, this.getProperties(), true);
@@ -810,29 +816,52 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                 bw.newLine();
             }
             bw.close();
+            */
 
         } catch(Exception e) { e.printStackTrace(); }
+
+        //SVM.SvmEngine engine = tempengine.getProperties().getValueOf("model");
+
+// tempengine incorrect?
+// use active engine?
+
+        if (engine != null) {
+            //write SVM model
+            SVM.libsvm.svm_model model = (SVM.libsvm.svm_model) engine.getProperties().getValueOf("model");
+            try {
+                SVM.libsvm.svm.svm_save_model(dir + "_model.txt", model);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+        /*
+        if (tempengine != null) {
+            //write SVM model
+            SVM.libsvm.svm_model model = (SVM.libsvm.svm_model) tempengine.getProperties().getValueOf("model");
+            try {
+                SVM.libsvm.svm.svm_save_model(dir + "_model.txt", model);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+        */
 
         //prepare full image data
         sUtil = SegUtils.initPrepSeg(images, colorImageIndex, localFeatures);
-        sUtil.prepareSegmentation();
-        SVM.SvmEngine engine = (SVM.SvmEngine)activeEngine;
-        if(engine == null ) return;
-        ArrayList<String> data = engine.convertData();
-        if(data == null) {
-            //???
-        }
+        //do not call a 2nd time, memory overhead too high
+        //explicitly computed below and writen to disk line by line
+        //sUtil.prepareSegmentation();
 
-        //write SVM model
-        SVM.libsvm.svm_model model = (SVM.libsvm.svm_model)engine.getProperties().getValueOf("model");
-        try{
-            SVM.libsvm.svm.svm_save_model(dir + "_model.txt", model);
-        } catch(Exception e) { e.printStackTrace(); }
 
-        
         try{
             //write data for entire image
-            bw = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(dir + "_data.txt")));
+            bw = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(dir + "_test.txt")));
+
+            sUtil.exportFeaturesZ(images, bw);
+
+            /*
             for (int u = 0; u < sUtil.getData().size(); u++) {
                 Iterator pointIT = sUtil.getData().get(u).iterator();
                 while (pointIT.hasNext()) {
@@ -847,6 +876,8 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
                     bw.newLine();
                 }
             }
+            */
+
             bw.close();
             
             /*
