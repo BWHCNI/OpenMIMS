@@ -198,6 +198,8 @@ public class UnoPlugin implements PlugIn{
 //             System.out.println("   "+k+" = "+v);
 //          }
       
+        // trivial change for testing branching.
+        
         OS = System.getProperty("os.name").toLowerCase();
         //We need to check whether or not the OS is a Mac here because on Macs, the juh.jar (the Java UNO Helper)
         //is not located in the same place as the program, so we need to specify where the program is
