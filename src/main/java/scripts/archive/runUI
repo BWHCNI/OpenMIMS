@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+################################################
+## The script to call to open the plugin. To
+## open the plugin with a particular file, pass
+## the file name as an argument.
+##
+################################################
+ARGS=$@
+if [ $# -eq 1 ]
+then
+  ARGS=$(readlink -f "$1")
+fi
+cd /nrims/common/local/ImageJ/
+IJPATH=/nrims/common/local/ImageJ
+IJPLUGINSPATH=$IJPATH/plugins
+java -Xmx4072m -cp $IJPATH/ij.jar:$IJPLUGINSPATH/nrims_java_common.jar:$IJPLUGINSPATH/Open_MIMS.jar:$IJPLUGINSPATH/commons-io-2.0.jar:$IJPLUGINSPATH/jcommon-1.0.16.jar:$IJPLUGINSPATH/jfreechart-1.0.13.jar:$IJPLUGINSPATH/jRtf-0.3.jar:$IJPLUGINSPATH/Turbo_Reg.jar:$IJPLUGINSPATH/beansbinding-1.2.1.jar:$IJPLUGINSPATH/swing-layout-1.0.3.jar:$IJPLUGINSPATH/junique-1.0.4.jar com.nrims.UI $ARGS >&  $IJPATH/logs/logfile_$(whoami)_$(hostname)_$$.txt

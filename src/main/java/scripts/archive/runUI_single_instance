@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+###########################################################
+## ZK, Nov 2 2011:
+## Use this script to open a single instance of the plugin.
+## The "-imfile" flag is not necessary, but I have left it 
+## for clarity. The -single_instance flag is required.
+###########################################################
+/nrims/common/local/ImageJ/runUI -imfile "$@" -single_instance

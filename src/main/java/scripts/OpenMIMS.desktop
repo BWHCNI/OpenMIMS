@@ -1,0 +1,22 @@
+[Desktop Entry]
+#copy to ~/.local/share/applications/
+#edited from Fiji.desktop
+Version=1.0
+Name=OpenMIMS
+GenericName=OpenMIMS
+X-GNOME-FullName=OpenMIMS
+Comment=MIMS Image Analysis
+Type=Application
+Categories=Education;Science;ImageProcessing;
+#The exec path is hard coded. Do we need a generating script?
+Exec=/nrims/common/local/Fiji.app/runOpenMIMS %F
+TryExec=/nrims/common/local/Fiji.app/runOpenMIMS
+Terminal=false
+StartupNotify=true
+#We're not yet defining an image mime type for .im and .nrrd files
+#This is independant (?) from any mime type a browser has 
+#picked up from thedi.mgh.harvard.edu .
+MimeType=application/x-extension-im;application/x-extension-nrrd;
+Icon=/nrims/common/local/Fiji.app/images/icon.png
+#Not sure what this does, commenting out.
+#StartupWMClass=fiji-Main
