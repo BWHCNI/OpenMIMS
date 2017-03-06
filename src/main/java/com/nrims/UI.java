@@ -1,8 +1,9 @@
 /*
  * UI.java
  *
- * Created on May 1, 2006, 12:59 PM
+ * Created on May 1, 2006, 12:59 PM 
  */
+
 package com.nrims;
 
 import com.nrims.data.*;
