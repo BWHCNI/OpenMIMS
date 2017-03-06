@@ -82,6 +82,11 @@
             <artifactId>LibreOfficeNotesMaven</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openoffice</groupId>
+            <artifactId>bootstrap-connector</artifactId>
+            <version>0.1.1</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
