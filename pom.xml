@@ -86,6 +86,7 @@
             <groupId>com.nrims.common</groupId>
             <artifactId>com.nrims.common</artifactId>
             <version>1.0</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
     <properties>
