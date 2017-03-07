@@ -83,10 +83,9 @@
             <version>0.1.1</version>
         </dependency>
         <dependency>
-            <groupId>com.nrims.common</groupId>
-            <artifactId>com.nrims.common</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>nrimsJavaCommon</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
     <properties>
