@@ -1434,6 +1434,15 @@ class MyDefaultTableModel extends DefaultTableModel {
     }
 
     public Class getColumnClass(int c) {
-        return getValueAt(0, c).getClass();
+        Object obj = getValueAt(0, c);
+        // If the user is trying to create a table (in the Tomography tab) from
+        // a mosaic image, and no group has been created, the getValueAt method 
+        // returns null, and this prevents the table from being created.
+        // In this case, just return Object.class to prevent the exception.
+        if (obj != null) {
+            return getValueAt(0, c).getClass();
+        } else {
+            return Object.class;
+        }
     }
 }
