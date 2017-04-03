@@ -62,6 +62,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.logging.*;
 import javax.swing.JFileChooser;
@@ -110,7 +111,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public static final String SAVE_SESSION = "Save Session";
     
     public String operatingSystem;
-    private String mimsVersion = "2.7.0";  // previous was 2.6.3
+    private String mimsVersion = "2.7.1";  // previous was 2.6.3.   Version 2.7.1 fixes the major bugs I created in the ROI Manager. 
 
     public int maxMasses = 25;
     private double medianFilterRadius = 1;
@@ -755,7 +756,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             groups = roiManager.getGroups();
             
             //HashMap<String, String> groupsMap = new HashMap<String, String>();
-            HashMap<String, ROIgroup> groupsMap = roiManager.getGroupMap();
+            Map<String, ROIgroup> groupsMap = roiManager.getGroupMap();
             
             
             //ArrayList roiProps = new ArrayList();
@@ -851,7 +852,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             groups = roiManager.getGroups();
             
             //HashMap<String, String> groupsMap = new HashMap<String, String>();
-            HashMap<String, ROIgroup> groupsMap = roiManager.getGroupMap();
+            Map<String, ROIgroup> groupsMap = roiManager.getGroupMap();
             
             //ArrayList roiProps = new ArrayList();
             List roiProps = new ArrayList();
@@ -2894,15 +2895,17 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     OMLOGGER.info("UI.java:loadROIfiles:  Loading ROI file " + roiFiles.get(0));              
                    
                     openFileInBackground(roiFiles.get(0));
-                            
-                    do {            
+                     
+                    System.out.print("loading roi file ");
+                    do { 
                         try {
-                            System.out.println("loading roi file");
+                           System.out.print(".");
                            Thread.sleep(100);
                         } catch (InterruptedException ie) {
                            // do nothing
                         }
-                    } while (!task.isDone());     
+                    } while (!task.isDone());    
+                    System.out.println("");
                 }              
             }                              
             if (option == 1) {   // No, keep existing ROIs
@@ -6419,7 +6422,7 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
                 groups = roiManager.getGroups();
 
                 //HashMap<String, String> groupsMap = new HashMap<String, String>();
-                HashMap<String, ROIgroup> groupsMap = roiManager.getGroupMap();
+                Map<String, ROIgroup> groupsMap = roiManager.getGroupMap();
 
 
                 //ArrayList roiProps = new ArrayList();
