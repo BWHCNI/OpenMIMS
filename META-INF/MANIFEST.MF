@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.9.4
+Created-By: 1.8.0_101-b13 (Oracle Corporation)
+Class-Path: lib/Turbo_Reg.jar lib/ij.jar lib/nrims_java_common.jar lib
+ /commons-io-2.0.jar lib/jRtf-0.3.jar lib/junique-1.0.4.jar lib/beansb
+ inding-1.2.1.jar lib/jcommon-1.0.17.jar lib/jfreechart-1.0.14.jar lib
+ /swing-layout-1.0.4.jar lib/LibreOffice_Notes.jar lib/java_uno.jar li
+ b/juh.jar lib/jurt.jar lib/ridl.jar lib/unoil.jar lib/unoloader.jar l
+ ib/commons-codec-1.9.jar
+Main-Class: com.nrims.UI
+
