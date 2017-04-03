@@ -46,4 +46,14 @@
                 <exec.workingdir>/Users/taylorwrt/GitHub/OpenMIMS/src/main/java</exec.workingdir>
             </properties>
         </action>
+        <action>
+            <actionName>build</actionName>
+            <preAction>build-with-dependencies</preAction>
+            <packagings>
+                <packaging>*</packaging>
+            </packagings>
+            <goals>
+                <goal>install</goal>
+            </goals>
+        </action>
     </actions>
