@@ -2,95 +2,149 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>nrims</groupId>
-    <artifactId>OpenMIMS</artifactId>
-    <version>2.7.0</version>
+    <artifactId>Open_MIMS</artifactId>
+    <version>2.7.1</version>
     <packaging>jar</packaging>
+   
+    <build>
+          
+        <plugins>
+                
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                        <compress>false</compress>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <!-- <classpathPrefix>libs/</classpathPrefix> -->
+                            <classpathPrefix>dependency-jars/</classpathPrefix>
+                            <mainClass>com.nrims.UI</mainClass>
+
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            
+        </plugins>
+      
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+            <resource>
+                 <directory>${basedir}/src/main/java</directory> 
+                 <!-- without this, it does not include the macros folder -->
+            </resource> 
+           
+        </resources>
+             
+        <finalName>${project.artifactId}</finalName>
+      
+    </build>
+    
+
     <dependencies>
+
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.0</version>
+            <groupId>nrims</groupId>
+            <artifactId>LibreOfficeNotes</artifactId>
+            <version>2.7.1</version>
+
         </dependency>
-        <dependency>
-            <groupId>com.tutego</groupId>
-            <artifactId>jrtf</artifactId>
-            <version>0.7</version>
-        </dependency>
-        <dependency>
-            <groupId>de.huxhorn.lilith</groupId>
-            <artifactId>de.huxhorn.lilith.3rdparty.junique</artifactId>
-            <version>1.0.2</version>
-        </dependency>
+        
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jcommon</artifactId>
             <version>1.0.17</version>
         </dependency>
+        
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
             <version>1.0.17</version>
         </dependency>
-        <dependency>
-            <groupId>org.libreoffice</groupId>
-            <artifactId>juh</artifactId>
-            <version>5.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.libreoffice</groupId>
-            <artifactId>jurt</artifactId>
-            <version>5.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.libreoffice</groupId>
-            <artifactId>ridl</artifactId>
-            <version>5.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.libreoffice</groupId>
-            <artifactId>unoil</artifactId>
-            <version>5.2.0</version>
-        </dependency>
+        
         <dependency>
             <groupId>org.libreoffice</groupId>
             <artifactId>unoloader</artifactId>
             <version>5.2.0</version>
         </dependency>
+        
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>ij</artifactId>
-            <version>1.51h</version>
-        </dependency>
+
         <dependency>
             <groupId>org.swinglabs</groupId>
             <artifactId>swing-layout</artifactId>
             <version>1.0.3</version>
         </dependency>
+        
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>LibreOfficeNotes</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.openoffice</groupId>
-            <artifactId>bootstrap-connector</artifactId>
-            <version>0.1.1</version>
-        </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>nrimsJavaCommon</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>juh</artifactId>
+            <version>5.2.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>junique</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+            <version>1.51k</version>
+
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>unoil</artifactId>
+            <version>5.2.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.tutego</groupId>
+            <artifactId>jrtf</artifactId>
+            <version>0.7</version>      
+        </dependency>
     </dependencies>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+    <description>Fixes a number of bugs from version 2.7.0, almost all of which were in the ROI manager, affecting the loading of roi files, handling of groups,
+and anything that depended on groups and rois.
+    </description>
+    
+    
 </project>
