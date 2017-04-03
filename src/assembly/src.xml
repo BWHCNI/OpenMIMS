@@ -1,0 +1,43 @@
+    <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+  
+    <id>dep</id>    <!-- without something here,  it always creates the small file -->
+        
+
+    <formats>
+         <format>jar</format>
+         <!-- <format>dir</format> -->
+    </formats>
+  
+    <dependencySets>
+        <dependencySet>
+            <excludes>
+                 <exclude>{project.basedir}ij:ij:*</exclude>   <!-- does nothing -->
+            </excludes>
+        </dependencySet>
+    </dependencySets>  
+  
+
+  
+  
+<!--
+  <fileSets>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory>${project.basedir}</outputDirectory>
+      <includes>
+            <include>README*</include>
+            <include>LICENSE*</include>
+            <include>NOTICE*</include> 
+        </includes>
+        <excludes>
+           <!- <exclude>${project.basedir}/META-INF/maven</exclude> ->
+           <exclude>${project.basedir}com.sun.*</exclude>
+        </excludes>
+    </fileSet>  
+
+
+  </fileSets>  -->
+  
+</assembly>
