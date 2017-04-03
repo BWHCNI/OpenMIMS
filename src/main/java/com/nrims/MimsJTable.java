@@ -565,10 +565,10 @@ public class MimsJTable {
             roi = rois[row];
             for (int col = 0; col < ROIMANAGER_MANDATORY_COLUMNS.length; col++) {
                 stat = ROIMANAGER_MANDATORY_COLUMNS[col];
-                if (stat.equals(ROIGROUP)) {
+                if (stat.equals(ROIGROUP)) {                 
                     ROIgroup group = gui.getRoiManager().getRoiGroup(roi.getName());
                     if (group == null) {
-                        group = null;
+                        System.out.println("Error:  group is null in MimslJTable.java, method getRoiDataSet");
                     }
                     data[row][col] = group.getGroupName();
                 } else if (stat.equals(ROINAME)) {
