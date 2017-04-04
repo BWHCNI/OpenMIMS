@@ -1019,14 +1019,24 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                     //   ROI CHANGE GROUP
                     //================
                     javax.swing.JMenu changeGroupMenu = new javax.swing.JMenu("Change group");
-                    for (int i = 0; i < groups.size(); i++) {
+                    
+                    // Since groups does not have the default group, add it to the
+                    // submenu first.
+                  //  javax.swing.JMenuItem defaultGroupItem = new javax.swing.JMenuItem(DEFAULT_GROUP.getGroupName());                  
+                  //  changeGroupMenu.add(defaultGroupItem);
+                    
+                    for (int i = -1; i < groups.size(); i++) {
                         final String roiNumber = (roijlist.getSelectedValue() == null) ? "-1" : roijlist.getSelectedValue().toString();
                         //javax.swing.JMenuItem groupItem = new javax.swing.JMenuItem((String) (groups.get(i)));
-                        ROIgroup group = (ROIgroup) groups.get(i);                      
+                      //  ROIgroup group = (ROIgroup) groups.get(i);
+                        ROIgroup group;
+                        if (i == -1) {
+                            group = DEFAULT_GROUP;
+                        } else {
+                            group = (ROIgroup) groups.get(i);
+                        }
                         javax.swing.JMenuItem groupItem = new javax.swing.JMenuItem(group.getGroupName());
                         
-                       // System.out.println("roiNumber = " + roiNumber + "   group name = " + group.getGroupName() + "  groupItem = " + groupItem.getText());
-
                         groupItem.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 // Assign Roi to Group chosen from the submenu
@@ -1044,11 +1054,15 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                         break;
                                     }
                                 }
-                                
-                                ROIgroup newGroup = (ROIgroup)groups.get(index);
+                                ROIgroup newGroup;
+                                if (index < 0) {
+                                    newGroup = DEFAULT_GROUP;
+                                } else {                              
+                                    newGroup = (ROIgroup)groups.get(index);
+                                }
                                 // Put this into roisMap.  For roiNumbers that were assigned to the default group,
                                 // replace fails because they were never put in the roisMap, so use put instead of replace.
-                                ROIgroup oldGroup = (ROIgroup)roisMap.get(Integer.parseInt(roiNumber));
+                                ROIgroup oldGroup = (ROIgroup)roisMap.get(roiNumber);
                                 
                                 if (oldGroup == null) {
                                     roisMap.put(roiNumber, newGroup);
@@ -1058,7 +1072,10 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                 
                                 needsToBeSaved = true;
                                 groupjlist.setSelectedValue(newGroupName, true);
-                                roiListModel.remove(selectedIndex);    
+                                // remove entry from the old list, unless it's the default group
+                                if (oldGroup != DEFAULT_GROUP) {
+                                    roiListModel.remove(selectedIndex);
+                                }  
                             }
                         });
 
@@ -1066,9 +1083,17 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                         if (roisMap.get(roiNumber) == null) {
                             changeGroupMenu.add(groupItem);
                         } else {
-                            String groupName = roisMap.get(roiNumber).toString();
-                            ROIgroup gp = (ROIgroup)groups.get(i);
-                            String name = gp.getGroupName();
+                            String groupName;
+                            String name;
+                            if (i >= 0) {
+                                groupName = roisMap.get(roiNumber).toString();
+                                ROIgroup gp = (ROIgroup)groups.get(i);
+                                name = gp.getGroupName();
+                            } else {
+                                groupName = DEFAULT_GROUP.toString();
+                                ROIgroup gp = DEFAULT_GROUP;
+                                name = gp.getGroupName();
+                            }
                             if (groupName.compareTo(name) != 0) {
                                 changeGroupMenu.add(groupItem);
                             }
@@ -1090,57 +1115,61 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 else if (roijlist.getSelectedIndices().length > 1) {
 
                     javax.swing.JMenu assignAllToGroup = new javax.swing.JMenu("Assign all to group ");
-                    for (int i = 0; i < groups.size(); i++) {
+                    for (int i = -1; i < groups.size(); i++) {
 
                         final String roiNumber = (roijlist.getSelectedValue() == null) ? "-1" : roijlist.getSelectedValue().toString();
-                        ROIgroup group = (ROIgroup) groups.get(i);
+                        
+                        ROIgroup group;
+                        if (i == -1) {
+                            group = DEFAULT_GROUP;
+                        } else {
+                            group = (ROIgroup) groups.get(i);
+                        }
+      
                         javax.swing.JMenuItem groupItem = new javax.swing.JMenuItem(group.getGroupName());
+                        
                         groupItem.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 // Assign Roi to Group chosen from the submenu
-                                String groupName = e.getActionCommand();
+                                String newGroupName = e.getActionCommand();
+                                ROIgroup oldGroup = null;
                                 int numRoiListItems = roiListModel.getSize();
                                 for (int selectedIndex : roijlist.getSelectedIndices()) {
+                                    System.out.println("selectedIndex is " + selectedIndex );
                                     String roiName = (roiListModel.elementAt(selectedIndex)).toString();
-                             
-                                    // find the index of newGroupName in groupsListModel    
-                                    int index = -1;
-                                    for (int i = 0; i < groupListModel.size(); i++) {
-                                        //groupNames[i] = (String) groupListModel.getElementAt(indices[i]);              
-                                        ROIgroup group = (ROIgroup) groupListModel.getElementAt(i);
-                                        String name = group.getGroupName();           
-                                        if (name.compareTo(groupName) == 0) {
-                                            index = i - 1;   // subtract 1 because the default group does not get added to the groups map.
-                                            break;
+                                                                 ROIgroup newGroup = null;
+                                    if (newGroupName.compareTo("...") == 0){
+                                        newGroup = DEFAULT_GROUP;
+                                    } else {
+                                        for (int i = 0; i < groupListModel.size(); i++) {
+                                            ROIgroup group = (ROIgroup) groupListModel.getElementAt(i);
+                                            String name = group.getGroupName();           
+                                            if (name.compareTo(newGroupName) == 0) {
+                                                newGroup = (ROIgroup)groups.get(i-1);   // subtract 1 because the default group does not get added to the groups map.
+                                                break;
+                                            }
                                         }
-                                    }
-                                    ROIgroup newGroup = (ROIgroup)groups.get(index);
+                                    }         
                                     // Put this into roisMap.  For roiNumbers that were assigned to the default group,
-                                    // replace fails because they were never put in the roisMap, so use put instead of replace.
-                                    ROIgroup oldGroup = (ROIgroup)roisMap.get(Integer.parseInt(roiNumber));
-                                    if (oldGroup == null) {
+                                    // replace fails because they were never put in the roisMap, so use put instead of replace.                                  
+                                    oldGroup = (ROIgroup)roisMap.get(roiName);  
+                                    if (oldGroup == DEFAULT_GROUP) {
                                         roisMap.put(roiName, newGroup);
                                     } else {
                                         roisMap.replace(roiName, newGroup);
                                     }
                                     
-                                    //roisMap.replace(roiName, newGroup);
-                                    // todo fixed
                                     needsToBeSaved = true;
-                                    groupjlist.setSelectedValue(groupName, true);
-                                    //roiListModel.remove(selectedIndex);   // Don't try this!  
-                                    
+                                    groupjlist.setSelectedValue(newGroupName, true);                              
                                 }
-
                                 List objs = roijlist.getSelectedValuesList();
-                                for (Object obj : objs) {
-                                    ((DefaultListModel<String>)roiListModel).removeElement(obj);
-                                }
-
+                                if (oldGroup != DEFAULT_GROUP) {
+                                    for (Object obj : objs) {
+                                       ((DefaultListModel<String>)roiListModel).removeElement(obj);                                       
+                                    }
+                                } 
                             }
                         });
-                        // here
-                        //if(groupjlist.getSelectedIndex() == -1 || groupjlist.getSelectedIndex() == 0)
                         assignAllToGroup.add(groupItem);
                     }
 
@@ -1182,8 +1211,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                 tagjlist.setSelectedValue(tagName, true);
                             }
                         });
-                        // here
-                        //if(groupjlist.getSelectedIndex() == -1 || groupjlist.getSelectedIndex() == 0)
+
                         assignAllToTag.add(tagItem);
                     }
 
@@ -4671,7 +4699,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         Roi[] lrois = getSelectedROIs();
             // Try looping through these and calling the next big code block on them....
         
-        for (int j=0; j<lrois.length; j++) {
+       // for (int j=0; j<lrois.length; j++) {
             Roi roi = imp.getRoi();
             if (roi == null) {
                 error("The active image does not have a selection.");
@@ -4747,7 +4775,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                     tagsMap.put(label, tagss);
                 }
             }       
-        }
+        //}
         // Since there is at least one ROI in existence, enable the Save button.
         enableSaveButton(true);
         needsToBeSaved = true;
