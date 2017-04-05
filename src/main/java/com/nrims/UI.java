@@ -196,7 +196,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     protected MimsAction mimsAction = null;
     private imageNotes imgNotes;
     private PrefFrame prefs;
-    private String revisionNumber = "0";
+    private String revisionNumber = "2";
     public static Boolean single_instance_mode = false;
     public static UI ui = null;
     public boolean sessionOpened = false;
@@ -3746,7 +3746,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
      */
 private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
 
-    String message = "OpenMIMS v" + mimsVersion + ", Feb 15, 2017 (rev: " + revisionNumber + ")";
+    String message = "OpenMIMS v" + mimsVersion + ", Apr 5, 2017 (rev: " + revisionNumber + ")";
     message += "\n\n";
     message += "http://www.nrims.hms.harvard.edu/";
     message += "\n\n";
