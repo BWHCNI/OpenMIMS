@@ -635,6 +635,9 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         // Get all rois that belong to that group before we actually rename it.
         Roi[] g_rois = getAllROIsInList();
         
+        addGroup(newName, groupType);  // adds it to groups and groupListModel
+        ROIgroup renamedGroup = getGroup(newName);
+        
         String roiNumber = "";
         ROIgroup roiGroup = null; 
         for (Map.Entry<String, ROIgroup> theEntry : roisMap.entrySet()) {
@@ -642,36 +645,14 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             roiGroup = theEntry.getValue();
             String key = roiGroup.getGroupName();
             if (key.toString().compareTo(oldGroupName) == 0) {
-                break;
+                // change theEntry's ROIgroup to the new one
+                theEntry.setValue(renamedGroup);
+                groupListModel.removeElement(roiGroup);
             }
-            //groupsMap.put(roiNumber, roiGroup);                              
         }
-        
-
-        if (addGroup(newName, groupType)) {
-
-            // Remove old group entry.
-            groups.remove(group);
-            groupListModel.removeElement(group);
-            
-            
-
-            // Overwrite all previous maps.
-//            for (int i = 0; i < g_rois.length; i++) {
-//                //groupsMap.put(g_rois[i].getName(), newName); 
-//                
-//                roisMap.put(g_rois[i].getName(), newName);  
-//            }
-
-              ROIgroup newGroup = new ROIgroup(newName, roiGroup.getGroupType()); 
-              roisMap.put(roiNumber, newGroup);
-
-            // Select new group.
-            groupjlist.setSelectedValue(roiGroup, true);
-        }
-        
-        
-        
+      
+        groups.remove(group);
+        groupListModel.removeElement(group);
         
         if (partManager != null) {
             partManager.updateGroups();
@@ -1042,7 +1023,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                 // Assign Roi to Group chosen from the submenu
                                 String newGroupName = e.getActionCommand(); 
                                 int selectedIndex = roijlist.getSelectedIndex();
-                                            
+                                 
                                 // find the index of newGroupName in groupsListModel    
                                 int index = -1;
                                 for (int i = 0; i < groupListModel.size(); i++) {
