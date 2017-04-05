@@ -1137,7 +1137,12 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                     if (oldGroup == DEFAULT_GROUP) {
                                         roisMap.put(roiName, newGroup);
                                     } else {
-                                        roisMap.replace(roiName, newGroup);
+                                        // !! sometimes it's not there.
+                                        if (roisMap.replace(roiName, newGroup) == null) {
+                                            roisMap.put(roiName, newGroup);
+                                        }
+                                        
+                                        
                                     }
                                     
                                     needsToBeSaved = true;
@@ -4497,7 +4502,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         Rectangle r = froi.getBounds();
         System.out.println("Roi: " + froi.getName() + " w: " + r.width + " h: " + r.height + " unchanged: ");
         JOptionPane.showMessageDialog(this,
-                "Roi: " + froi.getName() + " w: " + r.width + " h: " + r.height,
+                "Roi: " + froi.getName() + " w: " + r.width + " h: " + r.height + " unchanged: ",
                 "",
                 JOptionPane.PLAIN_MESSAGE);
         
