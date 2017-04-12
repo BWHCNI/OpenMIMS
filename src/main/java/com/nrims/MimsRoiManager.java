@@ -1182,6 +1182,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Determines the behavior when a ROI entry is clicked.
+     * 
+     * @param e a <code>ListSelectionEvent</code> object
      */
     public void roivalueChanged(ListSelectionEvent e) {
 
@@ -1469,7 +1471,11 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Line rois require a special method for moving because the <code>setlocation()</code> method does not work for
-     * line Rois (at least not the way you would expact, and not the ways it works for shape Rois).
+     * line Rois (at least not the way you would expect, and not the ways it works for shape Rois).
+     * 
+     * @param oldRoi a <code>Roi</code> object
+     * @param newX  new X position of the line
+     * @param newY new Y position of the line
      */
     public void moveLine(Roi oldRoi, int newX, int newY) {
         ImagePlus imp = getImage();
@@ -1489,7 +1495,10 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Line rois require a special method for moving because the <code>setlocation()</code> method does not work for
-     * line Rois (at least not the way you would expact, and not the ways it works for shape Rois).
+     * line Rois (at least not the way you would expect, and not the ways it works for shape Rois).
+     * 
+     * @param oldRoi a <code>Roi</code> object 
+     * @param newRoi a <code>Roi</code> object
      */
     public void moveLine(Roi oldRoi, Roi newRoi) {
 
@@ -1508,6 +1517,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Sets the Roi in its current location.
+     * 
+     * @return b true if ROI was moved, otherwise false
      */
     public boolean move() {
         // Get the image and the roi
@@ -1547,6 +1558,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Adds the currently drawn ROI to the manager.
+     * 
+     * @return true if the currently-drawn ROI was added to the manager, otherwise false.
      */
     public boolean add() {
         ImagePlus imp = getImage();
@@ -1608,6 +1621,10 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Add a ROI to the manager.
+     * 
+     * @param roi An <code>Roi</code> instance
+     * 
+     * @return true if the Roi was successfully added to the manager, otherwise false.
      */
     public boolean add(Roi roi) {
         ImagePlus imp = getImage();
@@ -1659,7 +1676,7 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     /**
      * Adds a Roi to the manager without renaming the provided Roi
      *
-     * @param roi
+     * @param roi An <code>Roi</code> instance
      * @return <code>true</code> if added, <code>false</code> otherwise.
      */
     public boolean addWithoutRenaming(Roi roi) {
@@ -1696,6 +1713,10 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Sets an array of Rois to the manager.
+     * 
+     * @param roiarr an array of <code>Roi</code> instance
+     * 
+     * @return val true if all of the Rois were added to the manager, otherwise false
      */
     public boolean add(Roi[] roiarr) {
         boolean val = true;
@@ -1763,7 +1784,7 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
      *
      * @param roi which will be added to the group.
      * @param group as <code>String</code> of the group where the Roi should be added to.
-     * @return <code>true</code> if added, <code>false</code> otherwise.
+     * @return val <code>true</code> if added, <code>false</code> otherwise.
      */
     public boolean addToGroupWithoutRenaming(Roi roi, String group) {
         boolean val = true;
@@ -1856,6 +1877,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     /**
      * Deletes currently selected ROIs. Deletes all if none selected.
      *
+     * @param prompt true if the user should receive a prompt before deleting the selected ROIS, false if not.
+     * 
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
     public boolean delete(boolean prompt) {
@@ -2000,7 +2023,7 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     /**
      * Opens a file containing saved ROIs.
      *
-     * @param path a string containing the absolute path.
+     * @param abspath a string containing the absolute path.
      * @param force forces overwrite of current ROIs.
      */
     public void open(String abspath, boolean force) {
@@ -2170,6 +2193,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     /**
      * Returns a unique name for an ROI. If the name already exists in the list of ROIs, the method will append a "-1"
      * to the name so that it is unique.
+     * 
+     * @param name a name to that might exist in the current list of ROIs, and if found, will have "-1" appended to it, and be returned by this method.
      *
      * @return a unique name.
      */
@@ -2194,6 +2219,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Returns the ParticlesManager.
+     * 
+     * @return partManager the <code>ParticlesManager</code> instance
      */
     public ParticlesManager getParticlesManager() {
         return partManager;
@@ -2201,6 +2228,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Returns the SquaresManager.
+     * 
+     * @return squaresManager the <code>SquaresManager</code> instance
      */
     public SquaresManager getSquaresManager() {
         return squaresManager;
@@ -2775,6 +2804,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
      * @param roi Bounding Roi
      * @param img Image to work on
      * @param params min/max threshold and size
+     * 
+     * @return rs an Roi array
      */
     public Roi[] roiThreshold(Roi roi, MimsPlus img, double[] params) {
         //check param size
@@ -2904,6 +2935,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
      * @param rois Array of rois to be passed to roiThreshold
      * @param img Working image
      * @param params min/max threshold and size
+     * 
+     * @return returnlist x
      */
     public Roi[] roiThreshold(Roi[] rois, MimsPlus img, double[] params) {
         ArrayList<Roi> returnlist = new ArrayList<Roi>();
@@ -2971,6 +3004,12 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Documentation Required.
+     * 
+     * @param roi an <code>Roi</code> instance
+     * @param img a <code>MimsPlus</code> instance
+     * @param params an array of parameters
+     * 
+     * @return rrois  an array of <code>Roi</code> instances
      */
     public Roi[] roiSquares(Roi roi, MimsPlus img, double[] params) {
         //check param size
@@ -3133,6 +3172,13 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Documentation Required.
+     * 
+     * @param rois an array of <code>Roi</code> instances
+     * @param img a <code>MimsPlus</code> instance
+     * @param params an array of parameters
+     * 
+     * @return rrois  an array of <code>Roi</code> instances
+     * 
      */
     public Roi[] roiSquares(Roi[] rois, MimsPlus img, double[] params) {
         ArrayList<Roi> temprois = new ArrayList<Roi>();
@@ -3160,6 +3206,12 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     //still testing
     /**
      * Documentation Required.
+     * 
+     * @param roi an <code>Roi</code> instance
+     * @param img a <code>MimsPlus</code> instance
+     * @param params an array of parameters
+     * 
+     * @return rrois  an array of <code>Roi</code> instances
      */
     public Roi[] roiSquaresZ(Roi roi, MimsPlus img, double[] params) {
 
@@ -3339,6 +3391,12 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Documentation Required.
+     * 
+     * @param rois an array of <code>Roi</code> instances
+     * @param img a <code>MimsPlus</code> instance
+     * @param params an array of parameters
+     * 
+     * @return rrois  an array of <code>Roi</code> instances
      */
     public Roi[] roiSquaresZ(Roi[] rois, MimsPlus img, double[] params) {
         ArrayList<Roi> temprois = new ArrayList<Roi>();
@@ -3450,6 +3508,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Gets the current image.
+     * 
+     * @return imp an <code>Imageplus</code> instance
      */
     public ImagePlus getImage() {
         ImagePlus imp = WindowManager.getCurrentImage();
@@ -3464,7 +3524,7 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     /**
      * Gets the current ROI.
      *
-     * @return an ROI.
+     * @return roi a <code>Roi</code> instance.
      */
     public Roi getRoi() {
         int[] indexes = roijlist.getSelectedIndices();
@@ -3537,6 +3597,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Returns a reference to the MIMS ROI Manager or null if it is not open.
+     * 
+     * @return instance An <code>MimsRoiManger</code> instance
      */
     public MimsRoiManager getInstance() {
         return (MimsRoiManager) instance;
@@ -3545,7 +3607,7 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     /**
      * Returns the ROI Hashtable.
      *
-     * @return ROI Hashtable.
+     * @return rois x
      */
     public Hashtable getROIs() {
         return rois;
@@ -3553,6 +3615,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Returns the ROI with name <code>name</code>
+     * 
+     * @param name the name of the ROI to return
      *
      * @return the ROI.
      */
@@ -3648,6 +3712,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Returns the selection list.
+     * 
+     * @return roijlist the roijlist instance
      */
     public JList getList() {
         return roijlist;
@@ -3743,10 +3809,10 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     }
 
     /**
-     * Determines if the ROI with name <code>name</name> is already selected in the manager.
+     * Determines if the ROI with name <code>name</code> is already selected in the manager.
      *
      * @param name the ROI name.
-     * @return <code>true</code> if selected, otherwise <code>false</false>
+     * @return <code>true</code> if selected, otherwise <code>false</code>
      */
     public boolean isSelected(String name) {
         boolean b = false;
@@ -3774,9 +3840,9 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     }
 
     /**
-     * Returns if the user has selected the "hide Rois" checkbox.
+     * Returns bEnabled if the user has selected the "hide Rois" checkbox.
      *
-     * @return <code>true</code> if checked, otherwise <code>false>/code>.
+     * @return bEnabled <code>true</code> if checked, otherwise <code>false</code>.
      */
     public boolean getHideRois() {
         boolean bEnabled = cbHideAll.isSelected();
@@ -3786,10 +3852,11 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
     /**
      * Returns if the user has selected the "hide Roi labels" checkbox.
      *
-     * @return <code>true</code> if checked, otherwise <code>false>/code>.
+     * @return cbHideLabelsSelected <code>true</code> if checked, otherwise <code>false</code>.
      */
     public boolean getHideLabel() {
-        return cbHideLabels.isSelected();
+        boolean cbHideLabelsSelected = cbHideLabels.isSelected();
+        return cbHideLabelsSelected;
     }
 
     /**
@@ -4322,6 +4389,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Tests if the ROI has a numeric name (for example, "3")
+     * 
+     * @param r a <code>Roi</code> instance
      *
      * @return <code>true</code> if name is numeric, otherwise <code>false</code>.
      */
@@ -4336,6 +4405,8 @@ public class MimsRoiManager extends PlugInJFrame implements ActionListener {
 
     /**
      * Tests if String <code>name</code> is numeric (for example, "3")
+     * 
+     * @param name the name to check for being a numeric string
      *
      * @return <code>true</code> if name is numeric, otherwise <code>false</code>.
      */
