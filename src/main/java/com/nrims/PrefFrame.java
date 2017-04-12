@@ -41,6 +41,8 @@ public class PrefFrame extends PlugInJFrame {
 
     /**
      * Instantiates the class and creates the frame.
+     * 
+     * @param ui the <code>UI</code> instance
      */
     public PrefFrame(UI ui) {
         super("Preferences");
@@ -643,7 +645,7 @@ public class PrefFrame extends PlugInJFrame {
     /**
      * Get the format string used to determine format of image titles
      *
-     * @return
+     * @return formatString the format string used to determine format of image titles
      */
     public String getFormatString() {
         return formatString;

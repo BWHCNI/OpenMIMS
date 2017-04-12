@@ -370,7 +370,8 @@ public class MimsStackEditor extends javax.swing.JPanel {
     /**
      * Restores a slice (or block) from the original data so that a new translation can be applied.
      *
-     * @param plane
+     * @param plane the plane (aka slice) to be restored
+     * 
      * @return [0.0 0.0] if restoring a slice, [x y] if restoring a block.
      */
     public double[] restoreSlice(int plane) {
@@ -559,10 +560,10 @@ public class MimsStackEditor extends javax.swing.JPanel {
     /**
      * shifts all slices within a range the same x and y
      *
-     * @param xShift
-     * @param yShift
-     * @param startSlice
-     * @param endSlice
+     * @param xShift   x amount to shift
+     * @param yShift  y amount to shift
+     * @param startSlice  starting slice for the shift
+     * @param endSlice  ending slice for the shift
      */
     public void translateStack(int xShift, int yShift, int startSlice, int endSlice) {
 
@@ -1202,6 +1203,7 @@ public class MimsStackEditor extends javax.swing.JPanel {
      * is the same for all image stacks, but images present in one series but not in another have 
      * planes of zeros added to compensate.
      *
+     * @param blockSize blocksize
      * @return number of interleaved masses
      */
     public int interleave(int blockSize) {
@@ -2438,6 +2440,8 @@ public class MimsStackEditor extends javax.swing.JPanel {
 
         /**
          * The AutoTrackManager constructor assembles and displays the GUI.
+         * 
+         * @param currentImage a <code>MimsPlus</code> instance
          */
         public AutoTrackManager(MimsPlus currentImage) {
             super("Auto Track Manager");
@@ -2616,6 +2620,8 @@ public class MimsStackEditor extends javax.swing.JPanel {
 
         /**
          * Returns a reference to the MimsRatioManager or null if not open.
+         * 
+         * @return instance An <code>AutoTraceManager</code> instance
          */
         public AutoTrackManager getInstance() {
             return (AutoTrackManager) instance;
@@ -2623,6 +2629,12 @@ public class MimsStackEditor extends javax.swing.JPanel {
 
         /**
          * Returns all numbers between min and max NOT in listA.
+         * 
+         * @param listA An integer ArrayList to reverse
+         * @param min minimum index to arraylist of numbers to return
+         * @param max maximum index of arraylist of numbers to return
+         * 
+         * @return listB
          */
         public ArrayList<Integer> getInverseList(ArrayList<Integer> listA, int min, int max) {
             ArrayList<Integer> listB = new ArrayList<Integer>();
@@ -2638,6 +2650,10 @@ public class MimsStackEditor extends javax.swing.JPanel {
 
         /**
          * This method returns the selected radio button in a button group.
+         * 
+         * @param group A <code>ButtonGroup</code> instance
+         * 
+         * @return b A radiotButton instance, or null if the group has no elements.
          */
         private JRadioButton getSelection(ButtonGroup group) {
             for (Enumeration e = group.getElements(); e.hasMoreElements();) {

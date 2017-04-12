@@ -314,7 +314,7 @@ public class HSIProps implements java.io.Serializable {
     /**
      * Sets the x-value for the window location.
      *
-     * @param x
+     * @param x  window x location
      */
     public void setXWindowLocation(int x) {
         this.xloc = x;
@@ -332,7 +332,7 @@ public class HSIProps implements java.io.Serializable {
     /**
      * Sets the y-value for the window location.
      *
-     * @param y
+     * @param y  window y location
      */
     public void setYWindowLocation(int y) {
         this.yloc = y;
@@ -390,7 +390,7 @@ public class HSIProps implements java.io.Serializable {
     /**
      * Sets this class' properties from another class
      *
-     * @param props
+     * @param props the HSIProps instance
      */
     public void setProps(HSIProps props) {
         numMassIdx = props.getNumMassIdx();
@@ -445,7 +445,7 @@ public class HSIProps implements java.io.Serializable {
      * Tests if this object is equal to the passed parameter. Two HSIProps objects are equal if numerator and
      * denominator are the same.
      *
-     * @param rp
+     * @param rp the HSIProps instance
      * @return <code>true</code> if num and den are the same, otherwise <code>false</code>.
      */
     public boolean equals(HSIProps rp) {
@@ -461,7 +461,7 @@ public class HSIProps implements java.io.Serializable {
      * Tests if this object is equal massValue-wise to the passed parameter Two HSIProps objects are equal if numerator
      * and denominator are the same massValue-wise.
      *
-     * @param rp
+     * @param rp return param?
      * @return <code>true</code> if num and den are the same, otherwise <code>false</code>.
      */
     public boolean equalsThruMassValues(HSIProps rp) {

@@ -129,6 +129,7 @@ public class MimsJFreeChart extends JFrame implements WindowListener, MouseListe
      * Plots the data and shows the frame. Only call this method if all relevant member variables are set.
      *
      * @param appendingData <code>true</code> if appending a plot to an existing frame, otherwise <code>false</code>.
+     * @param mean if true, set xaxisname local variable to "Length", otherwise xaxisname is set to "Plane"
      */
     public void plotData(boolean appendingData, boolean mean) {
 
@@ -937,7 +938,7 @@ public class MimsJFreeChart extends JFrame implements WindowListener, MouseListe
      * </code> parameter must be defined and associated with an image, usually by calling <code>
      * image.getStatistics() </code>.
      *
-     * @param stats image statistics object.
+     * @param image A MimsPlus instance.
      * @param statname a string naming the desired statistic.
      * @param ui needed only as a check to see if we are in Percent turnover mode (wanted to avoid passing this but felt
      * it necessary).
@@ -1065,6 +1066,8 @@ public class MimsJFreeChart extends JFrame implements WindowListener, MouseListe
      * @param seriesKey name of the series
      * @param x crosshair x point on series
      * @param y crosshair y point on series
+     * 
+     * @return coords a 2 dimension integer array of x and y coordinates, or null if the <code>seriesKey</code> is null or <code>map</code> is null.
      */
     public int[] addToOverlay(String seriesKey, double x, double y) {
         //check to see if either seriesKey or map is null- this indicates that either no crosshair is set

@@ -30,6 +30,7 @@ public class MimsJFileChooser extends JFileChooser implements PropertyChangeList
      *
      * Custom JFileChooser that contains a filter accessory and keeps the 'lastFolder' field up to date.
      *
+     * @param ui a reference to the UI object
      * @author zkaufman
      */
     public MimsJFileChooser(UI ui) {

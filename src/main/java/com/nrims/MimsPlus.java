@@ -105,6 +105,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
      * Constructor to use for non-MIMS images.
      *
      * @param ui user interface to be used in the MimsPlus object
+     * @param imageType x
+     * @param ipp an <code>ImageProcessor</code> instance
      */
     public MimsPlus(UI ui, int imageType, ImageProcessor ipp) {
         super();
@@ -120,8 +122,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Constructor to use for mass images.
      *
-     * @param ui
-     * @param index
+     * @param ui a <code>UI</code> instance
+     * @param index mass index
      */
     public MimsPlus(UI ui, int index) {
         super();
@@ -170,11 +172,11 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Constructor to use for segmented images.
      *
-     * @param ui
-     * @param width
-     * @param height
-     * @param pixels
-     * @param name
+     * @param ui a <code>UI</code> instance
+     * @param width image width
+     * @param height image height
+     * @param pixels an integer array of pixels
+     * @param name name
      */
     public MimsPlus(UI ui, int width, int height, int[] pixels, String name) {
         super();
@@ -198,9 +200,9 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Constructor for sum images.
      *
-     * @param ui
-     * @param sumProps
-     * @param sumlist
+     * @param ui a <code>UI</code> instance
+     * @param sumProps a <code>SumProps</code> instance
+     * @param sumlist a list of Integer objects
      */
     //public MimsPlus(UI ui, SumProps sumProps, ArrayList<Integer> sumlist) {
     public MimsPlus(UI ui, SumProps sumProps, List<Integer> sumlist) {
@@ -256,8 +258,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Constructor for ratio images.
      *
-     * @param ui
-     * @param props
+     * @param ui a <code>UI</code> instance
+     * @param props a <code>RatioProps</code> object
      */
     public MimsPlus(UI ui, RatioProps props) {
         this(ui, props, false);
@@ -267,9 +269,9 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Constructor for ratio images.
      *
-     * @param ui
-     * @param props
-     * @param forInternalRatio
+     * @param ui a <code>UI</code> instance
+     * @param props a <code>RatioProps</code> object
+     * @param forInternalRatio boolean
      */
     public MimsPlus(UI ui, RatioProps props, boolean forInternalRatio) {
         super();
@@ -305,8 +307,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Constructor for composite images.
      *
-     * @param ui
-     * @param compprops
+     * @param ui a <code>UI</code> instance
+     * @param compprops a <code>CompositeProps</code> instance
      */
     public MimsPlus(UI ui, CompositeProps compprops) {
         super();
@@ -324,8 +326,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Constructor for HSI images.
      *
-     * @param ui
-     * @param props
+     * @param ui a <code>UI</code> instance
+     * @param props an <code>HSIProps</code> instance
      */
     public MimsPlus(UI ui, HSIProps props) {
         super();
@@ -343,7 +345,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
      /**
      * Sets the title.  This is not the same title as the superclass keeps.
      *
-     * @param aTitle
+     * @param aTitle a title for this image
      */
     public void setLocalTitle(String aTitle) {
         this.title = aTitle;
@@ -362,7 +364,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Initialization for composite image graphics.
      *
-     * @param compprops
+     * @param compprops a <code>CompositeProps</code> object
      */
     public void setupCompositeImage(CompositeProps compprops) {
         compProps = compprops;
@@ -580,7 +582,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Computes sum values.
      *
-     * @param sumlist
+     * @param sumlist a list of Integer objects
      */
     //public synchronized void computeSum(ArrayList<Integer> sumlist) {
     public synchronized void computeSum(List<Integer> sumlist) {
@@ -681,6 +683,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
 
     /**
      * Shows the current window.
+     * 
+     * @param forceAutoContrast a boolean that determines whether or not to autocontrast the image.
      */
     public void showWindow(boolean forceAutoContrast) {
 
@@ -763,8 +767,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
      * Appends image to stack. Not hit from MimsStackEditing.concatImages(). Only used when opening a multiplane image
      * file.
      *
-     * @param nImage
-     * @throws Exception
+     * @param nImage number of images
+     * @throws Exception an exception thrown if no image was opened or the number of images was out of range
      */
     public void appendImage(int nImage) throws Exception {
         if (ui.getOpener() == null) {
@@ -790,6 +794,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
      * masses contain the same number of planes, so in this case we want to append two blank images 
      * to the end of the last two masses, thereby ensuring all masses have the same number of
      * planes.
+     * 
+     * @param nImage number of images
      */
     public void appendBlankImage(int nImage) {
 
@@ -859,6 +865,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
      * <li>"sum 13" for Sum images.
      * <li>"0" by default.
      * </ul>
+     * 
+     * @param forTableOrPlot a boolean that determines the form of the <code>roundedTitle</code>
      */
     public String getRoundedTitle(boolean forTableOrPlot) {
 
@@ -923,7 +931,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
      * Returns extended title information with properties Mass: contrast range "(min - max)" + 
      * "slice number" HSI: Ratio range "(min - max)" Ratio: "(min - max)"
      *
-     * @return
+     * @return propTitle the formatted property title
      */
     public String getPropsTitle() {
         //move elsewhere?
@@ -1010,6 +1018,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
 
     /**
      * Sets current window location
+     * 
+     * @param p points at which to set the current window location
      */
     public void setXYLoc(java.awt.Point p) {
         this.xloc = p.x;
@@ -1054,7 +1064,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Compares the input MimsPlus object (mp) to the current class.
      *
-     * @param mp
+     * @param mp a <code>MimsPlus</code> object
      * @return true if a match, false otherwise
      */
     public boolean equals(MimsPlus mp) {
@@ -1093,7 +1103,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * This method sets the image to actually be the image enclosed by the Roi.
      *
-     * @param roi
+     * @param roi a ROI object
      */
     @Override
     public void setRoi(ij.gui.Roi roi) {
@@ -2176,8 +2186,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Set slice as current
      *
-     * @param index
-     * @param updateRatioHSI
+     * @param index the index of the current slice
+     * @param updateRatioHSI  a boolean not used at this time
      */
     public synchronized void setSlice(int index, boolean updateRatioHSI) {
         if (getCurrentSlice() == index) {
@@ -2193,8 +2203,8 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Set slice as current
      *
-     * @param index
-     * @param mplus
+     * @param index the index of the slice
+     * @param mplus the <code>MimsPlus</code> instance
      */
     public synchronized void setSlice(int index, MimsPlus mplus) {
         if (this.getCurrentSlice() == index) {
@@ -2210,7 +2220,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Set the allow close flag
      *
-     * @param allowClose
+     * @param allowClose  boolean allowClose flag.
      */
     public void setAllowClose(boolean allowClose) {
         this.allowClose = allowClose;
@@ -2245,7 +2255,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Set HSI processor
      *
-     * @param processor
+     * @param processor an <code>HSIProcessor</code> instance
      */
     public void setHSIProcessor(HSIProcessor processor) {
         this.hsiProcessor = processor;
@@ -2262,7 +2272,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Sets Composite processor
      *
-     * @param processor
+     * @param processor a <code>CompositeProcessor</code> instance
      */
     public void setCompositeProcessor(CompositeProcessor processor) {
         this.compProcessor = processor;
@@ -2304,7 +2314,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Sets "is stack" flag
      *
-     * @param isS
+     * @param isS boolean to determine whether or not to set the stack flag
      */
     public void setIsStack(boolean isS) {
         bIsStack = isS;
@@ -2419,7 +2429,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     /**
      * Set
      *
-     * @param overlay
+     * @return graphOverlay
      */
     public Overlay getGraphOverlay() {
         return graphOverlay;

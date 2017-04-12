@@ -94,7 +94,7 @@ public class ReportGenerator extends javax.swing.JFrame implements MouseListener
     /**
      * ReportGenerator constructor for images.
      *
-     * @param ui
+     * @param ui the <code>UI</code> instance
      */
     public ReportGenerator(UI ui) {
         this.ui = ui;
@@ -107,8 +107,8 @@ public class ReportGenerator extends javax.swing.JFrame implements MouseListener
     /**
      * ReportGenerator constructor for tables.
      *
-     * @param ui
-     * @param mimsjtable
+     * @param ui the <code>UI</code> instance
+     * @param jt a <code>MimsJTable</code> instance
      */
     public ReportGenerator(UI ui, MimsJTable jt) {
         this.ui = ui;
@@ -586,22 +586,23 @@ public class ReportGenerator extends javax.swing.JFrame implements MouseListener
     }
 
     /**
-     * Scans report for for the last occurance of the passed character <code>cb</code>. If <code>null</code> is passed
-     * as an arguement, the method return the index of the last character in the file.
+     * Scans report for for the last occurrence of the passed character <code>cb</code>. If <code>null</code> is passed
+     * as an argument, the method return the index of the last character in the file.
      *
-     * @param cb - the character
-     * @returns the index of the last position of the character.
+     * @param cb  the character
+     * @return lastPositionIndex the index of the last position of the character.
      */
     public long getLastPosition(char cb) {
-        return getLastPosition(cb, true);
+        long lastPositionIndex = getLastPosition(cb, true);
+        return lastPositionIndex;
     }
 
     /**
-     * Scans report for for the last occurance of the passed character <code>cb</code>. If
+     * Scans report for for the last occurrence of the passed character <code>cb</code>. If
      * <code>lookingForSpecificCharacter</code> is false, the method return the index of the last character in the file.
      *
      * @param cb - the character
-     * @returns the index of the last position of the character.
+     * @return last_cb_position the index of the last position of the character.
      */
     private long getLastPosition(char cb, boolean lookingForSpecificCharacter) {
 

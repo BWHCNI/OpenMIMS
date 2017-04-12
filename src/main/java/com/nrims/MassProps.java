@@ -51,7 +51,7 @@ public class MassProps implements java.io.Serializable {
     /**
      * Initiates a MassProps object.
      *
-     * @param massIndexthe of the mass image
+     * @param massIndex the of the mass image
      * @param massValue of the mass image
      */
     public MassProps(int massIndex, double massValue) {
@@ -123,7 +123,7 @@ public class MassProps implements java.io.Serializable {
     /**
      * Overwrites the index of the mass set in the constructor.
      *
-     * @param numerator mass index (e.g. 0,1,2).
+     * @param massIdx mass index (e.g. 0,1,2).
      */
     public void setMassIdx(int massIdx) {
         this.massIdx = massIdx;

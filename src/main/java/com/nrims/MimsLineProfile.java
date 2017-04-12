@@ -298,6 +298,7 @@ public class MimsLineProfile extends JFrame {
      * @param newdata the data for the chart.
      * @param name name of ROI.
      * @param width the line width.
+     * @param image a MimsPlus object
      */
     public void updateData(double[] newdata, String name, int width, MimsPlus image) {
         if (newdata == null) {

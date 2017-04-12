@@ -59,18 +59,19 @@ public class imageNotes extends com.nrims.PlugInJFrame implements DocumentListen
     /**
      * Gets the text entered into the text area. Returns a formatted String.
      *
-     * @return
+     * @return replacedText
      */
     public String getOutputFormatedText() {
         String text = textArea.getText();
         text = text.replaceAll("(\r)|(\f)", "\n");
-        return text.replaceAll("\n", "&/&/&");
+        String replacedText = text.replaceAll("\n", "&/&/&");
+        return replacedText;
     }
 
     /**
      * Sets the test in the text area. Must be formatted by the <code>getOutputFormatedText</code> method.
      *
-     * @param text
+     * @param text text to be put in text area
      */
     public void setOutputFormatedText(String text) {
         textArea.setText(text.replaceAll("&/&/&", "\n"));
@@ -88,7 +89,7 @@ public class imageNotes extends com.nrims.PlugInJFrame implements DocumentListen
     /**
      * Sets the isModified flag to true or false.
      *
-     * @param modified
+     * @param modified the modified flag.  Duh.
      */
     public void setIsModified(boolean modified) {
         isModified = modified;

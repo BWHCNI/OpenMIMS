@@ -154,7 +154,7 @@ public class RatioProps implements java.io.Serializable {
     /**
      * Sets the x-value for the window location.
      *
-     * @param x
+     * @param x x value for the window location
      */
     public void setXWindowLocation(int x) {
         this.xloc = x;

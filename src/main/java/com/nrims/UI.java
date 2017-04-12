@@ -225,6 +225,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     /**
      * Creates a new instance of the OpenMIMS analysis interface.
+     * 
+     * @param silentMode true to use silent mode, false otherwise
      */
     public UI(boolean silentMode) {
         //NOTE: Trying to leave strictly UI related code in here, and remove the rest
@@ -686,6 +688,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     /**
      * Brings up the graphical pane for selecting files to be opened.
+     * 
+     * @return true if the file was opened, false if not
      */
     public synchronized File loadMIMSFile() {
 
@@ -811,6 +815,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * Opens file in a non-cancelable thread.
      *
      * @param file to be opened.
+     * @param onlyReadHeader true if this method should only read the header of the file
+     * 
+     * @return true if the file was opened, false if not
      */
     public boolean openFile(File file, boolean onlyReadHeader) {
         this.onlyReadHeader = onlyReadHeader;
@@ -941,6 +948,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * Applies the magnification factor stored
      * <code>zoom</code> to the specified image
      * <code>mp</code>
+     * 
+     * @param mp a <code>MimsPlus</code> instance
+     * @param zoom zoom factor
      *
      */
     public void applyZoom(MimsPlus mp, double zoom) {
@@ -1186,6 +1196,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
     /**
      * The behavior for "closing" mass images, when closing is not allowed.
+     * 
+     * @param im a <code>MimsPlus</code> instance
      */
     public void massImageClosed(MimsPlus im) {
         for (int i = 0; i < massImages.length; i++) {
@@ -1468,7 +1480,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * Catch events such as changing the slice number of a stack or drawing ROIs
      * and if enabled, update or synchronize all images.
      *
-     * @param evt
+     * @param evt a <code>MimsPlusEvent</code> reference
      */
     @Override
     public synchronized void mimsStateChanged(MimsPlusEvent evt) {
@@ -1709,6 +1721,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * Returns the prefix of any file name. For example: /tmp/test_file.im =
      * /tmp/test_file
      *
+     * @param fileName a file name string for which to find the prefix
      * @return prefix file name.
      */
     public String getFilePrefix(String fileName) {
@@ -2373,7 +2386,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     /**
      * Sets the DTCorrected flag.
      *
-     * @param isDTCorrected
+     * @param isDTCorrected true to set the DT corrected flag, false to clear it
      */
     public void setIsDTCorrected(boolean isDTCorrected) {
         this.isDTCorrected = isDTCorrected;
@@ -2382,7 +2395,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     /**
      * Sets the QSACorrected flag.
      *
-     * @param isQSACorrected
+     * @param isQSACorrected true to set the QSA corrected flag, false to clear it
      */
     public void setIsQSACorrected(boolean isQSACorrected) {
         this.isQSACorrected = isQSACorrected;
@@ -2391,7 +2404,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     /**
      * Sets the beta QSA correction parameters.
      *
-     * @param betas
+     * @param betas an array of floats for setting the values of the beta QSA parameters
      */
     public void setBetas(float[] betas) {
         this.betas = betas;
@@ -2400,7 +2413,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     /**
      * Sets the FC Objective QSA correction parameter.
      *
-     * @param fc_objective
+     * @param fc_objective sets the value of the FC Objective QSA correction parameter
      */
     public void setFCObjective(float fc_objective) {
         this.fc_objective = fc_objective;
@@ -3225,7 +3238,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      * the user wishes to generate all the same derived images that were open
      * with the previous data file.
      *
-     * @param mass_prop array of <code>MassProps</code> objects.
+     * @param mass_props array of <code>MassProps</code> objects.
      * @param rto_props array of <code>RatioProps</code> objects.
      * @param hsi_props array of <code>HSIProps</code> objects.
      * @param sum_props array of <code>SumProps</code> objects.
@@ -4906,12 +4919,13 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
      * fileName.
      *
      * @param fileName - the corrected file.
-     * @return <code>true</code> if applied correctly, otherwise <code>false</false>.
+     * @return retVal <code>true</code> if applied correctly, otherwise <code>false</code>.
      */
     public boolean applyDeadTimeCorrection(String fileName) {
 
         com.nrims.data.massCorrection masscor = new com.nrims.data.massCorrection(this);
-
+        boolean retVal = true;
+        
         float dwell = 0f;
         try {
             //dwell time in sec. (stored as ms in file)
@@ -4926,22 +4940,21 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
             } else {
                 e.printStackTrace();
             }
-            return false;
+            retVal = false;
+            return retVal;
         } catch (Exception e) {
             if (!silentMode) {
                 ij.IJ.error("Error", "Error applying correction and/or saving file:" + e.getMessage());
             } else {
                 e.printStackTrace();
             }
-            return false;
+            retVal = false;
+            return retVal;
         }
 
-        boolean saved = saveSession(fileName, true);
-        if (!saved) {
-            return false;
-        }
-
-        return true;
+        retVal = saveSession(fileName, true);
+ 
+        return retVal;
     }
 
     /**
@@ -4951,6 +4964,7 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
      * @param newdata the new data.
      * @param name the name to be on the legend.
      * @param width width of the line roi.
+     * @param image a <code>MimsPlus</code> image instance
      */
     public void updateLineProfile(double[] newdata, String name, int width, MimsPlus image) {
         if (this.lineProfile == null) {
@@ -4989,6 +5003,7 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     /**
      * Sets the report generator
      *
+     * @param gen the <code>ReportGenerator</code> instance
      */
     protected void setReportGenerator(ReportGenerator gen) {
         if (gen != null) {
@@ -5313,11 +5328,9 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
      *
      * @param key the key
      * @param value the value
-     * @return <code>true</code> if succesfull
      */
     public synchronized void insertMetaData(String key, String value) {
         metaData.put(key, value);
-        return;
     }
 
     /**
@@ -5835,7 +5848,7 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     /**
      * Set the directory of the last location used to retrieve data.
      *
-     * @param the last folder.
+     * @param path the last folder.
      */
     public void setLastFolder(String path) {
         if (path == null) {
@@ -5851,7 +5864,7 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     /**
      * Set the directory of the last location used to retrieve data.
      *
-     * @param the last folder.N
+     * @param folder the last folder.N
      */
     public void setLastFolder(File folder) {
         if (folder.exists() && folder.isDirectory()) {
@@ -5879,7 +5892,6 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     /**
      * This is a copy of imageJ's WindowOrganizer.tileWindows() method.
      *
-     * @param tileY amount of pixels to offset the vertical position by.
      */
     public void tileWindows() {
         //Change by DJ: 07/29/2014
@@ -6534,6 +6546,8 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
          * types.
          *
          * @param file to be opened.
+         * 
+         * @return true if the file was successfully opened, false if the file could not be opened
          */
         public boolean openFile(File file) {
             long length = file.length();
@@ -6758,7 +6772,9 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
          * Opens an image file in the .im or .nrrd file format.
          *
          * @param file absolute file path.
-         * @throws java.lang.NullPointerException
+         * 
+         * @return true if the file was successfully opened, false if the file could not be opened
+         * @throws java.lang.NullPointerException thrown if the file does not exist
          */
         public synchronized boolean loadMIMSFileInBackground(File file) throws NullPointerException {
             if (!file.exists()) {

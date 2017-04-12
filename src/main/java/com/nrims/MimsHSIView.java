@@ -822,7 +822,7 @@ public class MimsHSIView extends javax.swing.JPanel {
     /**
      * Dictates behavior when selecting the Use Sum radio button.
      *
-     * @param useSum
+     * @param useSum true if Use Sum radio button is selected, otherwise false.
      */
     public void useSum(boolean useSum) {
         if (this.bUpdating) {
@@ -965,10 +965,10 @@ public class MimsHSIView extends javax.swing.JPanel {
             int denIndx = ui.getClosestMassIndices(h.getDenMassValue(), 0.49);
 
             if (numIndx != -1 && denIndx != -1 && !listModel.contains(numIndx + ":" + denIndx)) {
-                listModel.addElement(numIndx + ":" + denIndx);
+                    listModel.addElement(numIndx + ":" + denIndx);
+                }
             }
-        }
-
+        
     }
 
     // DJ: 08/13/2014: returns all posible and valid ratios
@@ -1213,7 +1213,7 @@ public class MimsHSIView extends javax.swing.JPanel {
     /**
      * Sets the ratio scale factor spinner.
      *
-     * @return the scale factor.
+     * @param d the ratio scale factor
      */
     public void setRatioScaleFactor(Double d) {
         bUpdating = true;
@@ -1240,9 +1240,9 @@ public class MimsHSIView extends javax.swing.JPanel {
      * Determine if a pair of masses are an isotopic pair TODO: Currently this is checking that the last element in ions
      * match. This is a false positive for things like oxides, eg FO/SnO would appear.
      *
-     * @param num
-     * @param den
-     * @return
+     * @param num index of the mass symbol in the massSymbols array
+     * @param den index of the ??
+     * @return true if ?, otherwise return false
      */
     public boolean isIsotopicPair(int num, int den) {
         String[] massNames = ui.getOpener().getMassNames();
@@ -1310,6 +1310,8 @@ public class MimsHSIView extends javax.swing.JPanel {
 
     /**
      * Updates the list of possible ratio and HSI images in the JList.
+     * 
+     * @param delete if true, remove all the images in the ratio and HSI list.
      */
     public void updateImage(boolean delete) {
         if (ui == null) {
@@ -1514,6 +1516,8 @@ public class MimsHSIView extends javax.swing.JPanel {
 
     /**
      * Sets the "Use Sum" radio button to <code>bool</code>.
+     * 
+     * @param bool boolean to determine whether to set or clear the hsi Sum radio buitton.
      */
     public void setIsSum(boolean bool) {
         bUpdating = true;
@@ -1523,6 +1527,7 @@ public class MimsHSIView extends javax.swing.JPanel {
 
     /**
      * Sets the "Use Window" radio button to <code>bool</code>.
+     * @param bool set hsi window radio button to this value (true or false)
      */
     public void setIsWindow(boolean bool) {
         bUpdating = true;

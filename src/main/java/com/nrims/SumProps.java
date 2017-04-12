@@ -143,8 +143,9 @@ public class SumProps implements java.io.Serializable {
      * Two <code>SumProps</code> objects are equal if the numerator's and the denominator's mass values are the same, in
      * the case of a sum of a ratio image. Or if the parent mass
      *
-     * @param sp
-     * @return
+     * @param sp  a <code>SumProps</code> reference
+     * 
+     * @return todo
      */
     public boolean equalsThruMassValues(SumProps sp) {
 
@@ -204,7 +205,7 @@ public class SumProps implements java.io.Serializable {
     /**
      * Overwrites the index of the denominator mass set in the constructor.
      *
-     * @param numerator mass index (e.g. 0,1,2).
+     * @param denomator mass index (e.g. 0,1,2).
      */
     public void setDenMassIdx(int denomator) {
         this.denMassIdx = denomator;
@@ -258,7 +259,7 @@ public class SumProps implements java.io.Serializable {
     /**
      * Overwrites the index of the parent mass set in the constructor.
      *
-     * @param numerator mass index (e.g. 0,1,2).
+     * @param parentMassIdx mass index (e.g. 0,1,2).
      */
     public void setParentMassIdx(int parentMassIdx) {
         this.parentMassIdx = parentMassIdx;

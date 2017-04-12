@@ -15,6 +15,7 @@ public class CompositeProcessor implements Runnable {
      * Creates a new instance of HSIProcessor.
      *
      * @param compImage the MimsPlus image for which the composite image is based.
+     * @param ui reference to the UI.
      */
     public CompositeProcessor(MimsPlus compImage, UI ui) {
         this.compImage = compImage;
@@ -162,10 +163,10 @@ public class CompositeProcessor implements Runnable {
     }
 
     /**
-     * @param img
-     * @param x
-     * @param y
-     * @return
+     * @param img MimsPlus instance
+     * @param x  x position
+     * @param y y position
+     * @return val
      */
     public int getPixelLUT(MimsPlus img, int x, int y) {
         if (img == null) {

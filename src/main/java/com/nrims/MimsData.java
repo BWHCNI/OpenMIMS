@@ -11,6 +11,9 @@ public class MimsData extends javax.swing.JPanel {
 
     /**
      * Creates new form MimsData
+     * 
+     * @param ui the UI instance
+     * @param image an opener instance
      */
     public MimsData(com.nrims.UI ui, com.nrims.data.Opener image) {
         initComponents();

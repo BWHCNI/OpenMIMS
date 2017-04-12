@@ -63,9 +63,9 @@ public class FileUtilities {
     /**
      * getNext: modified version of getNext function from NextImageOpener plugin in ImageJ, modified for OpenMIMS
      *
-     * @param path
-     * @param imageName
-     * @param forward
+     * @param path the path to an image file
+     * @param imageName image name
+     * @param forward if true, makes the candidate the index of the next file 
      * @return fullpath to next item e.g. home/user/nextfile.nrrd
      */
     public static String getNext(String path, String imageName, boolean forward) {
@@ -164,8 +164,6 @@ public class FileUtilities {
      *
      * @param zos the ZipOutputStream for the final zip
      * @param toWrite the props object to be written
-     * @param cls the class of the props object
-     * @param params the parameters for the constructor of the props object
      * @param filenames the filenames of similar props objects
      * @param extension the extension for the props object
      * @param numName mass string for the numerator (or if a sum of a mass image, the parent)
@@ -337,6 +335,7 @@ public class FileUtilities {
     /**
      * Returns the prefix of any file name. For example: /tmp/test_file.im = /tmp/test_file
      *
+     * @param fileName the file name for which to return a prefix
      * @return prefix file name.
      */
     public static String getFilePrefix(String fileName) {
@@ -349,7 +348,7 @@ public class FileUtilities {
      *
      * @param baseFileName the filename and path of the .nrrd or .im file e.g. /home/user/myfile.nrrd
      * @param onlyFileName the filename of the .nrrd or .im file without the extension or folders e.g. "myfile"
-     * @param ui
+     * @param ui the <code>UI</code> instance
      * @return true if succeeded, false if not
      */
     public static boolean saveAdditionalData(String baseFileName, String onlyFileName, UI ui) {
@@ -531,8 +530,8 @@ public class FileUtilities {
     /**
      * Method to parse arguments passed in startup of OpenMIMS
      *
-     * @param args
-     * @return
+     * @param args a string of arguments to be parsed
+     * @return a string of parsed arguments
      */
     public static String[] splitArgs(String args) {
         String SINGLE_INSTANCE_OPTION = "-single_instance";
@@ -572,7 +571,7 @@ public class FileUtilities {
      * Helper method to eliminate extra null values in MimsPlus arrays. Useful for the arrays returned by
      * getMassImages(), etc.
      *
-     * @param massImages
+     * @param massImages an array of <code>MimsPlus</code> instances
      * @return array containing only the MimsPlus
      */
     public static MimsPlus[] slimImageArray(MimsPlus[] massImages) {
@@ -631,7 +630,7 @@ public class FileUtilities {
      * order of array
      *
      * @param files the files you want to stack
-     * @param ui
+     * @param originalUI the <code>UI</code> reference
      * @return the saved file in which the stack of images is located
      */
     public static File stackImages(File[] files, UI originalUI) {
@@ -758,7 +757,7 @@ public class FileUtilities {
      * and all .nrrd files directly within those directories. It will not recursively search the sibling/uncle
      * directories.
      *
-     * @param file
+     * @param file a mosaic file reference
      * @return the mosaic file if found, or null if not found.
      */
     public static File getMosaic(File file) {
@@ -785,8 +784,8 @@ public class FileUtilities {
     /**
      * Open a file in a new UI window
      *
-     * @param file
-     * @param ui
+     * @param file the file to be opened
+     * @param ui the <code>UI</code> instance
      */
     public static void openInNewUI(File file, UI ui) {
         UI ui_new = new UI();
@@ -805,9 +804,9 @@ public class FileUtilities {
     /**
      * Pull the header info from a .nrrd file into a HashMap.
      *
-     * @param file
-     * @return
-     * @throws IOException
+     * @param file a .nrrd file instance
+     * @return headerInfo a HashMap containing the header information for the file.
+     * @throws IOException if an error occurred while reading the file
      */
     public static HashMap<String, String> getHeaderInfo(File file) throws IOException {
         HashMap<String, String> headerInfo = new HashMap<String, String>();
@@ -939,7 +938,7 @@ public class FileUtilities {
      * Get the file from which the current slice of a generated stack originates from.
      *
      * @param massimage the image whose current slice is desired file we wish to find
-     * @param ui
+     * @param ui the <code>UI</code> instance
      * @return the file which the slice originates from.
      */
     public static File getSliceFile(MimsPlus massimage, UI ui) {
@@ -960,7 +959,7 @@ public class FileUtilities {
      * and all .nrrd files directly within those directories. It will not recursively search the sibling/uncle
      * directories.
      *
-     * @param file
+     * @param file the file
      * @return the mosaic file if found, or null if not found.
      */
     public static File getStack(File file) {
@@ -1032,8 +1031,8 @@ public class FileUtilities {
      * deleted planes are not included. String is formatted to be placed directly in a nrrd header as the value of key
      * 'mims_stack_positions'.
      *
-     * @param ui
-     * @param op
+     * @param ui the <code>UI</code> instance
+     * @param op an <code>Opener</code> reference
      * @return string of stack positions with those of deleted planes removed.
      */
     public static String trimStackPositions(UI ui, Opener op) {

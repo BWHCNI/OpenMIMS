@@ -187,6 +187,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     // ImageJ ij;
     /**
      * Creates new form MimsRoiManager2
+     * 
+     * @param ui the <code>UI</code> instance
      */
     public MimsRoiManager2(UI ui) {
         super("MIMS ROI Manager ver 2");
@@ -473,7 +475,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Returns if the user has selected the "hide Rois" checkbox.
      *
-     * @return <code>true</code> if checked, otherwise <code>false>/code>.
+     * @return bEnabled <code>true</code> if the user has selected the "hide Rois" checkbox, otherwise <code>false</code>.
      */
     public boolean getHideRois() {
         boolean bEnabled = cbHideAll.isSelected();
@@ -483,15 +485,17 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Returns if the user has selected the "hide Roi labels" checkbox.
      *
-     * @return <code>true</code> if checked, otherwise <code>false>/code>.
+     * @return labelsSelected <code>true</code> if checked, otherwise <code>false</code>.
      */
     public boolean getHideLabel() {
-        return cbHideLabels.isSelected();
+        boolean bEnabled = cbHideLabels.isSelected();
+        return bEnabled;
     }
     
     /**
      * Set label indicating last time of ROI autosave. 
      *
+     * @param str the last time of an autosave event
      */
     public void showAutoSaveLabel(String str) {
         jLabelAutosavingROIs.setVisible(true);
@@ -1605,6 +1609,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Returns the ParticlesManager.
+     * 
+     * @return the <code>ParticlesManager</code> instance
      */
     public ParticlesManager getParticlesManager() {
         return partManager;
@@ -1612,6 +1618,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Returns the SquaresManager.
+     * 
+     * @return squaresManager the <code>SquaresManager</code> instance
      */
     public SquaresManager getSquaresManager() {
         return squaresManager;
@@ -1716,8 +1724,10 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Returns the ROI with name <code>name</code>
+     * 
+     * @param groupName a group name for which to retrieve a ROI
      *
-     * @return the ROI.
+     * @return rois the <code>Roi</code>
      */
     public Roi getRoiByName(String groupName) {
         //rois = getROIs(); 
@@ -1727,6 +1737,9 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Sets the Roi in its current location.
+     * 
+     * @param imp an <code>ImagePlus</code instance
+     * @param roi a <code>Roi</code> instance
      */
     private boolean move(ImagePlus imp, Roi roi) {
         if (imp == null) {
@@ -1748,6 +1761,10 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Line rois require a special method for moving because the <code>setlocation()</code> method does not work for
      * line Rois (at least not the way you would expect, and not the ways it works for shape Rois).
+     * 
+     * @param oldRoi an <code>Roi</code> instance
+     * @param newX x coordinate of the line move
+     * @param newY y coordinate of the line move
      */
     public void moveLine(Roi oldRoi, int newX, int newY) {
         ImagePlus imp = getImage();
@@ -1768,6 +1785,9 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Line rois require a special method for moving because the <code>setlocation()</code> method does not work for
      * line Rois (at least not the way you would expect, and not the ways it works for shape Rois).
+     * 
+     * @param oldRoi an <code>Roi</code> instance
+     * @param newRoi an <code>Roi</code> instance
      */
     public void moveLine(Roi oldRoi, Roi newRoi) {
 
@@ -1786,6 +1806,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Sets the Roi in its current location.
+     * 
+     * @return b true if the Roi move succeeded, otherwise false
      */
     public boolean move() {
         // Get the image and the roi
@@ -1825,6 +1847,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Determines the behavior when a group entry is clicked.
+     * 
+     * @param e A <code>ListSelectionEvent</code> instance
      */
     private void groupValueChanged(ListSelectionEvent e) {
 
@@ -2094,6 +2118,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Displays a prompt asking the user for a new name for the selected ROI.
+     * 
+     * @param name the name for the selected ROI
      */
     private String promptForName(String name) {
         GenericDialog gd = new GenericDialog("MIMS ROI Manager");
@@ -2141,6 +2167,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Tests if String <code>name</code> is numeric (for example, "3")
+     * 
+     * @param name name to check for being a numeric string
      *
      * @return <code>true</code> if name is numeric, otherwise <code>false</code>.
      */
@@ -2155,6 +2183,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Determines the behavior when a ROI entry is clicked.
+     * 
+     * @param e a <code>ListSelectionEvent</code> instance
      */
     public void roiValueChanged(ListSelectionEvent e) {
 
@@ -2343,6 +2373,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Returns a reference to the MIMS ROI Manager2 or null if it is not open.
+     * 
+     * @return instance A <code>MimsRoiManager2</code> instance
      */
     public MimsRoiManager2 getInstance() {
         return (MimsRoiManager2) instance;
@@ -2469,6 +2501,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Returns the selection list.
+     * 
+     * @return roijlist the roijlist instance
      */
     public JList getList() {
         return roijlist;
@@ -2523,18 +2557,18 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     }
 
     /**
-     * Determines if the ROI with name <code>name</name> is already selected in the manager.
+     * Determines if the ROI with name <code>theName</code> is already selected in the manager.
      *
-     * @param name the ROI name.
-     * @return <code>true</code> if selected, otherwise <code>false</false>
+     * @param theName the ROI name.
+     * @return b <code>true</code> if selected, otherwise <code>false</code>
      */
-    public boolean isSelected(String name) {
+    public boolean isSelected(String theName) {
         boolean b = false;
         List<String> selectednames = roijlist.getSelectedValuesList();
 
         for (int i = 0; i < selectednames.size(); i++) {
             String sname = selectednames.get(i);
-            if (name.equals(sname)) {
+            if (theName.equals(sname)) {
                 b = true;
                 return b;
             }
@@ -2825,6 +2859,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Gets the current image.
+     * 
+     * @return imp an <code>ImagePlus</code> instance
      */
     public ImagePlus getImage() {
         ImagePlus imp = WindowManager.getCurrentImage();
@@ -3550,7 +3586,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Opens a file containing saved ROIs.
      *
-     * @param path a string containing the absolute path.
+     * @param abspath a string containing the absolute path.
      * @param force forces overwrite of current ROIs.
      */
     public void open(String abspath, boolean force) {
@@ -4131,6 +4167,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Deletes currently selected ROIs. Deletes all if none selected.
+     * 
+     * @param prompt true if user should be prompted before allowed deletion of the selected ROIs.
      *
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
@@ -4674,6 +4712,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Adds the currently drawn ROI to the manager.
+     * 
+     * @return true if the drawn ROI was successfully added to the manager, otherwise false
      */
     public boolean add() {
         ImagePlus imp = getImage();
@@ -4770,6 +4810,10 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Add a ROI to the manager.
+     * 
+     * @param roi an <code>Roi</code> instance
+     * 
+     * @return true if there is an image to which to added the Roi and the Roi is not null, otherwise false.
      */
     public boolean add(Roi roi) {
         ImagePlus imp = getImage();
@@ -4822,7 +4866,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Adds a Roi to the manager without renaming the provided Roi
      *
-     * @param roi
+     * @param roi an <code>Roi</code> instance
+     * 
      * @return <code>true</code> if added, <code>false</code> otherwise.
      */
     public boolean addWithoutRenaming(Roi roi) {
@@ -4860,6 +4905,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * The the indices for all ROIS. (Not sure why this is needed, leaving for now).
+     * 
+     * @return indexes An array of indexes for all of the ROIs.
      */
     private int[] getAllIndexes() {
         int count = roiListModel.size();
@@ -4891,6 +4938,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
      * @param roi Bounding Roi
      * @param img Image to work on
      * @param params min/max threshold and size
+     * 
+     * @return rs an array of Roi instances
      */
     public Roi[] roiThreshold(Roi roi, MimsPlus img, double[] params) {
         //check param size
@@ -5020,6 +5069,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
      * @param rois Array of rois to be passed to roiThreshold
      * @param img Working image
      * @param params min/max threshold and size
+     * 
+     * @return returnlist an array of <code>Roi</code> instances
      */
     public Roi[] roiThreshold(Roi[] rois, MimsPlus img, double[] params) {
         //ArrayList<Roi> returnlist = new ArrayList<Roi>();
@@ -5087,7 +5138,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Gets all ROIs regardless if they're selected or not.
      *
-     * @return ROI array.
+     * @return r an <code>ROI</code> array.
      */
     public Roi[] getAllROIs() {
         Object[] ob = rois.values().toArray();
@@ -5100,6 +5151,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Tests if the ROI has a numeric name (for example, "3")
+     * 
+     * @param r an <code>Roi</code> instance
      *
      * @return <code>true</code> if name is numeric, otherwise <code>false</code>.
      */
@@ -5154,6 +5207,10 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Sets an array of Rois to the manager.
+     * 
+     * @param roiarr an array of <code>Roi</code> instances
+     * 
+     * @return val true if ??
      */
     public boolean add(Roi[] roiarr) {
         boolean val = true;
@@ -5287,7 +5344,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Adds a new group.
      *
-     * @param s the name of the group.
+     * @param groupName the name of the group.
+     * @param groupType the type of the group.
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
     public boolean addGroup(String groupName, String groupType) {
@@ -5336,7 +5394,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Adds a new tag.
      *
-     * @param s the name of the tag.
+     * @param t the name of the tag.
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
     public boolean addTag(String t) {
@@ -5405,6 +5463,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     /**
      * Returns a unique name for an ROI. If the name already exists in the list of ROIs, the method will append a "-1"
      * to the name so that it is unique.
+     * 
+     * @param name search for this name in the list of ROIs.  If it does not already exists in the list,  return the same name.  If it does exist, append "-1" to it before returning it.
      *
      * @return a unique name.
      */
@@ -5446,6 +5506,12 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Documentation Required.
+     * 
+     * @param roi an <code>Roi</code> instance
+     * @param img a <code>MimsPlus</code> instance
+     * @param params an array of parameters for the squares.
+     * 
+     * @return rrois an array of <code>Roi</code> instances
      */
     public Roi[] roiSquares(Roi roi, MimsPlus img, double[] params) {
         //check param size
@@ -5615,6 +5681,12 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * Documentation Required.
+     * 
+     * @param rois an <code>Roi</code> instance
+     * @param img a <code>MimsPlus</code> instance
+     * @param params an array of parameters for the squares.
+     * 
+     * @return rrois an array of <code>Roi</code> instances
      */
     public Roi[] roiSquares(Roi[] rois, MimsPlus img, double[] params) {
         //ArrayList<Roi> temprois = new ArrayList<Roi>();

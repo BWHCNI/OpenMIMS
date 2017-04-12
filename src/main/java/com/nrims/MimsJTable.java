@@ -781,6 +781,8 @@ public class MimsJTable {
 
     /**
      * Returns the column names.
+     * 
+     * @return columnNames a string array of columns names.
      */
     public String[] getColumnNames() {
 
@@ -1028,6 +1030,8 @@ public class MimsJTable {
 
     /**
      * Writes the actual data.
+     * 
+     * @param file a file into which to write the table data.
      */
     public void writeData(File file) {
         try {
@@ -1100,6 +1104,8 @@ public class MimsJTable {
 
     /**
      * Gets the scroll pane containing the table.
+     * 
+     * @return table  a MIMS table
      */
     public JTable getJTable() {
         return table;

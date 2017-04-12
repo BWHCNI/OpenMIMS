@@ -126,6 +126,7 @@ public class CompositeProps implements Serializable {
     /**
      * Gets the images used to generate the composite image.
      *
+     * @param ui reference to the UI.
      * @return the array of images used to create the composite image.
      */
     public MimsPlus[] getImages(UI ui) {
@@ -204,7 +205,7 @@ public class CompositeProps implements Serializable {
     /**
      * Sets the x-value for the window location.
      *
-     * @param x
+     * @param x x coordinate of window
      */
     public void setXWindowLocation(int x) {
         this.xloc = x;

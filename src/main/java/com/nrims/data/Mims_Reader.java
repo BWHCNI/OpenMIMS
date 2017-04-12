@@ -1269,7 +1269,7 @@ public class Mims_Reader implements Opener {
     /**
      * Set FC Objective value for QSA correction.
      *
-     * @param betas
+     * @param fc_objective
      */
     public void setFCObjective(float fc_objective) {
         this.fc_objective = fc_objective;
@@ -1314,7 +1314,7 @@ public class Mims_Reader implements Opener {
     /**
      * Set the userData HashMap.
      *
-     * @param the HashMap
+     * @param metadata
      */
     public void setMetaDataKeyValuePairs(HashMap metadata) {
         this.metaData = metadata;
@@ -1369,8 +1369,8 @@ public class Mims_Reader implements Opener {
      *
      * @param bitsperpixel
      */
-    public void setBitsPerPixel(short bitperpixel) {
-        ihdr.d = bitperpixel;
+    public void setBitsPerPixel(short bitsperpixel) {
+        ihdr.d = bitsperpixel;
     }
 
     /**

@@ -15,6 +15,10 @@ public class MimsPlusEvent extends java.util.EventObject {
 
     /**
      * Creates a new instance of mimsPlusEvent
+     * 
+     * @param mimsImage a <code>MimsPlus</code> object
+     * @param slice slice number
+     * @param attribute a changeAttribute number
      */
     public MimsPlusEvent(MimsPlus mimsImage, int slice, int attribute) {
         super(mimsImage);

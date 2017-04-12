@@ -42,6 +42,16 @@ public class SegmentationSetupForm extends javax.swing.JDialog {
 
     /**
      * Creates new form SVMSegmentationSetupForm
+     * 
+     * @param ui the <code>UI</code> instance
+     * @param form the <code>SegmentationForm</code> instance
+     * @param roiManager  the <code>MimsRoiManager2</code> instance
+     * @param trainingGroups a list of training groups
+     * @param massImageFeatures an array of mass images
+     * @param localFeatures an array of local features
+     * @param ratioImageFeatures a boolean array of ration image features
+     * @param colorImageIndex a color image index
+     * @param props the <code>SegmentationProperties</code> instance
      */
     //public SegmentationSetupForm(UI ui, SegmentationForm form, MimsRoiManager2 roiManager, ClassManager classes, boolean[] massImageFeatures,
     //        boolean[] ratioImageFeatures, int[] localFeatures, int colorImageIndex, SegmentationProperties props) {

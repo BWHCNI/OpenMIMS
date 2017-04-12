@@ -18,11 +18,13 @@ public class exportQVis {
     /**
      * Write a QVis RGBA version of an HSI image
      *
-     * @param ui
+     * @param ui the <code>UI</code> instance
      * @param img HSI image to be converted
      * @param minA min of alpha range in counts
      * @param maxA max of alpha range in counts
-     * @param output file for .dat header
+     * @param outFile file for .dat header
+     * 
+     * @return true if the QVis RGBA version of the HSIfile was successfully written, false if file is of the wrong type or there was an exception while reading the file
      */
     public static boolean exportHSI_RGBA(com.nrims.UI ui, com.nrims.MimsPlus img, int minA, int maxA, File outFile) {
 

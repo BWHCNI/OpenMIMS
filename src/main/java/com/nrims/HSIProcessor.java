@@ -21,6 +21,8 @@ public class HSIProcessor implements Runnable {
 
     /**
      * Creates a new instance of HSIProcessor
+     * 
+     * @param hsiImage  MimsPlus instance for the HSI image.
      */
     public HSIProcessor(MimsPlus hsiImage) {
         this.hsiImage = hsiImage;

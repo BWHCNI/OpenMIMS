@@ -411,7 +411,7 @@ public class MimsAction implements Cloneable {
     }
     
     /**
-     * Returns <code>true</code> if images have been interleaved/code>.
+     * Returns <code>true</code> if images have been interleaved, otherwise <code>false</code>..
      *
      * @return boolean
      */
@@ -459,9 +459,11 @@ public class MimsAction implements Cloneable {
      * Returns the index within the Opener that the <code>plane</code> comes from.
      *
      * @param plane the true index of the plane.
+     * @return index image index
      */
     public int getOpenerIndex(int plane) {
-        return imageIndex.get(plane);
+        int index = imageIndex.get(plane);
+        return index;
     }
 
     /**
