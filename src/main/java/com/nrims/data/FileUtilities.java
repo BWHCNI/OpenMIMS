@@ -66,7 +66,7 @@ public class FileUtilities {
      * @param path the path to an image file
      * @param imageName image name
      * @param forward if true, makes the candidate the index of the next file 
-     * @return fullpath to next item e.g. home/user/nextfile.nrrd
+     * @return null originally written to next item e.g. home/user/nextfile.nrrd
      */
     public static String getNext(String path, String imageName, boolean forward) {
         File dir = new File(path);
@@ -256,50 +256,67 @@ public class FileUtilities {
             for (;;) {
                 try {
                     // Save the ROI files to zip.
-                    //String roisFileName = System.getProperty("java.io.tmpdir") + "/" + ui.getImageFilePrefix();
-                    String type;
-                    String extension = ui.getImageFileExtension();
-                    if (extension.compareTo(NRRD_EXTENSION) == 0) {
-                        type = NRRD_EXTENSION;
+                    //String roisFileName = System.getProperty("java.io.tmpdir") + "/" + ui.getImageFilePrefix();                
+                    saveROIsToZipNow(ui, false);   // false here means this is a timed save, not a manual save.
 
-                    } else {
-                        type = MIMS_EXTENSION;
-                    }
-                    String fileType = null;
-                    if (type.startsWith(".")) {
-                        fileType = type.substring(1);
-                    }
-                    
-                    File roisTempDir = ui.getTempDir();
-                    // roisTempDir is sometimes not writable.  This should be dealt with elsewhere.
-                    if (roisTempDir != null) {
-                        String roisFileName = roisTempDir.toString() + System.getProperty("file.separator") +
-                                ui.getImageFilePrefix() + "-" + fileType;
-                        Roi[] rois = ui.getRoiManager().getAllROIs();
-                        if (rois.length > 0 && ui.getRoiManager().needsToBeSaved()) {
-                            checkSave(roisFileName + ROIS_EXTENSION, roisFileName, 1);
-                            ui.getRoiManager().saveMultiple(rois, roisFileName + ROIS_EXTENSION, false);
-                            ui.getRoiManager().setNeedsToBeSaved(false);                       
-                            System.out.println("autosaved rois to filename " + roisFileName + ROIS_EXTENSION);
-                            LocalTime currentTime = LocalTime.now();   // 13:02:40.317
-                            String hrsec = currentTime.truncatedTo(ChronoUnit.SECONDS).toString();
-                            DateTimeFormatter USFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-                            LocalTime lt = LocalTime.parse(hrsec, USFormatter);
-                            String lastAutosave = new String("Last autosave " + lt);
-                            ui.getRoiManager().showAutoSaveLabel(lastAutosave);                          
-                            //threadMessage("Autosaved at "+ roisFileName + ROIS_EXTENSION);
-                        } else {
-                            //threadMessage("Nothing to autosave");
-                        }
-                    }
                     Thread.sleep(ui.getInterval());
                 } catch (InterruptedException e) {
                     //ui.threadMessage("Autosave thread interrupted");
                     break;
                 }
             }
-        }
+        }   
+
     }
+   
+    
+        public static String saveROIsToZipNow(UI ui, boolean manualSave) {
+            // Save the ROI files to a zip file in the .tmp folder
+            String type;
+            String extension = ui.getImageFileExtension();
+            if (extension.compareTo(NRRD_EXTENSION) == 0) {
+                type = NRRD_EXTENSION;
+
+            } else {
+                type = MIMS_EXTENSION;
+            }
+            String fileType = null;
+            if (type.startsWith(".")) {
+                fileType = type.substring(1);
+            }
+
+            File roisTempDir = ui.getTempDir();
+            String lastAutosave = "";
+            // roisTempDir is sometimes not writable.  This should be dealt with elsewhere.
+            if (roisTempDir != null) {
+                String roisFileName = roisTempDir.toString() + System.getProperty("file.separator") +
+                        ui.getImageFilePrefix() + "-" + fileType;
+                Roi[] rois = ui.getRoiManager().getAllROIs();
+                if (rois.length > 0 && ui.getRoiManager().needsToBeSaved()) {
+                    checkSave(roisFileName + ROIS_EXTENSION, roisFileName, 1);
+                    ui.getRoiManager().saveMultiple(rois, roisFileName + ROIS_EXTENSION, false);
+                    ui.getRoiManager().setNeedsToBeSaved(false); 
+                    if (manualSave) {
+                    System.out.println("manually saved ROIs to filename " + roisFileName + ROIS_EXTENSION);
+                    } else {
+                       System.out.println("autosaved ROIs to filename " + roisFileName + ROIS_EXTENSION); 
+                    }
+                    LocalTime currentTime = LocalTime.now();   // 13:02:40.317
+                    String hrsec = currentTime.truncatedTo(ChronoUnit.SECONDS).toString();
+                    DateTimeFormatter USFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+                    LocalTime lt = LocalTime.parse(hrsec, USFormatter);
+                    lastAutosave = new String("Last ROI autosave " + lt);
+                    ui.getRoiManager().showAutoSaveLabel(lastAutosave);                          
+                    //threadMessage("Autosaved at "+ roisFileName + ROIS_EXTENSION);
+                } else {
+                    //threadMessage("Nothing to autosave");
+                }
+            }
+
+            return lastAutosave;
+
+        } 
+
 
     /**
      * Recursively check for files with the same name as specified and save those other files as other names. Used in
@@ -986,7 +1003,7 @@ public class FileUtilities {
     /**
      * Take an XYDataset and convert it to a two dimensional array.
      *
-     * @param data
+     * @param data a reference to an XYDataset
      * @return two dimensional Object array
      */
     public static Object[][] convertXYDatasetToArray(XYDataset data) {
