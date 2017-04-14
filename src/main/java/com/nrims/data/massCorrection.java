@@ -26,7 +26,7 @@ public class massCorrection {
     /**
      * Generic constructor
      *
-     * @param ui
+     * @param ui the <code>UI</code> instance
      */
     public massCorrection(com.nrims.UI ui) {
         this.ui = ui;
@@ -36,8 +36,8 @@ public class massCorrection {
      * Performs deadtime correction on all mass images passed using dwelltime read from file header. WARNING: THIS
      * CHANGES DATA.
      *
-     * @param massimgs
-     * @param dwelltime
+     * @param massimgs an array of <code>MimsPlus</code> instances
+     * @param dwelltime ?
      */
     public void performDeadTimeCorr(com.nrims.MimsPlus[] massimgs, float dwelltime) {
 
@@ -70,9 +70,9 @@ public class massCorrection {
     /**
      * Equation for dt corrected counts of a given pixel.
      *
-     * @param counts
-     * @param dwelltime
-     * @return
+     * @param counts pixel counts
+     * @param dwelltime dwelltime
+     * @return corCounts corrected counts for a given pixel
      */
     public static float dtCorrect(float counts, float dwelltime) {
 
@@ -84,9 +84,10 @@ public class massCorrection {
     /**
      * Perform QSA correction. Forces float image conversion and dt correction first.
      *
-     * @param massimgs
-     * @param beta
-     * @param dwelltime
+     * @param massimgs an array of <code>MimsPlus</code> instances
+     * @param beta beta
+     * @param dwelltime dwelltime
+     * @param FCObj  descriptionTodo
      */
     public void performQSACorr(com.nrims.MimsPlus[] massimgs, float[] beta, float dwelltime, float FCObj) {
         //Assure float images
@@ -123,11 +124,11 @@ public class massCorrection {
     /**
      * QSA correct individual dt corrected pixel
      *
-     * @param dtcounts
-     * @param beta
-     * @param dwelltime
-     * @param FCObj
-     * @return
+     * @param dtcounts descriptionTodo
+     * @param beta descriptionTodo
+     * @param dwelltime descriptionTodo
+     * @param FCObj descriptionTodo
+     * @return  descriptionTodo
      */
     public static float QSACorrect(float dtcounts, float beta, float dwelltime, float FCObj) {
         float qsacorr = dtcounts * (1 + beta * yieldCorr(dtcounts, dwelltime, FCObj));
@@ -137,10 +138,10 @@ public class massCorrection {
     /**
      * Correct the ion yield based on primary beam current
      *
-     * @param dtcounts
-     * @param dwelltime
-     * @param FCObj
-     * @return
+     * @param dtcounts descriptionTodo
+     * @param dwelltime descriptionTodo
+     * @param FCObj descriptionTodo
+     * @return  descriptionTodo
      */
     public static float yieldCorr(float dtcounts, float dwelltime, float FCObj) {
         float yieldcorr = yieldExperimental(dtcounts, dwelltime, FCObj) / (1 - (float) (0.5 * yieldExperimental(dtcounts, dwelltime, FCObj)));
@@ -150,10 +151,10 @@ public class massCorrection {
     /**
      * Return experimental ion yield
      *
-     * @param dtcounts
-     * @param dwelltime
-     * @param FCObj
-     * @return
+     * @param dtcounts descriptionTodo
+     * @param dwelltime descriptionTodo
+     * @param FCObj descriptionTodo
+     * @return  descriptionTodo
      */
     public static float yieldExperimental(float dtcounts, float dwelltime, float FCObj) {
         float yieldexp = dtcounts / CsNumber(dwelltime, FCObj);
@@ -163,9 +164,9 @@ public class massCorrection {
     /**
      * Return scaled Cs number based on primary beam current
      *
-     * @param dwelltime
-     * @param FCobj
-     * @return
+     * @param dwelltime descriptionTodo
+     * @param FCobj descriptionTodo
+     * @return  descriptionTodo
      */
     public static float CsNumber(float dwelltime, float FCobj) {
         float csn = (dwelltime * FCobj * csc);
@@ -175,8 +176,8 @@ public class massCorrection {
     /**
      * Checks if -all- mass images are float images.
      *
-     * @param massimgs
-     * @return
+     * @param massimgs descriptionTodo
+     * @return  descriptionTodo
      */
     public static boolean check32bit(com.nrims.MimsPlus[] massimgs) {
         boolean is32b = true;
@@ -191,7 +192,7 @@ public class massCorrection {
     /**
      * Forces the conversion of passed mass images to 32bit. Needed to avoid loss of precision before doing corrections.
      *
-     * @param massimgs
+     * @param massimgs descriptionTodo
      */
     public void forceFloatImages(com.nrims.MimsPlus[] massimgs) {
         int nplanes = massimgs[0].getNSlices();
