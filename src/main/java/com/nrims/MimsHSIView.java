@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.swing.*;
+import org.apache.commons.lang.math.NumberUtils;
 
 /**
  * The MimsHSIView class creates the "Process" tab on the main UI window. It contains all the functionality for
@@ -1235,6 +1237,11 @@ public class MimsHSIView extends javax.swing.JPanel {
         currentImage.getHSIProcessor().setProps(currentImage.getHSIProps());
 
     }
+    
+    Pattern PATTERN = Pattern.compile( "^(-?0|-?[1-9]\\d*)(\\.\\d+)?(E\\d+)?$" );
+    public  boolean isNumeric(String value) {
+        return value != null && PATTERN.matcher( value ).matches();
+    }
 
     /**
      * Determine if a pair of masses are an isotopic pair TODO: Currently this is checking that the last element in ions
@@ -1267,9 +1274,17 @@ public class MimsHSIView extends javax.swing.JPanel {
                 denSymbol = "";
             }
         }
+        //System.out.println("numSymbol = " + numSymbol + "   denSymbol = " + denSymbol);  
         if (!numSymbol.equals("") && !denSymbol.equals("")) {
             char numChar;
             String numLastSym = "";
+            
+            int len = numSymbol.length();
+            String lastChar = numSymbol.substring(len-1);
+            if (NumberUtils.isNumber(lastChar)) {
+                
+            }
+            
             for (int i = numSymbol.length() - 1; i >= 0; i--) {
                 numChar = numSymbol.charAt(i);
                 if (!Character.isLetter(numChar)) {
@@ -1286,8 +1301,20 @@ public class MimsHSIView extends javax.swing.JPanel {
             numLastSym.toUpperCase();
             char denChar;
             String denLastSym = "";
+            
+                len = denSymbol.length();
+                lastChar = denSymbol.substring(len-1);
+                if (NumberUtils.isNumber(lastChar)) {
+                    // If this ends with a number, as with e.g. 12C2, replace the number with that many of the characters preceding it.
+                    // so 12C2 would become 12C12C
+                    String base = denSymbol.substring(0, len-1);
+                    denSymbol = base + base;
+                }
+                              
             for (int i = denSymbol.length() - 1; i >= 0; i--) {
+                         
                 denChar = denSymbol.charAt(i);
+                         
                 if (!Character.isLetter(denChar)) {
                     if (i != numSymbol.length() - 1) {
                         denLastSym = denSymbol.substring(i + 1);
