@@ -68,9 +68,9 @@ public class ImageDataUtilities {
      * then: - there will be 8 mass images - this method returns 0 for images at indices 0,1,2,3 - this method returns 1
      * for images at indices 4,5,6,7
      *
-     * @param index
-     * @param op
-     * @return
+     * @param index index of the mass image
+     * @param op an <code>Opener</code> reference
+     * @return index of the series the mass image is from (bad grammar and all)
      */
     public static int determineSeries(int index, Opener op) {
         int series = getSeriesSize(op);
@@ -80,7 +80,7 @@ public class ImageDataUtilities {
     /**
      * Determine if the passed image is a peakswitching image
      *
-     * @param op
+     * @param op an <code>Opener</code> reference
      * @return true if peak switching, false if not
      */
     public static boolean isPeakSwitching(Opener op) {
@@ -200,6 +200,8 @@ public class ImageDataUtilities {
      *
      * @param index the index of the image/parent of image you want title for
      * @param extension whether or not to include the file extension in the name
+     * @param formatString a string used to determine how the title will be formatted
+     * @param image an <code>Opener</code> reference
      * @return a formatted title string according to user preferences
      */
     public static String formatTitle(int index, boolean extension, String formatString, Opener image) {
@@ -299,6 +301,8 @@ public class ImageDataUtilities {
      * @param numIndex index of the numerator
      * @param denIndex index of the denominator
      * @param extension whether or not to include the file extension in the name
+     * @param formatString a string used to determine how the title will be formatted
+     * @param image an <code>Opener</code> reference
      * @return a formatted title string according to user preferences
      */
     public static String formatTitle(int numIndex, int denIndex, boolean extension, String formatString, Opener image) {
@@ -356,7 +360,8 @@ public class ImageDataUtilities {
      * Generates a new MimsPlus image that is a stack. Whereas ratio image and HSI images are single plane images by
      * design, this method will turn it into a scrollable stack.
      *
-     * @param img the image (ratio or HSI images only)/
+     * @param img the image (ratio or HSI images only)
+     * @param ui a reference to the <code>UI</code> instance
      */
     public static void generateStack(MimsPlus img, UI ui) {
         //do a few checks
