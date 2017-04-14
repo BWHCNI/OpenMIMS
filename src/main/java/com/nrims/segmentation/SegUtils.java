@@ -106,7 +106,7 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean, Void> {
         // create a new group to hold the rois
         String groupName = new String("SegResults");
         
-        ROIgroup roiGroup = new ROIgroup(groupName, "Segmentation Result");
+        ROIgroup roiGroup = new ROIgroup(groupName, "Segmentation Result", "...");
 
         
         s.resultsGroupNames = new String[1];
@@ -798,7 +798,7 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean, Void> {
 //                classes.addRoi(classNames[classID], roi);
 //            }
             //ROIgroup group = new ROIgroup(resultsGroupNames[classID], roiManager.GROUPTYPE_SEGMENTATION_RESULT); 
-            ROIgroup group = new ROIgroup(SEG_RESULTS_INIT, roiManager.GROUPTYPE_SEGMENTATION_RESULT); 
+            ROIgroup group = new ROIgroup(SEG_RESULTS_INIT, roiManager.GROUPTYPE_SEGMENTATION_RESULT, "..."); 
 
             // All segmentation results groups start with "results".  As new ones ares created,
             // append an ascending integer.
