@@ -609,7 +609,7 @@ public class PrefFrame extends PlugInJFrame {
     /**
      * Get the source ratio reference.
      *
-     * @return the background ratio
+     * @return reference the background ratio
      */
     float getReferenceRatio() {
         return reference;
@@ -618,7 +618,7 @@ public class PrefFrame extends PlugInJFrame {
     /**
      * Get the number of decimal places to use in tables.
      *
-     * @return the number of decimal places.
+     * @return numDecimalPlaces the number of decimal places.
      */
     int getNumDecimalPlaces() {
         return numDecimalPlaces;
@@ -627,7 +627,7 @@ public class PrefFrame extends PlugInJFrame {
     /**
      * Get the y position of where tiling starts
      *
-     * @return the number of decimal places.
+     * @return tileY the number of decimal places.
      */
     int getTileY() {
         return tileY;
@@ -636,7 +636,7 @@ public class PrefFrame extends PlugInJFrame {
     /**
      * Get the y position of where tiling starts
      *
-     * @return the number of decimal places.
+     * @return autoSaveInterval the number of decimal places.
      */
     int getAutoSaveInterval() {
         return autoSaveInterval;
