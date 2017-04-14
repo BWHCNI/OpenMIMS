@@ -648,7 +648,7 @@ public class MimsJTable {
                     if (group == null) {
                         group = null;
                     }
-                    data[row][col] = group;
+                    data[row][col] = group.getGroupName();
                 } // DJ: 12/08/2014
                 else if (stat.equals(ROITAGS)) {
                     String commaSeparatedTags = "";
@@ -756,7 +756,7 @@ public class MimsJTable {
                                 if (group == null) {
                                     //group = "null";
                                 }
-                                data[ii][col] = group;
+                                data[ii][col] = group.getGroupName();
                             } else {
                                 data[ii][col] = MimsJFreeChart.getSingleStat(image, stats[k], gui);
                             }
