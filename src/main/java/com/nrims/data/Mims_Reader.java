@@ -1129,7 +1129,7 @@ public class Mims_Reader implements Opener {
     /**
      * Set to true if dead time correction applied.
      *
-     * @param isDTCorrected
+     * @param isDTCorrected descriptionTodo
      */
     public void setIsDTCorrected(boolean isDTCorrected) {
         this.isDTCorrected = isDTCorrected;
@@ -1251,7 +1251,7 @@ public class Mims_Reader implements Opener {
     /**
      * Set to true if QSA correction applied.
      *
-     * @param isQSACorrected
+     * @param isQSACorrected descriptionTodo
      */
     public void setIsQSACorrected(boolean isQSACorrected) {
         this.isQSACorrected = isQSACorrected;
@@ -1260,7 +1260,7 @@ public class Mims_Reader implements Opener {
     /**
      * Set beta values for QSA correction.
      *
-     * @param betas
+     * @param betas descriptionTodo
      */
     public void setBetas(float[] betas) {
         this.betas = betas;
@@ -1269,7 +1269,7 @@ public class Mims_Reader implements Opener {
     /**
      * Set FC Objective value for QSA correction.
      *
-     * @param fc_objective
+     * @param fc_objective descriptionTodo
      */
     public void setFCObjective(float fc_objective) {
         this.fc_objective = fc_objective;
@@ -1314,7 +1314,7 @@ public class Mims_Reader implements Opener {
     /**
      * Set the userData HashMap.
      *
-     * @param metadata
+     * @param metadata descriptionTodo
      */
     public void setMetaDataKeyValuePairs(HashMap metadata) {
         this.metaData = metadata;
@@ -1323,7 +1323,7 @@ public class Mims_Reader implements Opener {
     /**
      * Sets the width (in pixels).
      *
-     * @param width
+     * @param width descriptionTodo
      */
     public void setWidth(int width) {
         fileInfo.width = width;
@@ -1332,7 +1332,7 @@ public class Mims_Reader implements Opener {
     /**
      * Sets the height (in pixels).
      *
-     * @param height
+     * @param height descriptionTodo
      */
     public void setHeight(int height) {
         fileInfo.height = height;
@@ -1341,7 +1341,7 @@ public class Mims_Reader implements Opener {
     /**
      * Sets the number of masses.
      *
-     * @param nmasses
+     * @param nmasses descriptionTodo
      */
     public void setNMasses(int nmasses) {
         fileInfo.nMasses = nmasses;
@@ -1350,7 +1350,7 @@ public class Mims_Reader implements Opener {
     /**
      * Sets the number of images.
      *
-     * @param nimages
+     * @param nimages descriptionTodo
      */
     public void setNImages(int nimages) {
         fileInfo.nImages = nimages;
@@ -1367,7 +1367,7 @@ public class Mims_Reader implements Opener {
     /**
      * Sets the bits per pixels.
      *
-     * @param bitsperpixel
+     * @param bitsperpixel descriptionTodo
      */
     public void setBitsPerPixel(short bitsperpixel) {
         ihdr.d = bitsperpixel;
