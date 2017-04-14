@@ -34,6 +34,7 @@ public class MIMSFileFilter extends FileFilter {
     /**
      * Creates a file filter. If no filters are added, then all files are accepted.
      *
+     * @param extension name of the file filter extension
      * @see #addExtension
      */
     public MIMSFileFilter(String extension) {
@@ -73,8 +74,11 @@ public class MIMSFileFilter extends FileFilter {
     /**
      * Return the extension portion of the file's name .
      *
+     * @param f a file reference
      * @see #getExtension
      * @see FileFilter#accept
+     * 
+     * @return the extension of the supplied file name, or null if file is null
      */
     public String getExtension(File f) {
         if (f != null) {
@@ -90,8 +94,11 @@ public class MIMSFileFilter extends FileFilter {
     /**
      * Return the double extension portion of the file's name .
      *
+     * @param f a file reference
      * @see #getExtension
      * @see FileFilter#accept
+     * 
+     * @return the double extension of the supplied file name, or null if file is null
      */
     public String getDoubleExtension(File f) {
         if (f != null) {
@@ -140,6 +147,7 @@ public class MIMSFileFilter extends FileFilter {
     /**
      * Sets the human readable description of this filter. For example: filter.setDescription("Gif and JPG Images");
      *
+     * @param description  descriptionTodo
      * @see setDescription
      * @see setExtensionListInDescription
      * @see isExtensionListInDescription
@@ -152,8 +160,9 @@ public class MIMSFileFilter extends FileFilter {
     /**
      * Determines whether the extension list (.jpg, .gif, etc) should show up in the human readable description.
      *
-     * Only relevent if a description was provided in the constructor or using setDescription();
+     * Only relevant if a description was provided in the constructor or using setDescription();
      *
+     * @param b descriptionTodo
      * @see getDescription
      * @see setDescription
      * @see isExtensionListInDescription
@@ -168,6 +177,7 @@ public class MIMSFileFilter extends FileFilter {
      *
      * Only relevent if a description was provided in the constructor or using setDescription();
      *
+     * @return useExtensionsInDescription descriptionTodo
      * @see getDescription
      * @see setDescription
      * @see setExtensionListInDescription
