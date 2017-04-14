@@ -1043,11 +1043,15 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 massRButton.setVisible(false);
             }
 
-            massRButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    viewMassChanged(evt);
-                }
-            });
+//            massRButton.addActionListener(new java.awt.event.ActionListener() {
+//                public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                    viewMassChanged(evt);
+//                }
+//            });
+            
+            // This is a lamda version of the above commented-out lines
+            massRButton.addActionListener( e -> viewMassChanged(e));
+            
             viewMassMenuItems[i] = massRButton;
 
             this.viewMenu.add(massRButton);
@@ -3599,6 +3603,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         getRoiManager().setVisible(roiManagerVisible);
         
         if(!usedForTables)
+           // hsiControl.updateImage(true);  // removes old entries 
             hsiControl.addShownRatiosToList(rto_props, hsi_props); //DJ: 08/14/2014
     
     }
@@ -3759,7 +3764,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
      */
 private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
 
-    String message = "OpenMIMS v" + mimsVersion + ", Apr 5, 2017 (rev: " + revisionNumber + ")";
+    String message = "OpenMIMS v" + mimsVersion + ", Apr 14, 2017 (rev: " + revisionNumber + ")";
     message += "\n\n";
     message += "http://www.nrims.hms.harvard.edu/";
     message += "\n\n";
