@@ -227,6 +227,7 @@
                 <StringItem index="4" value="Item 5"/>
               </StringArray>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Right click to manage ROIs"/>
           </Properties>
           <Events>
             <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="roijlistMouseClicked"/>
@@ -252,6 +253,7 @@
                 <StringItem index="4" value="Item 5"/>
               </StringArray>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Right click to mange tags"/>
           </Properties>
         </Component>
       </SubComponents>
@@ -269,7 +271,7 @@
     <Component class="javax.swing.JButton" name="deleteButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Delete"/>
-        <Property name="toolTipText" type="java.lang.String" value="Delete the ROIs associated with the selected group(s)_."/>
+        <Property name="toolTipText" type="java.lang.String" value="Delete the selected ROIs, or if Group(s) or Tag(s) are selected, delete ROIs that are assigned to them."/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteButtonActionPerformed"/>
@@ -278,6 +280,7 @@
     <Component class="javax.swing.JButton" name="measureButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Measure"/>
+        <Property name="toolTipText" type="java.lang.String" value="Show a table containing the group, slice, area, mean and standard deviation of the selected ROIs"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="measureButtonActionPerformed"/>
@@ -294,6 +297,7 @@
     <Component class="javax.swing.JButton" name="moreButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="More&gt;&gt;"/>
+        <Property name="toolTipText" type="java.lang.String" value="Show a menu of more functions that can be invoked on ROIs"/>
       </Properties>
       <Events>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="moreButtonMouseClicked"/>
@@ -331,6 +335,7 @@
     <Component class="javax.swing.JButton" name="saveButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Save"/>
+        <Property name="toolTipText" type="java.lang.String" value="Show a file save dialog where you can save the current ROIs in a zip file whose name and location you specify"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveButtonActionPerformed"/>
@@ -339,6 +344,7 @@
     <Component class="javax.swing.JButton" name="openButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Open"/>
+        <Property name="toolTipText" type="java.lang.String" value="Load ROIs from a .zip file."/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openButtonActionPerformed"/>
@@ -346,7 +352,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="roisLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Rois"/>
+        <Property name="text" type="java.lang.String" value="ROIs"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbAllPlanes">
@@ -367,7 +373,7 @@
     <Component class="javax.swing.JLabel" name="jLabelAutosavingROIs">
       <Properties>
         <Property name="text" type="java.lang.String" value="Last autosave "/>
-        <Property name="toolTipText" type="java.lang.String" value="Shows time at which last autosave of ROIs (to .tmp folder) occurred."/>
+        <Property name="toolTipText" type="java.lang.String" value="Shows time at which last autosave of ROIs (to .tmp folder) occurred.  Right click to save now."/>
       </Properties>
       <Events>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jLabelAutosavingROIsMouseClicked"/>
