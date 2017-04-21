@@ -184,9 +184,9 @@ public class NRIMS_Plugin implements PlugIn {
             ui = new UI();
         }
         if (ui != null) {//need to check whether or not ui is null, which can happen when a single instance mode is already open
-            //Start Auto save thread for ROI
-            Thread t = new Thread(new FileUtilities.AutoSaveROI(ui));
-            t.start();
+//            //Start Auto save thread for ROI
+//            Thread t = new Thread(new FileUtilities.AutoSaveROI(ui));
+//            t.start();
 
             OMLOGGER.info("NRIMS.run");
             OMLOGGER.info(Thread.currentThread().getName());
