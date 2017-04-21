@@ -176,7 +176,7 @@ public class SegmentationSetupForm extends javax.swing.JDialog {
         // remove ROIs from the RoiManager, if required
         if (roiManager.getROIs().size() > 0) {
             roiManager.selectAll();
-            roiManager.delete(false);
+            roiManager.delete(false, false);
             roiManager.getImage().setRoi((Roi) null);
         }
     }
