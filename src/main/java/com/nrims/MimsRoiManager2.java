@@ -599,6 +599,15 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         jLabelAutosavingROIs.setOpaque(true);
         autosaveIn = ui.getInterval() / 1000;
     } 
+    
+    /**
+     * Control visibility of the autosave countdown 
+     *
+     * @param show true to show autosave countdown label, false to hide it.
+     */
+    public void showAutoSaveCountdown(boolean show) {
+        jLabelNextAutosave.setVisible(show);
+    }
 
     /**
      * updates the images so that ROI are not shown.
