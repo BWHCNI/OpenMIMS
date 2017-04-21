@@ -66,6 +66,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -109,6 +111,11 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     MimsJTable table;
     File roiFile = null;
+    
+    Timer timer;
+    RemindTask remindTask;
+    String nextAutosave;
+    int autosaveIn;
     
     final ROIgroup DEFAULT_GROUP = new ROIgroup("...", "Normal", "...");
     final ROIgroup SEGMENTATION_TRAINING_GROUP = new ROIgroup("...", "SegTrain", "...");
@@ -239,10 +246,96 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         types[0] = GROUPTYPE_NORMAL;
         types[1] = GROUPTYPE_SEGMENTATION_TRAINING;
         types[2] = GROUPTYPE_SEGMENTATION_RESULT;
+        
+       
+        setNeedsToBeSaved(false);
+        
+        timer = new Timer();
 
-
+        startTimer(1);  // 1 second timer for countdown of autosave interval
+        
+        this.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent e){
+                if (remindTask != null) {
+                    remindTask.cancelTimer();
+                }
+            }
+            public void windowActivated(WindowEvent e) {
+                startTimer(1);
+            }       
+        });
     
     } // end of constructor
+    
+    
+    /**
+     * Sets up a timer task <code>TimerTask</code> with a 1 second resolution.  This is used in the 
+     * display of time left before the next ROI autosave occurs.
+     *
+     * @param seconds The amount of seconds until the invocations of the task.
+     */
+    public void Reminder (int seconds, int autosaveIn) {  
+             
+        timer.schedule(remindTask,
+            0,        //initial delay
+            seconds * 1000);  //subsequent rate);	
+    }
+    
+    /**
+     * A timer task <code>TimerTask</code> with a 1 second resolution.  This is used in the 
+     * display of time left before the next ROI autosave occurs.
+     */
+    class RemindTask extends TimerTask {
+        public void run() {
+            autosaveIn--;
+            
+            if (jLabelAutosavingROIs.isOpaque()) {
+                String interval = new Integer(autosaveIn).toString();
+                if (needsToBeSaved) {
+                    //System.out.println("RemindTask: autosave in " + interval + "   needsToBeSaved = " + needsToBeSaved);
+                    jLabelNextAutosave.setText("autosave in " + interval + " sec");
+                } else {
+                    jLabelNextAutosave.setText("");
+                }
+            }
+            if (autosaveIn == 0) {
+                jLabelNextAutosave.setText("");
+                autosaveIn = ui.getInterval() / 1000;
+            }
+        }
+        
+     /**
+     * Cancels the timer task.
+     */
+        public void cancelTimer() {
+            this.cancel();           
+        }
+    }
+    
+    /**
+     * Restarts the timer task task invocations
+     * 
+     * @param seconds time between timer 
+     */
+    public void startTimer(int seconds) {
+        //System.out.println("starting timer, autosaveIn = " + autosaveIn);
+        if (remindTask != null) {
+            //System.out.println("cancelling old timer");
+            remindTask.cancelTimer();
+        }
+        remindTask = new RemindTask();
+        Reminder(seconds, autosaveIn);       
+    }
+    
+    /**
+     * Calls the <code>RemindTask</code> cancelTimer method.
+     */
+    public void cancelTimer() {
+        if (remindTask != null) {
+            remindTask.cancelTimer();
+        }
+    }
+    
     
     private void groupsHandler() {
 
@@ -331,7 +424,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                             deleteGroupActionPerformed(e);
                             // }
                             //}
-                            needsToBeSaved = true;
+                            setNeedsToBeSaved(true);
                             groupjlist.setSelectedValue(DEFAULT_GROUP, true);
                         }
                     });
@@ -505,6 +598,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         jLabelAutosavingROIs.setVisible(true);
         jLabelAutosavingROIs.setText(str);      
         jLabelAutosavingROIs.setOpaque(true);
+        autosaveIn = ui.getInterval() / 1000;
     } 
 
     /**
@@ -725,7 +819,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         groupListModel.setElementAt(group, index);
         
         // do what it takes to trigger the next autosave
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         
         // Tickle the group type comboBox so that all current groups of this type
         // are shown.  If we don't change the lastGroupType to something new, 
@@ -821,7 +915,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
                         public void actionPerformed(ActionEvent e) {
                             rename(null);
-                            needsToBeSaved = true;
+                            setNeedsToBeSaved(true);
                         }
                     });
 
@@ -871,7 +965,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
                             }
                             tagjlist.setSelectedIndices(toBeSelected);
-                            needsToBeSaved = true;
+                            setNeedsToBeSaved(true);
 
                         }
                     });
@@ -895,7 +989,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                 }
                                 associatedTags.add(tagName);
                                 tagsMap.put(roiName, associatedTags);
-                                needsToBeSaved = true;
+                                setNeedsToBeSaved(true);
                                 tagjlist.setSelectedValue(tagName, true);
                                 ItemName = tagName;
 
@@ -930,7 +1024,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                             ArrayList<String> associatedTags = (ArrayList<String>) tagsMap.get(roiName);
                             if (associatedTags != null) {
                                 tagsMap.remove(roiName);
-                                needsToBeSaved = true;
+                                setNeedsToBeSaved(true);
                                 tagjlist.setSelectedValue(DEFAULT_TAG_NAME, true);
                             }
                         }
@@ -959,7 +1053,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
                                     tagsMap.put(roiName, associatedTags);
                                     //tagsMap.remove(roiName);
-                                    needsToBeSaved = true;
+                                    setNeedsToBeSaved(true);
                                     tagjlist.setSelectedValue(DEFAULT_TAG_NAME, true);
 
                                     // ItemName = tagName;
@@ -1001,7 +1095,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
                         public void actionPerformed(ActionEvent e) {
                             roisMap.remove(roiName);
-                            needsToBeSaved = true;
+                            setNeedsToBeSaved(true);
                             groupjlist.setSelectedValue(DEFAULT_GROUP, true);
                         }
                     });
@@ -1061,7 +1155,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                     roisMap.replace(roiNumber, newGroup);
                                 }
                                 
-                                needsToBeSaved = true;
+                                setNeedsToBeSaved(true);
                                 groupjlist.setSelectedValue(newGroupName, true);
                                 // remove entry from the old list, unless it's the default group
                                 if (oldGroup != DEFAULT_GROUP) {
@@ -1125,8 +1219,9 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                 String newGroupName = e.getActionCommand();
                                 ROIgroup oldGroup = null;
                                 int numRoiListItems = roiListModel.getSize();
+                                int index = 0;
                                 for (int selectedIndex : roijlist.getSelectedIndices()) {
-                                    System.out.println("selectedIndex is " + selectedIndex );
+                                    System.out.println("selectedIndex rats is " + selectedIndex );
                                     String roiName = (roiListModel.elementAt(selectedIndex)).toString();
                                                                  ROIgroup newGroup = null;
                                     if (newGroupName.compareTo("...") == 0){
@@ -1137,13 +1232,14 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                             String name = group.getGroupName();           
                                             if (name.compareTo(newGroupName) == 0) {
                                                 newGroup = (ROIgroup)groups.get(i-1);   // subtract 1 because the default group does not get added to the groups map.
+                                                index = i;
                                                 break;
                                             }
                                         }
                                     }         
                                     // Put this into roisMap.  For roiNumbers that were assigned to the default group,
                                     // replace fails because they were never put in the roisMap, so use put instead of replace.                                  
-                                    oldGroup = (ROIgroup)roisMap.get(roiName);  
+                                    oldGroup = (ROIgroup)roisMap.get(roiName);    // ?? when the old group name should be ..., it is just a blank string. ??
                                     if (oldGroup == DEFAULT_GROUP) {
                                         roisMap.put(roiName, newGroup);
                                     } else {
@@ -1155,9 +1251,11 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                         
                                     }
                                     
-                                    needsToBeSaved = true;
-                                    groupjlist.setSelectedValue(newGroupName, true);                              
+                                    setNeedsToBeSaved(true);
+                                   // groupjlist.setSelectedValue(newGroup, true); 
+                                    //groupjlist.setSelectedIndex(1);
                                 }
+                                groupjlist.setSelectedIndex(index);
                                 List objs = roijlist.getSelectedValuesList();
                                 if (oldGroup != DEFAULT_GROUP) {
                                     for (Object obj : objs) {
@@ -1177,7 +1275,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                 String roiName = (String) roiListModel.get(Roiidxs[i]);
                                 roisMap.remove(roiName);
                             }
-                            needsToBeSaved = true;
+                            setNeedsToBeSaved(true);
                             groupjlist.setSelectedValue(DEFAULT_GROUP, true);
                         }
                     });
@@ -1200,10 +1298,10 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                     }
                                     associatedTags.add(tagName);
                                     tagsMap.put(roiName, associatedTags);
-                                    //needsToBeSaved = true;
+                                    //setNeedsToBeSaved(true);
                                     //tagjlist.setSelectedValue(tagName, true);
                                 }
-                                needsToBeSaved = true;
+                                setNeedsToBeSaved(true);
                                 tagjlist.setSelectedValue(tagName, true);
                             }
                         });
@@ -1222,7 +1320,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                 tagsMap.remove(roiName);
 
                             }
-                            needsToBeSaved = true;
+                            setNeedsToBeSaved(true);
                             tagjlist.setSelectedValue(DEFAULT_TAG_NAME, true);
                         }
                     });
@@ -1248,7 +1346,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                     
                                     
                                 }
-                                needsToBeSaved = true;
+                                setNeedsToBeSaved(true);
                                 
                                 if(tagjlist.getSelectedValue().equals(DEFAULT_TAG_NAME)){
                                     System.out.println("DEF_TAG_WAS_HIGHLIGHTED");
@@ -1367,7 +1465,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         if (squaresManager != null) {
             squaresManager.updateGroups();
         }
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
     }
 
     // DJ: 12/05/2014
@@ -1445,7 +1543,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         if (squaresManager != null) {
             //squaresManager.updateTags();
         }
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
     }
 
     /**
@@ -1487,7 +1585,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         }
         imp.setRoi(roi);
         move();
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         updatePlots(false);
 
     }
@@ -1544,7 +1642,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         rois.put(newroi.getName(), newroi);
         imp.setRoi(newroi);
         imp.updateAndRepaintWindow();
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         updatePlots(false);
     }
 
@@ -1807,7 +1905,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
         rois.remove(oldRoi.getName());
         rois.put(newRoi.getName(), newRoi);
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
     }
 
     /**
@@ -1847,7 +1945,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             }
             locations.put(label, xylist);
         }
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return b;
     }
 
@@ -2118,7 +2216,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         roijlist.setSelectedIndex(index);
 
         sortROIList();
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return true;
     }
 
@@ -2755,7 +2853,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         // Assign group.
        // roisMap.put(roi.getName(), group.getGroupType());   // todo  fixed
         roisMap.put(roi.getName(), group);  
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return val;
     }
 
@@ -2859,7 +2957,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         //roi.setInstanceColor(java.awt.Color.yellow);   // setInstanceColor is deprecated.  Use setStrokeColor
         roi.setStrokeColor(java.awt.Color.yellow);
         imp.setRoi(roi);
-        needsToBeSaved = true;
+        //setNeedsToBeSaved(true);
         return true;
     }
 
@@ -2966,6 +3064,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         jLabelAutosavingROIs = new javax.swing.JLabel();
         jComboBoxGroupsToShow = new javax.swing.JComboBox<>();
         jLabelGroupTypesToShow = new javax.swing.JLabel();
+        jLabelNextAutosave = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -3090,6 +3189,13 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
         jLabelGroupTypesToShow.setText("Highlight group type");
 
+        jLabelNextAutosave.setToolTipText("Right click to cancel the next autosave.");
+        jLabelNextAutosave.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabelNextAutosaveMouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -3097,6 +3203,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jComboBoxGroupsToShow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3118,45 +3225,39 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGap(69, 69, 69)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                    .addComponent(yPosLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(xPosLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(pixelValuesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 110, Short.MAX_VALUE)
-                                                    .addComponent(deleteButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                    .addComponent(saveButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                .addGap(122, 122, 122)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(widthLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(heightLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                        .addGap(18, 18, 18))
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabelAutosavingROIs, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(widthLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                                .addComponent(yPosLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(xPosLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(pixelValuesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                                                .addComponent(deleteButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addComponent(heightLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(18, 18, 18))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(18, 18, 18)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabelNextAutosave, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jLabelAutosavingROIs, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)))
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cbAllPlanes)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(measureButton, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
-                                        .addComponent(moreButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(xPosSpinner))
-                                    .addComponent(cbHideAll)
-                                    .addComponent(cbHideLabels)
-                                    .addComponent(heightSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(openButton, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(measureButton, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(moreButton, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(xPosSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(yPosSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(widthSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                    .addComponent(widthSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(heightSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(cbHideAll)
+                                    .addComponent(cbAllPlanes)
+                                    .addComponent(cbHideLabels)))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(19, 19, 19)
-                        .addComponent(jLabelGroupTypesToShow, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jComboBoxGroupsToShow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(362, 362, 362)))
-                .addContainerGap(61, Short.MAX_VALUE))
+                        .addComponent(jLabelGroupTypesToShow, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(15, 15, 15))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3177,8 +3278,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                     .addComponent(openButton)
                                     .addComponent(saveButton))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(deleteButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(deleteButton)
                                     .addComponent(measureButton))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -3202,13 +3303,15 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                     .addComponent(heightSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabelAutosavingROIs, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(cbAllPlanes)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(cbHideAll)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(cbHideLabels))
-                                    .addComponent(jLabelAutosavingROIs, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                        .addGap(12, 12, 12)
+                                        .addComponent(cbHideLabels)))
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabelNextAutosave, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(tagsLabel, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -3217,7 +3320,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane3)
                             .addComponent(jScrollPane1))))
-                .addGap(16, 16, 16))
+                .addGap(12, 12, 12))
         );
 
         pack();
@@ -3373,7 +3476,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     }//GEN-LAST:event_openButtonActionPerformed
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        delete(true);
+        delete(true, false);
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void measureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_measureButtonActionPerformed
@@ -3399,9 +3502,22 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                     "",
                     JOptionPane.YES_NO_OPTION);
                 if (n == JOptionPane.YES_OPTION) {
-                    needsToBeSaved = true;
+                    setNeedsToBeSaved(true);
                     String lastAutoSaveTime = FileUtilities.saveROIsToZipNow(ui, true);  // passing true indicates this is a manual save
-                    showAutoSaveLabel(lastAutoSaveTime);
+                    showAutoSaveLabel(lastAutoSaveTime);                  
+                            
+                    String interval = new Integer(autosaveIn).toString();
+                    jLabelNextAutosave.setOpaque(true);
+                    //jLabelNextAutosave.setEnabled(true);
+                    //System.out.println("jLabelAutosavingROIsMouseClicked: autosave in " + interval);
+                    jLabelNextAutosave.setText("autosave in " + interval + " sec");                   
+                       
+                    ui.startAutosaveROIthread(true);  // true causes it to stop and restart the autosave thread
+                    cancelTimer();
+                    startTimer(1);
+                } else {
+                    //System.out.println("no no no a thousand times no ");
+
                 }
             }
         }
@@ -3415,9 +3531,31 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         showGroups(evt2); 
     }//GEN-LAST:event_jComboBoxGroupsToShowActionPerformed
 
+    private void jLabelNextAutosaveMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabelNextAutosaveMouseClicked
+        // TODO add your handling code here:
+        if (SwingUtilities.isRightMouseButton( evt)) { 
+            // Ignore if no ROIs are currently shown
+            if (!roisMap.isEmpty()) {
+                int n = JOptionPane.showConfirmDialog(
+                    this,
+                    "Cancel the next autosave?",
+                    "",
+                    JOptionPane.YES_NO_OPTION);
+                if (n == JOptionPane.YES_OPTION) {
+                    //needsToBeSaved = false;
+                    setNeedsToBeSaved(false);
+                    
+                } else {
+                   int lastInterval = autosaveIn;
+                   //cancelTimer();
+                   //startTimer(1);
+                   //autosaveIn = (ui.getInterval() / 1000) - lastInterval;
+                }
+            }
+        }
+    }//GEN-LAST:event_jLabelNextAutosaveMouseClicked
+
  
-        
-        
     private void showGroups(java.awt.event.ItemEvent evt) {
         // Changing the combobox item results in 3 events being sent here:  two action performed and 1 state change
         // event.  Re-selecting the same item givd just the state changed event.
@@ -3954,6 +4092,13 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         if (rois.size() > 0) {
             saveButton.setEnabled(true);
         }
+        
+//        int lastInterval = autosaveIn;
+//                   //cancelTimer();
+//                   //startTimer(1);
+//        autosaveIn = (ui.getInterval() / 1000) - lastInterval;
+//        //autosaveIn = (ui.getInterval() / 1000);
+//        System.out.println("autosaveIn in openZip is " + autosaveIn);
 
     }
 
@@ -4022,7 +4167,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 xylist.remove(xylist.size() - 1);
             }
         }
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
     }
 
     /**
@@ -4071,7 +4216,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 locations.put(key, xylist);
             }
         }
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
     }
 
     /**
@@ -4196,6 +4341,12 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         if (Recorder.record) {
             Recorder.record("mimsRoiManager", "Save", path);
         }
+        int oldVal = autosaveIn;
+        //autosaveIn = (ui.getInterval() / 1000) - oldVal;
+        //autosaveIn = (ui.getInterval() / 1000);
+        //System.out.println("autosave interval was " + oldVal + "   reset to " + autosaveIn);
+        cancelTimer();
+        startTimer(1);
         return true;
     }
 
@@ -4214,13 +4365,17 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
      *
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
-    public boolean delete(boolean prompt) {
+    public boolean delete(boolean prompt, boolean noDeleteAll) {
         int count = roiListModel.getSize();
         if (count == 0 && prompt) {
             return error("The list is empty.");
         }
+        
+        System.out.println("preventing delete of all ROIs");
+        int listSize = roijlist.getModel().getSize();
         int index[] = roijlist.getSelectedIndices();
-        if (index.length == 0) {
+        
+        if (((index.length == 0) || (listSize == index.length)) && !noDeleteAll) {
             String msg = "Delete all items on the list?";
             canceled = false;
             if (!IJ.macroRunning() && !macro && prompt) {
@@ -4263,7 +4418,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         if (rois.size() < 1) {
             enableSaveButton(false); 
         }
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return true;
     }
 
@@ -4371,7 +4526,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             // Add the roi the the hashmap.
             rois.put(label, roi2);
         }
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return;
     }
 
@@ -4846,7 +5001,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         //}
         // Since there is at least one ROI in existence, enable the Save button.
         enableSaveButton(true);
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return true;
     }
 
@@ -4898,7 +5053,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
         // Add roi to list.
         rois.put(label, roi);
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return true;
     }
 
@@ -4941,7 +5096,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
         // Add roi to list.
         rois.put(roi.getName(), roi);
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return true;
     }
 
@@ -5317,7 +5472,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
         // Assign group.
         roisMap.put(label, group);
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);;
         
         return val;
     }
@@ -5379,7 +5534,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         associatedTags.add(tag);
        // roisMap.put(label, associatedTags);   // todo  probably wrong
 
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return val;
     }
 
@@ -5427,7 +5582,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 //            
 //            }
         }
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return true;
     }
     
@@ -5470,7 +5625,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 tagListModel.addElement(tagsStringArray[i]);
             }
         }
-        needsToBeSaved = true;
+        setNeedsToBeSaved(true);
         return true;
     }
 
@@ -5872,6 +6027,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     private javax.swing.JComboBox<String> jComboBoxGroupsToShow;
     private javax.swing.JLabel jLabelAutosavingROIs;
     private javax.swing.JLabel jLabelGroupTypesToShow;
+    private javax.swing.JLabel jLabelNextAutosave;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
