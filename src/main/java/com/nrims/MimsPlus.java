@@ -1252,8 +1252,11 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
             }
         }
 
+        
+        boolean isROInull = true;
+    
         if (getRoi() != null) {
-
+            isROInull = false;
             // Set the moving flag so we know if user is attempting to move a roi.
             // Line Rois have to be treated differently because their state is never MOVING .
             int roiState = getRoi().getState();
@@ -1287,11 +1290,21 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
             w1 = r.width;
             h1 = r.height;
 
-        } else if (getRoi() != null && (ij.IJ.shiftKeyDown() && ij.IJ.controlKeyDown())) {
+        } else if (!isROInull && (ij.IJ.shiftKeyDown() && ij.IJ.controlKeyDown())) {
             this.killRoi();
             bMoving = false;
-
+        } 
+        
+        boolean shift = ij.IJ.shiftKeyDown();
+        boolean control = ij.IJ.controlKeyDown();
+        if (!isROInull && shift && !control) {
+            //System.out.println("killRoy was here");
+            this.killRoi();
+            bMoving = false;
+            ui.getRoiManager().delete(false, true);   // true for prompt
+            
         }
+        
         bStateChanging = false;
 
     }
@@ -1759,7 +1772,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
                 return ("");
         }
     }
-
+    
     @Override
     // Display statistics while dragging or creating ROIs.
     public void mouseDragged(MouseEvent e) {
