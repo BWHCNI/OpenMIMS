@@ -205,7 +205,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     boolean previousFileCanceled = true;
     private final static Logger OMLOGGER = OMLogger.getOMLogger(UI.class.getName());
     
-    
+    private Thread autosaveROIthread;
     
     //DJ: 10/20/2014 
     // to be used as a backup in case the config file for links doesn't exist or doesn't get read/parsed.
@@ -369,7 +369,21 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 setIJDefaultDir(file.getParent());
                 boolean proceed = checkCurrentFileStatusBeforeOpening();
                 if (proceed) {
+                    
+                    MimsRoiManager2 roiManager = getRoiManager();
+            roiManager.selectAll();  // Do not show the ROI manager or ROIs unless user wants them.
+            roiManager.delete(false, false);
+            roiManager.close();
+            roiManager.setNeedsToBeSaved(false);
+            
+            
                     openFileInBackground(file);
+                    
+                    enableRestoreMimsMenuItem(true);
+                    
+                    //Start Auto save thread for ROI, if not already started.
+                    startAutosaveROIthread(false);
+
                 }
                 // When openFileInBackground finishes loading the file, this listener will get
                 // invoked in order to load ROI files, if present.
@@ -514,6 +528,27 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         sampleDataButton.setToolTipText("OPEN LINK:  " + sampleDataLink);
         
     }
+    
+    public void startAutosaveROIthread(boolean interrupt) {
+        if (interrupt) {
+            //System.out.println("interrupting autosaveROIthread");
+            autosaveROIthread.interrupt();
+            //System.out.println("starting autosaveROIthread after interruption");
+            autosaveROIthread = new Thread(new FileUtilities.AutoSaveROI(ui));
+            autosaveROIthread.start();
+        }
+                    
+                    
+        if (autosaveROIthread == null) {
+            //System.out.println("starting autosaveROIthread");
+            autosaveROIthread = new Thread(new FileUtilities.AutoSaveROI(ui));
+            autosaveROIthread.start();
+        }
+            
+   
+    }
+    
+
 
     /**
      * Insertion status of the current MimsPlus object
@@ -2731,10 +2766,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             File file = fc.getSelectedFile();
             MimsRoiManager2 roiManager = getRoiManager();
             roiManager.selectAll();  // Do not show the ROI manager or ROIs unless user wants them.
-            roiManager.delete(false);
+            roiManager.delete(false, false);
             roiManager.close();
             openFileInBackground(file);
-            enableRestoreMimsMenuItem(true);                 
+            enableRestoreMimsMenuItem(true); 
+            roiManager.setNeedsToBeSaved(false);
+            startAutosaveROIthread(false);   // false = do not interrupt
         }
         if (returnVal == JFileChooser.CANCEL_OPTION) {
             return;
@@ -2754,8 +2791,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     }
                 }
             }
-        });
-        
+        });        
     }
     
      /**
@@ -2929,7 +2965,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 // Don't load any ROIs, but also do not delete them.
                 // But do remove them from the ROI window, just not from disk
                 //getRoiManager().clearRoiJList();
-                getRoiManager().delete(false);
+                getRoiManager().delete(false, false);
                 getRoiManager().close();
             }
             if (option == 2) {  // Don't load ROIs, and delete existing ROI zip files
@@ -3602,9 +3638,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         resetViewMenu(); //DJ: 08/18/2014
         getRoiManager().setVisible(roiManagerVisible);
         
-        if(!usedForTables)
-           // hsiControl.updateImage(true);  // removes old entries 
-            hsiControl.addShownRatiosToList(rto_props, hsi_props); //DJ: 08/14/2014
+        if(!usedForTables) {
+            hsiControl.updateImage(true);  // removes old entries (but puts new ones back in
+            // so when re-opening a file, extra entries get added by the next call.  Damn.
+            //hsiControl.addShownRatiosToList(rto_props, hsi_props); //DJ: 08/14/2014
+        }
     
     }
     
@@ -3764,7 +3802,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
      */
 private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
 
-    String message = "OpenMIMS v" + mimsVersion + ", Apr 14, 2017 (rev: " + revisionNumber + ")";
+    String message = "OpenMIMS v" + mimsVersion + ", Apr 20, 2017 (rev: " + revisionNumber + ")";
     message += "\n\n";
     message += "http://www.nrims.hms.harvard.edu/";
     message += "\n\n";
@@ -4988,6 +5026,9 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         //roiManager = getRoiManager().getInstance();
         if (roiManager == null) {
             roiManager = new MimsRoiManager2(this);
+        } else {
+            //roiManager.cancelTimer();
+            //roiManager.startTimer(1);
         }
         return roiManager;
     }
