@@ -251,9 +251,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         setNeedsToBeSaved(false);
         
         timer = new Timer();
-
         startTimer(1);  // 1 second timer for countdown of autosave interval
-        
+             
         this.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
                 if (remindTask != null) {
@@ -275,7 +274,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
      * @param seconds The amount of seconds until the invocations of the task.
      */
     public void Reminder (int seconds, int autosaveIn) {  
-             
+         
         timer.schedule(remindTask,
             0,        //initial delay
             seconds * 1000);  //subsequent rate);	
@@ -3544,6 +3543,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 if (n == JOptionPane.YES_OPTION) {
                     //needsToBeSaved = false;
                     setNeedsToBeSaved(false);
+                    jLabelNextAutosave.setText("");
                     
                 } else {
                    int lastInterval = autosaveIn;
@@ -4092,7 +4092,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         if (rois.size() > 0) {
             saveButton.setEnabled(true);
         }
-        
+             
 //        int lastInterval = autosaveIn;
 //                   //cancelTimer();
 //                   //startTimer(1);
