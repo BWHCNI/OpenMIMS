@@ -57,8 +57,8 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="predictionPanel" pref="374" max="32767" attributes="1"/>
-                  <Component id="modelPanel" pref="374" max="32767" attributes="1"/>
+                  <Component id="predictionPanel" max="32767" attributes="1"/>
+                  <Component id="modelPanel" max="32767" attributes="1"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="workLabel" min="-2" max="-2" attributes="0"/>
