@@ -246,76 +246,109 @@ public class FileUtilities {
      */
     public static class AutoSaveROI implements Runnable {
 
-        UI ui;
+        UI ui; 
 
         public AutoSaveROI(UI ui) {
             this.ui = ui;
         }
 
         public void run() {
-            for (;;) {
-                try {
-                    // Save the ROI files to zip.
-                    //String roisFileName = System.getProperty("java.io.tmpdir") + "/" + ui.getImageFilePrefix();                
-                    saveROIsToZipNow(ui, false);   // false here means this is a timed save, not a manual save.
-
-                    Thread.sleep(ui.getInterval());
-                } catch (InterruptedException e) {
-                    //ui.threadMessage("Autosave thread interrupted");
-                    break;
+            while (!Thread.currentThread().isInterrupted()) {
+                for (;;) {
+                    try {
+                        // Save the ROI files to zip.
+                        //String roisFileName = System.getProperty("java.io.tmpdir") + "/" + ui.getImageFilePrefix();                
+                        saveROIsToZipNow(ui, false);   // false here means this is a timed save, not a manual save.
+                        Thread.sleep(ui.getInterval());
+                    } catch (InterruptedException e) {
+                        //ui.threadMessage("Autosave thread interrupted");
+                        //System.out.println("Autosave thread interrupted");
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
                 }
             }
-        }   
-
+        }  
+        
     }
    
     
-        public static String saveROIsToZipNow(UI ui, boolean manualSave) {
-            // Save the ROI files to a zip file in the .tmp folder
-            String type;
-            String extension = ui.getImageFileExtension();
-            if (extension.compareTo(NRRD_EXTENSION) == 0) {
-                type = NRRD_EXTENSION;
+    /**
+     * saveROIsToZipNow does the actual work of saving an ROI zip file.  It was 
+     * separated from the run method of class <code>AutosaveROI</code> so that
+     * it could be called in a non-timed way when a user wants to save an ROI
+     * file before the autosave interval has elapsed.
+     * 
+     * @param ui a reference to the <code>UI</code>
+     * @param manualSave True if being called explicitly, false when called from the run method of <code>AutosaveROI</code>
+     * 
+     * @return lastAutosave the time at which the save occurred, or a blank string if the save did not occur.
+     */
+    public static String saveROIsToZipNow(UI ui, boolean manualSave) {
+        // Save the ROI files to a zip file in the .tmp folder
+        //System.out.println("In saveROIOsToZipNow");
+        String type;
+        String extension = ui.getImageFileExtension();
+        if (extension.compareTo(NRRD_EXTENSION) == 0) {
+            type = NRRD_EXTENSION;
 
-            } else {
-                type = MIMS_EXTENSION;
-            }
-            String fileType = null;
-            if (type.startsWith(".")) {
-                fileType = type.substring(1);
-            }
+        } else {
+            type = MIMS_EXTENSION;
+        }
+        String fileType = null;
+        if (type.startsWith(".")) {
+            fileType = type.substring(1);
+        }
 
-            File roisTempDir = ui.getTempDir();
-            String lastAutosave = "";
-            // roisTempDir is sometimes not writable.  This should be dealt with elsewhere.
-            if (roisTempDir != null) {
-                String roisFileName = roisTempDir.toString() + System.getProperty("file.separator") +
-                        ui.getImageFilePrefix() + "-" + fileType;
-                Roi[] rois = ui.getRoiManager().getAllROIs();
-                if (rois.length > 0 && ui.getRoiManager().needsToBeSaved()) {
-                    checkSave(roisFileName + ROIS_EXTENSION, roisFileName, 1);
-                    ui.getRoiManager().saveMultiple(rois, roisFileName + ROIS_EXTENSION, false);
-                    ui.getRoiManager().setNeedsToBeSaved(false); 
-                    if (manualSave) {
+        File roisTempDir = ui.getTempDir();
+        String lastAutosave = "";
+        // roisTempDir is sometimes not writable.  This should be dealt with elsewhere.
+        if (roisTempDir != null) {
+            String roisFileName = roisTempDir.toString() + System.getProperty("file.separator") +
+                    ui.getImageFilePrefix() + "-" + fileType;
+            Roi[] rois = ui.getRoiManager().getAllROIs();
+            boolean ntbs = ui.getRoiManager().needsToBeSaved();
+            if (!ntbs) {
+               // System.out.println("not saving in saveROIsToZipNow because needsToBeSaved is false");
+            }
+            if (rois.length > 0 && ui.getRoiManager().needsToBeSaved()) {
+                
+                // block updates to the timer until we are done here
+                ui.getRoiManager().showAutoSaveCountdown(false); 
+                
+                checkSave(roisFileName + ROIS_EXTENSION, roisFileName, 1);
+                ui.getRoiManager().saveMultiple(rois, roisFileName + ROIS_EXTENSION, false);
+                ui.getRoiManager().setNeedsToBeSaved(false); 
+                if (manualSave) {
                     System.out.println("manually saved ROIs to filename " + roisFileName + ROIS_EXTENSION);
-                    } else {
-                       System.out.println("autosaved ROIs to filename " + roisFileName + ROIS_EXTENSION); 
-                    }
-                    LocalTime currentTime = LocalTime.now();   // 13:02:40.317
-                    String hrsec = currentTime.truncatedTo(ChronoUnit.SECONDS).toString();
-                    DateTimeFormatter USFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-                    LocalTime lt = LocalTime.parse(hrsec, USFormatter);
-                    lastAutosave = new String("Last ROI autosave " + lt);
-                    ui.getRoiManager().showAutoSaveLabel(lastAutosave);                          
-                    //threadMessage("Autosaved at "+ roisFileName + ROIS_EXTENSION);
                 } else {
-                    //threadMessage("Nothing to autosave");
+                   System.out.println("autosaved ROIs to filename " + roisFileName + ROIS_EXTENSION); 
                 }
+                LocalTime currentTime = LocalTime.now();   // 13:02:40.317
+                String hrsec = currentTime.truncatedTo(ChronoUnit.SECONDS).toString();
+                DateTimeFormatter USFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+                //System.out.println("time to be parsed is " + hrsec);
+                // I do not know why, but sometimes the hrsec string does not contain the seconds
+                int firstColonIndex = hrsec.indexOf(":");
+
+                int secondColonIndex = hrsec.indexOf(":", firstColonIndex+1);
+
+                if (secondColonIndex < 0) {
+                    USFormatter = DateTimeFormatter.ofPattern("HH:mm");
+                }
+                LocalTime lt = LocalTime.parse(hrsec, USFormatter);
+                //lastAutosave = new String("Last ROI autosave \n" + lt);
+                lastAutosave = new String("<html>Last ROI autosave<br>    " + lt + "</html>");
+                ui.getRoiManager().showAutoSaveLabel(lastAutosave);                          
+                //threadMessage("Autosaved at "+ roisFileName + ROIS_EXTENSION);
+            } else {
+                //threadMessage("Nothing to autosave");
             }
+        }
+        ui.getRoiManager().showAutoSaveCountdown(true); 
+        return lastAutosave;
 
-            return lastAutosave;
-
-        } 
+    } 
 
 
     /**
@@ -325,6 +358,7 @@ public class FileUtilities {
      * @param toSave full path and filename of filename you want to use
      * @param filename only the filename you want to use
      * @param n how many duplicates you have encountered so far
+     * 
      * @return new name of the file that doesn't conflict with any others
      */
     public static boolean checkSave(String toSave, String filename, int n) {
