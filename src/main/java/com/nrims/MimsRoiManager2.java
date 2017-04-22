@@ -128,6 +128,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     String[] types;
     String groupType;
     String lastGroupType = "";
+    String osName;
 
     // DJ: 12/08/2014
     static final String DEFAULT_TAG_NAME = "...";  
@@ -203,6 +204,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         super("MIMS ROI Manager ver 2");
       
         initComponents();
+        osName = System.getProperties().getProperty("os.name");
 
         this.ui = ui;
 
@@ -299,7 +301,11 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             }
             if (autosaveIn == 0) {
                 jLabelNextAutosave.setText("");
+                showAutoSaveCountdown(false);
                 autosaveIn = ui.getInterval() / 1000;
+            }
+            if (autosaveIn > 0) {
+                showAutoSaveCountdown(true);
             }
         }
         
@@ -1229,9 +1235,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                 int numRoiListItems = roiListModel.getSize();
                                 int index = 0;
                                 for (int selectedIndex : roijlist.getSelectedIndices()) {
-                                    System.out.println("selectedIndex rats is " + selectedIndex );
                                     String roiName = (roiListModel.elementAt(selectedIndex)).toString();
-                                                                 ROIgroup newGroup = null;
+                                    ROIgroup newGroup = null;
                                     if (newGroupName.compareTo("...") == 0){
                                         newGroup = DEFAULT_GROUP;
                                     } else {
@@ -3544,8 +3549,9 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     private void jLabelNextAutosaveMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabelNextAutosaveMouseClicked
         // TODO add your handling code here:
         if (SwingUtilities.isRightMouseButton( evt)) { 
-            // Ignore if no ROIs are currently shown
-            if (!roisMap.isEmpty()) {
+            // Ignore if no ROIs are currently shown or the the countdown is not active   
+            boolean showIt = jLabelNextAutosave.getText().length() > 0;           
+            if (!roisMap.isEmpty() && showIt) {
                 int n = JOptionPane.showConfirmDialog(
                     this,
                     "Cancel the next autosave?",
@@ -4382,7 +4388,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             return error("The list is empty.");
         }
         
-        System.out.println("preventing delete of all ROIs");
+        //System.out.println("preventing delete of all ROIs");
         int listSize = roijlist.getModel().getSize();
         int index[] = roijlist.getSelectedIndices();
         
@@ -5010,6 +5016,14 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 }
             }       
         //}
+        
+        // Select the new ROI.   This seems only to be necessary on OSX.
+        if (osName.contains("Mac OS X")) {
+            int index = roiListModel.getSize() - 1;
+            roijlist.setSelectedIndex(index);
+        }
+        
+        this.showFrame();
         // Since there is at least one ROI in existence, enable the Save button.
         enableSaveButton(true);
         setNeedsToBeSaved(true);
@@ -6065,7 +6079,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /**
      * This class controls how ROIs are listed and displayed in the jlist. It uses html so that an index is displayed in
-     * light grey followed by the name of the ROI in black. Prefereably the jlist would have the index built into it but
+     * light grey followed by the name of the ROI in black. Preferably the jlist would have the index built into it but
      * I can not find any implementation of the jlist that does that.
      */
     class ComboBoxRenderer extends JLabel implements ListCellRenderer {
