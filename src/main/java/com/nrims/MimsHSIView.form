@@ -401,30 +401,26 @@
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" alignment="0" groupAlignment="1" attributes="0">
-                              <Group type="103" alignment="1" groupAlignment="0" attributes="0">
-                                  <Component id="rgbMaxjSlider" alignment="0" min="-2" pref="300" max="-2" attributes="1"/>
-                                  <Component id="rgbMinjSlider" alignment="0" min="-2" pref="300" max="-2" attributes="1"/>
-                              </Group>
-                              <Group type="102" alignment="1" attributes="0">
-                                  <Component id="jLabel12" min="-2" max="-2" attributes="1"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="transparencyjComboBox" min="-2" pref="127" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="scalebarjComboBox" min="-2" pref="105" max="-2" attributes="1"/>
-                              </Group>
+                          <Component id="rgbMaxjLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="rgbMinjLabel" min="0" max="32767" attributes="1"/>
+                          <Component id="jLabel12" alignment="0" min="-2" max="-2" attributes="1"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Group type="103" alignment="1" groupAlignment="0" attributes="0">
+                              <Component id="rgbMaxjSlider" alignment="0" min="-2" pref="300" max="-2" attributes="1"/>
+                              <Component id="rgbMinjSlider" alignment="0" min="-2" pref="300" max="-2" attributes="1"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="rgbMaxjLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                                  <Component id="rgbMinjLabel" alignment="0" min="0" max="32767" attributes="1"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="304" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
+                              <Component id="transparencyjComboBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="scalebarjComboBox" min="-2" pref="105" max="-2" attributes="1"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
