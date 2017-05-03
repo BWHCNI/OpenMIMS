@@ -216,7 +216,7 @@ public class SegUtils extends javax.swing.SwingWorker<Boolean, Void> {
         
         List<List<int[]>> dataPoints = new ArrayList<List<int[]>>(trainingGroups.size());
         
-        // for each training group, get the group number (a string) from the roisMap,
+        // for each training group, get the group number (a string) from the roisGroupMap,
         // then use that to get the the rois from the rois hashtable.
         Map groupsMap = roiManager.getGroupMap();
         Hashtable rois = roiManager.getROIs();
