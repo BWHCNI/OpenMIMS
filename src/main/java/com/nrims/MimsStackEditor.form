@@ -189,6 +189,7 @@
         <Component class="javax.swing.JButton" name="concatButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Concatenate"/>
+            <Property name="toolTipText" type="java.lang.String" value="Prepend or append another image or image stack to the current image set."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="concatButtonActionPerformed"/>
@@ -200,10 +201,14 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="deleteListTextField">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="List of planes to delete in the image."/>
+          </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="deleteListButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Delete"/>
+            <Property name="toolTipText" type="java.lang.String" value="Delete the planes listed above."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteListButtonActionPerformed"/>
@@ -217,6 +222,7 @@
         <Component class="javax.swing.JButton" name="reinsertButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Reinsert"/>
+            <Property name="toolTipText" type="java.lang.String" value="Reinsert the planes listing above."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reinsertButtonActionPerformed"/>
@@ -228,6 +234,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="reinsertListTextField">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="List of previously deleted planes to be reinserted."/>
+          </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="displayActionButton">
           <Properties>
@@ -238,6 +247,9 @@
           </Events>
         </Component>
         <Component class="javax.swing.JSpinner" name="translateXSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Move the image in the X direction by this amount."/>
+          </Properties>
           <Events>
             <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="translateXSpinnerStateChanged"/>
           </Events>
@@ -253,6 +265,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JSpinner" name="translateYSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Move the image in the Y direction by this amount."/>
+          </Properties>
           <Events>
             <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="translateYSpinnerStateChanged"/>
           </Events>
@@ -260,6 +275,7 @@
         <Component class="javax.swing.JButton" name="autoTrackButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Autotrack"/>
+            <Property name="toolTipText" type="java.lang.String" value="Using the currently-selected mass, register the image automatically."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoTrackButtonActionPerformed"/>
@@ -268,6 +284,7 @@
         <Component class="javax.swing.JButton" name="untrackButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Untrack"/>
+            <Property name="toolTipText" type="java.lang.String" value="Reset all translation to zero."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="untrackButtonActionPerformed"/>
@@ -278,6 +295,7 @@
         <Component class="javax.swing.JButton" name="sumButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Sum"/>
+            <Property name="toolTipText" type="java.lang.String" value="Generate a sum image from whichever mass image or ratio image was most recently clicked."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sumButtonActionPerformed"/>
@@ -298,10 +316,14 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="sumTextField">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="The range of planes to be summed.  Leave blank to sum the entire image."/>
+          </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="jButton1">
           <Properties>
             <Property name="text" type="java.lang.String" value="Uncompress"/>
+            <Property name="toolTipText" type="java.lang.String" value=""/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
