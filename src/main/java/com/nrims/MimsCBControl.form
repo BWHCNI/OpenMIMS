@@ -39,6 +39,7 @@
     <Component class="javax.swing.JRadioButton" name="jRadioButton1">
       <Properties>
         <Property name="text" type="java.lang.String" value="Auto adjust"/>
+        <Property name="toolTipText" type="java.lang.String" value="Calculate new contrast settings each time a new slice is selected in the stack."/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jRadioButton1ActionPerformed"/>
@@ -63,6 +64,7 @@
             <StringItem index="12" value="Invert LUT"/>
           </StringArray>
         </Property>
+        <Property name="toolTipText" type="java.lang.String" value="Display the image using Lookup Tables other than the gray talbe used by default."/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jComboBox2ActionPerformed"/>
