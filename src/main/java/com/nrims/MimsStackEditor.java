@@ -1503,6 +1503,7 @@ public class MimsStackEditor extends javax.swing.JPanel {
         interleaveButton = new javax.swing.JButton();
 
         concatButton.setText("Concatenate");
+        concatButton.setToolTipText("Prepend or append another image or image stack to the current image set.");
         concatButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 concatButtonActionPerformed(evt);
@@ -1511,7 +1512,10 @@ public class MimsStackEditor extends javax.swing.JPanel {
 
         jLabel5.setText("Delete List (eg: 2,4,8-25,45...)");
 
+        deleteListTextField.setToolTipText("List of planes to delete in the image.");
+
         deleteListButton.setText("Delete");
+        deleteListButton.setToolTipText("Delete the planes listed above.");
         deleteListButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteListButtonActionPerformed(evt);
@@ -1521,6 +1525,7 @@ public class MimsStackEditor extends javax.swing.JPanel {
         trueIndexLabel.setText("True Index: 999   Display Index: 999");
 
         reinsertButton.setText("Reinsert");
+        reinsertButton.setToolTipText("Reinsert the planes listing above.");
         reinsertButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reinsertButtonActionPerformed(evt);
@@ -1529,6 +1534,8 @@ public class MimsStackEditor extends javax.swing.JPanel {
 
         jLabel1.setText("Reinsert List (True plane numbers)");
 
+        reinsertListTextField.setToolTipText("List of previously deleted planes to be reinserted.");
+
         displayActionButton.setText("Display Action");
         displayActionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1536,6 +1543,7 @@ public class MimsStackEditor extends javax.swing.JPanel {
             }
         });
 
+        translateXSpinner.setToolTipText("Move the image in the X direction by this amount.");
         translateXSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 translateXSpinnerStateChanged(evt);
@@ -1546,6 +1554,7 @@ public class MimsStackEditor extends javax.swing.JPanel {
 
         jLabel3.setText("Translate Y");
 
+        translateYSpinner.setToolTipText("Move the image in the Y direction by this amount.");
         translateYSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 translateYSpinnerStateChanged(evt);
@@ -1553,6 +1562,7 @@ public class MimsStackEditor extends javax.swing.JPanel {
         });
 
         autoTrackButton.setText("Autotrack");
+        autoTrackButton.setToolTipText("Using the currently-selected mass, register the image automatically.");
         autoTrackButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 autoTrackButtonActionPerformed(evt);
@@ -1560,6 +1570,7 @@ public class MimsStackEditor extends javax.swing.JPanel {
         });
 
         untrackButton.setText("Untrack");
+        untrackButton.setToolTipText("Reset all translation to zero.");
         untrackButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 untrackButtonActionPerformed(evt);
@@ -1567,6 +1578,7 @@ public class MimsStackEditor extends javax.swing.JPanel {
         });
 
         sumButton.setText("Sum");
+        sumButton.setToolTipText("Generate a sum image from whichever mass image or ratio image was most recently clicked.");
         sumButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sumButtonActionPerformed(evt);
@@ -1583,7 +1595,10 @@ public class MimsStackEditor extends javax.swing.JPanel {
 
         compressTextField.setToolTipText("<html>Enter a positive integer here to specifiy the number of planes that are compressed into blocks by the Compress button.<br>If you leave this field blank and press the Compress button, all images will be compressed into a single plane.</html>");
 
+        sumTextField.setToolTipText("The range of planes to be summed.  Leave blank to sum the entire image.");
+
         jButton1.setText("Uncompress");
+        jButton1.setToolTipText("");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
