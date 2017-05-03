@@ -330,9 +330,7 @@ public class FileUtilities {
                 //System.out.println("time to be parsed is " + hrsec);
                 // I do not know why, but sometimes the hrsec string does not contain the seconds
                 int firstColonIndex = hrsec.indexOf(":");
-
                 int secondColonIndex = hrsec.indexOf(":", firstColonIndex+1);
-
                 if (secondColonIndex < 0) {
                     USFormatter = DateTimeFormatter.ofPattern("HH:mm");
                 }
