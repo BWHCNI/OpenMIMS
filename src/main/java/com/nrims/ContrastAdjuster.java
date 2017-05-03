@@ -196,14 +196,17 @@ public class ContrastAdjuster extends JPanel implements Runnable,
         panel = new JPanel();
         panel.setLayout(new GridLayout(0, 2, 0, 0));
         autoB = new JButton("Auto");
+        autoB.setToolTipText("Iterate though a set of contrast settings, eventually returning back to their default values.");
         autoB.addActionListener(this);
         autoB.addKeyListener(ij);
         panel.add(autoB);
         resetB = new JButton("Reset");
+        resetB.setToolTipText("Reset the contrast, brightness, minimum, and maximum settings back to their default values.");
         resetB.addActionListener(this);
         resetB.addKeyListener(ij);
         panel.add(resetB);
         setB = new JButton("Set");
+        setB.setToolTipText("Allows you to set the input values for min and max that are outside the range of those provided by the Mimimum and Maximum sliders.");
         setB.addActionListener(this);
         setB.addKeyListener(ij);
         panel.add(setB);
