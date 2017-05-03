@@ -32,6 +32,7 @@ import java.awt.Component;
 import static java.awt.Component.LEFT_ALIGNMENT;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import static java.awt.Frame.ICONIFIED;
@@ -54,6 +55,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
@@ -158,11 +160,11 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     //add to something
 //    HashMap locations = new HashMap<String, ArrayList<Integer[]>>();
-//    HashMap roisMap = new HashMap<String, ROIgroup>();
+//    HashMap roisGroupMap = new HashMap<String, ROIgroup>();
 //    HashMap oldFormatGroupsMap = new HashMap<String, String>();
     
     HashMap locations = new HashMap<String, ArrayList<Integer[]>>();
-    Map<String, ROIgroup> roisMap = new HashMap<String, ROIgroup>();
+    Map<String, ROIgroup> roisGroupMap = new HashMap<String, ROIgroup>();
     Map<String, String> oldFormatGroupsMap = new HashMap<String, String>();
     
     
@@ -758,7 +760,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         
         String roiNumber = "";
         ROIgroup roiGroup = null; 
-        for (Map.Entry<String, ROIgroup> theEntry : roisMap.entrySet()) {
+        for (Map.Entry<String, ROIgroup> theEntry : roisGroupMap.entrySet()) {
             roiNumber = theEntry.getKey();
             roiGroup = theEntry.getValue();
             String key = roiGroup.getGroupName();
@@ -860,7 +862,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 //
 //            // Overwrite all previous maps.
 //            for (int i = 0; i < g_rois.length; i++) {
-//                roisMap.put(g_rois[i].getName(), newName);  // todo  wrong
+//                roisGroupMap.put(g_rois[i].getName(), newName);  // todo  wrong
 //            }
 //
 //            // Select new group.
@@ -1108,7 +1110,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                         final String roiName = (roijlist.getSelectedValue() == null) ? "-1" : roijlist.getSelectedValue().toString();
 
                         public void actionPerformed(ActionEvent e) {
-                            roisMap.remove(roiName);
+                            roisGroupMap.remove(roiName);
                             setNeedsToBeSaved(true);
                             groupjlist.setSelectedValue(DEFAULT_GROUP, true);
                         }
@@ -1159,14 +1161,14 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                 } else {                              
                                     newGroup = (ROIgroup)groups.get(index);
                                 }
-                                // Put this into roisMap.  For roiNumbers that were assigned to the default group,
-                                // replace fails because they were never put in the roisMap, so use put instead of replace.
-                                ROIgroup oldGroup = (ROIgroup)roisMap.get(roiNumber);
+                                // Put this into roisGroupMap.  For roiNumbers that were assigned to the default group,
+                                // replace fails because they were never put in the roisGroupMap, so use put instead of replace.
+                                ROIgroup oldGroup = (ROIgroup)roisGroupMap.get(roiNumber);
                                 
                                 if (oldGroup == null) {
-                                    roisMap.put(roiNumber, newGroup);
+                                    roisGroupMap.put(roiNumber, newGroup);
                                 } else {
-                                    roisMap.replace(roiNumber, newGroup);
+                                    roisGroupMap.replace(roiNumber, newGroup);
                                 }
                                 
                                 setNeedsToBeSaved(true);
@@ -1179,13 +1181,13 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                         });
 
                         // quick check to exclude displaying the group where it is already assigned to
-                        if (roisMap.get(roiNumber) == null) {
+                        if (roisGroupMap.get(roiNumber) == null) {
                             changeGroupMenu.add(groupItem);
                         } else {
                             String groupName;
                             String name;
                             if (i >= 0) {
-                                groupName = roisMap.get(roiNumber).toString();
+                                groupName = roisGroupMap.get(roiNumber).toString();
                                 ROIgroup gp = (ROIgroup)groups.get(i);
                                 name = gp.getGroupName();
                             } else {
@@ -1250,15 +1252,15 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                             }
                                         }
                                     }         
-                                    // Put this into roisMap.  For roiNumbers that were assigned to the default group,
-                                    // replace fails because they were never put in the roisMap, so use put instead of replace.                                  
-                                    oldGroup = (ROIgroup)roisMap.get(roiName);    // ?? when the old group name should be ..., it is just a blank string. ??
+                                    // Put this into roisGroupMap.  For roiNumbers that were assigned to the default group,
+                                    // replace fails because they were never put in the roisGroupMap, so use put instead of replace.                                  
+                                    oldGroup = (ROIgroup)roisGroupMap.get(roiName);    // ?? when the old group name should be ..., it is just a blank string. ??
                                     if (oldGroup == DEFAULT_GROUP) {
-                                        roisMap.put(roiName, newGroup);
+                                        roisGroupMap.put(roiName, newGroup);
                                     } else {
                                         // !! sometimes it's not there.
-                                        if (roisMap.replace(roiName, newGroup) == null) {
-                                            roisMap.put(roiName, newGroup);
+                                        if (roisGroupMap.replace(roiName, newGroup) == null) {
+                                            roisGroupMap.put(roiName, newGroup);
                                         }
                                         
                                         
@@ -1286,7 +1288,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                             int[] Roiidxs = roijlist.getSelectedIndices();
                             for (int i = 0; i < Roiidxs.length; i++) {
                                 String roiName = (String) roiListModel.get(Roiidxs[i]);
-                                roisMap.remove(roiName);
+                                roisGroupMap.remove(roiName);
                             }
                             setNeedsToBeSaved(true);
                             groupjlist.setSelectedValue(DEFAULT_GROUP, true);
@@ -1460,11 +1462,11 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             String groupNameToDelete = group.getGroupName();
             for (int id = 0; id < roijlist.getModel().getSize(); id++) {
                 String roiName = roijlist.getModel().getElementAt(id).toString();
-                ROIgroup aGroup = (ROIgroup)roisMap.get(roiName);
+                ROIgroup aGroup = (ROIgroup)roisGroupMap.get(roiName);
                 String groupName = aGroup.getGroupName();
                 if (groupName != null) {
                     if (groupName.equals(groupNameToDelete)) {
-                        roisMap.remove(groupName);
+                        roisGroupMap.remove(groupName);
                     }
                 }
             }
@@ -1661,7 +1663,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
     /*
     HashMap locations = new HashMap<String, ArrayList<Integer[]>>();
-    HashMap roisMap = new HashMap<String, String>();
+    HashMap roisGroupMap = new HashMap<String, String>();
     ArrayList groups = new ArrayList<String>();
      */
     // DJ: 08/22/2014
@@ -1670,7 +1672,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     }
 
     public Map<String, ROIgroup> getGroupMap() {
-        return roisMap;
+        return roisGroupMap;
     }
 
     public ArrayList<ROIgroup> getGroups() {
@@ -1696,7 +1698,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     }
 
     public void setGroupMap(HashMap<String, ROIgroup> gMap) {
-        this.roisMap = gMap;
+        this.roisGroupMap = gMap;
     }
 
     public void setGroups(ArrayList<ROIgroup> groups) {
@@ -2130,24 +2132,24 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 return true;
             }
 
-            if (roisMap.get(roiName) == null) {
+            if (roisGroupMap.get(roiName) == null) {
                 return false;
             }
-            // If we read group information from an old ROI zip file, roisMap
+            // If we read group information from an old ROI zip file, roisGroupMap
             // is a HashMap of <String><String>.   New files are HashMap of
             // String, ROIgroup                                 
             ROIgroup group;
             String name;
-            Object obj = roisMap.get(roiName);
+            Object obj = roisGroupMap.get(roiName);
             //HashMap map = (HashMap)obj;
             if (obj instanceof String) {
                 name = (String)obj;
             } else {
-                group = (ROIgroup)roisMap.get(roiName);
+                group = (ROIgroup)roisGroupMap.get(roiName);
                 name = group.getGroupName();
             }                      
             // The passed roiName is actually an ROI number          
-            // roisMap is a Hashmap containing the group number and ROIGroup
+            // roisGroupMap is a Hashmap containing the group number and ROIGroup
             if (name.equals(groupName)) {
                 return true;
             }
@@ -2220,9 +2222,9 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
         // update groups map.
 
-        ROIgroup group = (ROIgroup) roisMap.remove(name);
+        ROIgroup group = (ROIgroup) roisGroupMap.remove(name);
         ROIgroup newGroup = new ROIgroup(group.getGroupName(), group.getGroupType(), group.getTagName()); 
-        roisMap.put(name2, newGroup);
+        roisGroupMap.put(name2, newGroup);
 
         // update the list display.
         roiListModel.set(index, name2);
@@ -2343,7 +2345,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             selectedRoisStats();
         } else if (indices.length == 1) {
             String roiName = (String) roiListModel.getElementAt(indices[0]);
-            ROIgroup group = (ROIgroup)roisMap.get(roiName);
+            ROIgroup group = (ROIgroup)roisGroupMap.get(roiName);
             if (group != null) {
                 String groupName = group.getGroupName();
                 //ArrayList<String> associatedTags = (ArrayList<String>) tagsMap.get(roiName); // DJ: 12/08/2014
@@ -2701,8 +2703,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
      * @return the group name to which it belongs.
      */
     public ROIgroup getRoiGroup(String roiName) {
-        ROIgroup group = (ROIgroup) roisMap.get(roiName);
-        // roisMap does not include rois that belong the the default group,
+        ROIgroup group = (ROIgroup) roisGroupMap.get(roiName);
+        // roisGroupMap does not include rois that belong the the default group,
         // so if group is null, set it to the default group
         if (group == null) {
             group = DEFAULT_GROUP;
@@ -2726,7 +2728,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 trainingGroups.add(group);
             }
         }
-        //ROIgroup group = (ROIgroup) roisMap.get(roiName);
+        //ROIgroup group = (ROIgroup) roisGroupMap.get(roiName);
         return trainingGroups;
     }
     
@@ -2864,8 +2866,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         }
 
         // Assign group.
-       // roisMap.put(roi.getName(), group.getGroupType());   // todo  fixed
-        roisMap.put(roi.getName(), group);  
+       // roisGroupMap.put(roi.getName(), group.getGroupType());   // todo  fixed
+        roisGroupMap.put(roi.getName(), group);  
         setNeedsToBeSaved(true);
         return val;
     }
@@ -3510,7 +3512,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         // TODO add your handling code here:
         if (SwingUtilities.isRightMouseButton( evt)) { 
             // Ignore if no ROIs are currently shown
-            if (!roisMap.isEmpty()) {
+            if (!roisGroupMap.isEmpty()) {
                 int n = JOptionPane.showConfirmDialog(
                     this,
                     "Save ROIs now?\nThis saves ROIs to the .tmp subdirectory of the currently working directory, \nso it is the same as ROI autosave except that it allows you to save \nwithout waiting for the autosave interval to expire.",
@@ -3551,7 +3553,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         if (SwingUtilities.isRightMouseButton( evt)) { 
             // Ignore if no ROIs are currently shown or the the countdown is not active   
             boolean showIt = jLabelNextAutosave.getText().length() > 0;           
-            if (!roisMap.isEmpty() && showIt) {
+            //if (!roisGroupMap.isEmpty() && showIt) {
+            if (showIt) {
                 int n = JOptionPane.showConfirmDialog(
                     this,
                     "Cancel the next autosave?",
@@ -3845,12 +3848,26 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             resetRoiLocationsLength();
         }
     }
+    
+    
+
+
+    private void ShowMessage(String message) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JOptionPane.showMessageDialog(null, message);
+            }
+        });
+    }
+
+
+
 
     /**
      * Opens a zip file containing saved ROIs.
      */
     private void openZip(String path) {
-
         // Delete rois.
         roiListModel.clear();
         rois = new Hashtable();
@@ -3859,7 +3876,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         // Delete groups.
         clearGroupListModel();
         groups = new ArrayList<ROIgroup>();
-        roisMap = new HashMap<String, ROIgroup>();
+        roisGroupMap = new HashMap<String, ROIgroup>();
 
         // DJ: 12/08/2014: Delete Tags.
         clearTagListModel();
@@ -3908,14 +3925,13 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                     }
                 } else if (name.equals(GROUP_FILE_NAME)) {
                     ois = new ObjectInputStream(in);
-                    
                     try {
-                        Object obj = ois.readObject();
+                        Object obj = ois.readObject();   // fails on old zip files
                         ArrayList ar = (ArrayList)obj;
                         // Is it an ArrayList of Strings or ROIgroup
                         
                         // ar will be empty if there were no groups defined.
-                        if (ar.size() != 0) {                                               
+                        if (ar.size() != 0) {  
                             if (ar.get(0) instanceof String) {
                                 //this.groups = (ArrayList<String>)obj;
                                 ArrayList groupStringArray = (ArrayList<String>)obj;
@@ -3956,34 +3972,33 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                             }                       
                         } 
                       
-                    } catch (ClassNotFoundException e) {
+                    } catch (InvalidClassException ice) {
+                        //error(ice.toString());
+                        System.out.println(ice.toString());
+                    }
+                    catch (Exception e) {
                         error(e.toString());
                         System.out.println(e.toString());
                     }
-                    catch (Exception e) {
-                         //error(e.toString());
-                        System.out.println(e.toString());
-                    }
                 } else if (name.equals(GROUP_MAP_FILE_NAME)) {
-                    ois = new ObjectInputStream(in);
+                    ois = new ObjectInputStream(in);   // fails on old zip files
                     try {
-                       // this.roisMap = (HashMap<String, String>) ois.readObject();
+                       // this.roisGroupMap = (HashMap<String, String>) ois.readObject();
                        // Older format for ROI groups uses strings instead of ROIgroup
                         Object obj = ois.readObject();
                         if (obj instanceof ROIgroup) {   // does not work                            
-                            this.roisMap = (HashMap<String, ROIgroup>) obj;    
+                            this.roisGroupMap = (HashMap<String, ROIgroup>) obj;    
                         } else {
                             
                             // the obj can contain values of type ROIgroup OR string!
                             
-                            // older format for the roi zip file uses strings, not ROIgroups
-                            //obj has an roi number and a group pointer of some kind.  
-                            // Put the number in the string of the new roisMap HashMap,
+                            // The older format for the roi zip file uses strings, not ROIgroups
+                            // obj has an roi number and a group pointer of some kind.  
+                            // Put the number in the string of the new roisGroupMap HashMap,
                             // and create a new ROIgroup object to put as the value
                             // the ROIgroup has a groupname and group type.
-                            
-                            // First dump any entries already in roisMap
-                            roisMap.clear();
+                            // First dump any entries already in roisGroupMap
+                            roisGroupMap.clear();
                             // obj has all the entries.  Loop through it
                             String roiNumber;
                             String groupName = "";
@@ -4003,10 +4018,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                     // Exception happens if we try to read a string (old format)
                                     oldFormat = true;
                                     break;
-
                                 }
-
-                                roisMap.put(roiNumber, roiGroup);                              
+                                roisGroupMap.put(roiNumber, roiGroup);                              
                             }
                             if (oldFormat) {
                                 Map<String, String> amap2 = (HashMap<String, String>) obj;
@@ -4017,16 +4030,19 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                                     String tName = DEFAULT_TAG_NAME;
                                     ROIgroup group = new ROIgroup(roiNumber, gName, tName);
                                     
-                                    roisMap.put(roiNumber, group);                              
+                                    roisGroupMap.put(roiNumber, group);                              
                                 }                                    
                             }
-                            
                             // debug
-                            if (roisMap.size() == 0) {
-                                System.out.println("groupsMap is empty");
+                            if (roisGroupMap.size() == 0) {
+                                System.out.println("roisMap is empty");
                             }
                             // end debug
                         }
+                    } catch (InvalidClassException ice) {
+                        //error(ice.toString());
+                        System.out.println(ice.toString());
+
                     } catch (ClassNotFoundException e) {
                         error(e.toString());
                         System.out.println(e.toString());
@@ -4047,6 +4063,9 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                         for (int i = 0; i < tagsStringArray.length; i++) {
                             tagListModel.addElement(tagsStringArray[i]);
                         }
+                    } catch (InvalidClassException ice) {
+                        //error(ice.toString());
+                        System.out.println(ice.toString());
                     } catch (ClassNotFoundException e) {
                         error(e.toString());
                         System.out.println(e.toString());
@@ -4055,29 +4074,37 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                     ois = new ObjectInputStream(in);
                     try {
                         this.tagsMap = (HashMap<String, ArrayList<String>>) ois.readObject();
+                    } catch (InvalidClassException ice) {
+                        //error(ice.toString());
+                        System.out.println(ice.toString());
                     } catch (ClassNotFoundException e) {
                         error(e.toString());
                         System.out.println(e.toString());
                     }
                 }
-
-                //----------------------------------------------------
                 entry = in.getNextEntry();
             }
             in.close();
             savedpath = path;
             previouslySaved = true;
             resetTitle();
+        } catch (InvalidClassException e) {
+            error(e.toString());
+            System.out.println(e.toString());
+            return;
         } catch (IOException e) {
             error(e.toString());
             System.out.println(e.toString());
         }
         if (nRois == 0) {
             error("This ZIP archive does not appear to contain \".roi\" files");
+            ShowMessage("This ZIP archive does not appear to contain \".roi\" entries.");
         }
-        // debug code
-        if (roisMap.size() == 0) {
-            System.out.println("Warning: No groups were found in the rois.zip file");
+        
+        if (  (roisGroupMap.size() == 0) && (nRois > 0) ) {
+            // We could actually have read some groups from the file, but they might not be associated with any ROIs.  
+            // ShowOptionPane hangs the program if used here, so I had to add this ShowMessage thing.
+            ShowMessage("No ROIs were found to be part of any group. This may be normal, \nbut can also occur when reading ROI zip files that use an obsolete \nformat (e.g., from a prior version of OpenMIMS).  In that case, you may \nneed to recreate your groups and tags, and possibly your ROIs.");
         }
         sortROIList();
         resetRoiLocationsLength();
@@ -4088,7 +4115,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
         //DJ: 12/08/2014
         tagjlist.setSelectedValue(DEFAULT_TAG_NAME, true);
-        tagValueChanged(null);
+        tagValueChanged(null);         
         
         // If there is a Segmentation Config form open, we need to update
         // the groups combo box in it, assuming there are any groups in this
@@ -4109,14 +4136,6 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         if (rois.size() > 0) {
             saveButton.setEnabled(true);
         }
-             
-//        int lastInterval = autosaveIn;
-//                   //cancelTimer();
-//                   //startTimer(1);
-//        autosaveIn = (ui.getInterval() / 1000) - lastInterval;
-//        //autosaveIn = (ui.getInterval() / 1000);
-//        System.out.println("autosaveIn in openZip is " + autosaveIn);
-
     }
 
     /**
@@ -4325,7 +4344,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             label = GROUP_MAP_FILE_NAME;
             zos.putNextEntry(new ZipEntry(label));
             ObjectOutputStream obj_out2 = new ObjectOutputStream(zos);
-            obj_out2.writeObject(roisMap);  // type is HashMap<String, ROIgroup>();
+            obj_out2.writeObject(roisGroupMap);  // type is HashMap<String, ROIgroup>();
             obj_out2.flush();
 
             //--------------------------------------------------------
@@ -4419,7 +4438,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             if (delete) {
                 locations.remove(roiListModel.get(i));
                 rois.remove(roiListModel.get(i));
-                roisMap.remove(roiListModel.get(i));
+                roisGroupMap.remove(roiListModel.get(i));
                 tagsMap.remove(roiListModel.get(i)); // DJ: 12/08/2014
                 roiListModel.remove(i);
             }
@@ -4528,9 +4547,9 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
             // Duplicate group assignment.
             
-            ROIgroup group = (ROIgroup) roisMap.get(name);
+            ROIgroup group = (ROIgroup) roisGroupMap.get(name);
             if (group != null) {
-                roisMap.put(label, group);  // todo  fixed            
+                roisGroupMap.put(label, group);  // todo  fixed            
             }
 
             // DJ: 12/08/2014
@@ -4994,13 +5013,13 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 //String group = (String) groupListModel.getElementAt(indices[0]);
                 ROIgroup roiGroup = (ROIgroup)groupListModel.getElementAt(indices[0]);
                 String groupName = roiGroup.getGroupName();
-                // Don't add rois that are in the default group to the roisMap.
+                // Don't add rois that are in the default group to the roisGroupMap.
                if (indices.length == 1 && !roiGroup.equals(DEFAULT_GROUP)) {  // todo fixed.  D
-                   roisMap.put(label, roiGroup);
+                   roisGroupMap.put(label, roiGroup);
                 }
             } else {
                 ROIgroup roiGroup = new ROIgroup("", GROUPTYPE_NORMAL, DEFAULT_TAG_NAME);
-                roisMap.put(label, roiGroup);
+                roisGroupMap.put(label, roiGroup);
             } 
 
             // DJ: 12/08/2014
@@ -5496,7 +5515,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         }
 
         // Assign group.
-        roisMap.put(label, group);
+        roisGroupMap.put(label, group);
         setNeedsToBeSaved(true);;
         
         return val;
@@ -5557,7 +5576,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         }
 
         associatedTags.add(tag);
-       // roisMap.put(label, associatedTags);   // todo  probably wrong
+       // roisGroupMap.put(label, associatedTags);   // todo  probably wrong
 
         setNeedsToBeSaved(true);
         return val;
