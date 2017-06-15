@@ -5130,10 +5130,8 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         double massVal1, diff;
         double mindiff = Double.MAX_VALUE;
         int returnIdx = -1;
-
-        if (tolerance > 0.0) {
-            // do nothing
-        } else {
+        
+        if (tolerance <= 0.0) {
             return returnIdx;
         }
 
@@ -5142,8 +5140,8 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
             massVal1 = (new Double(getOpener().getMassNames()[i])).doubleValue();
             diff = Math.abs(massValue - massVal1);          
             if (diff < mindiff && diff < tolerance) {
+                mindiff = diff;
                 returnIdx = i;
-                break;
             }
         }
         return returnIdx;
