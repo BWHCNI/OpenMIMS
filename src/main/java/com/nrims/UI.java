@@ -111,7 +111,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public static final String SAVE_SESSION = "Save Session";
     
     public String operatingSystem;
-    private String mimsVersion = "2.7.1";  // previous was 2.6.3.   Version 2.7.1 fixes the major bugs I created in the ROI Manager. 
+    private String mimsVersion = "2.7.2";  // previous was 2.6.3.   Version 2.7.2 fixes bug 37 (autotracking during batch conversion of
+    // .im files to .nrrd files)
 
     public int maxMasses = 25;
     private double medianFilterRadius = 1;
@@ -3802,7 +3803,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
      */
 private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
 
-    String message = "OpenMIMS v" + mimsVersion + ", May 7, 2017 (rev: " + revisionNumber + ")";
+    String message = "OpenMIMS v" + mimsVersion + ", Jun 15, 2017 (rev: " + revisionNumber + ")";
     message += "\n\n";
     message += "http://www.nrims.hms.harvard.edu/";
     message += "\n\n";
