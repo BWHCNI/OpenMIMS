@@ -111,7 +111,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public static final String SAVE_SESSION = "Save Session";
     
     public String operatingSystem;
-    private String mimsVersion = "2.7.2";  // previous was 2.6.3.   Version 2.7.2 fixes bug 37 (autotracking during batch conversion of
+    private String mimsVersion = "2.7.2";  // previous was 2.7.1.   Version 2.7.2 fixes bug 37 (autotracking during batch conversion of
     // .im files to .nrrd files)
 
     public int maxMasses = 25;
