@@ -49,6 +49,10 @@ public class OpenerManager extends javax.swing.JDialog implements ActionListener
 
     /**
      * Creates new form OpenerDialog1
+     * 
+     * @param parent a reference to the <code>ui</code> instance.
+     * @param opener a reference to the <code>Opener</code> instance.
+
      */
     public OpenerManager(com.nrims.UI parent, Opener opener) {
         this(parent, opener, numPlanesFixed);
