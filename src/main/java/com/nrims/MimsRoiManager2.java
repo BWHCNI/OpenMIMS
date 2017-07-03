@@ -276,6 +276,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
      * display of time left before the next ROI autosave occurs.
      *
      * @param seconds The amount of seconds until the invocations of the task.
+     * @param autosaveIn unused at this time
      */
     public void Reminder (int seconds, int autosaveIn) {  
          
@@ -4398,6 +4399,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
      * Deletes currently selected ROIs. Deletes all if none selected.
      * 
      * @param prompt true if user should be prompted before allowed deletion of the selected ROIs.
+     * @param noDeleteAll if true, prevents deletion of all ROIs.
      *
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
