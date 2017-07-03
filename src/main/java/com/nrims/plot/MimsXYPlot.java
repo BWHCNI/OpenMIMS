@@ -426,7 +426,7 @@ public class MimsXYPlot extends XYPlot {
      * Set the line profile this XYPlot corresponds to. Needed for drawing the point on a MimsPlus which corresponds to
      * the current crosshair
      *
-     * @param profile
+     * @param profile A <code>MimsLineProfile</code> reference.
      */
     public void setLineProfile(MimsLineProfile profile) {
         lineProfile = profile;
@@ -436,7 +436,7 @@ public class MimsXYPlot extends XYPlot {
      * Set the JFreeChart this XYPlot corresponds to. Needed for drawing the point on a MimsPlus which corresponds to
      * the current crosshair
      *
-     * @param chart
+     * @param chart A <code>MimsJFreeChart</code> reference.
      */
     public void setParent(MimsJFreeChart chart) {
         parent = chart;
