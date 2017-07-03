@@ -1,4 +1,5 @@
-package libsvm;
+//package libsvm;
+package SVM.libsvm;
 public class svm_problem implements java.io.Serializable
 {
 	public int l;
