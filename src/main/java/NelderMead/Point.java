@@ -20,7 +20,11 @@ public final class Point {
         this.coords = new double[dim];
     }
 
-    /** returns the ith coordinate (1-based) */
+    /** returns the ith coordinate (1-based) 
+    * @param i index for coordinate to return. 
+    * 
+    * @return the coordinate a the ith position (1-based)
+    */
     public double get(int i) {
         return coords[i - 1];
     }
