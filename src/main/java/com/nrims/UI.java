@@ -198,7 +198,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     protected MimsAction mimsAction = null;
     private imageNotes imgNotes;
     private PrefFrame prefs;
-    private String revisionNumber = "2";
+    private String revisionNumber = "1";
     public static Boolean single_instance_mode = false;
     public static UI ui = null;
     public boolean sessionOpened = false;
