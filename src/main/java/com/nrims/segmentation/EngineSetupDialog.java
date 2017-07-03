@@ -8,6 +8,8 @@ public abstract class EngineSetupDialog extends javax.swing.JDialog {
 
     /**
      * Creates new form EngineSetupDialog
+     * 
+     * @param parent a reference to the parent JDialog
      */
     public EngineSetupDialog(javax.swing.JDialog parent) {
         super(parent, true);
