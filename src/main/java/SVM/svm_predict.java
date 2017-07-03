@@ -1,7 +1,7 @@
 package SVM;
 
-//import SVM.libsvm.*;
-import libsvm.*;
+import SVM.libsvm.*;
+//import libsvm.*;
 import java.io.*;
 import java.util.*;
 
