@@ -925,11 +925,11 @@ public class SegmentationForm extends javax.swing.JPanel implements java.beans.P
         SVM.SvmEngine engine = (SVM.SvmEngine) activeEngine;
         if (engine != null) {
             //write SVM model
-            //SVM.libsvm.svm_model model = (SVM.libsvm.svm_model) engine.getProperties().getValueOf("model");
-            libsvm.svm_model model = (libsvm.svm_model) engine.getProperties().getValueOf("model");
+            SVM.libsvm.svm_model model = (SVM.libsvm.svm_model) engine.getProperties().getValueOf("model");
+            //libsvm.svm_model model = (libsvm.svm_model) engine.getProperties().getValueOf("model");
             try {
-                //SVM.libsvm.svm.svm_save_model(dir + "_model.txt", model);
-                libsvm.svm.svm_save_model(dir + "_model.txt", model);
+                SVM.libsvm.svm.svm_save_model(dir + "_model.txt", model);
+                //libsvm.svm.svm_save_model(dir + "_model.txt", model);
 
             } catch (Exception e) {
                 e.printStackTrace();
