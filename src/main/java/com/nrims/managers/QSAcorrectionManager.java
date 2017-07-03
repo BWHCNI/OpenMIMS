@@ -29,6 +29,9 @@ public class QSAcorrectionManager extends javax.swing.JFrame {
 
     /**
      * Creates new form QSACorrectionFrame
+     * 
+     * @param ui a reference to the <code>ui</code> instance.
+
      */
     public QSAcorrectionManager(UI ui) {
         this.ui = ui;
