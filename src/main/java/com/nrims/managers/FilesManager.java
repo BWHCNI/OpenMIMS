@@ -43,6 +43,12 @@ public class FilesManager extends javax.swing.JFrame {
     // Dj; 08/20/2014
     /**
      * Creates new form FilesManager
+     *  
+     * @param ui a reference to the <code>ui</code> instance.
+     * @param filesPreviouslyOpened tbd.
+     * @param LoadFileProcessStopped tbd.
+     * @param openedFilePath tbd.
+     * 
      */
     public FilesManager(UI ui, String[] filesPreviouslyOpened, boolean LoadFileProcessStopped, String openedFilePath) {
 
