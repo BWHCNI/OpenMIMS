@@ -1,4 +1,5 @@
-package libsvm;
+//package libsvm;
+package SVM.libsvm;
 public class svm_parameter implements Cloneable,java.io.Serializable
 {
 	/* svm_type */
