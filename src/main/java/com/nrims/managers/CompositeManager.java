@@ -30,6 +30,8 @@ public class CompositeManager extends javax.swing.JFrame {
 
     /**
      * Creates new form CompositeManager
+     * 
+     * @param ui a reference to the <code>ui</code> instance.
      */
     public CompositeManager(UI ui) {
         initComponents();
