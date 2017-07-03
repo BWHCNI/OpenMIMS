@@ -1,8 +1,8 @@
 package SVM;
 
 import NelderMead.*;
-//import SVM.libsvm.*;
-import libsvm.*;
+import SVM.libsvm.*;
+//import libsvm.*;
 import com.nrims.segmentation.SegmentationProperties;
 import java.io.*;
 import java.text.DateFormat;
