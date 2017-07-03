@@ -63,6 +63,9 @@ public class ConvertManager extends JFrame implements PropertyChangeListener {
 
     /**
      * Creates new form convertManager
+     * 
+     * @param ui a reference to the <code>ui</code> instance.
+     * @param isHTML true if this class should be an HTML generator.
      */
     public ConvertManager(UI ui, boolean isHTML) {
 
