@@ -307,24 +307,22 @@ public class ReportGenerator extends javax.swing.JFrame implements MouseListener
         // JPopupMenu
         jp = new JPopupMenu();
         JMenuItem menuItem = new JMenuItem("remove");
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String currentLabelText = currentLabel.getText();
-                for (int i = 0; i < jlabelArray.size(); i++) {
-                    String labelText = jlabelArray.get(i).getText();
-                    if (labelText != null && labelText.equals(currentLabelText)) {
+        menuItem.addActionListener(event -> {
+            String currentLabelText = currentLabel.getText();
+            for (int i = 0; i < jlabelArray.size(); i++) {
+                String labelText = jlabelArray.get(i).getText();
+                if (labelText != null && labelText.equals(currentLabelText)) {
 
-                        jPanel2.remove(i);
-                        jPanel2.revalidate();
-                        jPanel2.repaint();
+                    jPanel2.remove(i);
+                    jPanel2.revalidate();
+                    jPanel2.repaint();
 
-                        jlabelArray.remove(i);
-                        imageArray.remove(i);
-                        metadataArray.remove(i);
-                        break;
-                    }
+                    jlabelArray.remove(i);
+                    imageArray.remove(i);
+                    metadataArray.remove(i);
+                    break;
                 }
-            }
+            }     
         });
         jp.add(menuItem);
 
