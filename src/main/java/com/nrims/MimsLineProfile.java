@@ -69,42 +69,29 @@ public class MimsLineProfile extends JFrame {
 
         JPopupMenu menu = chartPanel.getPopupMenu();
         JMenuItem menuItem = new javax.swing.JMenuItem("Display text");
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                displayProfileData();
-            }
-        });
+        menuItem.addActionListener(event -> displayProfileData());
 
         menu.add(menuItem, 2);
         setContentPane(chartPanel);
 
         // Add menu item for showing/hiding crosshairs.
         JMenuItem xhairs = new JMenuItem("Show/Hide Crosshairs");
-        xhairs.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                showHideCrossHairs(chartPanel);
-            }
-        });
+        xhairs.addActionListener(event -> showHideCrossHairs(chartPanel));
         chartPanel.getPopupMenu().addSeparator();
         chartPanel.getPopupMenu().add(xhairs);
         JMenuItem pointhairs = new JMenuItem("Add point roi at crosshairs");
-        pointhairs.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (pointX > 0 && pointY > 0) {
-                    ui.getRoiManager().add(new PointRoi(pointX, pointY));
-                    ui.updateAllImages();
-                }
+        pointhairs.addActionListener(event -> {
+            if (pointX > 0 && pointY > 0) {
+                ui.getRoiManager().add(new PointRoi(pointX, pointY));
+                ui.updateAllImages();
             }
         });
+
         chartPanel.getPopupMenu().add(pointhairs);
         // Replace Save As... menu item.
         chartPanel.getPopupMenu().remove(3);
         JMenuItem saveas = new JMenuItem("Save as...");
-        saveas.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                saveAs();
-            }
-        });
+        saveas.addActionListener(event -> saveAs());
         chartPanel.getPopupMenu().add(saveas, 3);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
