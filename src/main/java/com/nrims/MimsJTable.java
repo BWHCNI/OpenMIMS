@@ -431,11 +431,8 @@ public class MimsJTable {
         // Set the popup menu.
         popupMenu = new JPopupMenu();
         JMenuItem popupmenuItem = new JMenuItem(DELETE_COLUMN_CMD);
-        popupmenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                removeColumnAndData();
-            }
-        });
+        popupmenuItem.addActionListener(event -> removeColumnAndData());
+
         popupMenu.add(popupmenuItem);
         MouseListener popupListener = new PopupListener();
         table.getTableHeader().addMouseListener(popupListener);
@@ -454,20 +451,17 @@ public class MimsJTable {
 
         // Save as menut item.
         menuItem = new JMenuItem("Save as...");
-        menuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveActionPerformed(evt);
-            }
-        });
+        menuItem.addActionListener(event -> saveActionPerformed(event));
+//        menuItem.addActionListener(new java.awt.event.ActionListener() {
+//            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                saveActionPerformed(evt);
+//            }
+//        });
         menu.add(menuItem);
 
         // Generate report menu item.
         menuItem = new JMenuItem("Generate report");
-        menuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                generateReport();
-            }
-        });
+        menuItem.addActionListener(event -> generateReport());
         menu.add(menuItem);
 
         // Generate frame.
