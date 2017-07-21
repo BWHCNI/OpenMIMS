@@ -396,11 +396,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                     
                     javax.swing.JMenuItem changeGroupTypeItem = new javax.swing.JMenuItem("Change group type");
                     changeGroupTypeItem.addActionListener(event -> changeGroupTypeActionPerformed(event));
-//                    changeGroupTypeItem.addActionListener(new ActionListener() {
-//                        public void actionPerformed(ActionEvent e) {
-//                            changeGroupTypeActionPerformed(e);
-//                        }
-//                    });
+
 
                     //  item.addActionListener(actionListener);
                     jPopupMenu.add(newGroupItem);
