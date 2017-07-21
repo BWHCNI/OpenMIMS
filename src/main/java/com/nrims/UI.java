@@ -1080,13 +1080,9 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 massRButton.setVisible(false);
             }
 
-//            massRButton.addActionListener(new java.awt.event.ActionListener() {
-//                public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                    viewMassChanged(evt);
-//                }
-//            });
+
             
-            // This is a lamda version of the above commented-out lines
+            // This is a lambda version of the above commented-out lines
             massRButton.addActionListener( e -> viewMassChanged(e));
             
             viewMassMenuItems[i] = massRButton;
@@ -1100,34 +1096,61 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.viewMenu.add(sprtr);
         
         JMenuItem showAllMassImages = new JMenuItem("Show All Mass Images");
-        showAllMassImages.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if (getOpenMassImages() != null) {
-                    for (int i = 0; i < viewMassMenuItems.length; i++) {
-                        ActionEvent event = new ActionEvent(evt.getSource(),
-                                evt.getID(),
-                                viewMassMenuItems[i].getText());
-                        viewMassMenuItems[i].setSelected(true);
-                        viewMassChanged(event);
-                    }
+        
+        showAllMassImages.addActionListener(event -> {
+            if (getOpenMassImages() != null) {
+                for (int i = 0; i < viewMassMenuItems.length; i++) {
+                    ActionEvent evt = new ActionEvent(event.getSource(),
+                            event.getID(),
+                            viewMassMenuItems[i].getText());
+                    viewMassMenuItems[i].setSelected(true);
+                    viewMassChanged(evt);
                 }
-            }
+            }     
         });
+        
+//        
+//        showAllMassImages.addActionListener(new java.awt.event.ActionListener() {
+//            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                if (getOpenMassImages() != null) {
+//                    for (int i = 0; i < viewMassMenuItems.length; i++) {
+//                        ActionEvent event = new ActionEvent(evt.getSource(),
+//                                evt.getID(),
+//                                viewMassMenuItems[i].getText());
+//                        viewMassMenuItems[i].setSelected(true);
+//                        viewMassChanged(event);
+//                    }
+//                }
+//            }
+//        });
 
         JMenuItem hideAllMassImages = new JMenuItem("Hide All Mass Images");
-        hideAllMassImages.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if (getOpenMassImages() != null) {
-                    for (int i = 0; i < viewMassMenuItems.length; i++) {
-                        ActionEvent event = new ActionEvent(evt.getSource(),
-                                evt.getID(),
-                                String.valueOf(viewMassMenuItems[i].getText()));
-                        viewMassMenuItems[i].setSelected(false);
-                        viewMassChanged(event);
-                    }
+        hideAllMassImages.addActionListener(event -> {
+            if (getOpenMassImages() != null) {
+                for (int i = 0; i < viewMassMenuItems.length; i++) {
+                    ActionEvent evt = new ActionEvent(event.getSource(),
+                            event.getID(),
+                            String.valueOf(viewMassMenuItems[i].getText()));
+                    viewMassMenuItems[i].setSelected(false);
+                    viewMassChanged(evt);
                 }
-            }
+            }    
         });
+        
+//        
+//        hideAllMassImages.addActionListener(new java.awt.event.ActionListener() {
+//            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                if (getOpenMassImages() != null) {
+//                    for (int i = 0; i < viewMassMenuItems.length; i++) {
+//                        ActionEvent event = new ActionEvent(evt.getSource(),
+//                                evt.getID(),
+//                                String.valueOf(viewMassMenuItems[i].getText()));
+//                        viewMassMenuItems[i].setSelected(false);
+//                        viewMassChanged(event);
+//                    }
+//                }
+//            }
+//        });
         
         this.viewMenu.add(showAllMassImages);
         this.viewMenu.add(hideAllMassImages);
