@@ -1108,21 +1108,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
             }     
         });
-        
-//        
-//        showAllMassImages.addActionListener(new java.awt.event.ActionListener() {
-//            public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                if (getOpenMassImages() != null) {
-//                    for (int i = 0; i < viewMassMenuItems.length; i++) {
-//                        ActionEvent event = new ActionEvent(evt.getSource(),
-//                                evt.getID(),
-//                                viewMassMenuItems[i].getText());
-//                        viewMassMenuItems[i].setSelected(true);
-//                        viewMassChanged(event);
-//                    }
-//                }
-//            }
-//        });
 
         JMenuItem hideAllMassImages = new JMenuItem("Hide All Mass Images");
         hideAllMassImages.addActionListener(event -> {
@@ -1136,21 +1121,6 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 }
             }    
         });
-        
-//        
-//        hideAllMassImages.addActionListener(new java.awt.event.ActionListener() {
-//            public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                if (getOpenMassImages() != null) {
-//                    for (int i = 0; i < viewMassMenuItems.length; i++) {
-//                        ActionEvent event = new ActionEvent(evt.getSource(),
-//                                evt.getID(),
-//                                String.valueOf(viewMassMenuItems[i].getText()));
-//                        viewMassMenuItems[i].setSelected(false);
-//                        viewMassChanged(event);
-//                    }
-//                }
-//            }
-//        });
         
         this.viewMenu.add(showAllMassImages);
         this.viewMenu.add(hideAllMassImages);
