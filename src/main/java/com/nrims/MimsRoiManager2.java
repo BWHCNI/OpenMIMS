@@ -377,36 +377,30 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 if (groupjlist.getSelectedIndices().length == 1) {
 
                     javax.swing.JMenuItem newGroupItem = new javax.swing.JMenuItem("New group");
-                    newGroupItem.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            createNewGroupActionPerformed(e);
-                        }
-                    });
+                    // lambda version of actionListener
+                    newGroupItem.addActionListener(event -> createNewGroupActionPerformed(event));
 
                     javax.swing.JMenuItem renameGroupItem = new javax.swing.JMenuItem("Rename group");
-                    renameGroupItem.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            renameGroupActionPerformed(e);
-                        }
-                    });
-
+                    // lambda version of actionListener
+                    renameGroupItem.addActionListener(event -> renameGroupActionPerformed(event));
+ 
                     javax.swing.JMenuItem deleteGroupItem = new javax.swing.JMenuItem("Delete group");
-                    deleteGroupItem.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            if (groupjlist.getSelectedIndex() == 0) {
-                                IJ.error("Cannot delete the Default Group ");
-                            } else {
-                                deleteGroupActionPerformed(e);
-                            }
+                    deleteGroupItem.addActionListener(event -> {
+                    //deleteGroupItem.addActionListener((ActionEvent event) -> {
+                        if (groupjlist.getSelectedIndex() == 0) {
+                            IJ.error("Cannot delete the Default Group ");
+                        } else {
+                            deleteGroupActionPerformed(event);
                         }
                     });
                     
                     javax.swing.JMenuItem changeGroupTypeItem = new javax.swing.JMenuItem("Change group type");
-                    changeGroupTypeItem.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            changeGroupTypeActionPerformed(e);
-                        }
-                    });
+                    changeGroupTypeItem.addActionListener(event -> changeGroupTypeActionPerformed(event));
+//                    changeGroupTypeItem.addActionListener(new ActionListener() {
+//                        public void actionPerformed(ActionEvent e) {
+//                            changeGroupTypeActionPerformed(e);
+//                        }
+//                    });
 
                     //  item.addActionListener(actionListener);
                     jPopupMenu.add(newGroupItem);
@@ -420,21 +414,21 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                     }
                 } else if (groupjlist.getSelectedIndices().length > 1) {
                     javax.swing.JMenuItem deleteSelectedGroups = new javax.swing.JMenuItem("Delete Selected Groups");
-                    deleteSelectedGroups.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            // int[] Roiidxs = groupjlist.getSelectedIndices();
-                            //for (int i = 0; i < Roiidxs.length; i++) {
+                    
+                    deleteSelectedGroups.addActionListener(event -> {
+                        // int[] Roiidxs = groupjlist.getSelectedIndices();
+                        //for (int i = 0; i < Roiidxs.length; i++) {
 
-                            //String roiName = (String) roiListModel.get(Roiidxs[i]);
-                            //groupsMap.remove(roiName);
-                            // System.out.println("index is = " + Roiidxs[i] );
-                            // if(Roiidxs[i] != 0) {  // we don't delete the default group.
-                            deleteGroupActionPerformed(e);
-                            // }
-                            //}
-                            setNeedsToBeSaved(true);
-                            groupjlist.setSelectedValue(DEFAULT_GROUP, true);
-                        }
+                        //String roiName = (String) roiListModel.get(Roiidxs[i]);
+                        //groupsMap.remove(roiName);
+                        // System.out.println("index is = " + Roiidxs[i] );
+                        // if(Roiidxs[i] != 0) {  // we don't delete the default group.
+                        deleteGroupActionPerformed(event);
+                        // }
+                        //}
+                        setNeedsToBeSaved(true);
+                        groupjlist.setSelectedValue(DEFAULT_GROUP, true);     
+
                     });
 
                     jPopupMenu.add(deleteSelectedGroups);
@@ -483,29 +477,19 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 final javax.swing.JPopupMenu jPopupMenu = new javax.swing.JPopupMenu();
 
                 javax.swing.JMenuItem newTagItem = new javax.swing.JMenuItem("New tag(s)");
-                newTagItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        createNewTagActionPerformed(e);
-                    }
-                });
+                newTagItem.addActionListener(event -> createNewTagActionPerformed(event));
 
                 javax.swing.JMenuItem renameTagItem = new javax.swing.JMenuItem("Rename tag");
-                renameTagItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        renameTagActionPerformed(e);
-                    }
-                });
+                renameTagItem.addActionListener(event -> renameTagActionPerformed(event));
 
                 javax.swing.JMenuItem deleteTagItem = new javax.swing.JMenuItem("Delete tag");
-                deleteTagItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        if (tagjlist.getSelectedIndex() == 0) {
-                            IJ.error("Cannot delete the Default Tag ");
-                        } else {
-                            deleteTagActionPerformed(e);
-                        }
+                deleteTagItem.addActionListener((ActionEvent event) -> {
+                    if (tagjlist.getSelectedIndex() == 0) {
+                        IJ.error("Cannot delete the Default Tag ");
+                    } else {
+                        deleteTagActionPerformed(event);
                     }
-                });
+                });                                  
 
                 //  item.addActionListener(actionListener);
                 jPopupMenu.add(newTagItem);
@@ -556,24 +540,14 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     private void checkBoxesHandler() {
 
         cbAllPlanes.setSelected(true);
-
-        cbAllPlanes.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                bAllPlanes = cbAllPlanes.isSelected();
-            }
+        
+        cbAllPlanes.addActionListener((ActionEvent event) -> {
+            bAllPlanes = cbAllPlanes.isSelected();
         });
 
-        cbHideAll.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                hideAll();
-            }
-        });
+        cbHideAll.addActionListener(event -> hideAll());
 
-        cbHideLabels.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                hideLabels();
-            }
-        });
+        cbHideLabels.addActionListener(event -> hideLabels());
 
     }
 
@@ -928,13 +902,10 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 if (roijlist.getSelectedIndices().length == 1) {
 
                     javax.swing.JMenuItem renameItem = new javax.swing.JMenuItem("Rename");
-                    renameItem.addActionListener(new ActionListener() {
-
-                        public void actionPerformed(ActionEvent e) {
-                            rename(null);
-                            setNeedsToBeSaved(true);
-                        }
-                    });
+                    renameItem.addActionListener((ActionEvent event) -> {
+                        rename(null);
+                        setNeedsToBeSaved(true);
+                    });                           
 
                     //================
                     //   ROI ASSIGN TAGS
@@ -943,49 +914,49 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
 
                     //====== ROI ASSIGN TO ALL TAGS  ==========
                     javax.swing.JMenuItem assignToAllTags = new javax.swing.JMenuItem("Assign to all tags");
-                    assignToAllTags.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            final String roiName = (roijlist.getSelectedValue() == null) ? "-1" : roijlist.getSelectedValue().toString();
-                            ArrayList<String> associatedTags = (ArrayList<String>) tagsMap.get(roiName);
+                    
+                    
+                    assignToAllTags.addActionListener((ActionEvent event) -> {
+                        final String roiName = (roijlist.getSelectedValue() == null) ? "-1" : roijlist.getSelectedValue().toString();
+                        ArrayList<String> associatedTags = (ArrayList<String>) tagsMap.get(roiName);
 
-                            if (associatedTags == null) {
-                                associatedTags = new ArrayList<String>();
-                            }
+                        if (associatedTags == null) {
+                            associatedTags = new ArrayList<String>();
+                        }
 
-                            ArrayList<Integer> allValidIndicesToBeSetToSelected = new ArrayList<Integer>();
+                        ArrayList<Integer> allValidIndicesToBeSetToSelected = new ArrayList<Integer>();
 
-                            for (int indx = 0; indx < tagListModel.size(); indx++) {
-                                String tagName = (String) (tagListModel.getElementAt(indx));
+                        for (int indx = 0; indx < tagListModel.size(); indx++) {
+                            String tagName = (String) (tagListModel.getElementAt(indx));
 
-                                if (!tagName.equals(DEFAULT_TAG_NAME)) {
+                            if (!tagName.equals(DEFAULT_TAG_NAME)) {
 
-                                    allValidIndicesToBeSetToSelected.add(indx);
+                                allValidIndicesToBeSetToSelected.add(indx);
 
-                                    if (!associatedTags.contains(tagName)) {
-                                        associatedTags.add(tagName);
+                                if (!associatedTags.contains(tagName)) {
+                                    associatedTags.add(tagName);
 
-                                        /*
-                                        int[] newSelectedIndices = new int[tagjlist.getSelectedIndices().length+1];
-                                        if(newSelectedIndices == null)
-                                            newSelectedIndices = new int[1];
-                                        newSelectedIndices[newSelectedIndices.length-1] = tagListModel.indexOf(tagName);
-                                        tagjlist.setSelectedIndices(newSelectedIndices);
-                                         */
-                                    }
+                                    /*
+                                    int[] newSelectedIndices = new int[tagjlist.getSelectedIndices().length+1];
+                                    if(newSelectedIndices == null)
+                                        newSelectedIndices = new int[1];
+                                    newSelectedIndices[newSelectedIndices.length-1] = tagListModel.indexOf(tagName);
+                                    tagjlist.setSelectedIndices(newSelectedIndices);
+                                     */
                                 }
                             }
-                            tagsMap.put(roiName, associatedTags); // we update the roi's associated tags.
+                        }
+                        tagsMap.put(roiName, associatedTags); // we update the roi's associated tags.
 
-                            int[] toBeSelected = new int[allValidIndicesToBeSetToSelected.size()];
-                            for (int iddx = 0; iddx < allValidIndicesToBeSetToSelected.size(); iddx++) {
-                                toBeSelected[iddx] = allValidIndicesToBeSetToSelected.get(iddx).intValue();
-
-                            }
-                            tagjlist.setSelectedIndices(toBeSelected);
-                            setNeedsToBeSaved(true);
+                        int[] toBeSelected = new int[allValidIndicesToBeSetToSelected.size()];
+                        for (int iddx = 0; iddx < allValidIndicesToBeSetToSelected.size(); iddx++) {
+                            toBeSelected[iddx] = allValidIndicesToBeSetToSelected.get(iddx).intValue();
 
                         }
+                        tagjlist.setSelectedIndices(toBeSelected);
+                        setNeedsToBeSaved(true);
                     });
+                    
                     assignTagsMenu.add(assignToAllTags);
 
                     //====== ROI ASSIGN TO TAGS INDIVIDUALLY ==========
@@ -994,6 +965,8 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                         javax.swing.JMenuItem tagItem = new javax.swing.JMenuItem((String) (tags.get(i)));
                         //tagItem.setName((String) (tags.get(i)));
                         //tagItem.getText()
+                        
+                        
                         tagItem.addActionListener(new ActionListener() {
 
                             String ItemName = "";
@@ -1033,19 +1006,19 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                     //====== ROI REMOVE ALL ASSOCIATED TAGS  ==========
                     javax.swing.JMenu removeTagsMenu = new javax.swing.JMenu("Remove tags");
                     javax.swing.JMenuItem removeAllTags = new javax.swing.JMenuItem("Remove all tags");
-                    removeAllTags.addActionListener(new ActionListener() {
+                    
+                    removeAllTags.addActionListener((ActionEvent event) -> {
+                        final String roiName = (roijlist.getSelectedValue() == null) ? "-1" : roijlist.getSelectedValue().toString();
 
-                        public void actionPerformed(ActionEvent e) {
-                            final String roiName = (roijlist.getSelectedValue() == null) ? "-1" : roijlist.getSelectedValue().toString();
-
-                            ArrayList<String> associatedTags = (ArrayList<String>) tagsMap.get(roiName);
-                            if (associatedTags != null) {
-                                tagsMap.remove(roiName);
-                                setNeedsToBeSaved(true);
-                                tagjlist.setSelectedValue(DEFAULT_TAG_NAME, true);
-                            }
+                        ArrayList<String> associatedTags = (ArrayList<String>) tagsMap.get(roiName);
+                        if (associatedTags != null) {
+                            tagsMap.remove(roiName);
+                            setNeedsToBeSaved(true);
+                            tagjlist.setSelectedValue(DEFAULT_TAG_NAME, true);
                         }
+                       
                     });
+                                        
                     removeTagsMenu.add(removeAllTags);
 
                     //====== ROI REMOVE TAGS INDIVIDUALLY ==========
@@ -1139,46 +1112,45 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                         }
                         javax.swing.JMenuItem groupItem = new javax.swing.JMenuItem(group.getGroupName());
                         
-                        groupItem.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                // Assign Roi to Group chosen from the submenu
-                                String newGroupName = e.getActionCommand(); 
-                                int selectedIndex = roijlist.getSelectedIndex();
-                                 
-                                // find the index of newGroupName in groupsListModel    
-                                int index = -1;
-                                for (int i = 0; i < groupListModel.size(); i++) {
-                                    //groupNames[i] = (String) groupListModel.getElementAt(indices[i]);              
-                                    ROIgroup group = (ROIgroup) groupListModel.getElementAt(i);
-                                    String name = group.getGroupName();           
-                                    if (name.compareTo(newGroupName) == 0) {
-                                        index = i - 1;   // subtract 1 because the default group does not get added to the groups map.
-                                        break;
-                                    }
-                                }
-                                ROIgroup newGroup;
-                                if (index < 0) {
-                                    newGroup = DEFAULT_GROUP;
-                                } else {                              
-                                    newGroup = (ROIgroup)groups.get(index);
-                                }
-                                // Put this into roisGroupMap.  For roiNumbers that were assigned to the default group,
-                                // replace fails because they were never put in the roisGroupMap, so use put instead of replace.
-                                ROIgroup oldGroup = (ROIgroup)roisGroupMap.get(roiNumber);
-                                
-                                if (oldGroup == null) {
-                                    roisGroupMap.put(roiNumber, newGroup);
-                                } else {
-                                    roisGroupMap.replace(roiNumber, newGroup);
-                                }
-                                
-                                setNeedsToBeSaved(true);
-                                groupjlist.setSelectedValue(newGroupName, true);
-                                // remove entry from the old list, unless it's the default group
-                                if (oldGroup != DEFAULT_GROUP) {
-                                    roiListModel.remove(selectedIndex);
-                                }  
-                            }
+                        groupItem.addActionListener((ActionEvent event) -> {
+                            // Assign Roi to Group chosen from the submenu
+                           String newGroupName = event.getActionCommand(); 
+                           int selectedIndex = roijlist.getSelectedIndex();
+
+                           // find the index of newGroupName in groupsListModel    
+                           int index = -1;
+                           for (int j = 0; j < groupListModel.size(); j++) {
+                               //groupNames[i] = (String) groupListModel.getElementAt(indices[i]);              
+                               ROIgroup group2 = (ROIgroup) groupListModel.getElementAt(j);
+                               String name = group2.getGroupName();           
+                               if (name.compareTo(newGroupName) == 0) {
+                                   index = j - 1;   // subtract 1 because the default group does not get added to the groups map.
+                                   break;
+                               }
+                           }
+                           ROIgroup newGroup;
+                           if (index < 0) {
+                               newGroup = DEFAULT_GROUP;
+                           } else {                              
+                               newGroup = (ROIgroup)groups.get(index);
+                           }
+                           // Put this into roisGroupMap.  For roiNumbers that were assigned to the default group,
+                           // replace fails because they were never put in the roisGroupMap, so use put instead of replace.
+                           ROIgroup oldGroup = (ROIgroup)roisGroupMap.get(roiNumber);
+
+                           if (oldGroup == null) {
+                               roisGroupMap.put(roiNumber, newGroup);
+                           } else {
+                               roisGroupMap.replace(roiNumber, newGroup);
+                           }
+
+                           setNeedsToBeSaved(true);
+                           groupjlist.setSelectedValue(newGroupName, true);
+                           // remove entry from the old list, unless it's the default group
+                           if (oldGroup != DEFAULT_GROUP) {
+                               roiListModel.remove(selectedIndex);
+                           }     
+
                         });
 
                         // quick check to exclude displaying the group where it is already assigned to
@@ -1230,116 +1202,117 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
       
                         javax.swing.JMenuItem groupItem = new javax.swing.JMenuItem(group.getGroupName());
                         
-                        groupItem.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                // Assign Roi to Group chosen from the submenu
-                                String newGroupName = e.getActionCommand();
-                                ROIgroup oldGroup = null;
-                                int numRoiListItems = roiListModel.getSize();
-                                int index = 0;
-                                for (int selectedIndex : roijlist.getSelectedIndices()) {
-                                    String roiName = (roiListModel.elementAt(selectedIndex)).toString();
-                                    ROIgroup newGroup = null;
-                                    if (newGroupName.compareTo("...") == 0){
-                                        newGroup = DEFAULT_GROUP;
-                                    } else {
-                                        for (int i = 0; i < groupListModel.size(); i++) {
-                                            ROIgroup group = (ROIgroup) groupListModel.getElementAt(i);
-                                            String name = group.getGroupName();           
-                                            if (name.compareTo(newGroupName) == 0) {
-                                                newGroup = (ROIgroup)groups.get(i-1);   // subtract 1 because the default group does not get added to the groups map.
-                                                index = i;
-                                                break;
-                                            }
-                                        }
-                                    }         
-                                    // Put this into roisGroupMap.  For roiNumbers that were assigned to the default group,
-                                    // replace fails because they were never put in the roisGroupMap, so use put instead of replace.                                  
-                                    oldGroup = (ROIgroup)roisGroupMap.get(roiName);    // ?? when the old group name should be ..., it is just a blank string. ??
-                                    if (oldGroup == DEFAULT_GROUP) {
-                                        roisGroupMap.put(roiName, newGroup);
-                                    } else {
-                                        // !! sometimes it's not there.
-                                        if (roisGroupMap.replace(roiName, newGroup) == null) {
-                                            roisGroupMap.put(roiName, newGroup);
-                                        }
-                                        
-                                        
-                                    }
-                                    
-                                    setNeedsToBeSaved(true);
-                                   // groupjlist.setSelectedValue(newGroup, true); 
-                                    //groupjlist.setSelectedIndex(1);
-                                }
-                                groupjlist.setSelectedIndex(index);
-                                List objs = roijlist.getSelectedValuesList();
-                                if (oldGroup != DEFAULT_GROUP) {
-                                    for (Object obj : objs) {
-                                       ((DefaultListModel<String>)roiListModel).removeElement(obj);                                       
-                                    }
-                                } 
+                        groupItem.addActionListener((ActionEvent event) -> {
+                            // Assign Roi to Group chosen from the submenu
+                            String newGroupName = event.getActionCommand();
+                            ROIgroup oldGroup = null;
+                            int numRoiListItems = roiListModel.getSize();
+                            int index = 0;
+                            for (int selectedIndex : roijlist.getSelectedIndices()) {
+                               String roiName = (roiListModel.elementAt(selectedIndex)).toString();
+                               ROIgroup newGroup = null;
+                               if (newGroupName.compareTo("...") == 0){
+                                   newGroup = DEFAULT_GROUP;
+                               } else {
+                                   for (int j = 0; j < groupListModel.size(); j++) {
+                                       ROIgroup group2 = (ROIgroup) groupListModel.getElementAt(j);
+                                       String name = group2.getGroupName();           
+                                       if (name.compareTo(newGroupName) == 0) {
+                                           newGroup = (ROIgroup)groups.get(j-1);   // subtract 1 because the default group does not get added to the groups map.
+                                           index = j;
+                                           break;
+                                       }
+                                   }
+                               }         
+                               // Put this into roisGroupMap.  For roiNumbers that were assigned to the default group,
+                               // replace fails because they were never put in the roisGroupMap, so use put instead of replace.                                  
+                               oldGroup = (ROIgroup)roisGroupMap.get(roiName);    // ?? when the old group name should be ..., it is just a blank string. ??
+                               if (oldGroup == DEFAULT_GROUP) {
+                                   roisGroupMap.put(roiName, newGroup);
+                               } else {
+                                   // !! sometimes it's not there.
+                                   if (roisGroupMap.replace(roiName, newGroup) == null) {
+                                       roisGroupMap.put(roiName, newGroup);
+                                   }
+
+
+                               }
+
+                               setNeedsToBeSaved(true);
+                              // groupjlist.setSelectedValue(newGroup, true); 
+                               //groupjlist.setSelectedIndex(1);
                             }
+                            groupjlist.setSelectedIndex(index);
+                            List objs = roijlist.getSelectedValuesList();
+                            if (oldGroup != DEFAULT_GROUP) {
+                               for (Object obj : objs) {
+                                  ((DefaultListModel<String>)roiListModel).removeElement(obj);                                       
+                               }
+                            }    
+
                         });
+                        
                         assignAllToGroup.add(groupItem);
                     }
 
                     javax.swing.JMenuItem deAssignAllGroups = new javax.swing.JMenuItem("Deassign all groups");
-                    deAssignAllGroups.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            int[] Roiidxs = roijlist.getSelectedIndices();
-                            for (int i = 0; i < Roiidxs.length; i++) {
-                                String roiName = (String) roiListModel.get(Roiidxs[i]);
-                                roisGroupMap.remove(roiName);
-                            }
-                            setNeedsToBeSaved(true);
-                            groupjlist.setSelectedValue(DEFAULT_GROUP, true);
+                    
+                    deAssignAllGroups.addActionListener(event -> {
+                        int[] Roiidxs = roijlist.getSelectedIndices();
+                        for (int i = 0; i < Roiidxs.length; i++) {
+                            String roiName = (String) roiListModel.get(Roiidxs[i]);
+                            roisGroupMap.remove(roiName);
                         }
-                    });
+                        setNeedsToBeSaved(true);
+                        groupjlist.setSelectedValue(DEFAULT_GROUP, true);    
 
+                    });
+                    
                     javax.swing.JMenu assignAllToTag = new javax.swing.JMenu("Assign all to Tag ");
                     for (int i = 0; i < tags.size(); i++) {
 
                         //final String roiName = (roijlist.getSelectedValue() == null) ? "-1" : roijlist.getSelectedValue().toString();
                         javax.swing.JMenuItem tagItem = new javax.swing.JMenuItem((String) (tags.get(i)));
-                        tagItem.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                // Assign Roi to Group chosen from the submenu
-                                String tagName = e.getActionCommand();
-                                for (int selectedIndex : roijlist.getSelectedIndices()) {
-                                    String roiName = (roiListModel.elementAt(selectedIndex)).toString();
+                        
+                        tagItem.addActionListener(event -> {
+                        // Assign Roi to Group chosen from the submenu
+                        String tagName = event.getActionCommand();
+                        for (int selectedIndex : roijlist.getSelectedIndices()) {
+                            String roiName = (roiListModel.elementAt(selectedIndex)).toString();
 
-                                    ArrayList<String> associatedTags = (ArrayList<String>) tagsMap.get(roiName);
-                                    if (associatedTags == null) {
-                                        associatedTags = new ArrayList<String>();
-                                    }
-                                    associatedTags.add(tagName);
-                                    tagsMap.put(roiName, associatedTags);
-                                    //setNeedsToBeSaved(true);
-                                    //tagjlist.setSelectedValue(tagName, true);
-                                }
-                                setNeedsToBeSaved(true);
-                                tagjlist.setSelectedValue(tagName, true);
+                            ArrayList<String> associatedTags = (ArrayList<String>) tagsMap.get(roiName);
+                            if (associatedTags == null) {
+                                associatedTags = new ArrayList<String>();
                             }
-                        });
+                            associatedTags.add(tagName);
+                            tagsMap.put(roiName, associatedTags);
+                            //setNeedsToBeSaved(true);
+                            //tagjlist.setSelectedValue(tagName, true);
+                        }
+                        setNeedsToBeSaved(true);
+                        tagjlist.setSelectedValue(tagName, true);    
 
+                        });
+                        
                         assignAllToTag.add(tagItem);
                     }
 
                     // javax.swing.JMenu deAssignTags = new javax.swing.JMenu("Deassign tags");
                     javax.swing.JMenuItem deAssignAllTags = new javax.swing.JMenuItem("Deassign all tags");
-                    deAssignAllTags.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            int[] Roiidxs = roijlist.getSelectedIndices();
-                            for (int i = 0; i < Roiidxs.length; i++) {
-                                String roiName = (String) roiListModel.get(Roiidxs[i]);
+                    
+                    deAssignAllTags.addActionListener(event -> {
+                        int[] Roiidxs = roijlist.getSelectedIndices();
+                        for (int i = 0; i < Roiidxs.length; i++) {
+                            String roiName = (String) roiListModel.get(Roiidxs[i]);
 
-                                tagsMap.remove(roiName);
+                            tagsMap.remove(roiName);
 
-                            }
-                            setNeedsToBeSaved(true);
-                            tagjlist.setSelectedValue(DEFAULT_TAG_NAME, true);
                         }
+                        setNeedsToBeSaved(true);
+                        tagjlist.setSelectedValue(DEFAULT_TAG_NAME, true);    
+
                     });
+                    
                     //deAssignTags.add(deAssignAllTags);
 
                     /*
@@ -3359,114 +3332,66 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         //pm.setBorder(new javax.swing.border.LineBorder(Color.BLACK));
         JMenuItem duplicate = new JMenuItem("Duplicate");
         duplicate.setToolTipText("Duplicate selected ROIs");
-        duplicate.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                duplicate();
-            }
-        });
+        duplicate.addActionListener(event -> duplicate());
 
         JMenuItem intersection = new JMenuItem("Intersection (and)");
         intersection.setToolTipText("");
-        intersection.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                intersection();
-            }
-        });
+        intersection.addActionListener(event -> intersection());
 
         JMenuItem combine = new JMenuItem("Combine (or)");
         combine.setToolTipText("");
-        combine.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                combine();
-            }
-        });
+        combine.addActionListener(event -> combine());
 
         JMenuItem complement = new JMenuItem("Complement (not)");
         complement.setToolTipText("");
-        complement.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                complement();
-            }
-        });
+        complement.addActionListener(event -> complement());
 
         JMenuItem exclusivePixels = new JMenuItem("Exclusive pixels");
         exclusivePixels.setToolTipText("");
-        exclusivePixels.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                exclusiveToRoi();
-            }
-        });
+        exclusivePixels.addActionListener(event -> exclusiveToRoi());
 
         JMenuItem split = new JMenuItem("Split");
         split.setToolTipText("");
-        split.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                split();
-            }
-        });
+        split.addActionListener(event -> split());
 
         JMenuItem particles = new JMenuItem("Particles");
         particles.setToolTipText("");
-        particles.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (partManager == null) {
-                    partManager = new ParticlesManager(getInstance());
-                }
-                partManager.showFrame();
+        particles.addActionListener(event -> {
+            if (partManager == null) {
+                partManager = new ParticlesManager(getInstance());
             }
+            partManager.showFrame();     
         });
 
         JMenuItem squares = new JMenuItem("Squares");
         squares.setToolTipText("");
-        squares.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (squaresManager == null) {
-                    squaresManager = new SquaresManager(getInstance());
-                }
-                squaresManager.showFrame();
-                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        squares.addActionListener(event -> {
+            if (squaresManager == null) {
+                squaresManager = new SquaresManager(getInstance());
             }
+            squaresManager.showFrame();
+            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.    
         });
 
         JMenuItem add = new JMenuItem("Add");
         add.setToolTipText("");
-        add.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                add();
-            }
-        });
+        add.addActionListener(event -> add());
 
         JMenuItem reorderAll = new JMenuItem("Reorder all");
         reorderAll.setToolTipText("");
-        reorderAll.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                reorderAll();
-            }
-        });
+        reorderAll.addActionListener(event -> reorderAll());
 
         JMenuItem pushToIJRoiManager = new JMenuItem("Push to IJ Roi Manager");
         pushToIJRoiManager.setToolTipText("");
-        pushToIJRoiManager.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                pushRoiToIJ();
-            }
-        });
+        pushToIJRoiManager.addActionListener(event -> pushRoiToIJ());
 
         JMenuItem pullFromIJRoiManager = new JMenuItem("Pull from IJ Roi Manager");
         pullFromIJRoiManager.setToolTipText("");
-        pullFromIJRoiManager.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                pullRoiFromIJ();
-            }
-        });
+        pullFromIJRoiManager.addActionListener(event -> pullRoiFromIJ());
 
         JMenuItem SplitROI = new JMenuItem("Split ROI");
         SplitROI.setToolTipText("");
-        SplitROI.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                roiSplit();
-            }
-        });
+        SplitROI.addActionListener(event -> roiSplit());
 
         pm.add(duplicate);
         pm.add(intersection);
