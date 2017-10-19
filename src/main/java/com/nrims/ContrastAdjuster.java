@@ -8,6 +8,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
+import javax.swing.border.Border;
 
 /**
  * The <code>ContrastAdjuster</code> class is a modified version of the <code>ContrastAdjuster</code> class contained
@@ -110,12 +111,28 @@ public class ContrastAdjuster extends JPanel implements Runnable,
             maxLabel.setFont(monoFont);
             panel.add("East", maxLabel);
             c.ipadx = 75;
+            
             add(panel);
         }
 
+        Border blueline = BorderFactory.createLineBorder(Color.blue);  
+        Border lightGrayline = BorderFactory.createLineBorder(Color.lightGray);  
+        boolean addBorderToSliders = false;
+//        if (ui.operatingSystem.compareTo("MacOS") == 0) {
+//            addBorderToSliders = true;
+//        }
+        
+        String OS = System.getProperty("os.name").toLowerCase();
+        if (OS.indexOf("mac")>=0) {
+            addBorderToSliders = true;
+        }
+            
         // min slider
         if (!windowLevel) {
             minSlider = new JScrollBar(Scrollbar.HORIZONTAL, sliderRange / 2, 1, 0, sliderRange);
+            if (addBorderToSliders) {
+                minSlider.setBorder(lightGrayline);
+            }
             c.gridy = y++;
             c.insets = new Insets(2, 10, 0, 10);
             gridbag.setConstraints(minSlider, c);
@@ -130,6 +147,9 @@ public class ContrastAdjuster extends JPanel implements Runnable,
         // max slider
         if (!windowLevel) {
             maxSlider = new JScrollBar(Scrollbar.HORIZONTAL, sliderRange / 2, 1, 0, sliderRange);
+            if (addBorderToSliders) {
+                maxSlider.setBorder(lightGrayline);
+            }
             c.gridx = 1;
             c.gridy = y++;
             c.insets = new Insets(2, 10, 0, 10);
@@ -153,6 +173,9 @@ public class ContrastAdjuster extends JPanel implements Runnable,
         brightnessSlider.addKeyListener(ij);
         brightnessSlider.setUnitIncrement(1);
         brightnessSlider.setFocusable(false);
+        if (addBorderToSliders) {
+                brightnessSlider.setBorder(lightGrayline);
+            }
         if (windowLevel) {
             addLabel("Level: ", levelLabel = new JLabel("        "));
         } else {
@@ -161,7 +184,10 @@ public class ContrastAdjuster extends JPanel implements Runnable,
 
         // contrast slider
         if (!balance) {
-            contrastSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange / 2, 1, 0, sliderRange);
+            contrastSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange / 2, 1, 0, sliderRange);  
+            if (addBorderToSliders) {
+                contrastSlider.setBorder(lightGrayline);
+            }
             c.gridx = 1;
             c.gridy = y++;
             c.insets = new Insets(2, 10, 0, 10);
@@ -189,7 +215,8 @@ public class ContrastAdjuster extends JPanel implements Runnable,
             choice.addItemListener(this);
             choice.addKeyListener(ij);
             add(choice);
-        }
+        }      
+        this.setBorder(lightGrayline);
 
         // buttons
         int trim = IJ.isMacOSX() ? 20 : 0;
