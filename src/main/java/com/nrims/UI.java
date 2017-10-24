@@ -111,13 +111,12 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public static final String SAVE_SESSION = "Save Session";
     
     public String operatingSystem;
-    private String mimsVersion = "3.0.0";  // previous was 2.7.2.   Version 3.0.0 is 
-    // functionally identical to 2.7.2, but just has a few Javadoc changes and
-    // other minor things that do not affect how it works.
+    private String mimsVersion = "3.0.3";  
 
     public int maxMasses = 25;
     private double medianFilterRadius = 1;
     
+    static public boolean runningInNetBeans = false;
     private boolean bSyncStack = true;
     private boolean bUpdating = false;
     private boolean onlyReadHeader = false;
@@ -273,7 +272,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
         String OS = System.getProperty("os.name").toLowerCase();
         if (OS.indexOf("mac")>=0) {
-            operatingSystem = "MacOS";
+            operatingSystem = "MacOS";   // value of OS is "mac os x" under High Sierra
         } else if (OS.indexOf("nix")>=0) {
             operatingSystem = "Unix";
         } else if (OS.indexOf("linux")>=0) {
@@ -304,6 +303,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
 
         //DJ: 11/19/2014
         prefs = new PrefFrame(this);
+        
+        String defaultLUT = prefs.getDefaultLUT();
+        cbControl.setLUT(defaultLUT);
+        
+        boolean showDragDropItems = prefs.getShowDragDropMessage();
+        this.showHideDragDropMessage(showDragDropItems);
+     
         UnoPlugin.setNotesPath(prefs.getMyNotesPath());
         UnoPlugin.setOpenStatus(prefs.getMyNotesPath());
 
@@ -1770,6 +1776,13 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.imgNotes = new imageNotes();
         this.imgNotes.setVisible(false);
         this.testingMenu.setVisible(false);
+
+//
+//        boolean showDragDropItems = false;
+//        this.dragDropMessagejLabel1.setVisible(showDragDropItems);
+//        this.dragDropMessagejLabel2.setVisible(showDragDropItems);
+//        this.dragDropMessagejLabel3.setVisible(showDragDropItems);
+//        this.openPrefsjButton1.setVisible(showDragDropItems);
     }
 
     public void initComponentsTesting() {
@@ -1787,6 +1800,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jMenuItem2 = new javax.swing.JMenuItem();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
+        dragDropMessagejLabel1 = new javax.swing.JLabel();
+        dragDropMessagejLabel2 = new javax.swing.JLabel();
+        dragDropMessagejLabel3 = new javax.swing.JLabel();
+        openPrefsjButton1 = new javax.swing.JButton();
         stopButton = new javax.swing.JButton();
         jProgressBar1 = new javax.swing.JProgressBar();
         jMenuBar1 = new javax.swing.JMenuBar();
@@ -1868,15 +1885,50 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         jPanel1.setName("Images"); // NOI18N
         jPanel1.setPreferredSize(new java.awt.Dimension(703, 428));
 
+        dragDropMessagejLabel1.setText("Image files can be opened by dragging them here, or to any");
+
+        dragDropMessagejLabel2.setText("of the tab panes when an image file is already open.");
+
+        dragDropMessagejLabel3.setText("This message can be disabled in the preferences.");
+
+        openPrefsjButton1.setText("Open Preferences");
+        openPrefsjButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openPrefsActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 612, Short.MAX_VALUE)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(201, 201, 201)
+                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(dragDropMessagejLabel2)
+                            .add(dragDropMessagejLabel1)))
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(220, 220, 220)
+                        .add(dragDropMessagejLabel3))
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(284, 284, 284)
+                        .add(openPrefsjButton1)))
+                .addContainerGap(170, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 422, Short.MAX_VALUE)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(89, 89, 89)
+                .add(dragDropMessagejLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(dragDropMessagejLabel2)
+                .add(34, 34, 34)
+                .add(dragDropMessagejLabel3)
+                .add(30, 30, 30)
+                .add(openPrefsjButton1)
+                .addContainerGap(208, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Images", jPanel1);
@@ -2605,9 +2657,28 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
             prefs = new PrefFrame(this);
         }
         prefs.showFrame();
-        
+        boolean showDragDropItems = prefs.getShowDragDropMessage();
+        this.showHideDragDropMessage(showDragDropItems);
     }//GEN-LAST:event_preferencesMenuItemActionPerformed
 
+    
+    /**
+     * Sets whether or not to show the drag and drop message on the blank
+     * area of the window that is visible when OpenMIMS is first launched.
+     * This gets called if the user changes the state of the check box labeled
+     * "Show drag-drop message on startup" in the preferences dialog.
+     *
+     * @param showDragDropItems boolean to control visibility of drag and
+     * drop message lines and controls.
+     */
+    public void showHideDragDropMessage(boolean showDragDropItems) {
+        this.dragDropMessagejLabel1.setVisible(showDragDropItems);
+        this.dragDropMessagejLabel2.setVisible(showDragDropItems);
+        this.dragDropMessagejLabel3.setVisible(showDragDropItems);
+        this.openPrefsjButton1.setVisible(showDragDropItems);        
+    }
+    
+    
     /**
      * Action method for the View>Tile Windows menu item.
      */
@@ -3380,6 +3451,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                     MassProps m = new MassProps(getOpenMassImages()[i].getMassIndex());
                     m.setMassValue(getOpenMassImages()[i].getMassValue());
                     filtered_mass_props.add(m);
+                    break;                   
                 }
             }
         }
@@ -3450,7 +3522,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         int num_index = getClosestMassIndices(filtered_mass_props.get(y).getMassValue(), 0.49);
                         hsi_props[i].setNumMassIdx(num_index);
                     }
-                    break;
+                    if (i == 0)
+                        break;    
                 }
             }
             for (int y = 0; y < filtered_mass_props.size(); y++) {
@@ -3465,7 +3538,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                         int den_index = getClosestMassIndices(filtered_mass_props.get(y).getMassValue(), 0.49);
                         hsi_props[i].setDenMassIdx(den_index);
                     }
-                    break;
+                    if (i == 0)
+                        break;
                 }
             }
 
@@ -3797,7 +3871,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
      */
 private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
 
-    String message = "OpenMIMS v" + mimsVersion + ", Jul 1, 2017 (rev: " + revisionNumber + ")";
+    String message = "OpenMIMS v" + mimsVersion + ", Oct 24, 2017 (rev: " + revisionNumber + ")";
     message += "\n\n";
     message += "http://www.nrims.hms.harvard.edu/";
     message += "\n\n";
@@ -4950,6 +5024,12 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         
     }//GEN-LAST:event_jMenuItem8ActionPerformed
 
+    private void openPrefsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openPrefsActionPerformed
+        // TODO add your handling code here:
+        preferencesMenuItemActionPerformed(null);
+        
+    }//GEN-LAST:event_openPrefsActionPerformed
+
     
     
     /**
@@ -5134,7 +5214,7 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         for (int i = 0; i < massNames.length; i++) {
             massVal1 = (new Double(getOpener().getMassNames()[i])).doubleValue();
             diff = Math.abs(massValue - massVal1);          
-            if (diff < mindiff && diff < tolerance) {
+            if (diff <= mindiff && diff < tolerance) {
                 mindiff = diff;
                 returnIdx = i;
             }
@@ -5827,7 +5907,7 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     }
 
     /**
-     * Determines the bahavior when an image window is made active.
+     * Determines the behavior when an image window is made active.
      *
      * @param mp the image.
      */
@@ -6193,6 +6273,15 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     //it then checks if there are any arguments passed from ImageJ
     //then passes those to UI.run(), which only checks for the testing flag.
     public static void main(String args[]) {
+        
+        if (args.length > 0) {
+            if (args[0].equals("runningInNetBeans")) {
+                OMLOGGER.info("Running in debug mode.");
+                runningInNetBeans = true;
+            } else {
+                OMLOGGER.info("NOT running in debug mode.");
+            }
+        }
         
         NRIMS_Plugin nrimsPlugin = new NRIMS_Plugin();
         nrimsPlugin.run(FileUtilities.joinArray(args));
@@ -7215,6 +7304,7 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
                             int selected = jTabbedPane1.getSelectedIndex();
                             if (selected == 2) {
                                 cbControl.updateHistogram();
+                                cbControl.updateWindowLUT();
                             }
                         }
                     });
@@ -7273,6 +7363,9 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JMenuItem compositeMenuItem;
     public javax.swing.JMenu correctionsMenu;
     private javax.swing.JMenuItem docButton;
+    private javax.swing.JLabel dragDropMessagejLabel1;
+    private javax.swing.JLabel dragDropMessagejLabel2;
+    private javax.swing.JLabel dragDropMessagejLabel3;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem emptyTestMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
@@ -7316,6 +7409,7 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JMenuItem openNewMenuItem;
     private javax.swing.JMenuItem openNewWriter;
     private javax.swing.JMenuItem openNextMenuItem;
+    private javax.swing.JButton openPrefsjButton1;
     private javax.swing.JMenuItem preferencesMenuItem;
     private javax.swing.JMenuItem restoreMimsMenuItem;
     private javax.swing.JMenuItem roiManagerMenuItem;
