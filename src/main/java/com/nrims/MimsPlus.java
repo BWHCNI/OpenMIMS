@@ -1162,7 +1162,9 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
         //??? should this be handled in setActiveMimsPlus instead?
         ui.setActiveMimsPlus(this);
         ui.getCBControl().setWindowlistCombobox(getTitle());
-        ui.getCBControl().setLUT(lut);
+        String defaultLUT = ui.getPreferences().getDefaultLUT();
+        //ui.getCBControl().setLUT(lut);
+        ui.getCBControl().setLUT(defaultLUT);
         if (ui.getMimsStackEditing() == null) {
             return;
         }
@@ -1227,6 +1229,11 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
                 getWindow().getCanvas().addMouseListener(this);
                 getWindow().getCanvas().addMouseMotionListener(this);
             }
+            
+            String defaultLUT = ui.getPreferences().getDefaultLUT();
+            //ui.getCBControl().setLUT(lut);
+            ui.getCBControl().setLUT(defaultLUT);
+            
         }
     }
 
