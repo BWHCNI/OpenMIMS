@@ -3,11 +3,13 @@ package com.nrims;
 import ij.IJ;
 import ij.Prefs;
 import java.awt.Dimension;
+import javax.swing.InputMap;
+import javax.swing.KeyStroke;
 
 /**
  * This class creates a user preferences interface. It opens as a frame and allows user to enter parameters and settings
  * that control the applications behavior. It is built upon the ImageJ Preferences class. These settings are stored in
- * the ImageJ preferences file unually located in ~HOME_DIR/.imagej/IJ_Prefs.txt. All Open_Mims settings are preceded
+ * the ImageJ preferences file usually located in ~HOME_DIR/.imagej/IJ_Prefs.txt. All Open_Mims settings are preceded
  * with the "openmims." string.
  *
  * @author cpoczatek
@@ -23,6 +25,8 @@ public class PrefFrame extends PlugInJFrame {
     boolean ratioReciprocals = false;
     boolean showAutosaveROISdialog = true;
     boolean enableHighDPIonLinux = false;
+    boolean showDragDropMessage = true;
+    String defaultLUT = "";
     UI ui;
     float reference = (float) 0.0130;
     float background = (float) 0.0037;
@@ -88,6 +92,9 @@ public class PrefFrame extends PlugInJFrame {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
+        defaultLUTcomboBox = new javax.swing.JComboBox<>();
+        jLabel12 = new javax.swing.JLabel();
+        showDragDropMessagejCheckBox = new javax.swing.JCheckBox();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("Bundle"); // NOI18N
         jLabel5.setText(bundle.getString("PrefFrame.jLabel5.text_1")); // NOI18N
@@ -95,6 +102,12 @@ public class PrefFrame extends PlugInJFrame {
         jLabel6.setText(bundle.getString("PrefFrame.jLabel6.text_1")); // NOI18N
 
         jScrollPane1.setAutoscrolls(true);
+
+        preferencesJPanel.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                preferencesJPanelKeyReleased(evt);
+            }
+        });
 
         jLabel1.setText(bundle.getString("PrefFrame.jLabel1.text_1")); // NOI18N
 
@@ -154,6 +167,18 @@ public class PrefFrame extends PlugInJFrame {
             }
         });
 
+        defaultLUTcomboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "gray", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel12.setText(bundle.getString("PrefFrame.jLabel12.text")); // NOI18N
+
+        showDragDropMessagejCheckBox.setSelected(true);
+        showDragDropMessagejCheckBox.setText(bundle.getString("PrefFrame.showDragDropMessagejCheckBox.text")); // NOI18N
+        showDragDropMessagejCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showDragDropMessagejCheckBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout preferencesJPanelLayout = new javax.swing.GroupLayout(preferencesJPanel);
         preferencesJPanel.setLayout(preferencesJPanelLayout);
         preferencesJPanelLayout.setHorizontalGroup(
@@ -170,31 +195,11 @@ public class PrefFrame extends PlugInJFrame {
                         .addComponent(showAutosaveDialogCheckBox))
                     .addGroup(preferencesJPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(myNotes_jLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(myNotes_jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 353, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(preferencesJPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel11)
-                        .addGap(28, 28, 28)
-                        .addComponent(formatStringTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(preferencesJPanelLayout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jLabel9)
                         .addGap(18, 18, 18)
                         .addComponent(tileYTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(150, 150, 150)
                         .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(preferencesJPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(scaleFactorTextbox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(preferencesJPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel3)
-                        .addGap(18, 18, 18)
-                        .addComponent(ratioSpanTextbox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(preferencesJPanelLayout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addComponent(ratioReciprocalsCheckBox))
@@ -221,8 +226,36 @@ public class PrefFrame extends PlugInJFrame {
                                 .addComponent(backgroundTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(preferencesJPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(enableHighDPIonLinuxCheckBox)))
-                .addContainerGap(159, Short.MAX_VALUE))
+                        .addComponent(enableHighDPIonLinuxCheckBox))
+                    .addGroup(preferencesJPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(preferencesJPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel11)
+                                .addGap(28, 28, 28)
+                                .addComponent(formatStringTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(preferencesJPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(scaleFactorTextbox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(preferencesJPanelLayout.createSequentialGroup()
+                                .addComponent(myNotes_jLabel)
+                                .addGap(18, 18, 18)
+                                .addComponent(myNotes_jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 353, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(preferencesJPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addGap(18, 18, 18)
+                                .addComponent(ratioSpanTextbox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(defaultLUTcomboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(37, 37, 37)))))
+                .addContainerGap(169, Short.MAX_VALUE))
+            .addGroup(preferencesJPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(showDragDropMessagejCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 271, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(preferencesJPanelLayout.createSequentialGroup()
                     .addContainerGap()
@@ -235,7 +268,7 @@ public class PrefFrame extends PlugInJFrame {
                                 .addComponent(HSIcheckbox)
                                 .addComponent(ratioCheckbox)))
                         .addComponent(jLabel1))
-                    .addContainerGap(443, Short.MAX_VALUE)))
+                    .addContainerGap(453, Short.MAX_VALUE)))
         );
         preferencesJPanelLayout.setVerticalGroup(
             preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -247,8 +280,10 @@ public class PrefFrame extends PlugInJFrame {
                 .addGap(12, 12, 12)
                 .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(ratioSpanTextbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(12, 12, 12)
+                    .addComponent(ratioSpanTextbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(defaultLUTcomboBox)
+                    .addComponent(jLabel12))
+                .addGap(10, 10, 10)
                 .addComponent(ratioReciprocalsCheckBox)
                 .addGap(12, 12, 12)
                 .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -284,11 +319,13 @@ public class PrefFrame extends PlugInJFrame {
                 .addComponent(enableHighDPIonLinuxCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(showAutosaveDialogCheckBox)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(showDragDropMessagejCheckBox)
+                .addGap(36, 36, 36)
                 .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(69, Short.MAX_VALUE))
             .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(preferencesJPanelLayout.createSequentialGroup()
                     .addContainerGap()
@@ -301,8 +338,10 @@ public class PrefFrame extends PlugInJFrame {
                     .addComponent(massCheckbox)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(ratioCheckbox)
-                    .addContainerGap(508, Short.MAX_VALUE)))
+                    .addContainerGap(606, Short.MAX_VALUE)))
         );
+
+        defaultLUTcomboBox.getAccessibleContext().setAccessibleName(bundle.getString("PrefFrame.defaultLUTcomboBox.AccessibleContext.accessibleName")); // NOI18N
 
         jScrollPane1.setViewportView(preferencesJPanel);
 
@@ -310,11 +349,15 @@ public class PrefFrame extends PlugInJFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 47, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 706, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 59, Short.MAX_VALUE))
         );
 
         pack();
@@ -338,12 +381,28 @@ public class PrefFrame extends PlugInJFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_showAutosaveDialogCheckBoxActionPerformed
 
+    private void showDragDropMessagejCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showDragDropMessagejCheckBoxActionPerformed
+        // TODO add your handling code here:
+        showDragDropMessage = showDragDropMessagejCheckBox.isSelected();
+    }//GEN-LAST:event_showDragDropMessagejCheckBoxActionPerformed
+
+    private void preferencesJPanelKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_preferencesJPanelKeyReleased
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_preferencesJPanelKeyReleased
+
 
 
         
         
     private void initComponentsCustom() {
+        
+        MimsCBControl mimsCBControl = ui.getCBControl();
+        String[] lutNames = mimsCBControl.getLUTnames();
+        //defaultLUTcomboBox
 
+        this.defaultLUTcomboBox.setModel(new javax.swing.DefaultComboBoxModel(lutNames));
+        this.defaultLUTcomboBox.setSelectedItem(defaultLUT);
         this.HSIcheckbox.setSelected(includeHSI);
         this.ratioCheckbox.setSelected(includeRatio);
         this.massCheckbox.setSelected(includeMass);
@@ -353,6 +412,7 @@ public class PrefFrame extends PlugInJFrame {
         this.ratioSpanTextbox.setText(new Double(ratioSpan).toString());
         this.ratioReciprocalsCheckBox.setSelected(ratioReciprocals);
         this.showAutosaveDialogCheckBox.setSelected(showAutosaveROISdialog);
+        this.showDragDropMessagejCheckBox.setSelected(showDragDropMessage);
         this.backgroundTextField.setText(new Float(background).toString());
         this.referenceTextField.setText(new Float(reference).toString());
         this.numDecimalPlacesSpinner.setValue(numDecimalPlaces);
@@ -362,6 +422,12 @@ public class PrefFrame extends PlugInJFrame {
 
         //DJ: 10/24/2014
         this.myNotes_jTextField1.setText(myNotesPath);
+        
+        jButton1.getRootPane().setDefaultButton(jButton1);
+        
+//        InputMap im = jButton1.getInputMap();
+//        im.put(KeyStroke.getKeyStroke("ENTER"), "none");
+//        im.put(KeyStroke.getKeyStroke("released ENTER"), "released");
        
     }
 
@@ -377,7 +443,13 @@ public class PrefFrame extends PlugInJFrame {
         ratioSpan = (double) Prefs.get(PREFS_KEY + "ratioSpan", ratioSpan);
         ratioReciprocals = (boolean) Prefs.get(PREFS_KEY + "ratioReciprocals", ratioReciprocals);
         showAutosaveROISdialog = (boolean) Prefs.get(PREFS_KEY + "showAutosaveROISdialog", showAutosaveROISdialog);
-        enableHighDPIonLinux = (boolean) Prefs.get(PREFS_KEY + "enableHighDPIonLinux", enableHighDPIonLinux);      
+        showDragDropMessage = (boolean) Prefs.get(PREFS_KEY + "showDragDropMessage", showDragDropMessage);
+        
+        enableHighDPIonLinux = (boolean) Prefs.get(PREFS_KEY + "enableHighDPIonLinux", enableHighDPIonLinux);    
+        
+        defaultLUT = Prefs.get(PREFS_KEY + "defaultLUT", defaultLUT);
+        ui.getCBControl().setLUT(defaultLUT);    
+                
         reference = (float) Prefs.get(PREFS_KEY + "reference", reference);
         background = (float) Prefs.get(PREFS_KEY + "background", background);
         numerators = Prefs.get(PREFS_KEY + "numerators", numerators);
@@ -401,8 +473,13 @@ public class PrefFrame extends PlugInJFrame {
         includeRatio = ratioCheckbox.isSelected();
         ratioReciprocals = ratioReciprocalsCheckBox.isSelected();
         showAutosaveROISdialog = showAutosaveDialogCheckBox.isSelected();
+        showDragDropMessage = showDragDropMessagejCheckBox.isSelected();  
+        ui.showHideDragDropMessage(showDragDropMessage);
         enableHighDPIonLinux = enableHighDPIonLinuxCheckBox.isSelected();
-
+        
+        defaultLUT = (String)defaultLUTcomboBox.getSelectedItem();
+        ui.getCBControl().setLUT(defaultLUT);
+        
         try {
             scaleFactor = new Double(scaleFactorTextbox.getText());
         } catch (Exception e) {
@@ -474,8 +551,10 @@ public class PrefFrame extends PlugInJFrame {
         Prefs.set(PREFS_KEY + "ratioScaleFactor", scaleFactor);
         Prefs.set(PREFS_KEY + "ratioSpan", ratioSpan);
         Prefs.set(PREFS_KEY + "ratioReciprocals", ratioReciprocals);
-        Prefs.set(PREFS_KEY + "showAutosaveROISdialog", showAutosaveROISdialog);
+        Prefs.set(PREFS_KEY + "showAutosaveROISdialog", showAutosaveROISdialog);  
+        Prefs.set(PREFS_KEY + "showDragDropMessage", showDragDropMessage);  
         Prefs.set(PREFS_KEY + "enableHighDPIonLinux", enableHighDPIonLinux);
+        Prefs.set(PREFS_KEY + "defaultLUT", defaultLUT);
         Prefs.set(PREFS_KEY + "background", background);
         Prefs.set(PREFS_KEY + "reference", reference);
         Prefs.set(PREFS_KEY + "numerators", numerators);
@@ -587,6 +666,19 @@ public class PrefFrame extends PlugInJFrame {
         return showAutosaveROISdialog;
     }
     
+    /**
+     * Returns whether or not drag and drop message appears on the main window
+     * when OpenMIMS is first started.ROIs dialog when loading images files is 
+     * enabled or not.
+     *
+     * @return boolean
+     */
+    boolean getShowDragDropMessage() {
+       // showDragDropMessage = (boolean) Prefs.get(PREFS_KEY + "showDragDropMessage", showDragDropMessage);
+        return showDragDropMessage;
+    }
+    
+    
      /**
      * Gets state of enabling highDPI display on Linux
      *
@@ -594,6 +686,15 @@ public class PrefFrame extends PlugInJFrame {
      */
     boolean getEnableHighDPIonLinux() {
         return enableHighDPIonLinux;
+    }
+    
+    /**
+     * Gets the default LUT
+     *
+     * @return string
+     */
+    String getDefaultLUT() {
+        return defaultLUT;
     }
     
 
@@ -759,6 +860,7 @@ public class PrefFrame extends PlugInJFrame {
     private javax.swing.JTextField AutoSaveIntervalTextField;
     private javax.swing.JCheckBox HSIcheckbox;
     private javax.swing.JTextField backgroundTextField;
+    private javax.swing.JComboBox<String> defaultLUTcomboBox;
     private javax.swing.JCheckBox enableHighDPIonLinuxCheckBox;
     private javax.swing.Box.Filler filler1;
     private javax.swing.JTextField formatStringTextField;
@@ -767,6 +869,7 @@ public class PrefFrame extends PlugInJFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -787,6 +890,7 @@ public class PrefFrame extends PlugInJFrame {
     private javax.swing.JTextField referenceTextField;
     private javax.swing.JTextField scaleFactorTextbox;
     private javax.swing.JCheckBox showAutosaveDialogCheckBox;
+    private javax.swing.JCheckBox showDragDropMessagejCheckBox;
     private javax.swing.JCheckBox sumCheckbox;
     private javax.swing.JTextField tileYTextField;
     // End of variables declaration//GEN-END:variables
