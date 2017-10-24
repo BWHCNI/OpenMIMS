@@ -4338,7 +4338,13 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             String msg = "Delete all items on the list?";
             canceled = false;
             if (!IJ.macroRunning() && !macro && prompt) {
-                int d = JOptionPane.showConfirmDialog(this, msg, "MIMS ROI Manager", JOptionPane.YES_NO_OPTION);
+                //int d = JOptionPane.showConfirmDialog(this, msg, "MIMS ROI Manager", JOptionPane.YES_NO_OPTION);
+                Object[] options = {"Yes", "No"};
+                int d = JOptionPane.showOptionDialog(ui,
+                            "Delete all items on the list?",
+                            "Delete groups, tags, or ROIs dialog",
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
+                   
                 if (d == JOptionPane.NO_OPTION) {
                     return false;
                 }
