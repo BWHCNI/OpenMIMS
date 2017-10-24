@@ -124,6 +124,7 @@
         <Component class="javax.swing.JButton" name="displayHSIjButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Display HSI"/>
+            <Property name="toolTipText" type="java.lang.String" value="Shows an HSI image for the selected item in the list of the left.  This button is disabled until an item has been selected."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="displayHSIjButtonActionPerformed"/>
@@ -160,6 +161,7 @@
         <Component class="javax.swing.JButton" name="displayRatiojButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Display Ratio"/>
+            <Property name="toolTipText" type="java.lang.String" value="Shows a ratio image for the selected item in the list of the left.  This button is disabled until an item has been selected."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="displayRatiojButtonActionPerformed"/>
@@ -227,9 +229,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="ratioSFjSpinner" min="-2" pref="69" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="imagejLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="7" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -258,7 +259,7 @@
                               </Group>
                           </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -266,19 +267,12 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
-                              <Component id="imagejLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="percentTurnoverRadioButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="ratioRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="ratioSFjSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
+                      <Component id="percentTurnoverRadioButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="ratioRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ratioSFjSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="imagejLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">

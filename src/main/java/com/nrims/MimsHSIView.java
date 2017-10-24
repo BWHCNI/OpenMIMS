@@ -15,6 +15,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.apache.commons.lang.math.NumberUtils;
 
 /**
@@ -31,7 +33,7 @@ public class MimsHSIView extends javax.swing.JPanel {
     private UI ui = null;
     private DefaultListModel listModel = new DefaultListModel();
     private MimsPlus currentImage;
-
+    ListSelectionListener ratioHSIselectionListener;
     /**
      * The MimsHSIView constructor.
      *
@@ -101,6 +103,7 @@ public class MimsHSIView extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(650, 431));
 
         displayHSIjButton.setText("Display HSI");
+        displayHSIjButton.setToolTipText("Shows an HSI image for the selected item in the list of the left.  This button is disabled until an item has been selected.");
         displayHSIjButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 displayHSIjButtonActionPerformed(evt);
@@ -124,6 +127,7 @@ public class MimsHSIView extends javax.swing.JPanel {
         jScrollPane1.setViewportView(jList1);
 
         displayRatiojButton.setText("Display Ratio");
+        displayRatiojButton.setToolTipText("Shows a ratio image for the selected item in the list of the left.  This button is disabled until an item has been selected.");
         displayRatiojButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 displayRatiojButtonActionPerformed(evt);
@@ -250,9 +254,8 @@ public class MimsHSIView extends javax.swing.JPanel {
                             .addComponent(ratioRadioButton))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ratioSFjSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(imagejLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(imagejLabel))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel6)
@@ -273,22 +276,18 @@ public class MimsHSIView extends javax.swing.JPanel {
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(denThresholdjSpinner)
                             .addComponent(ratioMinjSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE))))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(imagejLabel))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(percentTurnoverRadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(ratioRadioButton)
-                            .addComponent(ratioSFjSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addComponent(percentTurnoverRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ratioRadioButton)
+                    .addComponent(ratioSFjSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(imagejLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -500,6 +499,26 @@ public class MimsHSIView extends javax.swing.JPanel {
         jList1.setModel(listModel);
         jList1.setCellRenderer(new MyCellRenderer(this.ui));
         ratioRadioButton.setSelected(ui.getIsRatio());
+        imagejLabel.setVisible(false);
+        
+        // disable these two button until the user selects something in the list to the left
+        int index[] = jList1.getSelectedIndices();
+        if (index.length == 0) {
+            displayHSIjButton.setEnabled(false);
+            displayRatiojButton.setEnabled(false);
+        }
+        
+        ratioHSIselectionListener = new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent listSelectionEvent) {
+                //groupValueChanged(listSelectionEvent);
+                displayHSIjButton.setEnabled(true);
+                displayRatiojButton.setEnabled(true);
+            }
+        };
+        jList1.addListSelectionListener(ratioHSIselectionListener);
+        
+        
+
 
         // Remove components (jspinners) from the area
         // in which a user can drag and drop a file.
@@ -510,7 +529,7 @@ public class MimsHSIView extends javax.swing.JPanel {
             ui.removeComponentFromMimsDrop(comp);
         }
     }
-
+    
     private void rartioMaxjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rartioMaxjSpinnerStateChanged
 
         if (bUpdating) {
@@ -1531,6 +1550,7 @@ public class MimsHSIView extends javax.swing.JPanel {
             denThresholdjSpinner.setEnabled(false);
         }
         imagejLabel.setText("Image: " + mp.getWindow().getTitle());
+        imagejLabel.setVisible(true);
     }
 
     /**
