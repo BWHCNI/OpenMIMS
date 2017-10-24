@@ -1,5 +1,6 @@
 package com.nrims;
 
+import com.nrims.logging.OMLogger;
 import com.nrims.plot.MimsChartFactory;
 import com.nrims.plot.MimsChartPanel;
 import com.nrims.plot.MimsXYPlot;
@@ -7,18 +8,28 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.WindowManager;
+import static ij.io.Opener.LUT;
 import ij.plugin.LutLoader;
 import ij.process.ImageProcessor;
+import ij.process.LUT;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYPolygonAnnotation;
 import org.jfree.chart.plot.PlotOrientation;
@@ -43,9 +54,28 @@ public class MimsCBControl extends javax.swing.JPanel {
     private MimsChartPanel chartPanel;
     boolean holdUpdate = false;
     private File lutDir;
-    private String[] ijLutNames = new String[]{"Grays", "Fire", "Ice", "Spectrum", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Red/Green", "Invert LUT"};
+    boolean showCividisMessage = true;
+    String[] lutNames;
+
+    // LUT names that are generated as well as those loaded from files.
+    private String[] ijLutNamesAll = new String[]{"Grays", "Fire", "Ice", "Spectrum", 
+        "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Red/Green", "Invert LUT", 
+        "brgbcmyw", "cameca_temperature", "Cividis", "cool", 
+        "Cyan Hot", "edges", "gem", "glasbey_inverted", "glasbey", "glow", 
+        "Green Fire Blue", "HiLo", "HSI_hue", "ICA", "ICA2", "ICA3", "log", 
+        "Magenta Hot", "mpl-inferno", "mpl-magma", "mpl-plasma", "mpl-viridis", 
+        "Orange Hot", "phase", "physics", "Rainbow RGB", "Red Hot", "royal", 
+        "sepia", "smart", "sqrt", "thal", "thallium", "Thermal", "unionJack", 
+        "Yellow Hot", "5_ramps", "6_shades", "16_colors", "blue_orange_icb"};
+    
+    private String[] ijLutNames = new String[]{"Grays", "Fire", "Ice", "Spectrum", 
+        "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Red/Green", "Invert LUT"};
+
+        
+        
     private ArrayList<String> ijLutNameArray = new ArrayList<String>();
     public com.nrims.managers.CompositeManager compManager;
+    private final static Logger OMLOGGER = OMLogger.getOMLogger(UI.class.getName());
 
     /**
      * Constructor for MimsCBControl. A pointer to UI is required.
@@ -77,20 +107,29 @@ public class MimsCBControl extends javax.swing.JPanel {
     }
 
     /**
-     * Sets up the list of entries in the jComboBox based on default LUTs and those in the imagej lut directory.
+     * Sets up the list of entries in the jComboBox based on default LUTs and those in the imagej LUT directory.
      */
     private void setupLutComboBox() {
 
         // Get all the lut files.
-        lutDir = new File(Prefs.getHomeDir(), "luts");
+       // lutDir = new File(Prefs.getHomeDir(), "luts");  // getHomeDir is obsolete, use getImageJDir instead
+        lutDir = new File(Prefs.getImageJDir(), "luts");  // does not work in NetBeans, but does from Fiji
+        OMLOGGER.info("ImageJDir: " + Prefs.getImageJDir());
+        OMLOGGER.info("lut directory: " + lutDir.getAbsolutePath());
+
         File[] lutFiles = new File[0];
         if (lutDir.exists()) {
             lutFiles = lutDir.listFiles(new LutFileFilter());
         }
 
         // Assemple IJ luts and file luts into one String[] object.
+        
+        if (ui.runningInNetBeans) {
+            ijLutNames = new String[]{"Grays", "Fire", "Ice", "Spectrum", 
+                "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Red/Green", "Invert LUT", "cividis"};
+        } 
         int i = 0;
-        String[] lutNames = new String[ijLutNames.length + lutFiles.length];
+        lutNames = new String[ijLutNames.length + lutFiles.length];
         for (String ijLutName : ijLutNames) {
             ijLutNameArray.add(ijLutName);
             lutNames[i] = ijLutName;
@@ -108,7 +147,11 @@ public class MimsCBControl extends javax.swing.JPanel {
                 jComboBox2ActionPerformed(evt);
             }
         });
-
+        
+    }
+    
+    public String[] getLUTnames() {
+        return lutNames;
     }
 
     /**
@@ -438,6 +481,9 @@ public class MimsCBControl extends javax.swing.JPanel {
         updateHistogram();
     }//GEN-LAST:event_jRadioButton1ActionPerformed
 
+    public void updateWindowLUT() {
+        this.jComboBox2ActionPerformed(null);
+    }
     /**
      * Controls the behavior when jComboBox2 (the list of LUTs) is selected.
      */
@@ -450,6 +496,8 @@ public class MimsCBControl extends javax.swing.JPanel {
         // Get the selected LUT  
         String label = (String) jComboBox2.getSelectedItem();
         boolean ijlut = false;
+        boolean cividisLutLocal = false;
+        boolean isCividis = false;
 
         // Manipulate the string
         LutLoader ll = new LutLoader();
@@ -459,34 +507,85 @@ public class MimsCBControl extends javax.swing.JPanel {
                 label = "redgreen";
             } else if (label.equals("Invert LUT")) {
                 label = "invert";
-            } else {
+            } 
+            else if (label.equals("cividis")) {
+                ijlut = false;
+                isCividis = true;
+                cividisLutLocal = true;  // load locally, not from ImageJ
+            }
+            else if (label.equals("Cividis")) {
+                isCividis = true;  // load cividis from imageJ             
+            }
+            else {
                 label = label.toLowerCase();
             }
         }
-
-        applyLutToAllWindows(label, ijlut);
+        if (label.equals("Cividis")) {
+           isCividis = true;
+        }
+        applyLutToAllWindows(label, ijlut, isCividis, cividisLutLocal);
     }//GEN-LAST:event_jComboBox2ActionPerformed
 
     /**
      * Applies the selected LUT to all possible windows.
      */
-    private void applyLutToAllWindows(String lutlabel, boolean ijlut) {
-
+    private void applyLutToAllWindows(String lutlabel, boolean ijlut, boolean isCividis, boolean cividisLutLocal) {
+        
         LutLoader ll = new LutLoader();
         ImagePlus current_imp = WindowManager.getCurrentImage();
 
         MimsPlus[] massImages = ui.getOpenMassImages();
         MimsPlus[] ratioImages = ui.getOpenRatioImages();
         MimsPlus[] sumImages = ui.getOpenSumImages();
+        
+        if (isCividis && showCividisMessage) {
+            int n = JOptionPane.showConfirmDialog(
+                this,
+                "This material was prepared as an account of work sponsored by an agency of the United States Government.\n"  +
+                    "Neither the United States Government nor the United States Department of Energy, nor Battelle, nor any of\n"  +
+                    "their employees, nor any jurisdiction or organization that has cooperated in the development of these materials, \n"  +
+                    "makes any warranty, express or implied, or assumes any legal liability or responsibility for the accuracy, \n"  +
+                    "completeness, or usefulness or any information, apparatus, product, software, or process disclosed, or represents\n"  +
+                    "that its use would not infringe privately owned rights.\n" +
+                    "Reference herein to any specific commercial product, process, or service by trade name, trademark, manufacturer,\n" +
+                    "or otherwise does not necessarily constitute or imply its endorsement, recommendation, or favoring by the \n" +
+                    "United States Government or any agency thereof, or Battelle Memorial Institute. The views and opinions of authors\n" +
+                    "expressed herein do not necessarily state or reflect those of the United States Government or any agency thereof.\n" +
+                    "PACIFIC NORTHWEST NATIONAL LABORATORY\n" +
+                    "operated by BATTELLE for the UNITED STATES DEPARTMENT OF ENERGY\n\nLoad this Cividis LUT?\n",
+                "Load Cividis LUT",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+                if (n == JOptionPane.NO_OPTION) {
+                    return;
+                }
+            showCividisMessage = false;
+        }
+                    
+                    
 
         // Apply to mass images.
         for (MimsPlus mp : massImages) {
             WindowManager.setCurrentWindow(mp.getWindow());
             if (ijlut) {
                 ll.run(lutlabel);
-            } else {
+            }
+            else if (cividisLutLocal) {
+                // load from resources         
+                String name = getClass().getName();
+                URL url =  getClass().getResource("/cividis.lut");
+                String cividisPath = url.getPath();             
+                File cividisFile = new File(cividisPath);
+                // Before opening, show dialog from maker of the LUT (Pacific Northwest National Laboratory) 
+               IJ.open(cividisFile.getAbsolutePath());
+               //IJ.open((new File("/", lutlabel + ".lut")).getAbsolutePath());
+            } else  {
                 IJ.open((new File(lutDir, lutlabel + ".lut")).getAbsolutePath());
             }
+            
+
+                            
+                            
             mp.setLut(lutlabel);
         }
 
@@ -514,7 +613,7 @@ public class MimsCBControl extends javax.swing.JPanel {
 
         WindowManager.setTempCurrentImage(current_imp);
     }
-
+    
     /**
      * Shows the composite manager user interface.
      */
