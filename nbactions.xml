@@ -10,7 +10,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Dmacros.dir=~/NetBeansProjects/ -Xms8000m -classpath %classpath com.nrims.UI</exec.args>
+                <exec.args>-Dmacros.dir=~/NetBeansProjects/ -Xms8000m -Djava.library.path=/Users/taylorwrt/GitHub/opencv-3.3.0/build/bin -classpath %classpath com.nrims.UI runningInNetBeans</exec.args>
                 <exec.executable>java</exec.executable>
                 <exec.workingdir>/Users/taylorwrt/GitHub/OpenMIMS/src/main/java</exec.workingdir>
             </properties>
@@ -25,7 +25,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -Dmacros.dir=~/NetBeansProjects/ -Xms8000m -classpath %classpath com.nrims.UI</exec.args>
+                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -Dmacros.dir=~/NetBeansProjects/ -Xms8000m -Djava.library.path=/Users/taylorwrt/GitHub/opencv-3.3.0/build/bin -classpath %classpath com.nrims.UI runningInNetBeans</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
                 <exec.workingdir>/Users/taylorwrt/GitHub/OpenMIMS/src/main/java</exec.workingdir>
@@ -41,7 +41,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Dmacros.dir=~/NetBeansProjects/ -Xms8000m -classpath %classpath com.nrims.UI</exec.args>
+                <exec.args>-Dmacros.dir=~/NetBeansProjects/ -Xms8000m -Djava.library.path=/Users/taylorwrt/GitHub/opencv-3.3.0/build/bin -classpath %classpath com.nrims.UI runningInNetBeans</exec.args>
                 <exec.executable>java</exec.executable>
                 <exec.workingdir>/Users/taylorwrt/GitHub/OpenMIMS/src/main/java</exec.workingdir>
             </properties>
