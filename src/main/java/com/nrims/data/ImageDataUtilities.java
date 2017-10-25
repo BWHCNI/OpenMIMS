@@ -311,20 +311,20 @@ public class ImageDataUtilities {
         String[] symbols = image.getMassSymbols();
         String curString = "";
         String name = image.getImageFile().getName().toString();
-        int numBefore;
+        int series;
         boolean isPeakSwitching = isPeakSwitching(image);
         for (int i = 0; i < formatArray.length; i++) {
             char curChar = formatArray[i];
             if (curChar == 'M') {
                 if (isPeakSwitching) {
-                    numBefore = determineSeries(numIndex, image) + 1;
-                    curString = "(" + (numBefore) + ")" + curString;
+                    series = determineSeries(numIndex, image) + 1;
+                    curString = "(" + (series) + ")" + curString;
                 }
                 curString += String.valueOf(names[numIndex]) + "/";
                 if (denIndex < image.getNMasses()) {
                     if (isPeakSwitching) {
-                        numBefore = determineSeries(denIndex, image) + 1;
-                        curString = "(" + (numBefore) + ")" + curString;
+                        series = determineSeries(denIndex, image) + 1;
+                        curString = "(" + (series) + ")" + curString;
                     }
                     curString += String.valueOf(names[denIndex]);
                 } else {
