@@ -68,7 +68,7 @@ public class NrimsParticleAnalyzer {
     }
 
     /**
-     * Recursivly finds and traces particles within the specified roi. Recursion alternates between finding a particle
+     * Recursively finds and traces particles within the specified roi. Recursion alternates between finding a particle
      * (findHoles == false) and finding holes within that particle (findHoles == true). Holes are finally subtracted
      * from the surrounding roi.
      *
