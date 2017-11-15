@@ -704,6 +704,11 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             error("Please select only one group to rename.");
             return;
         }
+        
+        if (groupjlist.getSelectedIndex() == 0) {
+           error("The default group cannot be renamed.");
+           return;
+        }
 
         // Prompt user for new name and validate.
         int index = idxs[0];
