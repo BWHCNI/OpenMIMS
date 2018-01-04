@@ -52,9 +52,8 @@ public abstract class MimsChartFactory extends ChartFactory {
         MimsXYPlot plot = new MimsXYPlot(dataset, xAxis, yAxis, renderer);
         plot.setOrientation(orientation);
         if (tooltips) {
-            renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
-        }
-        if (urls) {
+            renderer.setDefaultToolTipGenerator(new StandardXYToolTipGenerator());
+        }        if (urls) {
             renderer.setURLGenerator(new StandardXYURLGenerator());
         }
         JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT,
@@ -92,7 +91,7 @@ public abstract class MimsChartFactory extends ChartFactory {
 
         XYItemRenderer renderer = new XYBarRenderer();
         if (tooltips) {
-            renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
+            renderer.setDefaultToolTipGenerator(new StandardXYToolTipGenerator());
         }
         if (urls) {
             renderer.setURLGenerator(new StandardXYURLGenerator());
