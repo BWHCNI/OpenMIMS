@@ -1440,7 +1440,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
                     case Toolbar.POINT:
                     case Toolbar.POLYGON:
                     case Toolbar.POLYLINE:
-                        stateChanged(getRoi(), MimsPlusEvent.ATTR_MOUSE_RELEASE);
+                            stateChanged(getRoi(), MimsPlusEvent.ATTR_MOUSE_RELEASE);
                         break;
                     case Toolbar.WAND:
                         if (getRoi() != null) {
@@ -1536,7 +1536,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
      * @param e mouse move event
      */
     public void mouseMoved(MouseEvent e) {
-
+        
         if (this.ui.isOpening()) {
             return;
         }
@@ -1783,7 +1783,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
     @Override
     // Display statistics while dragging or creating ROIs.
     public void mouseDragged(MouseEvent e) {
-
+      
         if (getWindow() != null) {  // DJ: 08/06/2014
 
             if (!IJ.getToolName().equals("Drag To Writer tool")) {
