@@ -37,7 +37,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.statistics.HistogramDataset;
-import org.jfree.ui.Layer;
+import org.jfree.chart.ui.Layer;
 
 /**
  * The MimsCBControl class creates the "Contrast" tabbed panel. It is a GUI element used for controlling parameters
