@@ -84,6 +84,7 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingWorker.StateValue;
 import org.apache.commons.io.FilenameUtils;
                             //  for OpenMIMS Documentation as well as the Sample Data link + other possible links.
+import org.opencv.videoio.VideoCapture;
 
 /**
  * The main user interface of the NRIMS ImageJ plugin. A multi-tabbed window
@@ -309,6 +310,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         
         boolean showDragDropItems = prefs.getShowDragDropMessage();
         this.showHideDragDropMessage(showDragDropItems);
+        
+        boolean showRoiManager = prefs.getShowRoiManager();
+        this.showHideROIManager(showRoiManager);
+        
      
         UnoPlugin.setNotesPath(prefs.getMyNotesPath());
         UnoPlugin.setOpenStatus(prefs.getMyNotesPath());
@@ -379,10 +384,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
                 if (proceed) {
                     
                     MimsRoiManager2 roiManager = getRoiManager();
-            roiManager.selectAll();  // Do not show the ROI manager or ROIs unless user wants them.
-            roiManager.delete(false, false);
-            roiManager.close();
-            roiManager.setNeedsToBeSaved(false);
+                    roiManager.selectAll();  // Do not show the ROI manager or ROIs unless user wants them.
+                    roiManager.delete(false, false);
+                    roiManager.close();
+                    roiManager.setNeedsToBeSaved(false);
             
             
                     openFileInBackground(file);
@@ -1776,7 +1781,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.imgNotes = new imageNotes();
         this.imgNotes.setVisible(false);
         this.testingMenu.setVisible(false);
-
+        
 //
 //        boolean showDragDropItems = false;
 //        this.dragDropMessagejLabel1.setVisible(showDragDropItems);
@@ -2678,6 +2683,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.openPrefsjButton1.setVisible(showDragDropItems);        
     }
     
+    public void showHideROIManager(boolean showROImanager) {
+        if (showROImanager) {
+            getRoiManager().viewManager();
+        }
+    }
     
     /**
      * Action method for the View>Tile Windows menu item.
