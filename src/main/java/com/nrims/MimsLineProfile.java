@@ -23,7 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
-import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.Plot;
@@ -354,7 +354,7 @@ public class MimsLineProfile extends JFrame {
                 filename = filename + ".png";
             }
             try {
-                ChartUtilities.saveChartAsPNG(new File(filename), chartPanel.getChart(), getWidth(), getHeight());
+                ChartUtils.saveChartAsPNG(new File(filename), chartPanel.getChart(), getWidth(), getHeight());
             } catch (IOException ioe) {
                 IJ.error("Unable to save file.\n\n" + ioe.toString());
             }
