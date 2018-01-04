@@ -26,10 +26,10 @@ import org.jfree.chart.plot.PlotState;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYDataset;
-import org.jfree.ui.Layer;
-import org.jfree.ui.RectangleEdge;
-import org.jfree.ui.RectangleInsets;
-import org.jfree.ui.TextAnchor;
+import org.jfree.chart.ui.Layer;
+import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.chart.ui.TextAnchor;
 
 /**
  * A Mims customized extension of the {@link XYPlot} class. Only a small difference in the draw method, relating to
@@ -331,7 +331,7 @@ public class MimsXYPlot extends XYPlot {
         // draw domain crosshair if required...
         int index = crosshairState.getDatasetIndex();
 
-        int xAxisIndex = crosshairState.getDomainAxisIndex();
+        int xAxisIndex = (int)crosshairState.getCrosshairX();
         // JfreeChairt JavaDocs say "deprecated As of version 1.0.11, the domain axis should be determined
         //   using the dataset index.  ""  Okay, let's try:
 
@@ -347,7 +347,9 @@ public class MimsXYPlot extends XYPlot {
             }
             crosshairState.setCrosshairX(xx);
         }
-        setDomainCrosshairValue(crosshairState.getCrosshairX(), false);
+        int chx = (int)crosshairState.getCrosshairX();
+        //setDomainCrosshairValue(crosshairState.getCrosshairX(), false);
+        setDomainCrosshairValue(chx, false);
         if (isDomainCrosshairVisible()) {
             double x = getDomainCrosshairValue();
             Paint paint = getDomainCrosshairPaint();
@@ -356,7 +358,7 @@ public class MimsXYPlot extends XYPlot {
         }
 
         // draw range crosshair if required...
-        int yAxisIndex = crosshairState.getRangeAxisIndex();
+        int yAxisIndex = (int)crosshairState.getCrosshairY();
         ValueAxis yAxis = getRangeAxis(yAxisIndex);
         RectangleEdge yAxisEdge = getRangeAxisEdge(yAxisIndex);
         if (!isRangeCrosshairLockedOnData() && anchor != null) {
