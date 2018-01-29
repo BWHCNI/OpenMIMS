@@ -7,10 +7,12 @@ import javax.swing.InputMap;
 import javax.swing.KeyStroke;
 
 /**
- * This class creates a user preferences interface. It opens as a frame and allows user to enter parameters and settings
- * that control the applications behavior. It is built upon the ImageJ Preferences class. These settings are stored in
- * the ImageJ preferences file usually located in ~HOME_DIR/.imagej/IJ_Prefs.txt. All Open_Mims settings are preceded
- * with the "openmims." string.
+ * This class creates a user preferences interface. It opens as a frame and allows 
+ * user to enter parameters and settings that control the applications behavior. 
+ * It is built upon the ImageJ Preferences  class. These settings are stored in 
+ * the ImageJ preferences file usually located in ~HOME_DIR/.imagej/IJ_Prefs.txt,  
+ * although on MacOS, they are stored in ~/Library/Prefenrnces/IJ_Prefs.txt.   
+ * All Open_Mims settings are preceded with the "openmims." string.
  *
  * @author cpoczatek
  */
