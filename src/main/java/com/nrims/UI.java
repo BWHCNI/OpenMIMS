@@ -16,6 +16,7 @@ import com.nrims.unoplugin.UnoPlugin;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.Prefs;
 import ij.WindowManager;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
@@ -274,6 +275,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         String OS = System.getProperty("os.name").toLowerCase();
         if (OS.indexOf("mac")>=0) {
             operatingSystem = "MacOS";   // value of OS is "mac os x" under High Sierra
+            Prefs.setIJMenuBar = true;
         } else if (OS.indexOf("nix")>=0) {
             operatingSystem = "Unix";
         } else if (OS.indexOf("linux")>=0) {
@@ -283,7 +285,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         } else {
             operatingSystem = "unknown";
         }
-
+        
         initComponents();
         initComponentsCustom();
 
