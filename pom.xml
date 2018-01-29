@@ -176,13 +176,7 @@
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>imagej</artifactId>
-            <version>2.0.0-rc-56-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.imagej</groupId>
-                    <artifactId>ij</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>2.0.0-rc-64</version>
         </dependency>
     </dependencies>
 
