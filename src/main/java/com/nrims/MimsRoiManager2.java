@@ -3057,6 +3057,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         jLabelNextAutosave = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setLocation(new java.awt.Point(0, 120));
 
         groupjlist.setModel(groupjlist.getModel());
         groupjlist.setToolTipText("Right click to manage groups.");
