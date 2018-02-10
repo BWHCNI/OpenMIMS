@@ -313,8 +313,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         boolean showDragDropItems = prefs.getShowDragDropMessage();
         this.showHideDragDropMessage(showDragDropItems);
         
-        boolean showRoiManager = prefs.getShowRoiManager();
-        this.showHideROIManager(showRoiManager);
+//        boolean showRoiManager = prefs.getShowRoiManager();
+//        this.showHideROIManager(showRoiManager);
         
      
         UnoPlugin.setNotesPath(prefs.getMyNotesPath());
@@ -351,6 +351,10 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         this.setLocation(xloc, yloc);
         ij.WindowManager.addWindow(this);
         this.ui = this;
+        
+        boolean showRoiManager = prefs.getShowRoiManager();
+        this.showHideROIManager(showRoiManager);
+        
         //create new interface for dropping files into OpenMIMS
         this.mimsDrop = new FileDrop(null, jTabbedPane1, new FileDrop.Listener() {
             public void filesDropped(File[] files) {
