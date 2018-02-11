@@ -169,7 +169,7 @@ RELEASE NOTES
 LICENSE INFORMATION
 ==================================
 
- Copyright 2017 NRIMS, National Resource for Imaging Mass Spectrometry.
+ Copyright 2018 NRIMS, National Resource for Imaging Mass Spectrometry.
  All rights reserved.
  
 https://nano.bwh.harvard.edu/
