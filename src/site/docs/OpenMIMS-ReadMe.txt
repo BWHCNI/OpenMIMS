@@ -4,7 +4,7 @@
 PRODUCT DESCRIPTION
 ==================================
 
- OpenMIMS version 3.0.3 (Nov 2017)
+ OpenMIMS version 3.0.4 (Feb, 2018)
 
  OpenMIMS is an ImageJ plugin designed to open, process and analyze 
  images captured with NanoSIMS 50 & 50L secondary ion mass 
@@ -88,6 +88,14 @@ here:
 ==================================
 RELEASE NOTES
 ==================================
+
+ Feb 2018 (v3.0.4):
+ - OpenMIMS  can now optionally show the ROI manager upon startup. This is 
+   controlled in the preferences. 
+ - To prevent a slowdown of opening image files subsequent to the first image 
+   opened on MacOS, the code now sets the Mac menu bar if OpenMIMS is running
+   on MacOS
+ - Updated dependent library usage so that OpenMIMS can run under Fiji 2.0.0.
 
  Nov 2017 (v3.0.3):
  - OpenMIMS now requires Java 1.8 or higher. 
