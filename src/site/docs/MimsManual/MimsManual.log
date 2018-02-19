@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  5 JUL 2017 16:35
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  19 FEB 2018 13:46
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -116,21 +116,29 @@ Package: subfigure 2002/03/15 v2.1.5 subfigure package
 \subfig@top=\skip56
 \subfig@bottom=\skip57
 )
+(/usr/local/texlive/2016/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count95
+\float@exts=\toks16
+\float@box=\box26
+\@float@everytoks=\toks17
+\@floatcapt=\box27
+)
 (./MimsManual.aux)
 \openout1 = `MimsManual.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 45.
+LaTeX Font Info:    ... okay on input line 45.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 45.
+LaTeX Font Info:    ... okay on input line 45.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 45.
+LaTeX Font Info:    ... okay on input line 45.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 45.
+LaTeX Font Info:    ... okay on input line 45.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 45.
+LaTeX Font Info:    ... okay on input line 45.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 45.
+LaTeX Font Info:    ... okay on input line 45.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -168,17 +176,17 @@ LaTeX Font Info:    ... okay on input line 44.
 
 (/usr/local/texlive/2016/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count95
+\scratchcounter=\count96
 \scratchdimen=\dimen115
-\scratchbox=\box26
-\nofMPsegments=\count96
-\nofMParguments=\count97
-\everyMPshowfont=\toks16
-\MPscratchCnt=\count98
+\scratchbox=\box28
+\nofMPsegments=\count97
+\nofMParguments=\count98
+\everyMPshowfont=\toks18
+\MPscratchCnt=\count99
 \MPscratchDim=\dimen116
-\MPnumerator=\count99
-\makeMPintoPDFobject=\count100
-\everyMPtoPDFconversion=\toks17
+\MPnumerator=\count100
+\makeMPintoPDFobject=\count101
+\everyMPtoPDFconversion=\toks19
 ) (/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
 Package: pdftexcmds 2016/05/10 v0.21 Utility functions of pdfTeX for LuaTeX (HO
 )
@@ -224,15 +232,15 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 46.
+(Font)              <12> on input line 47.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 46.
+(Font)              <8> on input line 47.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 46.
+(Font)              <6> on input line 47.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 75.
+(Font)              <7> on input line 76.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 75.
+(Font)              <5> on input line 76.
 
 [1
 
@@ -241,57 +249,57 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 File: snapshotCochleaM26.png Graphic file (type png)
 
 <use snapshotCochleaM26.png>
-Package pdftex.def Info: snapshotCochleaM26.png used on input line 87.
+Package pdftex.def Info: snapshotCochleaM26.png used on input line 88.
 (pdftex.def)             Requested size: 195.1272pt x 203.48334pt.
 
 <snapshotCochleaM27.png, id=14, 433.62pt x 450.18187pt>
 File: snapshotCochleaM27.png Graphic file (type png)
 
 <use snapshotCochleaM27.png>
-Package pdftex.def Info: snapshotCochleaM27.png used on input line 90.
+Package pdftex.def Info: snapshotCochleaM27.png used on input line 91.
 (pdftex.def)             Requested size: 195.1272pt x 202.57997pt.
  [2 <./snapshotCochleaM26.png> <./snapshotCochleaM27.png>]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 100.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 101.
 
  (/usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 100.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 101.
 
 <snapshotDesktop3.png, id=22, 2951.025pt x 1183.42125pt>
 File: snapshotDesktop3.png Graphic file (type png)
 
 <use snapshotDesktop3.png>
-Package pdftex.def Info: snapshotDesktop3.png used on input line 111.
+Package pdftex.def Info: snapshotDesktop3.png used on input line 112.
 (pdftex.def)             Requested size: 505.89pt x 202.85829pt.
  [3 <./snapshotDesktop3.png>]
 <snapshotMIMData.png, id=29, 576.65437pt x 416.05438pt>
 File: snapshotMIMData.png Graphic file (type png)
 
 <use snapshotMIMData.png>
-Package pdftex.def Info: snapshotMIMData.png used on input line 121.
+Package pdftex.def Info: snapshotMIMData.png used on input line 122.
 (pdftex.def)             Requested size: 403.6553pt x 291.23607pt.
  [4 <./snapshotMIMData.png>]
 <snapshotProcess.png, id=34, 576.65437pt x 415.5525pt>
 File: snapshotProcess.png Graphic file (type png)
 
 <use snapshotProcess.png>
-Package pdftex.def Info: snapshotProcess.png used on input line 140.
+Package pdftex.def Info: snapshotProcess.png used on input line 141.
 (pdftex.def)             Requested size: 374.82089pt x 270.10593pt.
  [5 <./snapshotProcess.png>]
 <snapshot_MimsContrast.png, id=39, 576.65437pt x 416.05438pt>
 File: snapshot_MimsContrast.png Graphic file (type png)
 
 <use snapshot_MimsContrast.png>
-Package pdftex.def Info: snapshot_MimsContrast.png used on input line 185.
+Package pdftex.def Info: snapshot_MimsContrast.png used on input line 186.
 (pdftex.def)             Requested size: 403.6553pt x 291.23607pt.
  [6 <./snapshot_MimsContrast.png>]
 <snapshot_MimsStackEditing.png, id=44, 576.65437pt x 415.5525pt>
 File: snapshot_MimsStackEditing.png Graphic file (type png)
 
 <use snapshot_MimsStackEditing.png>
-Package pdftex.def Info: snapshot_MimsStackEditing.png used on input line 222.
+Package pdftex.def Info: snapshot_MimsStackEditing.png used on input line 223.
 (pdftex.def)             Requested size: 374.82089pt x 270.10593pt.
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
@@ -328,17 +336,17 @@ Missing character: There is no ù in font cmr10!
 File: snapshotPeakSwitch1.png Graphic file (type png)
 
 <use snapshotPeakSwitch1.png>
-Package pdftex.def Info: snapshotPeakSwitch1.png used on input line 285.
+Package pdftex.def Info: snapshotPeakSwitch1.png used on input line 286.
 (pdftex.def)             Requested size: 491.42949pt x 390.68645pt.
 
 <snapshotPeakSwitch2.png, id=51, 794.97pt x 236.68425pt>
 File: snapshotPeakSwitch2.png Graphic file (type png)
 
 <use snapshotPeakSwitch2.png>
-Package pdftex.def Info: snapshotPeakSwitch2.png used on input line 291.
+Package pdftex.def Info: snapshotPeakSwitch2.png used on input line 292.
 (pdftex.def)             Requested size: 540.57245pt x 160.94316pt.
 
-Overfull \hbox (34.68245pt too wide) in paragraph at lines 291--292
+Overfull \hbox (34.68245pt too wide) in paragraph at lines 292--293
  [][] 
  []
 
@@ -347,27 +355,27 @@ Overfull \hbox (34.68245pt too wide) in paragraph at lines 291--292
 File: snapshot_MimsTomography.png Graphic file (type png)
 
 <use snapshot_MimsTomography.png>
-Package pdftex.def Info: snapshot_MimsTomography.png used on input line 302.
+Package pdftex.def Info: snapshot_MimsTomography.png used on input line 303.
 (pdftex.def)             Requested size: 392.11978pt x 282.91322pt.
 
 <snapshotTomographyPlot.png, id=57, 578.16pt x 335.69415pt>
 File: snapshotTomographyPlot.png Graphic file (type png)
 
 <use snapshotTomographyPlot.png>
-Package pdftex.def Info: snapshotTomographyPlot.png used on input line 318.
+Package pdftex.def Info: snapshotTomographyPlot.png used on input line 319.
 (pdftex.def)             Requested size: 474.09427pt x 275.27097pt.
 
 <snapshotLineROI.png, id=58, 252.945pt x 274.3851pt>
 File: snapshotLineROI.png Graphic file (type png)
  <use snapshotLineROI.png>
-Package pdftex.def Info: snapshotLineROI.png used on input line 346.
+Package pdftex.def Info: snapshotLineROI.png used on input line 347.
 (pdftex.def)             Requested size: 202.35626pt x 219.50836pt.
 
 <snapshotProfilePlot.png, id=59, 433.62pt x 263.5446pt>
 File: snapshotProfilePlot.png Graphic file (type png)
 
 <use snapshotProfilePlot.png>
-Package pdftex.def Info: snapshotProfilePlot.png used on input line 350.
+Package pdftex.def Info: snapshotProfilePlot.png used on input line 351.
 (pdftex.def)             Requested size: 342.55605pt x 208.19794pt.
  [9 <./snapshotPeakSwitch2.png>]
 
@@ -378,24 +386,21 @@ shotLineROI.png> <./snapshotProfilePlot.png>]
 <snapshotM26ROIs.png, id=74, 307.1475pt x 333.245pt>
 File: snapshotM26ROIs.png Graphic file (type png)
  <use snapshotM26ROIs.png>
-Package pdftex.def Info: snapshotM26ROIs.png used on input line 368.
+Package pdftex.def Info: snapshotM26ROIs.png used on input line 369.
 (pdftex.def)             Requested size: 251.86258pt x 273.26265pt.
 
 <snapshotROImanager.png, id=75, 722.7pt x 528.65504pt>
 File: snapshotROImanager.png Graphic file (type png)
 
 <use snapshotROImanager.png>
-Package pdftex.def Info: snapshotROImanager.png used on input line 372.
-(pdftex.def)             Requested size: 433.62334pt x 317.19547pt.
-
-
-LaTeX Warning: Float too large for page by 5.02812pt on input line 374.
+Package pdftex.def Info: snapshotROImanager.png used on input line 373.
+(pdftex.def)             Requested size: 397.48622pt x 290.76117pt.
 
 <snapshotNewGroup.png, id=76, 361.35pt x 181.3977pt>
 File: snapshotNewGroup.png Graphic file (type png)
 
 <use snapshotNewGroup.png>
-Package pdftex.def Info: snapshotNewGroup.png used on input line 407.
+Package pdftex.def Info: snapshotNewGroup.png used on input line 408.
 (pdftex.def)             Requested size: 252.94327pt x 126.97751pt.
  [12
 
@@ -404,98 +409,97 @@ tion.png, id=86, 722.7pt x 587.3142pt>
 File: snapshotMimsSegmentation.png Graphic file (type png)
 
 <use snapshotMimsSegmentation.png>
-Package pdftex.def Info: snapshotMimsSegmentation.png used on input line 455.
+Package pdftex.def Info: snapshotMimsSegmentation.png used on input line 456.
 (pdftex.def)             Requested size: 505.88655pt x 411.11713pt.
 
 <snapshotSegModelConfig.png, id=87, 722.7pt x 345.4506pt>
 File: snapshotSegModelConfig.png Graphic file (type png)
 
 <use snapshotSegModelConfig.png>
-Package pdftex.def Info: snapshotSegModelConfig.png used on input line 471.
+Package pdftex.def Info: snapshotSegModelConfig.png used on input line 472.
 (pdftex.def)             Requested size: 469.74944pt x 224.54022pt.
  [14 <./snapshotNewGroup.png>] [15 <./snapshotMimsSegmentation.png>]
 <snapshotRegistration.png, id=96, 2542.49875pt x 1532.72626pt>
 File: snapshotRegistration.png Graphic file (type png)
 
 <use snapshotRegistration.png>
-Package pdftex.def Info: snapshotRegistration.png used on input line 514.
-(pdftex.def)             Requested size: 1779.73703pt x 1072.9011pt.
+Package pdftex.def Info: snapshotRegistration.png used on input line 515.
+(pdftex.def)             Requested size: 508.49075pt x 306.53983pt.
 
-Overfull \hbox (1273.84703pt too wide) in paragraph at lines 514--515
+Overfull \hbox (2.60075pt too wide) in paragraph at lines 515--516
  [][] 
  []
-
-
-LaTeX Warning: Float too large for page by 446.41554pt on input line 516.
 
 <snapshotRegistrationResults.png, id=97, 722.7pt x 723.78406pt>
 File: snapshotRegistrationResults.png Graphic file (type png)
 
 <use snapshotRegistrationResults.png>
-Package pdftex.def Info: snapshotRegistrationResults.png used on input line 550
+Package pdftex.def Info: snapshotRegistrationResults.png used on input line 551
 .
 (pdftex.def)             Requested size: 505.88655pt x 506.64539pt.
  [16 <./snapshotSegModelConfig.png>]
-<snapshotMIMSlog.png, id=102, 722.7pt x 545.6385pt>
+[17 <./snapshotRegistration.png>] [18 <./snapshotRegistrationResults.png>]
+<snapshotMIMSlog.png, id=110, 722.7pt x 545.6385pt>
 File: snapshotMIMSlog.png Graphic file (type png)
  <use snapshotMIMSlog.png>
-Package pdftex.def Info: snapshotMIMSlog.png used on input line 563.
-(pdftex.def)             Requested size: 505.88655pt x 381.94434pt.
+Package pdftex.def Info: snapshotMIMSlog.png used on input line 566.
+(pdftex.def)             Requested size: 469.74944pt x 354.66081pt.
 
-[17] <snapshotMenuItems.png, id=106, 361.35pt x 35.05095pt>
+[19
+
+ <./snapshotMIMSlog.png>]
+<snapshotMenuItems.png, id=116, 361.35pt x 35.05095pt>
 File: snapshotMenuItems.png Graphic file (type png)
 
 <use snapshotMenuItems.png>
-Package pdftex.def Info: snapshotMenuItems.png used on input line 581.
+Package pdftex.def Info: snapshotMenuItems.png used on input line 586.
 (pdftex.def)             Requested size: 216.81168pt x 21.03072pt.
 
-<snapshotFilesManager.png, id=107, 650.43pt x 326.29906pt>
+<snapshotFilesManager.png, id=117, 650.43pt x 326.29906pt>
 File: snapshotFilesManager.png Graphic file (type png)
 
 <use snapshotFilesManager.png>
-Package pdftex.def Info: snapshotFilesManager.png used on input line 616.
+Package pdftex.def Info: snapshotFilesManager.png used on input line 621.
 (pdftex.def)             Requested size: 455.2979pt x 228.40778pt.
- [18] [19] [20] [21 <./snapshotRegistration.png>] [22 <./snapshotRegistrationRe
-sults.png>] [23 <./snapshotMIMSlog.png> <./snapshotMenuItems.png>] [24 <./snaps
-hotFilesManager.png>]
-<snapshot_HSI-Image.png, id=135, 452.69125pt x 484.81125pt>
+ [20 <./snapshotMenuItems.png> <./snapshotFilesManager.png>] [21] [22]
+<snapshot_HSI-Image.png, id=129, 452.69125pt x 484.81125pt>
 File: snapshot_HSI-Image.png Graphic file (type png)
 
 <use snapshot_HSI-Image.png>
-Package pdftex.def Info: snapshot_HSI-Image.png used on input line 770.
+Package pdftex.def Info: snapshot_HSI-Image.png used on input line 775.
 (pdftex.def)             Requested size: 452.69014pt x 484.81006pt.
- [25
+ [23
 
  <./snapshot_HSI-Image.png>]
-<snapshot_Table.png, id=141, 573.90883pt x 595.80733pt>
+<snapshot_Table.png, id=134, 573.90883pt x 595.80733pt>
 File: snapshot_Table.png Graphic file (type png)
 
 <use snapshot_Table.png>
-Package pdftex.def Info: snapshot_Table.png used on input line 780.
+Package pdftex.def Info: snapshot_Table.png used on input line 785.
 (pdftex.def)             Requested size: 459.12769pt x 476.64651pt.
- [26 <./snapshot_Table.png (PNG copy)>]
-<seg_lechene_94p.png, id=145, 769.87625pt x 770.88pt>
+ [24 <./snapshot_Table.png (PNG copy)>]
+<seg_lechene_94p.png, id=138, 769.87625pt x 770.88pt>
 File: seg_lechene_94p.png Graphic file (type png)
 
 <use seg_lechene_94p.png>
-Package pdftex.def Info: seg_lechene_94p.png used on input line 791.
+Package pdftex.def Info: seg_lechene_94p.png used on input line 796.
 (pdftex.def)             Requested size: 384.93718pt x 385.43906pt.
- [27 <./seg_lechene_94p.png (PNG copy)>]
-<snapshot_ImageList.png, id=149, 491.8375pt x 489.83pt>
+ [25 <./seg_lechene_94p.png (PNG copy)>]
+<snapshot_ImageList.png, id=143, 491.8375pt x 489.83pt>
 File: snapshot_ImageList.png Graphic file (type png)
 
 <use snapshot_ImageList.png>
-Package pdftex.def Info: snapshot_ImageList.png used on input line 802.
+Package pdftex.def Info: snapshot_ImageList.png used on input line 807.
 (pdftex.def)             Requested size: 368.87721pt x 367.3716pt.
- [28 <./snapshot_ImageList.png>] (./MimsManual.aux) ) 
+ [26 <./snapshot_ImageList.png>] (./MimsManual.aux) ) 
 Here is how much of TeX's memory you used:
- 2420 strings out of 493014
- 36365 string characters out of 6133351
- 103492 words of memory out of 5000000
- 5916 multiletter control sequences out of 15000+600000
+ 2478 strings out of 493014
+ 37139 string characters out of 6133351
+ 104859 words of memory out of 5000000
+ 5970 multiletter control sequences out of 15000+600000
  8895 words of font info for 31 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 38i,10n,43p,886b,320s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 38i,10n,43p,886b,326s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2016/t
 exmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2016/te
 xmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/tex
@@ -507,10 +511,10 @@ fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2016/texmf-dist/fon
 ts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2016/texmf-dist/font
 s/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2016/texmf-dist/fonts
 /type1/public/amsfonts/cm/cmti12.pfb>
-Output written on MimsManual.pdf (28 pages, 16733998 bytes).
+Output written on MimsManual.pdf (26 pages, 16734110 bytes).
 PDF statistics:
- 187 PDF objects out of 1000 (max. 8388607)
- 94 compressed objects within 1 object stream
+ 181 PDF objects out of 1000 (max. 8388607)
+ 90 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  136 words of extra memory for PDF output out of 10000 (max. 10000000)
 

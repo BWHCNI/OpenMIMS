@@ -1,4 +1,4 @@
-% Zeke Kaufman, Collin Poczetk, Claude Lechene, and May 2017 edits by Walter Taylor
+% Zeke Kaufman, Collin Poczetk, Claude Lechene, and May 2017 and Feb 2018 edits by Walter Taylor
 % OpenMIMS Manual
 
 \documentclass{article}
@@ -15,6 +15,7 @@
 \usepackage{parskip}
 \usepackage{subfigure}
 \pagestyle{fancy}
+\usepackage{float}
 
 % Clear default headers and define our own.
 \fancyhead{}
@@ -25,7 +26,7 @@
 
 % Title and author information.
 \title{\textbf{OpenMIMS ImageJ Plugin Guide}}
-\date {June 5, 2017}
+\date {Feb 19, 2018}
 \author{Collin Poczatek, Zeke Kaufman, Claude Lechene, and Walter Taylor \\(\textit{National Resource for Imaging Mass Spectrometry})}
 
 % Spacing settings.
@@ -368,7 +369,7 @@
 	}
 	\hfill
 	\subfigure[The ROI Manager]{
-	\includegraphics[scale=0.6]{snapshotROImanager.png}
+	\includegraphics[scale=0.55]{snapshotROImanager.png}
 	}
 	\caption{A mass image with several ROIs (a) and the corresponding ROI Manager (b). }
 	\end{figure}
@@ -511,7 +512,7 @@
 	
 	\begin{figure}[ht]
 	\centering
-	\includegraphics[scale=0.70]{snapshotRegistration.png}
+	\includegraphics[scale=0.20]{snapshotRegistration.png}
 	\caption{The \textbf{Registration} tab.}
 	\end{figure}
 	The \textbf{Registration} script allows the user to employ the ImageJ plugin TurboReg to align the open images with an image taken from an external source, for example, an electron microscope image of the same sample that was used for generating the MIMS images.   Detailed information about the TurboReg plugin can be found here http://bigwww.epfl.ch/thevenaz/turboreg/
@@ -554,15 +555,19 @@ i.e. the first target ROI you created will be registered to the first source ROI
 	
 	
 	
-
-\newpage
+	
+	
+	
+\clearpage
 \section*{Mims Log:}
 	
-	\begin{figure}[ht]
+	\begin{figure}[htp]
 	\centering
-	\includegraphics[scale=0.70]{snapshotMIMSlog.png}
+	\includegraphics[scale=0.65]{snapshotMIMSlog.png}
 	\caption{The \textbf{MIMS Log} tab contains metadata and debug information.}
-	\end{figure}
+	\end{figure}	
+	
+
 	
 	The \textbf{MIMS Log} tab keeps a record of what the user has done: 
 	e.g. deleting planes, translating planes, autotracking, etc. Various bits
@@ -805,6 +810,20 @@ for a 40 plane image file with three ROIs}
 \vfill
 
 
+
+
+\begin{center}\LARGE{\textbf{REFERENCES}}\end{center} 
+\vfill
+
+
+	[1]  Fuller et. al. \textit{Segmentation of Three-dimensional Retinal Image Data.} 
+	IEEE Trans. Vis. Comput. Graph. 16(6):1719-1726, 2007.
+
+	[2] Gormanns, P., Reckow, S., Poczatek, J., Turck, C., Lechene, C. \textit{Segmentation of multi-istope imaging mass spectrometry data for semi-automatic detection of regions of interest.} PLoS ONE 2012: 7(2)
+
+	[3] libSVM  \textit{http://www.csie.ntu.edu.tw/~cjlin/libsvm/}
+	
+	[4] http://teem.sourceforge.net/nrrd/
 
 
 \end{document}
