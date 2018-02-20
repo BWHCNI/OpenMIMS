@@ -65,21 +65,13 @@ here:
    apply those updates. Do not close the ImageJ Updater yet.
 4. Click on the ”Manage update sites” button at the bottom of the ImageJ 
    updater window. A window that shows a list of the Fiji update sites should 
-   appear. Scroll to the bottom of the list. If you see an entry for OpenMIMS, 
-   you can close this window and move to the next step. If not, you need to 
-   add that row to the table: Click on the ”Add update site” button. In the 
-   Name column, enter ”OpenMIMS”. In the URL column, enter 
-   http://nrims.partners.org/OpenMIMS-Fiji/ Make sure the checkbox on the left
-   side of this entry is checked, then close the window. Adding this line 
-   ensures that, upon startup, Fiji will always download the newest version 
-   of OpenMIMS from our update site at Partners whenever a new version is 
-   posted to the update site by the OpenMIMS developers. If you do not want 
-   these updates to occur, uncheck the checkbox in the table.
-5. Quit and restart Fiji. Again, go the ”Help”, menu and select the 
-   ”Update Fiji” option. It should download the most recent copy of OpenMIMS 
-   from the Partners update site. Once again, quit and restart Fiji and the 
-   most recent OpenMIMS plugin should be available on the ”Plugins” menu of 
-   Fiji. After you launch the OpenMIMS plugin, you can determines the version
+   appear. Scroll down to the OpenMIMS entry and click on the checkbox on the 
+   left. Then click on the “Close” button.  You show see a list of the jar files
+   that comprise OpenMIMS.   Click on the “Apply changes” button.    followed by
+   the Apply Changes button.  
+5. When it finishes installing the various OpenMIMS components, restart Fiji, 
+   which will now have “Open MIMS Image” on the list of Plugins.   After you 
+   launch the OpenMIMS plugin, you can determine the version of OpenMIMS
    by going to the ”Help” menu and selecting ”About Open MIMS”.
 
 
