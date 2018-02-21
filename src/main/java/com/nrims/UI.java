@@ -275,7 +275,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         String OS = System.getProperty("os.name").toLowerCase();
         if (OS.indexOf("mac")>=0) {
             operatingSystem = "MacOS";   // value of OS is "mac os x" under High Sierra
-            Prefs.setIJMenuBar = true;
+            Prefs.setIJMenuBar = false;
         } else if (OS.indexOf("nix")>=0) {
             operatingSystem = "Unix";
         } else if (OS.indexOf("linux")>=0) {
