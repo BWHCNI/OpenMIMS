@@ -29,6 +29,7 @@ public class PrefFrame extends PlugInJFrame {
     boolean enableHighDPIonLinux = false;
     boolean showDragDropMessage = true;
     boolean showROImanager = true;
+    boolean isROIautosaveOn = true;
     String defaultLUT = "";
     UI ui;
     float reference = (float) 0.0130;
@@ -99,6 +100,7 @@ public class PrefFrame extends PlugInJFrame {
         jLabel12 = new javax.swing.JLabel();
         showDragDropMessagejCheckBox = new javax.swing.JCheckBox();
         showROImanagerCheckBox = new javax.swing.JCheckBox();
+        isROIautosaveOnCheckBox = new javax.swing.JCheckBox();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("Bundle"); // NOI18N
         jLabel5.setText(bundle.getString("PrefFrame.jLabel5.text_1")); // NOI18N
@@ -191,15 +193,21 @@ public class PrefFrame extends PlugInJFrame {
             }
         });
 
+        isROIautosaveOnCheckBox.setSelected(true);
+        isROIautosaveOnCheckBox.setText(bundle.getString("PrefFrame.isROIautosaveOnCheckBox.text")); // NOI18N
+        isROIautosaveOnCheckBox.setToolTipText(bundle.getString("PrefFrame.isROIautosaveOnCheckBox.toolTipText")); // NOI18N
+        isROIautosaveOnCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isROIautosaveOnCheckBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout preferencesJPanelLayout = new javax.swing.GroupLayout(preferencesJPanel);
         preferencesJPanel.setLayout(preferencesJPanelLayout);
         preferencesJPanelLayout.setHorizontalGroup(
             preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(preferencesJPanelLayout.createSequentialGroup()
                 .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(preferencesJPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(showAutosaveDialogCheckBox))
                     .addGroup(preferencesJPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel9)
@@ -233,9 +241,6 @@ public class PrefFrame extends PlugInJFrame {
                                 .addComponent(backgroundTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(preferencesJPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(enableHighDPIonLinuxCheckBox))
-                    .addGroup(preferencesJPanelLayout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(preferencesJPanelLayout.createSequentialGroup()
                                 .addComponent(jLabel11)
@@ -260,16 +265,23 @@ public class PrefFrame extends PlugInJFrame {
                                 .addGap(25, 25, 25))))
                     .addGroup(preferencesJPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(showDragDropMessagejCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 271, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(preferencesJPanelLayout.createSequentialGroup()
+                                .addComponent(showAutosaveDialogCheckBox)
+                                .addGap(36, 36, 36))
+                            .addComponent(showDragDropMessagejCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 271, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(showROImanagerCheckBox)
+                            .addGroup(preferencesJPanelLayout.createSequentialGroup()
+                                .addGap(225, 225, 225)
+                                .addComponent(jButton1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jButton2))))
                     .addGroup(preferencesJPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(showROImanagerCheckBox))
-                    .addGroup(preferencesJPanelLayout.createSequentialGroup()
-                        .addGap(231, 231, 231)
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2)))
-                .addContainerGap(169, Short.MAX_VALUE))
+                        .addComponent(enableHighDPIonLinuxCheckBox)
+                        .addGap(42, 42, 42)
+                        .addComponent(isROIautosaveOnCheckBox)))
+                .addContainerGap(227, Short.MAX_VALUE))
             .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(preferencesJPanelLayout.createSequentialGroup()
                     .addContainerGap()
@@ -282,7 +294,7 @@ public class PrefFrame extends PlugInJFrame {
                                 .addComponent(HSIcheckbox)
                                 .addComponent(ratioCheckbox)))
                         .addComponent(jLabel1))
-                    .addContainerGap(453, Short.MAX_VALUE)))
+                    .addContainerGap(511, Short.MAX_VALUE)))
         );
         preferencesJPanelLayout.setVerticalGroup(
             preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -330,18 +342,20 @@ public class PrefFrame extends PlugInJFrame {
                     .addComponent(myNotes_jLabel)
                     .addComponent(myNotes_jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(enableHighDPIonLinuxCheckBox)
+                .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(enableHighDPIonLinuxCheckBox)
+                    .addComponent(isROIautosaveOnCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(showAutosaveDialogCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(showDragDropMessagejCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(showROImanagerCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
                 .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
-                .addGap(50, 50, 50))
+                .addGap(47, 47, 47))
             .addGroup(preferencesJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(preferencesJPanelLayout.createSequentialGroup()
                     .addContainerGap()
@@ -354,7 +368,7 @@ public class PrefFrame extends PlugInJFrame {
                     .addComponent(massCheckbox)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(ratioCheckbox)
-                    .addContainerGap(606, Short.MAX_VALUE)))
+                    .addContainerGap(611, Short.MAX_VALUE)))
         );
 
         defaultLUTcomboBox.getAccessibleContext().setAccessibleName(bundle.getString("PrefFrame.defaultLUTcomboBox.AccessibleContext.accessibleName")); // NOI18N
@@ -365,13 +379,15 @@ public class PrefFrame extends PlugInJFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 521, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 11, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 731, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 34, Short.MAX_VALUE))
+                .addGap(0, 10, Short.MAX_VALUE))
         );
 
         pack();
@@ -410,6 +426,10 @@ public class PrefFrame extends PlugInJFrame {
 // TODO add your handling code here:
     }//GEN-LAST:event_showROImanagerjCheckboxActionPerformed
 
+    private void isROIautosaveOnCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isROIautosaveOnCheckBoxActionPerformed
+        isROIautosaveOn = isROIautosaveOnCheckBox.isSelected();
+    }//GEN-LAST:event_isROIautosaveOnCheckBoxActionPerformed
+
 
 
         
@@ -437,6 +457,7 @@ public class PrefFrame extends PlugInJFrame {
         this.referenceTextField.setText(new Float(reference).toString());
         this.numDecimalPlacesSpinner.setValue(numDecimalPlaces);
         this.tileYTextField.setText(new Integer(tileY).toString());
+        this.isROIautosaveOnCheckBox.setSelected(isROIautosaveOn);
         this.AutoSaveIntervalTextField.setText(new Integer(autoSaveInterval).toString());
         this.formatStringTextField.setText(formatString);
 
@@ -463,6 +484,9 @@ public class PrefFrame extends PlugInJFrame {
         ratioSpan = (double) Prefs.get(PREFS_KEY + "ratioSpan", ratioSpan);
         ratioReciprocals = (boolean) Prefs.get(PREFS_KEY + "ratioReciprocals", ratioReciprocals);
         showAutosaveROISdialog = (boolean) Prefs.get(PREFS_KEY + "showAutosaveROISdialog", showAutosaveROISdialog);
+        
+        isROIautosaveOn = (boolean) Prefs.get(PREFS_KEY + "isROIautosaveOn", isROIautosaveOn);
+        
         showDragDropMessage = (boolean) Prefs.get(PREFS_KEY + "showDragDropMessage", showDragDropMessage);
         showROImanager = (boolean) Prefs.get(PREFS_KEY + "showROImanager", showROImanager);
         
@@ -494,6 +518,7 @@ public class PrefFrame extends PlugInJFrame {
         includeRatio = ratioCheckbox.isSelected();
         ratioReciprocals = ratioReciprocalsCheckBox.isSelected();
         showAutosaveROISdialog = showAutosaveDialogCheckBox.isSelected();
+        isROIautosaveOn = isROIautosaveOnCheckBox.isSelected();
         showDragDropMessage = showDragDropMessagejCheckBox.isSelected();        
         ui.showHideDragDropMessage(showDragDropMessage);
         
@@ -580,6 +605,9 @@ public class PrefFrame extends PlugInJFrame {
         Prefs.set(PREFS_KEY + "showAutosaveROISdialog", showAutosaveROISdialog);  
         Prefs.set(PREFS_KEY + "showDragDropMessage", showDragDropMessage);
         Prefs.set(PREFS_KEY + "showROImanager", showROImanager);
+        
+        Prefs.set(PREFS_KEY + "isROIautosaveOn", isROIautosaveOn);
+        
         Prefs.set(PREFS_KEY + "enableHighDPIonLinux", enableHighDPIonLinux);
         Prefs.set(PREFS_KEY + "defaultLUT", defaultLUT);
         Prefs.set(PREFS_KEY + "background", background);
@@ -681,6 +709,15 @@ public class PrefFrame extends PlugInJFrame {
      */
     boolean getRatioReciprocals() {
         return ratioReciprocals;
+    }
+    
+     /**
+     * Gets whether ROI autosaving is on or off
+     *
+     * @return boolean
+     */
+    boolean getIsAutosaveOn() {
+        return isROIautosaveOn;
     }
     
             
@@ -901,6 +938,7 @@ public class PrefFrame extends PlugInJFrame {
     private javax.swing.JCheckBox enableHighDPIonLinuxCheckBox;
     private javax.swing.Box.Filler filler1;
     private javax.swing.JTextField formatStringTextField;
+    private javax.swing.JCheckBox isROIautosaveOnCheckBox;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
