@@ -155,6 +155,7 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
     boolean macro;
     private String savedpath = "";
     boolean previouslySaved = false;
+    boolean isROIautosaveOn;
 
     boolean bAllPlanes = true;
 
@@ -254,8 +255,15 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
        
         setNeedsToBeSaved(false);
         
+        PrefFrame prefs = ui.getPreferences();
+        isROIautosaveOn = prefs.getIsAutosaveOn();
+        
         timer = new Timer();
-        startTimer(1);  // 1 second timer for countdown of autosave interval
+        if (!isROIautosaveOn) {
+            jLabelNextAutosave.setText("ROI autosave is off");
+        } else {                     
+            startTimer(1);  // 1 second timer for countdown of autosave interval
+        }
              
         this.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
@@ -264,7 +272,12 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
                 }
             }
             public void windowActivated(WindowEvent e) {
-                startTimer(1);
+                boolean isROIautosaveOn = prefs.getIsAutosaveOn();
+                if (!isROIautosaveOn) {
+                    jLabelNextAutosave.setText("ROI autosave is off");
+                } else {                     
+                    startTimer(1);  // 1 second timer for countdown of autosave interval
+                }
             }       
         });
     
@@ -296,11 +309,12 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
             if (jLabelAutosavingROIs.isOpaque()) {
                 String interval = new Integer(autosaveIn).toString();
                 if (needsToBeSaved) {
-                    //System.out.println("RemindTask: autosave in " + interval + "   needsToBeSaved = " + needsToBeSaved);
+                    //System.out.println("RemindTask: autosave in " + interval + "   needsToBeSaved = " + needsToBeSaved);             
                     jLabelNextAutosave.setText("autosave in " + interval + " sec");
                 } else {
                     jLabelNextAutosave.setText("");
                 }
+
             }
             if (autosaveIn == 0) {
                 jLabelNextAutosave.setText("");
@@ -4310,7 +4324,13 @@ public class MimsRoiManager2 extends javax.swing.JFrame implements ActionListene
         //autosaveIn = (ui.getInterval() / 1000);
         //System.out.println("autosave interval was " + oldVal + "   reset to " + autosaveIn);
         cancelTimer();
-        startTimer(1);
+        
+        if (!isROIautosaveOn) {
+            //jLabelNextAutosave.setText("ROI autosave is off");
+        } else {                     
+            startTimer(1);  // 1 second timer for countdown of autosave interval
+        }
+
         return true;
     }
 
