@@ -13,7 +13,9 @@ import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
+import ij.process.ImageStatistics;
 import ij.process.ShortProcessor;
+import java.awt.Dimension;
 
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent;
@@ -27,6 +29,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.DefaultListModel;
 import javax.swing.event.EventListenerList;
 
@@ -1258,10 +1261,27 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
                 return;
             }
         }
-
+        
         
         boolean isROInull = true;
-    
+
+        // This delay very hokey, but the best I can do at the moment.  Previously,
+        // as one zoomed in, it got harder and harder for one to create an ROI.
+        // This can be solved (badly), by introducing a delay here that is
+        // proportional to the level of zoom for an image window.  This may
+        // have something to do with the time it takes the mouse to traverse
+        // very large pixels during a drag.  This delay may prevent the 
+        // system from thinking the next drag position is in the same pixel
+        // as the starting pixel.  A better solution might be found in an
+        // examination of the mouseMoved method below.  (WRT, Mar 8, 2018)
+        ImageCanvas imageCanvas = getWindow().getCanvas();
+        double percentZoom = imageCanvas.getMagnification();   // Tells how far in you have zoomed      
+        try {
+           Thread.sleep((long) (percentZoom * 30));
+        } catch (InterruptedException ee) {
+        }
+
+        // getRoi does not seem ever to return null...
         if (getRoi() != null) {
             isROInull = false;
             // Set the moving flag so we know if user is attempting to move a roi.
@@ -1305,13 +1325,11 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
         boolean shift = ij.IJ.shiftKeyDown();
         boolean control = ij.IJ.controlKeyDown();
         if (!isROInull && shift && !control) {
-            //System.out.println("killRoy was here");
             this.killRoi();
             bMoving = false;
             ui.getRoiManager().delete(false, true);   // true for prompt
             
         }
-        
         bStateChanging = false;
 
     }
@@ -1431,7 +1449,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
                     ui.getMimsStackEditing().translateStack(deltaX, deltaY, current, total);
                 }
 
-                switch (Toolbar.getToolId()) {
+                switch (Toolbar.getToolId()) {                  
                     case Toolbar.RECTANGLE:
                     case Toolbar.OVAL:
                     case Toolbar.LINE:
@@ -1696,7 +1714,6 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
 
             setRoi(smallestRoi);
             if (smallestRoi != null) {
-
                 //get numerator and denominator stats
                 if ((this.getMimsType() == HSI_IMAGE || this.getMimsType() == RATIO_IMAGE)
                         && internalNumerator != null && internalDenominator != null) {
