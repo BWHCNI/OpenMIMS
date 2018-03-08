@@ -113,7 +113,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public static final String SAVE_SESSION = "Save Session";
     
     public String operatingSystem;
-    private String mimsVersion = "3.0.4";  
+    private String mimsVersion = "3.0.5";  
 
     public int maxMasses = 25;
     private double medianFilterRadius = 1;
@@ -3887,7 +3887,7 @@ private void sumAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GE
      */
 private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
 
-    String message = "OpenMIMS v" + mimsVersion + ", Jan 29, 2018 (rev: " + revisionNumber + ")";
+    String message = "OpenMIMS v" + mimsVersion + ", JMar 8, 2018 (rev: " + revisionNumber + ")";
     message += "\n\n";
     message += "http://www.nrims.hms.harvard.edu/";
     message += "\n\n";
