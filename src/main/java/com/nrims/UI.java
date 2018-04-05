@@ -85,7 +85,11 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingWorker.StateValue;
 import org.apache.commons.io.FilenameUtils;
                             //  for OpenMIMS Documentation as well as the Sample Data link + other possible links.
-import org.opencv.videoio.VideoCapture;
+
+//import org.opencv.core.Core;
+//import org.opencv.core.Mat;
+//import org.opencv.core.MatOfByte;
+//import org.opencv.videoio.VideoCapture;
 
 /**
  * The main user interface of the NRIMS ImageJ plugin. A multi-tabbed window
@@ -127,7 +131,19 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     private boolean medianFilterRatios = false;
     private boolean isSum = false;
     private boolean isWindow = false;
+    private boolean isMedianFilter = false;
     private int windowRange = -1;
+    private int medianFilterRatio = -1;
+    private double ratioScaleFactor = 10000.0;
+    private double ratioRangeMin = 1.0;
+    private double ratioRangeMax = 1.0;
+    private double thresholdNumerator = 3.0;
+    private double thresholdDenominator = 3.0;
+    private int rgbMaxSlider = 250;
+    private int rgbMinSlider = 0;
+    private int transparencyjComboBoxIndex = 0;
+    private int scalebarjComboBoxIndex = 0;
+    
     private boolean isPercentTurnover = false;
     private boolean isRatio = true;
     private boolean[] bOpenMass = new boolean[maxMasses];
@@ -545,6 +561,11 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
         // as well as the Sample Data Button.
         docButton.setToolTipText(" OPEN LINK:  " + documentationLink);
         sampleDataButton.setToolTipText("OPEN LINK:  " + sampleDataLink);
+        
+//        System.out.println(Core.NATIVE_LIBRARY_NAME);
+//        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+//        VideoCapture webSource = new VideoCapture(0);
+
         
     }
     
@@ -2554,10 +2575,7 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     }
 
     /**
-     * Used to set the number of planes to when generating ratio and HSI images
-     * with a sliding window. Actual window size will be 2 times window range
-     * plus 1 (The current window is currentplane - windowSize up to
-     * currentplane + windowSize).
+     *
      *
      * @param range the "radius" of the sliding window.
      */
@@ -2573,8 +2591,154 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
     public int getWindowRange() {
         return windowRange;
     }
+    
+    
+    public void setRatioScaleFactorSpinnerValue(double sf) {
+        ratioScaleFactor = sf;
+    }
 
     /**
+     * 
+     *
+     * @return 
+     */
+    public double getRatioRangeMaxSpinnerValue() {
+        return ratioRangeMax;
+    }
+    
+        
+    public void setRatioRangeMaxSpinnerValue(double theVal) {
+        ratioRangeMax = theVal;
+    }
+    
+    public double getRatioRangeMinSpinnerValue() {
+        return ratioRangeMin;
+    }
+    
+        
+    public void setRatioRangeMinSpinnerValue(double theVal) {
+        ratioRangeMin = theVal;
+    }
+    
+    
+    
+    
+    
+    public double getThresholdNumeratorSpinnerValue() {
+        return thresholdNumerator;
+    }
+    
+        
+    public void setThresholdNumeratorSpinnerValue(double theVal) {
+        thresholdNumerator = theVal;
+    }
+    
+    
+    public double getThresholdDenominatorSpinnerValue() {
+        return thresholdDenominator;
+    }
+    
+        
+    public void setThresholdDenominatorSpinnerValue(double theVal) {
+        thresholdDenominator = theVal;
+    }
+
+    
+
+    // RBG slider methods
+    
+    public int getRGBmaxSliderValue() {
+        return rgbMaxSlider;
+    }
+    
+        
+    public void setRGBmaxSliderValue(int theVal) {
+        rgbMaxSlider = theVal;
+    }
+    
+    
+    public int getRGBminSliderValue() {
+        return rgbMinSlider;
+    }
+    
+        
+    public void setRGBminSliderValue(int theVal) {
+        rgbMinSlider = theVal;
+    }
+    
+    
+    
+    
+    public int getTransparencyjComboBoxIndex() {
+        return transparencyjComboBoxIndex;
+    }
+    
+        
+    public void setTransparencyjComboBoxIndex(int theVal) {
+        transparencyjComboBoxIndex = theVal;
+    }
+    
+    public int getScaleBarjComboBoxIndex() {
+        return scalebarjComboBoxIndex;
+    }
+    
+        
+    public void setScaleBarjComboBoxIndex(int theVal) {
+        scalebarjComboBoxIndex = theVal;
+    }
+    
+    
+    
+    
+ 
+    /**
+     * 
+     *
+     * @return 
+     */
+    public double getRatioScaleFactorSpinnerValue() {
+        return ratioScaleFactor;
+    }
+    
+    
+    
+    
+    
+    
+    
+
+   
+
+    /**
+     * Tells the application to use the median filter when generating ratio and
+     * HSI images. All open ratio and HSI images will be regenerated.
+     *
+     * @param set <code>true</code> if computing ratio and HSI images with a
+     * median filter, othewise <code>false</code>.
+     */
+    public void setMedianFilterRadius(double set) {
+        medianFilterRadius = set;
+    }
+
+    /**
+     * Returns
+     * <code>true</code> if the application is using a median filter when
+     * generating ratio and HSI images.
+     *
+     * @return <code>true</code> if using a median filter, * *
+     * otherwise <code>false</code>.
+     */
+    public double getMedianFilterRadius() {
+        return medianFilterRadius;
+    }
+    
+    
+    
+    
+    
+    
+    
+       /**
      * Tells the application to use the median filter when generating ratio and
      * HSI images. All open ratio and HSI images will be regenerated.
      *
@@ -2595,8 +2759,8 @@ public class UI extends PlugInJFrame implements WindowListener, MimsUpdateListen
      */
     public boolean getMedianFilterRatios() {
         return medianFilterRatios;
-    }
-
+    } 
+    
     /**
      * Will perform and autocontrast on all open mass, ratio and sum images.
      */
@@ -5951,23 +6115,23 @@ private void exportQVisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         jProgressBar1.setString(msg);
     }
 
-    /**
-     * Sets the radius of the radius of the median filter.
-     *
-     * @param r the radius.
-     */
-    public void setMedianFilterRadius(double r) {
-        this.medianFilterRadius = r;
-    }
-
-    /**
-     * Gets the radius of the radius of the median filter.
-     *
-     * @return the radius.
-     */
-    public double getMedianFilterRadius() {
-        return this.medianFilterRadius;
-    }
+//    /**
+//     * Sets the radius of the radius of the median filter.
+//     *
+//     * @param r the radius.
+//     */
+//    public void setMedianFilterRadius(double r) {
+//        this.medianFilterRadius = r;
+//    }
+//
+//    /**
+//     * Gets the radius of the radius of the median filter.
+//     *
+//     * @return the radius.
+//     */
+//    public double getMedianFilterRadius() {
+//        return this.medianFilterRadius;
+//    }
 
     /**
      * N
