@@ -40,11 +40,11 @@ public class MimsHSIView extends javax.swing.JPanel {
      * @param ui UI into which the HSIView will be created.
      */
     public MimsHSIView(UI ui) {
-        this.ui = ui;
+        this.ui = ui;      
         initComponents();
         initComponentsCustom();
         updateImage(true);
-
+        
         // DJ: 08/12/2014: to list all POSSIBLE ratios when im/nrrd is loaded
         if (ui.getOpener().getMassSymbols() != null) {
             updateHSIFieldRatios(); // DJ: 08/12/2014
@@ -335,8 +335,13 @@ public class MimsHSIView extends javax.swing.JPanel {
                 rgbMinjSliderStateChanged(evt);
             }
         });
+        rgbMinjSlider.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                rgbMinjSliderPropertyChange(evt);
+            }
+        });
 
-        jLabel13.setText("Label");
+        jLabel13.setText("Scale");
 
         rgbMinjLabel.setText("RGB Min: 0");
         rgbMinjLabel.setMaximumSize(new java.awt.Dimension(100, 16));
@@ -491,7 +496,24 @@ public class MimsHSIView extends javax.swing.JPanel {
         medianRadiusjSpinner.setModel(new javax.swing.SpinnerNumberModel(Double.valueOf(1.0d), Double.valueOf(0.5d), null, Double.valueOf(0.5d)));
         hsiWindowjSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
         ratioSFjSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0d, 0.0d, 1000000.0d, 1.0d));
-        ratioSFjSpinner.setValue((double) ui.getPreferences().getscaleFactor());
+        
+        // The value of ratio scale factor spinner is set in the preferences, but an image file has 
+        // already been opened (since launching OpenMIMS), use the value the user set in the Process tab.
+        double rsfValPrefs = ui.getPreferences().getscaleFactor();
+        double rsfValUI = ui.getRatioScaleFactorSpinnerValue();
+        if (rsfValUI != rsfValPrefs) {
+            if (rsfValUI == 10000.0) {
+                ratioSFjSpinner.setValue(rsfValPrefs);        
+            } else {
+                ratioSFjSpinner.setValue(rsfValUI); 
+            }
+        } else {
+            ratioSFjSpinner.setValue(rsfValPrefs);
+        }
+        System.out.println("rsfValPrefs is " + rsfValPrefs + "   rsfValUI is " + rsfValPrefs);
+       
+        //ratioSFjSpinner.setValue((double) ui.getPreferences().getscaleFactor());
+        
         rartioMaxjSpinner.setModel(new SpinnerNumberModel(1.0, -65535, 65535.0, 1));
         ratioMinjSpinner.setModel(new SpinnerNumberModel(1.0, -65535, 65535.0, 1));
         numThresholdjSpinner.setModel(new SpinnerNumberModel(3, 0, 65535, 1));
@@ -507,6 +529,52 @@ public class MimsHSIView extends javax.swing.JPanel {
             displayHSIjButton.setEnabled(false);
             displayRatiojButton.setEnabled(false);
         }
+        
+        hsiSumRadioButton.setSelected(ui.getIsSum());
+        boolean isWind = ui.getIsWindow();
+        hsiWindowRadioButton.setSelected(isWind);
+        hsiWindowjSpinner.setEnabled(isWind);
+        
+        boolean isMedianFilter= ui.getMedianFilterRatios();
+        medianFilterjButton.setEnabled(true);
+        medianFilterjButton.setSelected(isMedianFilter);
+        medianRadiusjSpinner.setEnabled(true);
+        medianRadiusjSpinner.setValue(ui.getMedianFilterRadius());
+        
+        boolean isRatio = ui.getIsRatio();
+        ratioRadioButton.setSelected(isRatio);
+        percentTurnoverRadioButton.setSelected(!isRatio);
+        
+//        
+//              double theVal = (Double) ratioSFjSpinner.getValue();
+        //ui.setRatioScaleFactorSpinnerValue((int)theVal);
+        
+        double rrmsv = ui.getRatioRangeMaxSpinnerValue();
+        rartioMaxjSpinner.setValue(rrmsv);
+        double rrmMinsv = ui.getRatioRangeMinSpinnerValue();
+        ratioMinjSpinner.setValue(rrmMinsv);
+        
+        double threshNum = ui.getThresholdNumeratorSpinnerValue();
+        numThresholdjSpinner.setValue(threshNum);
+        double threshDenom = ui.getThresholdDenominatorSpinnerValue();
+        denThresholdjSpinner.setValue(threshDenom);
+        
+        int rgbMaxSliderVal = ui.getRGBmaxSliderValue();
+        rgbMaxjSlider.setValue(rgbMaxSliderVal);
+        int rgbMinSliderVal = ui.getRGBminSliderValue();
+        rgbMinjSlider.setValue(rgbMinSliderVal);
+        
+        int transparencyComboBoxIndex = ui.getTransparencyjComboBoxIndex();
+        transparencyjComboBox.setSelectedIndex(transparencyComboBoxIndex);
+        int scaleBarComboBoxIndex = ui.getScaleBarjComboBoxIndex();
+        scalebarjComboBox.setSelectedIndex(scaleBarComboBoxIndex);
+        
+   //     ratioSFjSpinner.setValue(ui.getRatioScaleFactorSpinnerValue());
+        
+        
+        //ui.getWindowRange();
+        hsiWindowjSpinner.setValue(ui.getWindowRange());
+       // ui.setWindowRange(new Integer(hsiWindowjSpinner.getValue().toString()));
         
         ratioHSIselectionListener = new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
@@ -531,7 +599,9 @@ public class MimsHSIView extends javax.swing.JPanel {
     }
     
     private void rartioMaxjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rartioMaxjSpinnerStateChanged
-
+   
+        ui.setRatioRangeMaxSpinnerValue((double)getRatioMax());      
+                
         if (bUpdating) {
             return;
         }
@@ -539,6 +609,11 @@ public class MimsHSIView extends javax.swing.JPanel {
         if (currentImage == null) {
             return;
         }
+        
+//        double theVal = (Double) rartioMaxjSpinner.getValue();
+//        ui.setRatioRangeMaxSpinnerValue(theVal);
+        
+        
 
         if (currentImage.getMimsType() == MimsPlus.HSI_IMAGE) {
             currentImage.getHSIProps().setMaxRatio(new Double(rartioMaxjSpinner.getValue().toString()));
@@ -551,7 +626,8 @@ public class MimsHSIView extends javax.swing.JPanel {
     }//GEN-LAST:event_rartioMaxjSpinnerStateChanged
 
     private void ratioMinjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ratioMinjSpinnerStateChanged
-
+        ui.setRatioRangeMaxSpinnerValue((double)getRatioMin());
+        
         if (bUpdating) {
             return;
         }
@@ -572,7 +648,9 @@ public class MimsHSIView extends javax.swing.JPanel {
     }//GEN-LAST:event_ratioMinjSpinnerStateChanged
 
     private void numThresholdjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_numThresholdjSpinnerStateChanged
-
+        
+        ui.setThresholdNumeratorSpinnerValue((int)getNumThresh());
+                
         if (bUpdating) {
             return;
         }
@@ -597,6 +675,8 @@ public class MimsHSIView extends javax.swing.JPanel {
 
     private void denThresholdjSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_denThresholdjSpinnerStateChanged
 
+        ui.setThresholdDenominatorSpinnerValue(getDenThresh());
+
         if (bUpdating) {
             return;
         }
@@ -620,6 +700,14 @@ public class MimsHSIView extends javax.swing.JPanel {
     }//GEN-LAST:event_denThresholdjSpinnerStateChanged
 
     private void transparencyjComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transparencyjComboBoxActionPerformed
+
+        ui.setTransparencyjComboBoxIndex(transparencyjComboBox.getSelectedIndex());
+        
+        // bandaid:  the first time an item in this combobox is selected, currentImage
+        // is null, resulting in a null pointer exception.  Prevent it for now.
+        if (currentImage == null) {
+            return;
+        }
         if (bUpdating || (currentImage.getMimsType() != MimsPlus.HSI_IMAGE)) {
             return;
         }
@@ -630,7 +718,7 @@ public class MimsHSIView extends javax.swing.JPanel {
     }//GEN-LAST:event_transparencyjComboBoxActionPerformed
 
     private void scalebarjComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scalebarjComboBoxActionPerformed
-
+        ui.setScaleBarjComboBoxIndex(scalebarjComboBox.getSelectedIndex());
         // currentImage is only set when an HSI is generated/selected
         if (bUpdating || currentImage == null) {
             return;
@@ -650,6 +738,8 @@ public class MimsHSIView extends javax.swing.JPanel {
 
     private void rgbMaxjSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rgbMaxjSliderStateChanged
 
+        ui.setRGBmaxSliderValue(rgbMaxjSlider.getValue());
+        
         if (bUpdating) {
             return;
         }
@@ -681,6 +771,8 @@ public class MimsHSIView extends javax.swing.JPanel {
 
     private void rgbMinjSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rgbMinjSliderStateChanged
 
+        ui.setRGBminSliderValue(rgbMinjSlider.getValue());
+        
         //DJ: 09/10/2014: modified where the check for : "currentImage == null" is added.
         if (bUpdating || currentImage == null || (currentImage.getMimsType() != MimsPlus.HSI_IMAGE)) {
             return;
@@ -708,6 +800,10 @@ public class MimsHSIView extends javax.swing.JPanel {
             return;
         }
 
+        ui.setRatioScaleFactorSpinnerValue((Double) ratioSFjSpinner.getValue());
+        // no, save in preferences!
+       // ui.getPreferences().savePreferences();
+        
         MimsPlus mp = currentImage;
         if (mp == null) {
             return;
@@ -723,12 +819,14 @@ public class MimsHSIView extends javax.swing.JPanel {
             mp.updateAndDraw();
             ui.recomputeComposite(currentImage);
         }
+        
     }//GEN-LAST:event_ratioSFjSpinnerStateChanged
 
     private void percentTurnoverRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_percentTurnoverRadioButtonActionPerformed
 
         if (ui.getIsPercentTurnover()) {
             percentTurnoverRadioButton.setSelected(true);
+            jLabel3.setText("Ratio Range:");
             return;
         }
 
@@ -739,6 +837,8 @@ public class MimsHSIView extends javax.swing.JPanel {
         jLabel3.setText("% Turnover:");
         ui.setIsPercentTurnover(percentTurnoverRadioButton.isSelected());
         ui.setIsRatio(false);
+        
+        //ratioSFjSpinner.setValue(ui.getRatioScaleFactorSpinnerValue());
 
         if (currentImage == null) {
             return;
@@ -775,6 +875,7 @@ public class MimsHSIView extends javax.swing.JPanel {
         percentTurnoverRadioButton.setSelected(false);
         ratioRadioButton.setSelected(true);
         ratioSFjSpinner.setEnabled(true);
+        ratioSFjSpinner.setValue(ui.getRatioScaleFactorSpinnerValue());
         jLabel3.setText("Ratio Range:");
         ui.setIsPercentTurnover(percentTurnoverRadioButton.isSelected());
         ui.setIsRatio(true);
@@ -867,8 +968,9 @@ public class MimsHSIView extends javax.swing.JPanel {
         // Update GUI
         hsiWindowRadioButton.setSelected(false);
         hsiWindowjSpinner.setEnabled(false);
-
+        
         // Set isSum in ui.
+        //System.out.println ("useSum is " + useSum);
         ui.setIsSum(useSum);
         ui.setIsWindow(false);
 
@@ -1115,6 +1217,7 @@ public class MimsHSIView extends javax.swing.JPanel {
 
         // Get button and spinner values.
         boolean med = medianFilterjButton.isSelected();
+        ui.setMedianFilterRatios(med);
         double r = new Double(medianRadiusjSpinner.getValue().toString());
 
         medianize(med, r);
@@ -1198,6 +1301,10 @@ public class MimsHSIView extends javax.swing.JPanel {
         }
 }//GEN-LAST:event_displayHSIjButtonActionPerformed
 
+    private void rgbMinjSliderPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_rgbMinjSliderPropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rgbMinjSliderPropertyChange
+
     /**
      * Gets the radius value to be used for the median filter.
      *
@@ -1205,6 +1312,14 @@ public class MimsHSIView extends javax.swing.JPanel {
      */
     public double getMedianRadius() {
         return new Double(this.medianRadiusjSpinner.getValue().toString());
+    }
+    
+    public double getRatioMax() {
+        return new Double(this.rartioMaxjSpinner.getValue().toString());
+    }
+    
+    public double getRatioMin() {
+        return new Double(this.ratioMinjSpinner.getValue().toString());
     }
 
     /**
@@ -1219,14 +1334,18 @@ public class MimsHSIView extends javax.swing.JPanel {
 
     //DJ
     public int getNumThresh() {
-        Integer value = (Integer) (this.numThresholdjSpinner.getValue());
-        return value.intValue();
+//        Integer value = (Integer) (this.numThresholdjSpinner.getValue());
+//        return value.intValue();       
+        Double doubleSpinnerVal =  new Double(numThresholdjSpinner.getValue().toString());
+        double spinVal = doubleSpinnerVal.doubleValue();   
+        return (int)spinVal; 
     }
 
     //DJ
-    public int getDenThresh() {
-        Integer value = (Integer) (this.denThresholdjSpinner.getValue());
-        return value.intValue();
+    public int getDenThresh() {            
+        Double doubleSpinnerVal =  new Double(denThresholdjSpinner.getValue().toString());
+        double spinVal =  doubleSpinnerVal.doubleValue();
+        return (int)spinVal;   
     }
 
     //DJ
@@ -1484,6 +1603,7 @@ public class MimsHSIView extends javax.swing.JPanel {
             ratioRadioButton.setSelected(false);
         }
 
+        // When you create a new HSI image, this code sets the GUI back to defaults.
         rartioMaxjSpinner.setValue((int) props.getMaxRatio());
         ratioMinjSpinner.setValue((int) props.getMinRatio());
         numThresholdjSpinner.setValue(props.getNumThreshold());
@@ -1493,7 +1613,7 @@ public class MimsHSIView extends javax.swing.JPanel {
         transparencyjComboBox.setSelectedIndex(props.getTransparency());
         scalebarjComboBox.setSelectedIndex(props.getLabelMethod());
         ratioSFjSpinner.setValue(props.getRatioScaleFactor());
-
+        
         bUpdating = false;
     }
 
@@ -1505,6 +1625,7 @@ public class MimsHSIView extends javax.swing.JPanel {
     public void setProps(RatioProps props) {
         bUpdating = true;
 
+        // When you create a new ratio image, this code sets the GUI back to defaults.     
         percentTurnoverRadioButton.setSelected(false);
         percentTurnoverRadioButton.setEnabled(false);
         ratioRadioButton.setSelected(true);
@@ -1515,6 +1636,8 @@ public class MimsHSIView extends javax.swing.JPanel {
         ratioSFjSpinner.setValue(props.getRatioScaleFactor());
         rartioMaxjSpinner.setValue((int) currentImage.getDisplayRangeMax());
         ratioMinjSpinner.setValue((int) currentImage.getDisplayRangeMin());
+        
+        //hsiSumRadioButton.setSelected(props.getUseSum());
 
         bUpdating = false;
     }
