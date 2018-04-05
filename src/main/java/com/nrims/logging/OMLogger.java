@@ -16,18 +16,18 @@ public class OMLogger {
 
     public static Logger getOMLogger(String name) {
         Logger logger = Logger.getLogger(name);
-
+        
         //do not pass log messages up to parent handlers
         logger.setUseParentHandlers(false);
 
         // LOG this level to the log
         logger.setLevel(Level.FINE);
 
-        //create custom formater, ConsoleHandler, and add to logger
+        //create custom formatter, ConsoleHandler, and add to logger
         OMSimpleFormatter formatter = new OMSimpleFormatter();
         ConsoleHandler consoleHandler = new ConsoleHandler();
-
-        // PUBLISH this level
+        
+            // PUBLISH this level
         consoleHandler.setLevel(Level.FINE);
 
         consoleHandler.setFormatter(formatter);
