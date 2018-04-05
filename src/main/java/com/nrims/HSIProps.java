@@ -236,7 +236,7 @@ public class HSIProps implements java.io.Serializable {
     public int getMaxRGB() {
         return maxRGB;
     }
-
+    
     /**
      * Sets the minimum RGB value.
      *
