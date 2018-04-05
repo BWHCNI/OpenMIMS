@@ -1265,7 +1265,7 @@ public class MimsPlus extends ImagePlus implements WindowListener, MouseListener
         
         boolean isROInull = true;
 
-        // This delay very hokey, but the best I can do at the moment.  Previously,
+        // This delay is very hokey, but the best I can do at the moment.  Previously,
         // as one zoomed in, it got harder and harder for one to create an ROI.
         // This can be solved (badly), by introducing a delay here that is
         // proportional to the level of zoom for an image window.  This may
