@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>nrims</groupId>
     <artifactId>Open_MIMS</artifactId>
-    <version>3.0.3</version>
+    <version>3.0.5</version>
     <packaging>jar</packaging>
    
     <build>
@@ -70,18 +70,6 @@
     
 
     <dependencies>
-
-        <dependency>
-            <groupId>nrims</groupId>
-            <artifactId>LibreOfficeNotes</artifactId>
-            <version>2.7.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.imagej</groupId>
-                    <artifactId>ij</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         
         <dependency>
             <groupId>org.jfree</groupId>
@@ -115,12 +103,6 @@
             <version>1.0.3</version>
         </dependency>
         
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>LibreOfficeNotes</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>nrimsJavaCommon</artifactId>
@@ -169,14 +151,25 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>opencv</groupId>
-            <artifactId>opencv</artifactId>
-            <version>3.3.0</version>
-        </dependency>
-        <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>imagej</artifactId>
             <version>2.0.0-rc-64</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>au.com.bytecode</groupId>
+                    <artifactId>opencsv</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>opencv</groupId>
+            <artifactId>opencv3.4.1</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>LibreOfficeNotes</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
